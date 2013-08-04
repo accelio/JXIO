@@ -1,0 +1,30 @@
+
+This project is part of the omx library from 
+
+  http://www.mellanox.com
+  
+  by Mellanox Technologies (c) 2012
+
+  
+  The following steps are needed now:
+  - run ./configure
+  - run make
+  - follow examples in ./examples/
+
+Examples:
+The following examples are provided:
+
+	1. hello world - a minimal single process, single thread "hello world"
+			 server and client.
+
+	2. hello world mt - a multithreaded client, and multithreaded server 
+			    demonstrating how to scale and work in multi
+			    threaded environment.
+
+	3. RAIO		 -  Linux's Remote AIO API over libomx. the example contains
+			    a DSO library, a server application and simple clients
+			    the client demontrates reading of files from the server.
+			    the interface to the library is libraio.h.
+
+	4. fio		 -  a new engine for fio application demonstrating the
+			    use of libraio
