@@ -75,10 +75,10 @@ public class JXBridge {
 		return ar;
 	}
 	
-	private static native ByteBuffer allocateEventQNative(long ptr, int event_size, int num_of_events);
-	static ByteBuffer allocateEventQ(long ptr, int event_size, int num_of_events){
+	private static native ByteBuffer allocateEventQNative(long ptrCtx, long ptrEvLoop, int event_size, int num_of_events);
+	static ByteBuffer allocateEventQ(long ptrCtx, long ptrEvLoop, int event_size, int num_of_events){
 		logger.log(Level.INFO, "invoking Bridge.allocateEventQNative");
-		ByteBuffer b = allocateEventQNative(ptr, event_size, num_of_events);
+		ByteBuffer b = allocateEventQNative(ptrCtx, ptrEvLoop, event_size, num_of_events);
 		logger.log(Level.INFO, "finished Bridge.allocateEventQNative");
 		return b;
 	}

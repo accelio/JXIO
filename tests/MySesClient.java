@@ -7,8 +7,8 @@ import com.mellanox.*;
 		private static JXLog logger = JXLog.getLog(MySesClient.class.getCanonicalName());
 		
 		
-		public MySesClient(EventQueueHandler eqh, String uri){
-			super (eqh, uri);	
+		public MySesClient(EventQueueHandler eqh, String uri, int port){
+			super (eqh, uri, port);	
 		}
 		
 		

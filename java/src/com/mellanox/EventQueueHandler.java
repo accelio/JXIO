@@ -31,7 +31,7 @@ public class EventQueueHandler {
 		evLoopID = ar[0];
 		id = ar[1];
 		logger.log(Level.INFO, "createEQH returned with " + evLoopID + " and " + id);
-		eventQueue = JXBridge.allocateEventQ(id, sizeEvent, eventQueueSize);
+		eventQueue = JXBridge.allocateEventQ(id, evLoopID, sizeEvent, eventQueueSize);
 	}
 	
 	public void addSession(SessionClient ses){
