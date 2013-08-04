@@ -20,6 +20,8 @@ public class EventQueueHandler {
 	
 //	private static JOMXLog logger = JOMXLog.getLog(JOMXMsgPool.class.getCanonicalName());
 	
+	public long getID(){return id;}
+	
 	//c-tor
 	public EventQueueHandler(){
 		

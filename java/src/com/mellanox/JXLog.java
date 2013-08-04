@@ -2,6 +2,7 @@ package com.mellanox;
 
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class JXLog extends Logger{
 		
@@ -12,6 +13,7 @@ public class JXLog extends Logger{
 			super(name, resourceBundleName);
 			try {
 				fileHandler = new FileHandler(file_name);
+				fileHandler.setFormatter(new SimpleFormatter());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

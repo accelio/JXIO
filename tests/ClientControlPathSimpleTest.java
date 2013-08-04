@@ -23,7 +23,7 @@ public class ClientControlPathSimpleTest {
 
 		eventQHndl = new EventQueueHandler ();
 		for (int i=0; i<num_times; i++){
-			ses = new MySesClient(eventQHndl, combined_url);
+			ses = new MySesClient(eventQHndl, url,Integer.parseInt(port));//combined_url);
 			eventQHndl.addSession (ses);
 			eventQHndl.runEventLoop(1, 0);
 			ses.close();

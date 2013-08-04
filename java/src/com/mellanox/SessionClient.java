@@ -6,8 +6,8 @@ public abstract class SessionClient extends SessionBase {
 	abstract public void onReplyCallback();
 	abstract public void onSessionEstablished();
 	
-	public SessionClient(EventQueueHandler eqh, String uri){
-		super (eqh, uri);	
+	public SessionClient(EventQueueHandler eqh, String url, int port){
+		super (eqh, url, port);	
 	}
 	
 	

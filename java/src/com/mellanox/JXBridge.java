@@ -41,12 +41,14 @@ public class JXBridge {
 	}
 	
 	
-	private static native int startClientSessionNative(int session_id, char[] url, int port);
-	static void startClientSession(int session_id, String url, int port){
+	private static native long[] startClientSessionNative(String url, int port, long ptrCtx);
+	static long[] startClientSession(String url, int port, long ptrCtx){
 		logger.log(Level.INFO, "invoking startClientSessionNative");
-		int ret = startClientSessionNative(session_id, url.toCharArray(), port);
-		logger.log(Level.INFO, "finished startClientSessionNative ret=" + ret);
+		long[] ar = startClientSessionNative(url, port, ptrCtx);
+		logger.log(Level.INFO, "finished startClientSessionNative ");
+		return ar;
 	}
+
 	
 	
 	private static native int sendMsgNative(int session_id, int connection_id, int ctx_id, int offset);
