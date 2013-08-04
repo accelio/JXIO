@@ -16,6 +16,7 @@ static jmethodID jmethodID_on_event; // handle to java cb method
 struct bufferEventQ{
 	char* buf;
 	int offset;
+	void* evLoop;
 };
 
 // globals
@@ -110,54 +111,54 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_createEQHNati
 	struct xio_context	*ctx;
 	jlongArray dataToJava;
 	jlong temp[2];
-	printf("createEQHNative 1\n");
+
 	ev_loop = xio_ev_loop_init();
 	if (ev_loop == NULL){
 		fprintf(stderr, "Error, ev_loop_init failed");
 		return 0;
 	}
-	printf("createEQHNative 2\n");
+
 	ctx = xio_ctx_open(NULL, ev_loop);
 	if (ctx == NULL){
 		fprintf(stderr, "Error, ev_loop_init failed");
 		return 0;
 	}
-	printf("createEQHNative 3\n");
-	dataToJava = env->NewLongArray(3);
+
+	dataToJava = env->NewLongArray(2);
 	 if (dataToJava == NULL) {
-		 return NULL; /* out of memory error thrown */
+		 printf("Error in allocating array via jni\n");
+		 return NULL;
 	 }
 	 // fill a temp structure to use to populate the java long array
-	 printf("createEQHNative 4\n");
+
 	 temp[0] = (jlong)(intptr_t) ev_loop;
 	 temp[1] = (jlong)(intptr_t) ctx;
-	 printf("createEQHNative 5\n");
+
 	 // move from the temp structure to the java structure
 	 env->SetLongArrayRegion(dataToJava,0, 2, temp);
-	 printf("createEQHNative 6\n");
+	 printf("createEQHNative done\n");
 	 return dataToJava;
 
 }
 
 
 //Katya
-extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_JXBridge_allocateEventQNative(JNIEnv *env, jclass cls, jlong ptr, jint event_size, jint num_of_events)
+extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_JXBridge_allocateEventQNative(JNIEnv *env, jclass cls, jlong ptrCtx, jlong ptrEvLoop, jint event_size, jint num_of_events)
 {
 
 	struct xio_context *ctx;
 	struct bufferEventQ* beq;
 	int total_size = num_of_events * event_size;
 
-	printf("allocateEventQNative 1\n");
 
 	//allocating struct for event queue
 	beq = (bufferEventQ*)malloc(total_size * sizeof(bufferEventQ));
-	printf("allocateEventQNative 2\n");
+
 	if (beq == NULL){
 		fprintf(stderr, "Error, Could not allocate memory ");
 		return NULL;
 	}
-	printf("allocateEventQNative 3\n");
+
 	//allocating buffer that will hold the event queue
 	beq->buf = (char*)malloc(total_size * sizeof(char));
 	if (beq->buf== NULL){
@@ -167,19 +168,20 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_JXBridge_allocateEventQNa
 
 	beq->offset = 0;
 
-	printf("allocateEventQNative 4\n");
-	ctx = (struct xio_context *)ptr;
+	void * evLoop = (void *)ptrEvLoop;
+	beq->evLoop = evLoop;
+
+
+	ctx = (struct xio_context *)ptrCtx;
 	//inserting into map
-	printf("allocateEventQNative 5\n");
+
 	mapContextEventQ->insert(std::pair<void*, bufferEventQ*>(ctx, beq));
-	printf("allocateEventQNative 6\n");
+
 	jobject jbuf = env->NewDirectByteBuffer(beq->buf, total_size );
-	printf("allocateEventQNative 7\n");
+	printf("allocateEventQNative done\n");
 
 	return jbuf;
 }
-
-
 
 
 
@@ -190,7 +192,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_closeEQHNative(JNIE
 
 	struct xio_context *ctx = (struct xio_context *)ptrCtx;
 
-
+	printf("beginning of closeEQH\n");
 	std::map<void*,bufferEventQ*>::iterator it = mapContextEventQ->find(ctx);
 	struct bufferEventQ* beq = it->second;
 	//delete from map
@@ -204,7 +206,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_closeEQHNative(JNIE
 	ev_loop = (void*) ptrEvLoop;
 	/* destroy the event loop */
 	xio_ev_loop_destroy(&ev_loop);
-
+	printf("end of closeEQH\n");
 }
 
 
@@ -215,32 +217,18 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_runEventLoopNative(
 	int ret_val;
 	void *evLoop = (void *)ptr;
 
+	printf("runEventLoopNative 1");
+
 	ret_val = xio_ev_loop_run(evLoop);
 	if (!ret_val){
 		printf("event_loop run failed");
 	}
+	printf("runEventLoopNative 2");
 	return ret_val;
 
 }
 
 
-//Katya
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_closeConnectionNative(JNIEnv *env, jclass cls, jlong ptr)
-{
-
-	int ret_val;
-	struct xio_connection *con;
-
-	con = (struct xio_connection *)ptr;
-
-	ret_val = xio_disconnect (con);
-
-	if (ret_val){
-		fprintf(stderr, "Error, xio_disconnect failed");
-	}
-
-	return ret_val;
-}
 
 //Katya
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSesConNative(JNIEnv *env, jclass cls, jlong ptrSes, jlong ptrCon)
@@ -249,6 +237,8 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSesConNati
 	int ret_val1, ret_val2;
 	struct xio_connection *con;
 	struct xio_session *session;
+
+	printf("beginning of closeSesCon\n");
 
 	con = (struct xio_connection *)ptrCon;
 
@@ -269,6 +259,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSesConNati
 	if (ret_val1 || ret_val2){
 		return false;
 	}
+	printf("end of closeSesCon\n");
 	return true;
 
 }
@@ -388,15 +379,22 @@ int on_session_established_callback(struct xio_session *session,
 	std::map<void*,bufferEventQ*>::iterator it;
 	jint event;
 
+	printf("got callback!!!!!!\n");
+
+
+
 	ctx = (xio_context*)cb_prv_data;
 	it = mapContextEventQ->find(ctx);
 
 	event = 0;
 
 	beq = it->second;
+	xio_ev_loop_stop(beq->evLoop);
+
 	memcpy(beq->buf + beq->offset, &event, sizeof(event));//TODO: to make number of event enum
 	beq->offset += 64; //TODO: static variable??? pass it from java
 
+	printf("the end of on_session_established_callback\n");
 	return 0;
 }
 
@@ -410,7 +408,7 @@ int on_session_event_callback(struct xio_session *session,
 	std::map<void*,bufferEventQ*>::iterator it;
 
 	jint event, error_type, len; //int32_t
-
+	printf("the beginning of on_session_event_callback\n");
 
 	ctx = (xio_context*)cb_prv_data;
 	it = mapContextEventQ->find(ctx);
@@ -437,6 +435,7 @@ int on_session_event_callback(struct xio_session *session,
 
 	beq->offset += (64 - (len +1 + sizeof(jint))); //TODO: static variable??? pass it from java
 
+	printf("the end of on_session_event_callback\n");
 	return 0;
 
 }
@@ -480,8 +479,79 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_destroyMsgPoolNativ
 
 
 
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_startClientSessioNative(JNIEnv *env, jclass cls, jint session_id, jchar address[], jint port) {
-	return 0;
+extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startClientSessionNative(JNIEnv *env, jclass cls, jstring jhostname, jint port, jlong ptrCtx) {
+
+	struct xio_session	*session;
+	struct xio_connection * con;
+	char			url[256];
+	jlongArray dataToJava;
+	jlong temp[2];
+
+
+	struct xio_context *ctx = (struct xio_context *)ptrCtx;
+
+	const char *hostname = env->GetStringUTFChars(jhostname, NULL);
+
+	sprintf(url, "rdma://%s:%d", hostname, port);
+
+	struct xio_session_ops ses_ops;
+	ses_ops.on_session_event		=  on_session_event_callback;
+	ses_ops.on_session_established		=  on_session_established_callback;
+	ses_ops.on_msg				=  NULL;
+	ses_ops.on_msg_error			=  NULL;
+
+
+	struct xio_session_attr attr;
+	attr.ses_ops = &ses_ops; /* callbacks structure */
+	attr.user_context = NULL;	  /* no need to pass the server private data */
+	attr.user_context_len = 0;
+
+	session = xio_session_open(XIO_SESSION_REQ,
+				   &attr, url, 0, ctx);
+	env->ReleaseStringUTFChars(jhostname, hostname);
+
+	if (session == NULL){
+		printf("Error in creating session\n");
+		return NULL;
+	}
+
+	/* connect the session  */
+	con = xio_connect(session, ctx, 0, ctx);
+
+	if (con == NULL){
+		printf("Error in creating connection\n");
+		return NULL;
+	}
+
+	dataToJava = env->NewLongArray(2);
+	if (dataToJava == NULL) {
+		printf("Error in allocating array via jni\n");
+		 return NULL;
+	 }
+	 // fill a temp structure to use to populate the java long array
+
+	 temp[0] = (jlong)(intptr_t) session;
+	 temp[1] = (jlong)(intptr_t) con;
+
+	 // move from the temp structure to the java structure
+	 env->SetLongArrayRegion(dataToJava,0, 2, temp);
+
+	 printf("startClientSession done with \n");
+
+	 /*
+	 printf("for debugging \n");
+	 struct xio_msg *req = (struct xio_msg *) malloc(sizeof(struct xio_msg));
+
+	 // create "hello world" message
+	 memset(req, 0, sizeof(req));
+	 req->out.header.iov_base = strdup("hello world header request");
+	 req->out.header.iov_len = strlen("hello world header request");
+	 	// send first message
+	 xio_send_request(con, req);
+	 printf("done debugging \n");
+
+	 */
+	 return dataToJava;
 }
 
 
