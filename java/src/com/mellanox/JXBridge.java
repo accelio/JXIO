@@ -65,6 +65,45 @@ public class JXBridge {
 	}
 	
 	
+	private static native long[] createEQHNative();
+	static long[] createEQH(){
+		logger.log(Level.INFO, "invoking Bridge.createEQHNative");
+		long[] ar = createEQHNative();
+		logger.log(Level.INFO, "finished Bridge.createEQHNative");
+		return ar;
+	}
+	
+	private static native ByteBuffer allocateEventQNative(long ptr, int event_size, int num_of_events);
+	static ByteBuffer allocateEventQ(long ptr, int event_size, int num_of_events){
+		logger.log(Level.INFO, "invoking Bridge.allocateEventQNative");
+		ByteBuffer b = allocateEventQNative(ptr, event_size, num_of_events);
+		logger.log(Level.INFO, "finished Bridge.allocateEventQNative");
+		return b;
+	}
+	
+	
+	private static native void closeEQHNative(long ptrCtx, long ptrEvLoop);
+	static void closeEQH(long ptrCtx, long ptrEvLoop){
+		logger.log(Level.INFO, "invoking Bridge.closeEQHNative");
+		closeEQHNative(ptrCtx, ptrEvLoop);
+		logger.log(Level.INFO, "finished Bridge.closeEQHNative" );
+	}
+
+	private static native int runEventLoopNative(long ptr);
+	static void runEventLoop(long ptr){
+		logger.log(Level.INFO, "invoking Bridge.runEventLoopNative");
+		int ret = runEventLoopNative(ptr);
+		logger.log(Level.INFO, "finished Bridge.runEventLoopNative=" + ret);
+	}
+	
+	private static native boolean closeSesConNative(long sesPtr, long conPtr);
+	static boolean closeSesCon(long sesPtr, long conPtr){
+		logger.log(Level.INFO, "invoking Bridge.closeConnectionNative");
+		boolean ret = closeSesConNative(sesPtr, conPtr);
+		logger.log(Level.INFO, "finished Bridge.closeConnectionNative=" + ret);
+		return ret;
+	}
+	
 	
 	// callback method from C code 
 	public static void on_event(){

@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <map>
 #include <jni.h>
 
 #include "cJXBridge.h"
@@ -11,9 +12,16 @@ static JavaVM *cached_jvm;
 static jmethodID jmethodID_on_event; // handle to java cb method
 
 
+
+struct bufferEventQ{
+	char* buf;
+	int offset;
+};
+
 // globals
 char* buf;
 xio_mr* mr;
+std::map<void*,bufferEventQ*>* mapContextEventQ;
 
 /* server private data */
 struct hw_server_data {
@@ -42,6 +50,13 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 	if (jmethodID_on_event == NULL) {
 		fprintf(stderr,"in cJXBridge - on_event() callback method was NOT found\n");
 		return JNI_ERR;
+	}
+
+	//Katya - some init code
+	mapContextEventQ = new std::map<void*,bufferEventQ*> ();
+	if(mapContextEventQ== NULL){
+		fprintf(stderr, "Error, Could not allocate memory ");
+		return NULL;
 	}
 
 	printf("in cJXBridge -  java callback methods were found and cached\n");
@@ -89,7 +104,178 @@ int on_new_session_callback(struct xio_session *session,
 	return 0;
 }
 
+extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_createEQHNative(JNIEnv *env, jclass cls)
+{
+	void * ev_loop;
+	struct xio_context	*ctx;
+	jlongArray dataToJava;
+	jlong temp[2];
+	printf("createEQHNative 1\n");
+	ev_loop = xio_ev_loop_init();
+	if (ev_loop == NULL){
+		fprintf(stderr, "Error, ev_loop_init failed");
+		return 0;
+	}
+	printf("createEQHNative 2\n");
+	ctx = xio_ctx_open(NULL, ev_loop);
+	if (ctx == NULL){
+		fprintf(stderr, "Error, ev_loop_init failed");
+		return 0;
+	}
+	printf("createEQHNative 3\n");
+	dataToJava = env->NewLongArray(3);
+	 if (dataToJava == NULL) {
+		 return NULL; /* out of memory error thrown */
+	 }
+	 // fill a temp structure to use to populate the java long array
+	 printf("createEQHNative 4\n");
+	 temp[0] = (jlong)(intptr_t) ev_loop;
+	 temp[1] = (jlong)(intptr_t) ctx;
+	 printf("createEQHNative 5\n");
+	 // move from the temp structure to the java structure
+	 env->SetLongArrayRegion(dataToJava,0, 2, temp);
+	 printf("createEQHNative 6\n");
+	 return dataToJava;
 
+}
+
+
+//Katya
+extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_JXBridge_allocateEventQNative(JNIEnv *env, jclass cls, jlong ptr, jint event_size, jint num_of_events)
+{
+
+	struct xio_context *ctx;
+	struct bufferEventQ* beq;
+	int total_size = num_of_events * event_size;
+
+	printf("allocateEventQNative 1\n");
+
+	//allocating struct for event queue
+	beq = (bufferEventQ*)malloc(total_size * sizeof(bufferEventQ));
+	printf("allocateEventQNative 2\n");
+	if (beq == NULL){
+		fprintf(stderr, "Error, Could not allocate memory ");
+		return NULL;
+	}
+	printf("allocateEventQNative 3\n");
+	//allocating buffer that will hold the event queue
+	beq->buf = (char*)malloc(total_size * sizeof(char));
+	if (beq->buf== NULL){
+		fprintf(stderr, "Error, Could not allocate memory for Event Queue buffer");
+		return NULL;
+	}
+
+	beq->offset = 0;
+
+	printf("allocateEventQNative 4\n");
+	ctx = (struct xio_context *)ptr;
+	//inserting into map
+	printf("allocateEventQNative 5\n");
+	mapContextEventQ->insert(std::pair<void*, bufferEventQ*>(ctx, beq));
+	printf("allocateEventQNative 6\n");
+	jobject jbuf = env->NewDirectByteBuffer(beq->buf, total_size );
+	printf("allocateEventQNative 7\n");
+
+	return jbuf;
+}
+
+
+
+
+
+//Katya
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_closeEQHNative(JNIEnv *env, jclass cls, jlong ptrCtx, jlong ptrEvLoop)
+{
+	void* ev_loop;
+
+	struct xio_context *ctx = (struct xio_context *)ptrCtx;
+
+
+	std::map<void*,bufferEventQ*>::iterator it = mapContextEventQ->find(ctx);
+	struct bufferEventQ* beq = it->second;
+	//delete from map
+	mapContextEventQ->erase(it);
+	//free memory
+	free(beq->buf);
+	free(beq);
+
+	xio_ctx_close(ctx);
+
+	ev_loop = (void*) ptrEvLoop;
+	/* destroy the event loop */
+	xio_ev_loop_destroy(&ev_loop);
+
+}
+
+
+
+//Katya
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptr)
+{
+	int ret_val;
+	void *evLoop = (void *)ptr;
+
+	ret_val = xio_ev_loop_run(evLoop);
+	if (!ret_val){
+		printf("event_loop run failed");
+	}
+	return ret_val;
+
+}
+
+
+//Katya
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_closeConnectionNative(JNIEnv *env, jclass cls, jlong ptr)
+{
+
+	int ret_val;
+	struct xio_connection *con;
+
+	con = (struct xio_connection *)ptr;
+
+	ret_val = xio_disconnect (con);
+
+	if (ret_val){
+		fprintf(stderr, "Error, xio_disconnect failed");
+	}
+
+	return ret_val;
+}
+
+//Katya
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSesConNative(JNIEnv *env, jclass cls, jlong ptrSes, jlong ptrCon)
+{
+
+	int ret_val1, ret_val2;
+	struct xio_connection *con;
+	struct xio_session *session;
+
+	con = (struct xio_connection *)ptrCon;
+
+	ret_val1 = xio_disconnect (con);
+
+	if (ret_val1){
+		fprintf(stderr, "Error, xio_disconnect failed");
+	}
+
+	session = (struct xio_session *)ptrSes;
+
+	ret_val2 = xio_session_close (session);
+
+	if (ret_val2){
+		fprintf(stderr, "Error, xio_session_close failed");
+	}
+
+	if (ret_val1 || ret_val2){
+		return false;
+	}
+	return true;
+
+}
+
+
+
+/* amir's
 int on_session_established_callback(struct xio_session *session,
 		struct xio_new_session_rsp *rsp,
 		void *cb_prv_data)
@@ -104,7 +290,7 @@ int on_session_established_callback(struct xio_session *session,
 		
 	return 0;
 }
-
+*/
 
 
 int on_session_redirected_callback(struct xio_session *session,
@@ -191,19 +377,68 @@ int on_msg_error_callback(struct xio_session *session,
 }
 
 
-int on_session_event_callback(struct xio_session *session,
-        struct xio_session_event_data *data,
-        void *cb_user_context)
-{
-	// here we will build and enter the new event to the event queue
-	
-	// and after calling the callback to the JAVA
-	if(invoke_on_event_callback()){
-		printf("Error invoking the callback to JAVA");
-		return 1;
-		}
-		
+
+//Katya
+int on_session_established_callback(struct xio_session *session,
+		struct xio_new_session_rsp *rsp,
+		void *cb_prv_data){
+
+	struct xio_context * ctx;
+	struct bufferEventQ* beq;
+	std::map<void*,bufferEventQ*>::iterator it;
+	jint event;
+
+	ctx = (xio_context*)cb_prv_data;
+	it = mapContextEventQ->find(ctx);
+
+	event = 0;
+
+	beq = it->second;
+	memcpy(beq->buf + beq->offset, &event, sizeof(event));//TODO: to make number of event enum
+	beq->offset += 64; //TODO: static variable??? pass it from java
+
 	return 0;
+}
+
+int on_session_event_callback(struct xio_session *session,
+		struct xio_session_event_data *event_data,
+		void *cb_prv_data){
+
+
+	struct xio_context * ctx;
+	struct bufferEventQ* beq;
+	std::map<void*,bufferEventQ*>::iterator it;
+
+	jint event, error_type, len; //int32_t
+
+
+	ctx = (xio_context*)cb_prv_data;
+	it = mapContextEventQ->find(ctx);
+	beq = it->second;
+
+	event = 2;
+	error_type = event_data->event;
+
+	const char* reason = xio_strerror (event_data->reason);
+	len = strlen (reason);
+
+	if (len +1 + sizeof(jint)){
+		printf("reason too long"); //TODO: should not happen but add a falg indicating double event occupation
+	}
+
+	memcpy(beq->buf + beq->offset, &event, sizeof(event));
+	beq->offset +=sizeof(event);
+	memcpy(beq->buf + beq->offset, &error_type, sizeof(error_type));
+	beq->offset +=sizeof(error_type);
+	memcpy(beq->buf + beq->offset, &len, sizeof(len));
+	beq->offset +=sizeof(len);
+	memcpy(beq->buf + beq->offset, &reason, len+1);
+	beq->offset += len + 1;
+
+	beq->offset += (64 - (len +1 + sizeof(jint))); //TODO: static variable??? pass it from java
+
+	return 0;
+
 }
 
 // implementation of the native method

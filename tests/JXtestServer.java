@@ -1,6 +1,4 @@
-
-import com.mellanox.JXMsgPool;
-import com.mellanox.ServerJXSession;
+import com.mellanox.*;
 import java.net.InetAddress;
 
 public class JXtestServer {

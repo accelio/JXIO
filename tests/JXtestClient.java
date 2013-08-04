@@ -1,3 +1,4 @@
+import com.mellanox.*;
 
 public class JXtestClient {
 
