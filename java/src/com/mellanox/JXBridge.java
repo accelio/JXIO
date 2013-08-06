@@ -32,6 +32,15 @@ public class JXBridge {
 		return ret;
 	}
 	
+	
+	private static native int getNumEventsQNative(long ptr);
+	static int getNumEventsQ(long ptr){
+		logger.log(Level.INFO, "invoking getNumEventsQNative");
+		int ret = getNumEventsQNative(ptr);
+		logger.log(Level.INFO, "finished getNumEventsQNative");
+		return ret;
+	}
+	
 	private static native long[] startServerSessionNative(String hostname, int port);
 	static long[] startServerSession(String hostname , int port){
 		logger.log(Level.INFO, "invoking startServerSessionNative");

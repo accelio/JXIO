@@ -15,6 +15,7 @@ public class EventQueueHandler {
 	ByteBuffer eventQueue = null;
 	boolean stopEventLoop = false;
 	private SessionClient session = null;
+	int offset = 0;
 	
 	private static JXLog logger = JXLog.getLog(EventQueueHandler.class.getCanonicalName());
 	
@@ -30,7 +31,7 @@ public class EventQueueHandler {
 		ar = JXBridge.createEQH();
 		evLoopID = ar[0];
 		id = ar[1];
-		logger.log(Level.INFO, "createEQH returned with " + evLoopID + " and " + id);
+//		logger.log(Level.INFO, "createEQH returned with " + evLoopID + " and " + id);
 		eventQueue = JXBridge.allocateEventQ(id, evLoopID, sizeEvent, eventQueueSize);
 	}
 	
@@ -45,31 +46,38 @@ public class EventQueueHandler {
 	}
 	
 	public int runEventLoop (int maxEvents, int timeOut){
-		//TODO: check if there are still events in the event queue
-		
-		JXBridge.runEventLoop(evLoopID);
-		//start reading from ByteBuffer
-		int counter = 0;
-		//TODO: when time out will be supported, the loop should count to actual_events and not max_events
-		while (counter < maxEvents && !stopEventLoop){
-			//TODO: convertToEnum
+		//check if there are still events in the event queue - for should be here??? and then rewind
+
+		int numEvents = JXBridge.getNumEventsQ(id);
+		logger.log(Level.INFO, "there are "+numEvents+" events");
+		for(int i=1; i<numEvents; i++){
+//			logger.log(Level.INFO, "for before: position is "+eventQueue.position());
 			int eventType = eventQueue.getInt();
-			switch (eventType){
-			case 0: //session established
-				logger.log(Level.INFO, "received a session established event");
-				session.onSessionEstablished();
-				break;
-			case 2: //session error
-				
-				break;
-				
-			default:
-				logger.log(Level.SEVERE, "received a session established event");
-				System.out.println("ERRROR: received a session established event");
-			}
-			counter++;
+			processEvent(eventType);
+       }
+		eventQueue.rewind();
+		
+		
+		JXBridge.runEventLoop(id);
+		
+		//start reading from ByteBuffer
+//		int counter = 0;
+		//TODO: when time out will be supported, the loop should count to actual_events and not max_events
+//		while (counter < maxEvents && !stopEventLoop){
+			//TODO: convertToEnum
+	//		logger.log(Level.INFO, "while before: position is "+eventQueue.position());
+			int eventType = eventQueue.getInt();
+	//		logger.log(Level.INFO, "while after: position is "+eventQueue.position());
+			processEvent(eventType);
+//			counter++;
 			
-		}
+//		}
+		
+		
+		//all events in queue are read in java side, so we must reset the offset of EventQueue buffer
+//		logger.log(Level.INFO, "rewind before: position is "+eventQueue.position());
+		
+		
 		return 0;
 
 	}
@@ -77,6 +85,30 @@ public class EventQueueHandler {
 	public int breakEventLoop(){
 		stopEventLoop = true;
 		return 0;
+	}
+	
+	private void processEvent (int eventType){
+
+		
+		switch (eventType){
+		case 0: //session established
+			logger.log(Level.INFO, "received a session established event");
+			session.onSessionEstablished();
+			break;
+		case 2: //session error
+			break;
+		case 3: //on msg
+			logger.log(Level.INFO, "received a new msg event");
+			session.onReplyCallback();
+			break;
+		default:
+			logger.log(Level.SEVERE, "received an unknown event "+ eventType);
+			int i1 = eventQueue.getInt(0);
+			int i2 = eventQueue.getInt(4);
+			int i3 = eventQueue.getInt(8);
+			logger.log(Level.SEVERE, "i1="+i1+" i2="+i2+" i3="+i3);
+		}
+	
 	}
 
 	public void close (){

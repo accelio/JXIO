@@ -46,7 +46,9 @@ import com.mellanox.*;
 			logger.log(Level.INFO, "GOT EVENT " + event + "because of " + reason);
 		}
 	
-		public void onReplyCallback(){	}
+		public void onReplyCallback(){	
+			logger.log(Level.INFO, "got a message! Bring the champagne!!!!!");
+		}
 		
 
 		

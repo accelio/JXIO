@@ -27,9 +27,6 @@ public abstract class SessionBase {
 		
 		ar = JXBridge.startClientSession(url, port, eqh.getID());
 		
-		logger.log(Level.INFO, "the array that i got1!" + ar[0]);
-		logger.log(Level.INFO, "the array that i got1!" + ar[1]);
-		
 		id = ar[0];
 		con = new Connection( ar[1]);
 

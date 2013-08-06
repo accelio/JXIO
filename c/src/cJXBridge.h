@@ -2,8 +2,8 @@
 #define cJXridge__H___
 
 #include <libxio.h>
-
-
+#include <netinet/in.h>
+//#include <arpa/inet.h>
 
 // wrappers arround java callbck methods
 int xio_on_session_event_callback(struct xio_session *session,
