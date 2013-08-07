@@ -1,7 +1,7 @@
 package com.mellanox;
 
 import java.util.logging.Level;
-
+/*
 public class ClientJXSession extends JXSessionBase{
 
 	private static JXLog logger = JXLog.getLog(ClientJXSession.class.getCanonicalName());
@@ -23,3 +23,4 @@ public class ClientJXSession extends JXSessionBase{
 	public void onRespRec(int msg_id, char[] c){
 	}
 }
+*/

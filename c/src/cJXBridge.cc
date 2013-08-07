@@ -385,7 +385,7 @@ int on_msg_callback(struct xio_session *session,
 	ctx = (xio_context*)cb_prv_data;
 	it = mapContextEventQ->find(ctx);
 
-	event = htonl (3);
+	event = htonl (4);
 	beq = it->second;
 
 
@@ -436,7 +436,7 @@ int on_session_established_callback(struct xio_session *session,
 	printf("got on_session_established_callback\n");
 	ctx = (xio_context*)cb_prv_data;
 	it = mapContextEventQ->find(ctx);
-	event = htonl (0);
+	event = htonl (2);
 	beq = it->second;
 
 	memcpy(beq->buf + beq->offset, &event, sizeof(event));//TODO: to make number of event enum
@@ -464,30 +464,23 @@ int on_session_event_callback(struct xio_session *session,
 	struct xio_context * ctx;
 	struct bufferEventQ* beq;
 	std::map<void*,bufferEventQ*>::iterator it;
-	jint event, error_type, len; //int32_t
+	int32_t event, error_type, error_reason;
 	
 	printf("the beginning of on_session_event_callback\n");
 	ctx = (xio_context*)cb_prv_data;
 	it = mapContextEventQ->find(ctx);
 	beq = it->second;
-	event = htonl (2);
+
+	event = htonl (0);
 	error_type = htonl(event_data->event);
-
-	const char* reason = xio_strerror (event_data->reason);
-	len = htonl(strlen (reason));
-
-	if (len +1 + sizeof(jint)){
-		printf("reason too long"); //TODO: should not happen but add a falg indicating double event occupation
-	}
+	error_reason = htonl (event_data->reason);
 
 	memcpy(beq->buf + beq->offset, &event, sizeof(event));
 	beq->offset +=sizeof(event);
 	memcpy(beq->buf + beq->offset, &error_type, sizeof(error_type));
 	beq->offset +=sizeof(error_type);
-	memcpy(beq->buf + beq->offset, &len, sizeof(len));
-	beq->offset +=sizeof(len);
-	memcpy(beq->buf + beq->offset, &reason, len+1);
-	beq->offset += len + 1;
+	memcpy(beq->buf + beq->offset, &error_reason, sizeof(error_reason));
+	beq->offset +=sizeof(error_reason);
 
 //	beq->offset += (64 - (len +1 + sizeof(jint))); //TODO: static variable??? pass it from java
 	beq->eventsNum++;
@@ -613,6 +606,21 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startClientSe
 }
 
 
+extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_JXBridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason) {
+
+	struct xio_session	*session;
+	const char * error;
+	jstring str;
+	
+	error = xio_strerror(errorReason);
+	str = env->NewStringUTF(error);
+//	free(error); TODO: to free it????
+	return str;
+ 
+}
+
+
+
 extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_CloseSessioNative(JNIEnv *env, jint session_id) {
 	// i need to build a session manager here, in order to identify the session object by its id and close it.
 	int retval = xio_session_close(NULL);
@@ -666,6 +674,44 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerSe
 	return arr;
 }
 
+extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerNative(JNIEnv *env, jclass cls, jstring hostname, jint port) {
+
+
+
+
+	struct xio_server_ops server_ops;	
+	server_ops.on_session_event			    =  on_session_event_callback;
+	server_ops.on_msg	  		        	=  NULL;
+	server_ops.on_msg_error				    =  NULL;
+	server_ops.on_new_session		        =  on_new_session_callback;
+	server_ops.on_msg_send_complete         =  NULL;
+
+
+	struct xio_server	*server;	/* server portal */
+	char			url[256];
+	struct xio_context	*ctx;
+	void			*loop;
+
+	/* open default event loop */
+	loop	= xio_ev_loop_init();
+
+	/* create thread context for the client */
+	ctx	= xio_ctx_open(NULL, loop);
+
+	/* create url to connect to */
+	sprintf(url, "rdma://%s:%d", hostname, port);
+	/* bind a listener server to a portal/url */
+	server = xio_bind(ctx, &server_ops, url, NULL);
+	if (server == NULL){
+		printf("Error in binding server\n");
+		return NULL;
+	}
+	
+	printf("Server is now bind to address\n");
+	printf("finished startServerSessioNative method\n");
+	jlongArray arr =  env->NewLongArray(3);
+	return arr;
+}
 
 JNIEnv *JX_attachNativeThread()
 {

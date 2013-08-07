@@ -1,7 +1,7 @@
 package com.mellanox;
 
 import java.util.logging.Level;
-
+/*
 public class ServerJXSession extends JXSessionBase{
 
 	private static JXLog logger = JXLog.getLog(ServerJXSession.class.getCanonicalName());
@@ -30,3 +30,4 @@ public class ServerJXSession extends JXSessionBase{
 		logger.log(Level.INFO, "recieved request number " + count + ", data -s : " + c.toString());
 	}
 }
+*/

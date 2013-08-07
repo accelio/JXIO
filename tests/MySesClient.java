@@ -8,7 +8,7 @@ import com.mellanox.*;
 		
 		
 		public MySesClient(EventQueueHandler eqh, String uri, int port){
-			super (eqh, uri, port);	
+			super (eqh.getID(), uri, port);	
 		}
 		
 		

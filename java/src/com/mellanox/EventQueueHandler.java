@@ -14,7 +14,7 @@ public class EventQueueHandler {
 	// Direct buffer to the registered memory
 	ByteBuffer eventQueue = null;
 	boolean stopEventLoop = false;
-	private SessionClient session = null;
+	private SessionBase session = null;
 	int offset = 0;
 	
 	private static JXLog logger = JXLog.getLog(EventQueueHandler.class.getCanonicalName());
@@ -35,12 +35,12 @@ public class EventQueueHandler {
 		eventQueue = JXBridge.allocateEventQ(id, evLoopID, sizeEvent, eventQueueSize);
 	}
 	
-	public void addSession(SessionClient ses){
+	public void addSession(SessionBase ses){
 		//in the future will be add_to_map
 		session = ses;
 	}
 	
-	public void removeSesssion(SessionClient ses){
+	public void removeSesssion(SessionBase ses){
 		//in the future will remove from map
 		session = null;
 	}
@@ -53,8 +53,8 @@ public class EventQueueHandler {
 		for(int i=1; i<numEvents; i++){
 //			logger.log(Level.INFO, "for before: position is "+eventQueue.position());
 			int eventType = eventQueue.getInt();
-			processEvent(eventType);
-       }
+			session.onEvent(eventType, eventQueue);
+			}
 		eventQueue.rewind();
 		
 		
@@ -65,10 +65,8 @@ public class EventQueueHandler {
 		//TODO: when time out will be supported, the loop should count to actual_events and not max_events
 //		while (counter < maxEvents && !stopEventLoop){
 			//TODO: convertToEnum
-	//		logger.log(Level.INFO, "while before: position is "+eventQueue.position());
 			int eventType = eventQueue.getInt();
-	//		logger.log(Level.INFO, "while after: position is "+eventQueue.position());
-			processEvent(eventType);
+			session.onEvent(eventType, eventQueue);
 //			counter++;
 			
 //		}
@@ -87,6 +85,7 @@ public class EventQueueHandler {
 		return 0;
 	}
 	
+	/*
 	private void processEvent (int eventType){
 
 		
@@ -96,6 +95,10 @@ public class EventQueueHandler {
 			session.onSessionEstablished();
 			break;
 		case 2: //session error
+			int errorType = eventQueue.getInt();
+			int reason = eventQueue.getInt();
+			String s = JXBridge.getError(reason);
+			session.onSessionErrorCallback(errorType, s);
 			break;
 		case 3: //on msg
 			logger.log(Level.INFO, "received a new msg event");
@@ -110,7 +113,7 @@ public class EventQueueHandler {
 		}
 	
 	}
-
+*/
 	public void close (){
 		JXBridge.closeEQH(id, evLoopID);
 

@@ -4,7 +4,7 @@ public class JXtestClient {
 
 	static private final int NUM_OF_MSG = 10000 ; // 
 	static private final int SIZE_OF_MSG = 64 ; // size in Bytes
-
+/*
 	
 	int main(String[] args){
 		
@@ -16,4 +16,5 @@ public class JXtestClient {
 		s.startSession(url, Integer.parseInt(port));
 		return 1;
 	}
+	*/
 }

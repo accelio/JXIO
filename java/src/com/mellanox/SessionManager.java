@@ -2,8 +2,21 @@ package com.mellanox;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-// singleton
 public class SessionManager {
+	private EventQueueHandler eventQHndl = null;
+	
+	public SessionManager(String url, int port){
+		eventQHndl = new EventQueueHandler ();
+		eventQHndl.runEventLoop(1, 0);
+//		JXBridge.startServer(url, port, eventQHndl.getID());
+	}
+	
+	public void close(){
+//		JXBridge.stopServer();
+	}
+	
+	
+	/*amir's code
 	
 	private static AtomicInteger id_counter ;
 	private static JXSessionBase[] sessions ;
@@ -44,4 +57,5 @@ public class SessionManager {
 	private void enlargeArray()
 	{}
 
+	*/
 }

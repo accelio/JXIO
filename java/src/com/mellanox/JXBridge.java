@@ -51,13 +51,36 @@ public class JXBridge {
 	
 	
 	private static native long[] startClientSessionNative(String url, int port, long ptrCtx);
-	static long[] startClientSession(String url, int port, long ptrCtx){
-		logger.log(Level.INFO, "invoking startClientSessionNative");
-		long[] ar = startClientSessionNative(url, port, ptrCtx);
-		logger.log(Level.INFO, "finished startClientSessionNative ");
+	private static native long[] startServerSessionNative(String url, int port, long ptrCtx);
+	static long[] startSession(String url, int port, long ptrCtx, int type){
+		long ar[];
+		logger.log(Level.INFO, "invoking startSessionNative");
+		switch (type){
+		case 0: //client
+			ar = startClientSessionNative(url, port, ptrCtx);
+			break;
+			
+		case 1: //server
+			ar = startServerSessionNative(url, port, ptrCtx);
+			break;
+			
+		default:
+			logger.log(Level.SEVERE, "unknown session type");
+			ar = null;
+			break;
+		}
+		logger.log(Level.INFO, "finished startSessionNative ");
 		return ar;
 	}
 
+	private static native String getErrorNative(int errorReason);
+	static String getError(int errorReason){
+		logger.log(Level.INFO, "invoking getErrorNative");
+		String s = getErrorNative(errorReason);
+		logger.log(Level.INFO, "finished getErrorNative. error was "+s);
+		return s;
+	}
+	
 	
 	
 	private static native int sendMsgNative(int session_id, int connection_id, int ctx_id, int offset);
