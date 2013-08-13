@@ -323,7 +323,6 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_getNumEventsQNative
 
 
 	eventsNum = beq->eventsNum;
-	printf("there are %d events in queue. offset is %d\n", eventsNum, beq->offset);
 
 	return eventsNum;
 
@@ -346,14 +345,14 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSessionCli
 		fprintf(stderr, "Error, xio_disconnect failed");
 	}
 	session = (struct xio_session *)ptrSes;
-	ret_val2 = xio_session_close (session);
-	if (ret_val2){
-		fprintf(stderr, "Error, xio_session_close failed");
-	}
+//	ret_val2 = xio_session_close (session);
+//	if (ret_val2){
+//		fprintf(stderr, "Error, xio_session_close failed");
+//	}
 
-	if (ret_val1 || ret_val2){
-		return false;
-	}
+//	if (ret_val1 || ret_val2){
+//		return false;
+//	}
 	printf("end of closeSesCon\n");
 	return true;
 
@@ -454,7 +453,6 @@ int on_msg_callback(struct xio_session *session,
 
 	memcpy(beq->buf + beq->offset, &event, sizeof(event));//TODO: to make number of event enum
 	beq->offset += sizeof(event); //TODO: static variable??? pass it from java
-	printf ("offset is %d \n",beq->offset);
 		
 	//need to stop the event queue only if this is the first callback
 	if (!beq->eventsNum){
@@ -503,9 +501,6 @@ int on_session_established_callback(struct xio_session *session,
 
 	memcpy(beq->buf + beq->offset, &event, sizeof(event));//TODO: to make number of event enum
 	beq->offset += sizeof(event);
-
-	printf ("offset is %d ctx is %p\n",beq->offset, ctx);
-//	printf("the end of on_session_established_callback\n");
 
 	//need to stop the event queue only if this is the first callback
 	if (!beq->eventsNum){

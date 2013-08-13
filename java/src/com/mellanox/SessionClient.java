@@ -7,10 +7,11 @@ import java.util.logging.Level;
 public abstract class SessionClient implements Eventable{// extends SessionBase {
 	
 	private long id = 0;
-	private Connection con = null;
 	private long ptrEventQueue = 0;
 	protected String url;
 	protected int port;
+	
+	protected long conID = 0;
 	
 	abstract public void onReplyCallback();
 	abstract public void onSessionEstablished();
@@ -29,7 +30,7 @@ public abstract class SessionClient implements Eventable{// extends SessionBase 
 		
 		id = ar[0];
 		logger.log(Level.INFO, "katya3 id is "+id);
-		con = new Connection( ar[1]);
+		this.conID = ar[1];
 	}
 	
 	
@@ -75,14 +76,9 @@ public abstract class SessionClient implements Eventable{// extends SessionBase 
 	
 	public boolean close (){
 //		eventQHandler.removeSesssion (this); //TODO: fix this
-		return JXBridge.closeSessionClient(id, con.id);		
+		return JXBridge.closeSessionClient(id, conID);		
 	}
 	
 	
-	class Connection{
-		long id;
-		
-		Connection(long id){
-			this.id = id;}
-	}
+	
 }

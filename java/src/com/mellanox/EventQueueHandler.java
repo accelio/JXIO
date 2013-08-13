@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import com.mellanox.JXBridge;
 
-public class EventQueueHandler {//implements Runnable{
+public class EventQueueHandler implements Runnable{
 	
 	private int eventQueueSize; //how many events will the queue hold
 	

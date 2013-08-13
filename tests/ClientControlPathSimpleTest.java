@@ -17,18 +17,16 @@ public class ClientControlPathSimpleTest {
 		MySesClient ses;
 		EventQueueHandler eventQHndl;
 		
-		int num_times = 2;
+		int num_times = 1;
 		
-//		List<MySesClient> clientArray = new ArrayList<MySesClient>();
-
 		eventQHndl = new EventQueueHandler (1000);
 		
 		for (int i=0; i<num_times; i++){
 			
 			ses = new MySesClient(eventQHndl, url,Integer.parseInt(port));//combined_url);
 			eventQHndl.addEventHandler (ses);
-//			Thread t = new Thread (eventQHndl);
-//			t.start();
+			Thread t = new Thread (eventQHndl);
+			t.start();
 			eventQHndl.run();
 			//for checking if server sends hello
 			ses.close();
