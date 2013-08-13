@@ -43,7 +43,7 @@ import com.mellanox.*;
 				event = "UNKNOWN";
 				break;
 			}
-			logger.log(Level.INFO, "GOT EVENT " + event + "because of " + reason);
+			logger.log(Level.SEVERE, "GOT EVENT " + event + "because of " + reason);
 		}
 	
 		public void onReplyCallback(){	

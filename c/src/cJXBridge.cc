@@ -95,14 +95,75 @@ int on_new_session_callback(struct xio_session *session,
 		struct xio_new_session_req *req,
 		void *cb_prv_data)
 {
+
+	struct xio_context * ctx;
+	struct bufferEventQ* beq;
+	std::map<void*,bufferEventQ*>::iterator it;
+	int32_t event;
+	char * ip;
+
+
 	// here we will build and enter the new event to the event queue
-	
-	// and after calling the callback to the JAVA
-	if(invoke_on_event_callback()){
-		printf("Error invoking the callback to JAVA");
-		return 1;
-		}
-		
+	printf("on_new_session_callback\n");
+	ctx = (xio_context*)cb_prv_data;
+	it = mapContextEventQ->find(ctx);
+
+	event = htonl (4);
+	beq = it->second;
+	memcpy(beq->buf + beq->offset, &event, sizeof(event));//TODO: to make number of event enum
+	beq->offset += sizeof(event); //TODO: static variable??? pass it from java
+
+	int32_t lenUri = htonl(req->uri_len);
+
+	memcpy(beq->buf + beq->offset, &lenUri, sizeof(int32_t));
+	beq->offset += sizeof(int32_t);
+
+	strcpy(beq->buf + beq->offset,req->uri);
+
+	beq->offset += req->uri_len ;
+
+	int len;
+	int32_t ipLen;
+	struct sockaddr *ipStruct = (struct sockaddr *)&req->src_addr;
+
+
+	if (ipStruct->sa_family == AF_INET) {
+			static char addr[INET_ADDRSTRLEN];
+			struct sockaddr_in *v4 = (struct sockaddr_in *)ipStruct;
+			ip = (char *)inet_ntop(AF_INET, &(v4->sin_addr),
+						 addr, INET_ADDRSTRLEN);
+			len = INET_ADDRSTRLEN;
+
+
+	}else if (ipStruct->sa_family == AF_INET6) {
+		static char addr[INET6_ADDRSTRLEN];
+		struct sockaddr_in6 *v6 = (struct sockaddr_in6 *)ipStruct;
+		ip = (char *)inet_ntop(AF_INET6, &(v6->sin6_addr),
+					 addr, INET6_ADDRSTRLEN);
+		len = INET6_ADDRSTRLEN;
+
+	}else{
+		fprintf(stderr, "can not get src ip");
+		len = 0;
+
+	}
+	ipLen = htonl (len);
+
+
+	memcpy(beq->buf + beq->offset, &ipLen, sizeof(int32_t));
+	beq->offset += sizeof(int32_t);
+	strcpy(beq->buf + beq->offset,ip);
+
+	beq->offset += len ;
+
+	//need to stop the event queue only if this is the first callback
+	if (!beq->eventsNum){
+			printf("inside on_new_session_callback - stopping the event queue\n");
+			xio_ev_loop_stop(beq->evLoop);
+	}
+	beq->eventsNum++;
+
+	printf("the end of new session callback\n");
 	return 0;
 }
 
@@ -144,17 +205,17 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_createEQHNati
 
 
 //Katya
-extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_JXBridge_allocateEventQNative(JNIEnv *env, jclass cls, jlong ptrCtx, jlong ptrEvLoop, jint event_size, jint num_of_events)
+extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_JXBridge_allocateEventQNative(JNIEnv *env, jclass cls, jlong ptrCtx, jlong ptrEvLoop, jint eventQSize)
 {
 
 	struct xio_context *ctx;
 	struct bufferEventQ* beq;
 	int total_size;
 
-	total_size = num_of_events * event_size;
+	total_size = eventQSize;
 
 	//allocating struct for event queue
-	beq = (bufferEventQ*)malloc(total_size * sizeof(bufferEventQ));
+	beq = (bufferEventQ*)malloc(sizeof(bufferEventQ));
 
 	if (beq == NULL){
 		fprintf(stderr, "Error, Could not allocate memory ");
@@ -269,7 +330,7 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_getNumEventsQNative
 }
 
 //Katya
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSesConNative(JNIEnv *env, jclass cls, jlong ptrSes, jlong ptrCon)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes, jlong ptrCon)
 {
 
 	int ret_val1, ret_val2;
@@ -299,23 +360,24 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSesConNati
 }
 
 
-
-/* amir's
-int on_session_established_callback(struct xio_session *session,
-		struct xio_new_session_rsp *rsp,
-		void *cb_prv_data)
+//Katya
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_stopServerNative(JNIEnv *env, jclass cls, jlong ptrServer)
 {
-	// here we will build and enter the new event to the event queue
-	
-	// and after calling the callback to the JAVA
-	if(invoke_on_event_callback()){
-		printf("Error invoking the callback to JAVA");
-		return 1;
-		}
-		
-	return 0;
+
+	int ret_val;
+	struct xio_server *server;
+
+	server = (struct xio_server *)ptrServer;
+	ret_val = xio_unbind (server);
+
+	if (ret_val){
+		fprintf(stderr, "Error, xio_unbind failed");
+		return false;
+	}
+
+	return true;
+
 }
-*/
 
 
 int on_session_redirected_callback(struct xio_session *session,
@@ -385,7 +447,7 @@ int on_msg_callback(struct xio_session *session,
 	ctx = (xio_context*)cb_prv_data;
 	it = mapContextEventQ->find(ctx);
 
-	event = htonl (4);
+	event = htonl (3);
 	beq = it->second;
 
 
@@ -482,7 +544,6 @@ int on_session_event_callback(struct xio_session *session,
 	memcpy(beq->buf + beq->offset, &error_reason, sizeof(error_reason));
 	beq->offset +=sizeof(error_reason);
 
-//	beq->offset += (64 - (len +1 + sizeof(jint))); //TODO: static variable??? pass it from java
 	beq->eventsNum++;
 
 	printf("the end of on_session_event_callback\n");
@@ -635,8 +696,8 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_sendMsgNative(JNIEn
 	return 0;
 }
 
-
-extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerSessionNative(JNIEnv *env, jclass cls, jstring hostname, jint port) {
+/*
+extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerSessionNative(JNIEnv *env, jclass cls, jstring jhostname, jint port) {
 
 	printf("inside startServerSessioNative method\n");
 
@@ -648,21 +709,25 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerSe
 	server_ops.on_msg_send_complete         =  on_msg_send_complete_callback;
 
 
-	struct xio_server	*server;	/* server portal */
+	struct xio_server	*server;	// server portal 
 	char			url[256];
 	struct xio_context	*ctx;
 	void			*loop;
 
-	/* open default event loop */
+	// open default event loop 
 	loop	= xio_ev_loop_init();
 
-	/* create thread context for the client */
+	// create thread context for the client 
 	ctx	= xio_ctx_open(NULL, loop);
 
-	/* create url to connect to */
+	const char *hostname = env->GetStringUTFChars(jhostname, NULL);
+	// create url to connect to 
 	sprintf(url, "rdma://%s:%d", hostname, port);
-	/* bind a listener server to a portal/url */
-	server = xio_bind(ctx, &server_ops, url, NULL);
+	// bind a listener server to a portal/url 
+	server = xio_bind(ctx, &server_ops, url, ctx);
+
+
+	env->ReleaseStringUTFChars(jhostname, hostname);
 	if (server == NULL){
 		printf("Error in binding server\n");
 		return NULL;
@@ -673,11 +738,12 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerSe
 	jlongArray arr =  env->NewLongArray(3);
 	return arr;
 }
-
-extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerNative(JNIEnv *env, jclass cls, jstring hostname, jint port) {
-
+*/
 
 
+extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startServerNative(JNIEnv *env, jclass cls, jstring jhostname, jint port, jlong ptrCtx) {
+
+	printf("inside startServerNative method\n");
 
 	struct xio_server_ops server_ops;	
 	server_ops.on_session_event			    =  on_session_event_callback;
@@ -690,28 +756,72 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerNa
 	struct xio_server	*server;	/* server portal */
 	char			url[256];
 	struct xio_context	*ctx;
-	void			*loop;
+	jlong			ptr;
+	jlongArray dataToJava;
+	jlong temp[2];
 
-	/* open default event loop */
-	loop	= xio_ev_loop_init();
+	ctx = (struct xio_context *)ptrCtx;
 
-	/* create thread context for the client */
-	ctx	= xio_ctx_open(NULL, loop);
+
+
+	const char *hostname = env->GetStringUTFChars(jhostname, NULL);
+
 
 	/* create url to connect to */
 	sprintf(url, "rdma://%s:%d", hostname, port);
+
+	env->ReleaseStringUTFChars(jhostname, hostname);
 	/* bind a listener server to a portal/url */
-	server = xio_bind(ctx, &server_ops, url, NULL);
+
+	server = xio_bind(ctx, &server_ops, url, ctx);
 	if (server == NULL){
 		printf("Error in binding server\n");
-		return NULL;
+		return 0;
 	}
 	
+	ptr = (jlong)(intptr_t) server;
 	printf("Server is now bind to address\n");
-	printf("finished startServerSessioNative method\n");
-	jlongArray arr =  env->NewLongArray(3);
-	return arr;
+	printf("finished startServerNative method\n");
+
+	return ptr;
 }
+
+
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jhostname, jint port, jlong ptrSession) {
+
+	struct xio_session	*session;	
+	char			portal[256];
+	const char* constPortal;
+	int retVal;
+
+
+	const char *hostname = env->GetStringUTFChars(jhostname, NULL);
+
+	sprintf(portal, "rdma://%s:%d", hostname, port);
+
+	constPortal = (const char*)portal;
+
+	session = (struct xio_session *)ptrSession;
+	printf("5 %p\n", session);
+	
+	retVal = xio_accept (session, &constPortal, 1, NULL, 0);
+
+//	retVal = xio_accept(session, NULL, 0, NULL, 0);
+	printf("6\n");
+
+
+
+	env->ReleaseStringUTFChars(jhostname, hostname);
+	printf("7\n");
+    if (!retVal){
+		printf("Error in accepting session\n");
+		return false;
+	}
+	return true;
+	
+}
+
+
 
 JNIEnv *JX_attachNativeThread()
 {

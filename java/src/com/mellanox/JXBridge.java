@@ -24,6 +24,14 @@ public class JXBridge {
 		return b;
 	}
 	
+	private static native boolean stopServerNative(long ptr);
+	static boolean stopServer(long ptr){
+		logger.log(Level.INFO, "invoking stopServerNative");
+		boolean ret = stopServerNative(ptr);
+		logger.log(Level.INFO, "finished stopServerNative ret=" + ret);
+		return ret;
+	}
+	
 	private static native boolean destroyMsgPooNative(ByteBuffer pool);
 	static boolean destroyMsgPool(ByteBuffer pool){
 		logger.log(Level.INFO, "invoking destroyMsgPoolNative");
@@ -32,7 +40,6 @@ public class JXBridge {
 		return ret;
 	}
 	
-	
 	private static native int getNumEventsQNative(long ptr);
 	static int getNumEventsQ(long ptr){
 		logger.log(Level.INFO, "invoking getNumEventsQNative");
@@ -40,39 +47,34 @@ public class JXBridge {
 		logger.log(Level.INFO, "finished getNumEventsQNative");
 		return ret;
 	}
-	
-	private static native long[] startServerSessionNative(String hostname, int port);
-	static long[] startServerSession(String hostname , int port){
-		logger.log(Level.INFO, "invoking startServerSessionNative");
-		long[] array = startServerSessionNative(hostname, port);
-		logger.log(Level.INFO, "finished startServerSessionNative");
-		return array;
-	}
-	
+
 	
 	private static native long[] startClientSessionNative(String url, int port, long ptrCtx);
-	private static native long[] startServerSessionNative(String url, int port, long ptrCtx);
-	static long[] startSession(String url, int port, long ptrCtx, int type){
+	static long[] startClientSession(String url, int port, long ptrCtx){
 		long ar[];
 		logger.log(Level.INFO, "invoking startSessionNative");
-		switch (type){
-		case 0: //client
-			ar = startClientSessionNative(url, port, ptrCtx);
-			break;
-			
-		case 1: //server
-			ar = startServerSessionNative(url, port, ptrCtx);
-			break;
-			
-		default:
-			logger.log(Level.SEVERE, "unknown session type");
-			ar = null;
-			break;
-		}
+		ar = startClientSessionNative(url, port, ptrCtx);		
 		logger.log(Level.INFO, "finished startSessionNative ");
 		return ar;
 	}
 
+	private static native long startServerNative(String url, int port, long ptrCtx);
+	static long  startServer(String url, int port, long ptrCtx){
+		logger.log(Level.INFO, "invoking startServerNative");
+		long ptr = startServerNative(url, port, ptrCtx);
+		logger.log(Level.INFO, "finished startServerNative");
+		return ptr;
+	}
+	
+	private static native long forwardSessionNative(String url, int port, long ptrSes);
+	static long  forwardSession(String url, int port, long ptrSes){
+		logger.log(Level.INFO, "invoking forwardSessionNative");
+		long ptr = forwardSessionNative(url, port, ptrSes);
+		logger.log(Level.INFO, "finished forwardSessionNative");
+		return ptr;
+	}
+	
+	
 	private static native String getErrorNative(int errorReason);
 	static String getError(int errorReason){
 		logger.log(Level.INFO, "invoking getErrorNative");
@@ -107,10 +109,10 @@ public class JXBridge {
 		return ar;
 	}
 	
-	private static native ByteBuffer allocateEventQNative(long ptrCtx, long ptrEvLoop, int event_size, int num_of_events);
-	static ByteBuffer allocateEventQ(long ptrCtx, long ptrEvLoop, int event_size, int num_of_events){
+	private static native ByteBuffer allocateEventQNative(long ptrCtx, long ptrEvLoop, int eventQSize);
+	static ByteBuffer allocateEventQ(long ptrCtx, long ptrEvLoop, int eventQSize){
 		logger.log(Level.INFO, "invoking Bridge.allocateEventQNative");
-		ByteBuffer b = allocateEventQNative(ptrCtx, ptrEvLoop, event_size, num_of_events);
+		ByteBuffer b = allocateEventQNative(ptrCtx, ptrEvLoop, eventQSize);
 		logger.log(Level.INFO, "finished Bridge.allocateEventQNative");
 		return b;
 	}
@@ -130,11 +132,11 @@ public class JXBridge {
 		logger.log(Level.INFO, "finished Bridge.runEventLoopNative=" + ret);
 	}
 	
-	private static native boolean closeSesConNative(long sesPtr, long conPtr);
-	static boolean closeSesCon(long sesPtr, long conPtr){
-		logger.log(Level.INFO, "invoking Bridge.closeConnectionNative");
-		boolean ret = closeSesConNative(sesPtr, conPtr);
-		logger.log(Level.INFO, "finished Bridge.closeConnectionNative=" + ret);
+	private static native boolean closeSessionClientNative(long sesPtr, long conPtr);
+	static boolean closeSessionClient(long sesPtr, long conPtr){
+		logger.log(Level.INFO, "invoking Bridge.closeSessionClient");
+		boolean ret = closeSessionClientNative(sesPtr, conPtr);
+		logger.log(Level.INFO, "finished Bridge.closeSessionClient=" + ret);
 		return ret;
 	}
 	

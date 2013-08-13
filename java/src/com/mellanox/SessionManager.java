@@ -1,20 +1,83 @@
 package com.mellanox;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
-public class SessionManager {
+public abstract class SessionManager implements Eventable{
 	private EventQueueHandler eventQHndl = null;
+	private long id = 0;
+	static protected int sizeEventQ = 10000;
+	
+	private static JXLog logger = JXLog.getLog(SessionManager.class.getCanonicalName());
 	
 	public SessionManager(String url, int port){
-		eventQHndl = new EventQueueHandler ();
+		eventQHndl = new EventQueueHandler (sizeEventQ);
+		logger.log(Level.INFO, "url is "+url+" port is "+port);
+		id = JXBridge.startServer(url, port, eventQHndl.getID());
+		if (id == 0){
+			logger.log(Level.SEVERE, "could not start server");
+		}
+		eventQHndl.addEventHandler (this); //EYAL: session event: reason: Success
 		eventQHndl.runEventLoop(1, 0);
-//		JXBridge.startServer(url, port, eventQHndl.getID());
 	}
 	
 	public void close(){
-//		JXBridge.stopServer();
+		JXBridge.stopServer(id);
 	}
 	
+	public void forward(SessionServer ses){
+		JXBridge.forwardSession(ses.url, ses.port, ses.getId());
+	}
+	
+	
+	public void run(){
+//		while (true) {
+			eventQHndl.runEventLoop(1, 0);
+			eventQHndl.runEventLoop(1, 0);
+//		}
+	}
+	
+	
+	
+	public void onEvent (int eventType, ByteBuffer buffer){
+		switch (eventType){
+		case 4: //on new session
+			String uri = readString(buffer);
+			logger.log(Level.INFO, "katya uri is "+uri);
+			String ip = getIP(uri);
+			
+			String srcIP = readString(buffer);
+			
+			onSession(ip, srcIP);
+			break;
+		
+		default:
+			logger.log(Level.SEVERE, "received an unknown event "+ eventType);
+		}
+	}
+	
+	private String getIP(String uri) {
+//		rdma://36.0.0.121:1234
+		int begin = uri.lastIndexOf("/");
+		int end = uri.lastIndexOf(":");
+		String ip = uri.substring(begin+1, end);
+		logger.log(Level.INFO, "katya ip is "+ip);
+		return ip;
+	}
+
+	private String readString (ByteBuffer buf){
+		int len = buf.getInt();
+		byte b[] = new byte[len+1];
+		
+		buf.get(b, 0, len);
+		String s1 = new String(b, Charset.forName("US-ASCII"));
+
+		return s1;
+	}
+	
+	public abstract void onSession(String uri, String srcIP);
 	
 	/*amir's code
 	
