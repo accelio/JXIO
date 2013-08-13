@@ -107,6 +107,11 @@ int on_new_session_callback(struct xio_session *session,
 	printf("on_new_session_callback\n");
 	ctx = (xio_context*)cb_prv_data;
 	it = mapContextEventQ->find(ctx);
+	if (it == mapContextEventQ->end()){
+			printf ("error! no entry for this ctx\n");
+			return 1;
+		}
+
 
 	event = htonl (4);
 	beq = it->second;
@@ -209,7 +214,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_JXBridge_allocateEventQNa
 {
 
 	struct xio_context *ctx;
-	struct bufferEventQ* beq;
+	struct bufferEventQ* beq = NULL;
 	int total_size;
 
 	total_size = eventQSize;
@@ -221,6 +226,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_JXBridge_allocateEventQNa
 		fprintf(stderr, "Error, Could not allocate memory ");
 		return NULL;
 	}
+	printf ("**beq is %p \n", beq);
 
 	//allocating buffer that will hold the event queue
 	beq->buf = (char*)malloc(total_size * sizeof(char));
@@ -236,7 +242,9 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_JXBridge_allocateEventQNa
 	ctx = (struct xio_context *)ptrCtx;
 	//inserting into map
 
+
 	mapContextEventQ->insert(std::pair<void*, bufferEventQ*>(ctx, beq));
+	printf ("** size after insert is %d\n",mapContextEventQ->size());
 
 	jobject jbuf = env->NewDirectByteBuffer(beq->buf, total_size );
 	printf("allocateEventQNative done\n");
@@ -258,13 +266,16 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_closeEQHNative(JNIE
 
 	printf("beginning of closeEQH\n");
 	it = mapContextEventQ->find(ctx);
-	beq = it->second;
-	//delete from map
-	mapContextEventQ->erase(it);
-	//free memory
-	free(beq->buf);
-	free(beq);
-
+	if (it == mapContextEventQ->end()){
+		printf ("error! no entry for this ctx\n");
+	}else{
+		beq = it->second;
+		//delete from map
+		mapContextEventQ->erase(it);
+		//free memory
+		free(beq->buf);
+		free(beq);
+	}
 	xio_ctx_close(ctx);
 
 	ev_loop = (void*) ptrEvLoop;
@@ -288,8 +299,15 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_runEventLoopNative(
 
 	ctx = (struct xio_context *)ptrCtx;
 
+	printf ("** size runEventLoopNative is %d\n",mapContextEventQ->size());
 	it = mapContextEventQ->find(ctx);
+	if (it == mapContextEventQ->end()){
+			printf ("error! no entry for this ctx\n");
+			return 1;
+		}
 	beq = it->second;
+
+	printf ("**beq2 is %p \n", beq);
 
     //update offset to 0: for indication if this is the first callback called
 	beq->offset = 0;
@@ -318,10 +336,16 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_getNumEventsQNative
 
 	ctx = (struct xio_context *)ptrCtx;
 
+	printf ("** size getNumEventsQNative is %d\n",mapContextEventQ->size());
+
 	it = mapContextEventQ->find(ctx);
+	if (it == mapContextEventQ->end()){
+		printf ("error! no entry for this ctx\n");
+		return 0;
+	}
 	beq = it->second;
 
-
+	printf ("**beq3 is %p \n", beq);
 	eventsNum = beq->eventsNum;
 
 	return eventsNum;
@@ -445,11 +469,14 @@ int on_msg_callback(struct xio_session *session,
 	printf("on_msg_callback\n");
 	ctx = (xio_context*)cb_prv_data;
 	it = mapContextEventQ->find(ctx);
+	if (it == mapContextEventQ->end()){
+		printf ("error! no entry for this ctx\n");
+		return 1;
+	}
+
 
 	event = htonl (3);
 	beq = it->second;
-
-
 
 	memcpy(beq->buf + beq->offset, &event, sizeof(event));//TODO: to make number of event enum
 	beq->offset += sizeof(event); //TODO: static variable??? pass it from java
@@ -496,6 +523,12 @@ int on_session_established_callback(struct xio_session *session,
 	printf("got on_session_established_callback\n");
 	ctx = (xio_context*)cb_prv_data;
 	it = mapContextEventQ->find(ctx);
+	if (it == mapContextEventQ->end()){
+			printf ("error! no entry for this ctx\n");
+			return 1;
+		}
+
+
 	event = htonl (2);
 	beq = it->second;
 
@@ -526,6 +559,12 @@ int on_session_event_callback(struct xio_session *session,
 	printf("the beginning of on_session_event_callback\n");
 	ctx = (xio_context*)cb_prv_data;
 	it = mapContextEventQ->find(ctx);
+	if (it == mapContextEventQ->end()){
+			printf ("error! no entry for this ctx\n");
+			return 1;
+		}
+
+
 	beq = it->second;
 
 	event = htonl (0);

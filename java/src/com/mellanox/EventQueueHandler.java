@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import com.mellanox.JXBridge;
 
-public class EventQueueHandler implements Runnable{
+public class EventQueueHandler {
 	
 	private int eventQueueSize; //how many events will the queue hold
 	
@@ -49,6 +49,7 @@ public class EventQueueHandler implements Runnable{
 //		while (true){
 		int numEvents = JXBridge.getNumEventsQ(id);
 		logger.log(Level.INFO, "there are "+numEvents+" events");
+
 		for(int i=1; i<numEvents; i++){
 			int eventType = eventQueue.getInt();
 			eventable.onEvent(eventType, eventQueue);
@@ -58,7 +59,7 @@ public class EventQueueHandler implements Runnable{
 		JXBridge.runEventLoop(id);
 		
 		//start reading from ByteBuffer
-		//TODO: convertToEnum
+		//TODO: convertToEnum,. this on_event is just for now. to fix it!!
 		int eventType = eventQueue.getInt();
 		eventable.onEvent(eventType, eventQueue);
 
@@ -71,13 +72,6 @@ public class EventQueueHandler implements Runnable{
 
 	public void close (){
 		JXBridge.closeEQH(id, evLoopID);
-
 	}
-
-
-	public void run() {
-		runEventLoop(1, 0);
-		runEventLoop(1, 0);
-
-	}
+	
 }

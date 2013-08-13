@@ -23,11 +23,10 @@ public class ClientControlPathSimpleTest {
 		
 		for (int i=0; i<num_times; i++){
 			
-			ses = new MySesClient(eventQHndl, url,Integer.parseInt(port));//combined_url);
+			ses = new MySesClient(eventQHndl, url,Integer.parseInt(port));
 			eventQHndl.addEventHandler (ses);
-			Thread t = new Thread (eventQHndl);
-			t.start();
-			eventQHndl.run();
+			eventQHndl.runEventLoop(1, 0);
+			eventQHndl.runEventLoop(1, 0);
 			//for checking if server sends hello
 			ses.close();
 			

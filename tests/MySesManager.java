@@ -19,9 +19,9 @@ public class MySesManager extends SessionManager{
 		MySesServer ses = new MySesServer(eventQHndl, uri, port);
 
 		forward(ses);
-//		Thread t = new Thread (eventQHndl);
-//		t.start();
-		eventQHndl.run();
+
+		eventQHndl.runEventLoop(1, 0);
+		eventQHndl.runEventLoop(1, 0);
 		
 	}
 
