@@ -17,7 +17,7 @@ private static JXLog logger = JXLog.getLog(ServerControlPathSimpleTest.class.get
 
 		SessionManager man = new MySesManager(url, Integer.parseInt(port));
 		
-		man.run();
+		man.run(); //will wait for on_session event
 	}
 		
 }

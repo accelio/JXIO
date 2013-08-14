@@ -6,7 +6,7 @@ import java.util.logging.Level;
 
 public abstract class SessionServer implements Eventable {//extends SessionBase{
 	
-	private long id = 0;
+	private long id = 0; //represents pointer to server struct
 	private long ptrEventQueue = 0;
 	protected String url;
 	protected int port;

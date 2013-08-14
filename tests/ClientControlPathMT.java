@@ -24,17 +24,14 @@ private static JXLog logger = JXLog.getLog(ClientControlPathSimpleTest.class.get
 			eventQHndl.addEventHandler (ses);
 			Thread t = new Thread (eventQHndl);
 			t.start();
-//			try{
-				  Thread.currentThread();
-				//do what you want to do before sleeping
-				  try {
+			Thread.currentThread();
+			try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}//sleep for 1000 ms
-				  //do what you want to do after sleeptig
-//				}
+				}
+				
 				
 			ses.close();
 			

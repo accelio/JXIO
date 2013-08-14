@@ -101,10 +101,13 @@ int on_new_session_callback(struct xio_session *session,
 	std::map<void*,bufferEventQ*>::iterator it;
 	int32_t event;
 	char * ip;
+	intptr_t ptrSession;
 
 
 	// here we will build and enter the new event to the event queue
-	printf("on_new_session_callback\n");
+	printf("on_new_session_callback. p is %p\n", session);
+
+
 	ctx = (xio_context*)cb_prv_data;
 	it = mapContextEventQ->find(ctx);
 	if (it == mapContextEventQ->end()){
@@ -117,6 +120,20 @@ int on_new_session_callback(struct xio_session *session,
 	beq = it->second;
 	memcpy(beq->buf + beq->offset, &event, sizeof(event));//TODO: to make number of event enum
 	beq->offset += sizeof(event); //TODO: static variable??? pass it from java
+
+
+	void* p1 =  session;
+	int64_t t = htobe64(intptr_t(p1));
+//	ptrSession = ((intptr_t) session);
+	memset (beq->buf + beq->offset,0, 8 );
+	memcpy(beq->buf + beq->offset, &t, sizeof(ptrSession));
+//	memcpy(beq->buf + beq->offset, session, sizeof(session));
+//	printf ("**ptr is %ld. size is %d, size 2 is %ld, sizeof long is \n", ptrSession, sizeof(ptrSession), t, sizeof(long));
+//	printf ("** ptr is %p, located in %p\n", p1, &p1);
+//	printf ("** ptr is %dl, located in %p\n", t, &t);
+
+	beq->offset += sizeof(int64_t);
+
 
 	int32_t lenUri = htonl(req->uri_len);
 
@@ -168,7 +185,10 @@ int on_new_session_callback(struct xio_session *session,
 	}
 	beq->eventsNum++;
 
+
+
 	printf("the end of new session callback\n");
+
 	return 0;
 }
 
@@ -226,7 +246,6 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_JXBridge_allocateEventQNa
 		fprintf(stderr, "Error, Could not allocate memory ");
 		return NULL;
 	}
-	printf ("**beq is %p \n", beq);
 
 	//allocating buffer that will hold the event queue
 	beq->buf = (char*)malloc(total_size * sizeof(char));
@@ -244,7 +263,6 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_JXBridge_allocateEventQNa
 
 
 	mapContextEventQ->insert(std::pair<void*, bufferEventQ*>(ctx, beq));
-	printf ("** size after insert is %d\n",mapContextEventQ->size());
 
 	jobject jbuf = env->NewDirectByteBuffer(beq->buf, total_size );
 	printf("allocateEventQNative done\n");
@@ -299,15 +317,12 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_runEventLoopNative(
 
 	ctx = (struct xio_context *)ptrCtx;
 
-	printf ("** size runEventLoopNative is %d\n",mapContextEventQ->size());
 	it = mapContextEventQ->find(ctx);
 	if (it == mapContextEventQ->end()){
 			printf ("error! no entry for this ctx\n");
 			return 1;
 		}
 	beq = it->second;
-
-	printf ("**beq2 is %p \n", beq);
 
     //update offset to 0: for indication if this is the first callback called
 	beq->offset = 0;
@@ -336,8 +351,6 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_getNumEventsQNative
 
 	ctx = (struct xio_context *)ptrCtx;
 
-	printf ("** size getNumEventsQNative is %d\n",mapContextEventQ->size());
-
 	it = mapContextEventQ->find(ctx);
 	if (it == mapContextEventQ->end()){
 		printf ("error! no entry for this ctx\n");
@@ -345,7 +358,6 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_getNumEventsQNative
 	}
 	beq = it->second;
 
-	printf ("**beq3 is %p \n", beq);
 	eventsNum = beq->eventsNum;
 
 	return eventsNum;
@@ -825,7 +837,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_forwardSessionN
 
 	struct xio_session	*session;	
 	char			portal[256];
-	const char* constPortal;
+	const char* constPortal[1];
 	int retVal;
 
 
@@ -833,22 +845,19 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_forwardSessionN
 
 	sprintf(portal, "rdma://%s:%d", hostname, port);
 
-	constPortal = (const char*)portal;
+	constPortal[0] = (const char*)portal;
 
 	session = (struct xio_session *)ptrSession;
-	printf("5 %p\n", session);
+	printf("** %p\n", session);
 	
-	retVal = xio_accept (session, &constPortal, 1, NULL, 0);
+	retVal = xio_accept (session, constPortal, 1, NULL, 0);
 
 //	retVal = xio_accept(session, NULL, 0, NULL, 0);
-	printf("6\n");
-
-
 
 	env->ReleaseStringUTFChars(jhostname, hostname);
-	printf("7\n");
-    if (!retVal){
-		printf("Error in accepting session\n");
+
+    if (retVal){
+		printf("Error in accepting session. error %d\n", retVal);
 		return false;
 	}
 	return true;

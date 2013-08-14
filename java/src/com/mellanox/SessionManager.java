@@ -27,14 +27,14 @@ public abstract class SessionManager implements Eventable{
 		JXBridge.stopServer(id);
 	}
 	
-	public void forward(SessionServer ses){
-		JXBridge.forwardSession(ses.url, ses.port, ses.getId());
+	public void forward(SessionServer ses, long ptrSes){
+		JXBridge.forwardSession(ses.url, ses.port, ptrSes);
 	}
 	
 	
 	public void run(){
+		//event loop that waits for on_session events
 //		while (true) {
-			eventQHndl.runEventLoop(1, 0);
 			eventQHndl.runEventLoop(1, 0);
 //		}
 	}
@@ -44,13 +44,15 @@ public abstract class SessionManager implements Eventable{
 	public void onEvent (int eventType, ByteBuffer buffer){
 		switch (eventType){
 		case 4: //on new session
+			long ptrSes = buffer.getLong();
+//			System.out.println("katya ptr is "+ptrSes);
 			String uri = readString(buffer);
-			logger.log(Level.INFO, "katya uri is "+uri);
+//			System.out.println("katya uri is "+uri);
 			String ip = getIP(uri);
 			
 			String srcIP = readString(buffer);
-			
-			onSession(ip, srcIP);
+//			System.out.println("katya ip is "+srcIP);
+			onSession(ptrSes, ip, srcIP);
 			break;
 		
 		default:
@@ -77,7 +79,7 @@ public abstract class SessionManager implements Eventable{
 		return s1;
 	}
 	
-	public abstract void onSession(String uri, String srcIP);
+	public abstract void onSession(long ptrSes, String uri, String srcIP);
 	
 	/*amir's code
 	

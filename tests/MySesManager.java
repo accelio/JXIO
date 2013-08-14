@@ -11,17 +11,21 @@ public class MySesManager extends SessionManager{
 	}
 
 	@Override
-	public void onSession(String uri, String srcIP) {
+	public void onSession(long ptrSes, String uri, String srcIP) {
 		//has some logic on which port the new session will listen
 		int port = 1235;
 		logger.log(Level.INFO, "MySesManager.onSession uri is "+uri);
-		EventQueueHandler eventQHndl = new EventQueueHandler (10000);
+		
+		MyEQH eventQHndl = new MyEQH (10000);	
 		MySesServer ses = new MySesServer(eventQHndl, uri, port);
+		forward(ses, ptrSes);
+//		Thread t = new Thread (eventQHndl);
+//		t.start();
 
-		forward(ses);
-
-		eventQHndl.runEventLoop(1, 0);
-		eventQHndl.runEventLoop(1, 0);
+		
+//		eventQHndl.runEventLoop(1, 0);
+//		eventQHndl.runEventLoop(1, 0);
+		
 		
 	}
 

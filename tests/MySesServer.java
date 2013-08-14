@@ -3,11 +3,13 @@ import java.util.logging.Level;
 import com.mellanox.*;
 
 
-public class MySesServer extends SessionServer{
+public class MySesServer extends SessionServer {
 	private static JXLog logger = JXLog.getLog(MySesServer.class.getCanonicalName());
+	EventQueueHandler eqh = null;
 
 	public MySesServer(EventQueueHandler eqh, String uri, int port){
-		super (eqh.getID(), uri, port);	
+		super (eqh.getID(), uri, port);
+		this.eqh = eqh;
 	}
 
 	@Override
@@ -47,5 +49,7 @@ public class MySesServer extends SessionServer{
 		logger.log(Level.INFO, "onMsgErrorCallback");
 		
 	}
+
+	
 
 }
