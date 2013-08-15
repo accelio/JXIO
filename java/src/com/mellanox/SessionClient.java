@@ -76,9 +76,11 @@ public abstract class SessionClient implements Eventable{// extends SessionBase 
 	
 	public boolean close (){
 //		eventQHandler.removeSesssion (this); //TODO: fix this
-		return JXBridge.closeSessionClient(id, conID);		
+		return JXBridge.closeConnectionClient(conID);		
 	}
 	
-	
+	public boolean closeSession(){
+		return JXBridge.closeSessionClient(id);
+	}
 	
 }

@@ -44,9 +44,10 @@ import com.mellanox.*;
 				break;
 			}
 			logger.log(Level.SEVERE, "GOT EVENT " + event + "because of " + reason);
-			
+			System.out.println("GOT EVENT " + event + "because of " + reason);
 			//there are two options: close session or reopen it
-			close();
+			closeSession();
+			
 			
 		}
 	

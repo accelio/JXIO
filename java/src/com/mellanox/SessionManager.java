@@ -19,7 +19,7 @@ public abstract class SessionManager implements Eventable{
 		if (id == 0){
 			logger.log(Level.SEVERE, "could not start server");
 		}
-		eventQHndl.addEventHandler (this); //EYAL: session event: reason: Success
+		eventQHndl.addEventHandler (this); 
 		eventQHndl.runEventLoop(1, 0);
 	}
 	
@@ -34,24 +34,31 @@ public abstract class SessionManager implements Eventable{
 	
 	public void run(){
 		//event loop that waits for on_session events
-//		while (true) {
+		while (true) {
+			System.out.println("SessionManager: before run event loop");
 			eventQHndl.runEventLoop(1, 0);
-//		}
+		}
 	}
 	
 	
 	
 	public void onEvent (int eventType, ByteBuffer buffer){
 		switch (eventType){
+		
+		case 0: //session error event
+			int errorType = buffer.getInt();
+			int reason = buffer.getInt();
+			String s = JXBridge.getError(reason);
+			logger.log(Level.INFO, "received session error event "+errorType+" due to "+s);
+			onSessionError(errorType, s);
+			break;
+			
 		case 4: //on new session
 			long ptrSes = buffer.getLong();
-//			System.out.println("katya ptr is "+ptrSes);
 			String uri = readString(buffer);
-//			System.out.println("katya uri is "+uri);
-			String ip = getIP(uri);
-			
+			String ip = getIP(uri);			
 			String srcIP = readString(buffer);
-//			System.out.println("katya ip is "+srcIP);
+			
 			onSession(ptrSes, ip, srcIP);
 			break;
 		
@@ -80,6 +87,7 @@ public abstract class SessionManager implements Eventable{
 	}
 	
 	public abstract void onSession(long ptrSes, String uri, String srcIP);
+	public abstract void onSessionError(int errorType, String reason);
 	
 	/*amir's code
 	

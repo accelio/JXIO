@@ -78,8 +78,8 @@ public class EventQueueHandler {
 	
 	public int runEventLoop (int maxEvents, int timeOut){
         int numEvents = JXBridge.getNumEventsQ(id);
-		logger.log(Level.INFO, "there are "+numEvents+" events");
-
+//		logger.log(Level.INFO, "there are "+numEvents+" events");
+        System.out.println("there are "+numEvents+" events");
         for(int i=1; i<numEvents; i++){
                  int eventType = eventQueue.getInt();
                  eventable.onEvent(eventType, eventQueue);

@@ -105,7 +105,7 @@ int on_new_session_callback(struct xio_session *session,
 
 
 	// here we will build and enter the new event to the event queue
-	printf("on_new_session_callback. p is %p\n", session);
+	printf("on_new_session_callback. \n");
 
 
 	ctx = (xio_context*)cb_prv_data;
@@ -307,15 +307,15 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_closeEQHNative(JNIE
 //Katya
 extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
-	int ret_val;
+
 	void *evLoop;
 	struct xio_context *ctx;
 	std::map<void*,bufferEventQ*>::iterator it;
 	struct bufferEventQ* beq;
-	
-	printf("before xio_ev_loop_run\n");
 
 	ctx = (struct xio_context *)ptrCtx;
+
+	printf("before xio_ev_loop_run. ctx is %p\n", ctx);
 
 	it = mapContextEventQ->find(ctx);
 	if (it == mapContextEventQ->end()){
@@ -329,11 +329,9 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_runEventLoopNative(
 	beq->eventsNum = 0;
 
 	xio_ev_loop_run(beq->evLoop);
-	if (ret_val){
-		printf("error inside event_loop run");
-	}
+
 	printf("after xio_ev_loop_run\n");
-	return ret_val;
+	return 0;
 
 }
 
@@ -365,34 +363,47 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_getNumEventsQNative
 }
 
 //Katya
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes, jlong ptrCon)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
 {
 
-	int ret_val1, ret_val2;
-	struct xio_connection *con;
+	int ret_val;
 	struct xio_session *session;
 
-	printf("beginning of closeSesCon\n");
-	
-	con = (struct xio_connection *)ptrCon;
-	ret_val1 = xio_disconnect (con);
-
-	if (ret_val1){
-		fprintf(stderr, "Error, xio_disconnect failed");
-	}
 	session = (struct xio_session *)ptrSes;
-//	ret_val2 = xio_session_close (session);
-//	if (ret_val2){
-//		fprintf(stderr, "Error, xio_session_close failed");
-//	}
+	ret_val = xio_session_close (session);
+	if (ret_val){
+		fprintf(stderr, "Error, xio_session_close failed");
+		return false;
+	}
 
-//	if (ret_val1 || ret_val2){
-//		return false;
-//	}
-	printf("end of closeSesCon\n");
+	printf("end of closeSessionClient\n");
 	return true;
 
 }
+
+//Katya
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeConnectionClientNative(JNIEnv *env, jclass cls, jlong ptrCon)
+{
+
+	int ret_val;
+	struct xio_connection *con;
+	struct xio_session *session;
+
+
+	con = (struct xio_connection *)ptrCon;
+	ret_val = xio_disconnect (con);
+
+	if (ret_val){
+		fprintf(stderr, "Error, xio_disconnect failed");
+		return false;
+	}
+
+	printf("end of closeConnectionClient\n");
+	return true;
+
+}
+
+
 
 
 //Katya
@@ -590,7 +601,13 @@ int on_session_event_callback(struct xio_session *session,
 	memcpy(beq->buf + beq->offset, &error_reason, sizeof(error_reason));
 	beq->offset +=sizeof(error_reason);
 
+	//need to stop the event queue only if this is the first callback
+	if (!beq->eventsNum){
+		printf("inside on_session_event_callback - stopping the event queue\n");
+		xio_ev_loop_stop(beq->evLoop);
+	}
 	beq->eventsNum++;
+
 
 	printf("the end of on_session_event_callback\n");
 	return 0;
@@ -793,7 +810,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startServerNative(
 
 	struct xio_server_ops server_ops;	
 	server_ops.on_session_event			    =  on_session_event_callback;
-	server_ops.on_msg	  		        	=  NULL;
+	server_ops.on_msg	  		        	=  on_msg_callback; //TODO: to separate into 2 different classes
 	server_ops.on_msg_error				    =  NULL;
 	server_ops.on_new_session		        =  on_new_session_callback;
 	server_ops.on_msg_send_complete         =  NULL;
@@ -848,7 +865,6 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_forwardSessionN
 	constPortal[0] = (const char*)portal;
 
 	session = (struct xio_session *)ptrSession;
-	printf("** %p\n", session);
 	
 	retVal = xio_accept (session, constPortal, 1, NULL, 0);
 

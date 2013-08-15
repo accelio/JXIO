@@ -8,9 +8,10 @@ public class MyEQH extends EventQueueHandler implements Runnable{
 	}
 	
 	public void run() {
-		super.runEventLoop(1, 0);
-		super.runEventLoop(1, 0);
-
+		while (true) {
+			System.out.println("EventQueueHandler: before run event loop");
+			super.runEventLoop(1, 0);
+		}
 	}
 
 }

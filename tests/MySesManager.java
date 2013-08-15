@@ -18,14 +18,44 @@ public class MySesManager extends SessionManager{
 		
 		MyEQH eventQHndl = new MyEQH (10000);	
 		MySesServer ses = new MySesServer(eventQHndl, uri, port);
+		eventQHndl.addEventHandler (ses);
 		forward(ses, ptrSes);
-//		Thread t = new Thread (eventQHndl);
-//		t.start();
+		
+		Thread t = new Thread (eventQHndl);
+		t.start();
 
 		
-//		eventQHndl.runEventLoop(1, 0);
-//		eventQHndl.runEventLoop(1, 0);
+//		eventQHndl.runEventLoop2(1, 0);
+//		eventQHndl.runEventLoop2(1, 0);
+//		eventQHndl.runEventLoop2(1, 0);
 		
+		
+	}
+
+	@Override
+	public void onSessionError(int session_event, String reason) {
+		String event;
+		switch (session_event){
+		case 0:
+			event = "SESSION_REJECT";
+			break;
+		case 1:
+			event = "SESSION_TEARDOWN";
+			break;
+		case 2:
+			event = "CONNECTION_CLOSED";
+			break;
+		case 3:
+			event = "CONNECTION_ERROR";
+			break;
+		case 4:
+			event = "SESSION_ERROR";
+			break;
+		default:
+			event = "UNKNOWN";
+			break;
+		}
+		logger.log(Level.SEVERE, "GOT EVENT " + event + "because of " + reason);
 		
 	}
 

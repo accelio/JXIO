@@ -132,14 +132,21 @@ public class JXBridge {
 		logger.log(Level.INFO, "finished Bridge.runEventLoopNative=" + ret);
 	}
 	
-	private static native boolean closeSessionClientNative(long sesPtr, long conPtr);
-	static boolean closeSessionClient(long sesPtr, long conPtr){
+	private static native boolean closeSessionClientNative(long sesPtr);
+	static boolean closeSessionClient(long sesPtr){
 		logger.log(Level.INFO, "invoking Bridge.closeSessionClient");
-		boolean ret = closeSessionClientNative(sesPtr, conPtr);
+		boolean ret = closeSessionClientNative(sesPtr);
 		logger.log(Level.INFO, "finished Bridge.closeSessionClient=" + ret);
 		return ret;
 	}
 	
+	private static native boolean closeConnectionClientNative(long conPtr);
+	static boolean closeConnectionClient(long conPtr){
+		logger.log(Level.INFO, "invoking closeConnectionClientNative");
+		boolean ret = closeConnectionClientNative(conPtr);
+		logger.log(Level.INFO, "finished closeConnectionClientNative=" + ret);
+		return ret;
+	}
 	
 	// callback method from C code 
 	public static void on_event(){
