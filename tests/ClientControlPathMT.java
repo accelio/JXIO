@@ -24,6 +24,8 @@ private static JXLog logger = JXLog.getLog(ClientControlPathSimpleTest.class.get
 			eventQHndl.addEventHandler (ses);
 			Thread t = new Thread (eventQHndl);
 			t.start();
+			
+			
 			Thread.currentThread();
 			try {
 					Thread.sleep(1000);
@@ -32,7 +34,13 @@ private static JXLog logger = JXLog.getLog(ClientControlPathSimpleTest.class.get
 					e.printStackTrace();
 				}
 				
-				
+/*				
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			*/
 			ses.close();
 			
 		}

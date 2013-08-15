@@ -12,6 +12,9 @@ public abstract class SessionManager implements Eventable{
 	
 	private static JXLog logger = JXLog.getLog(SessionManager.class.getCanonicalName());
 	
+	public abstract void onSession(long ptrSes, String uri, String srcIP);
+	public abstract void onSessionError(int errorType, String reason);
+	
 	public SessionManager(String url, int port){
 		eventQHndl = new EventQueueHandler (sizeEventQ);
 		logger.log(Level.INFO, "url is "+url+" port is "+port);
@@ -86,8 +89,7 @@ public abstract class SessionManager implements Eventable{
 		return s1;
 	}
 	
-	public abstract void onSession(long ptrSes, String uri, String srcIP);
-	public abstract void onSessionError(int errorType, String reason);
+	
 	
 	/*amir's code
 	

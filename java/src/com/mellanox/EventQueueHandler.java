@@ -19,16 +19,13 @@ public class EventQueueHandler {
 	
 	private static JXLog logger = JXLog.getLog(EventQueueHandler.class.getCanonicalName());
 	
-//	private static JOMXLog logger = JOMXLog.getLog(JOMXMsgPool.class.getCanonicalName());
 	
-	public long getID(){return id;}
+
 	
 	//c-tor
 	public EventQueueHandler(int size){
 		
-		long [] ar;
-		
-		ar = JXBridge.createEQH();
+		long [] ar = JXBridge.createEQH();
 		evLoopID = ar[0];
 		id = ar[1];
 		this.eventQueueSize = size;
@@ -99,5 +96,8 @@ public class EventQueueHandler {
 	public void close (){
 		JXBridge.closeEQH(id, evLoopID);
 	}
+	
+	
+	public long getID(){return id;}
 	
 }

@@ -21,6 +21,8 @@ import com.mellanox.*;
 			logger.log(Level.INFO, "session established! Bring the champagne!!!!!");
 		}
 		
+		
+		//TODO: to have a mechanism of default implentation for each type of event
 		public void onSessionErrorCallback(int session_event, String reason ){
 			String event;
 			switch (session_event){
@@ -32,9 +34,16 @@ import com.mellanox.*;
 				break;
 			case 2:
 				event = "CONNECTION_CLOSED";
+//				System.out.println("GOT EVENT CONNECTION_CLOSED");
+				//this is fine - connection closed by choice
+				//there are two options: close session or reopen it
+				closeSession();
 				break;
 			case 3:
 				event = "CONNECTION_ERROR";
+				////disconnect session
+//				System.out.println("GOT EVENT CONNECTION_ERROR");
+				close();
 				break;
 			case 4:
 				event = "SESSION_ERROR";
@@ -45,9 +54,6 @@ import com.mellanox.*;
 			}
 			logger.log(Level.SEVERE, "GOT EVENT " + event + "because of " + reason);
 			System.out.println("GOT EVENT " + event + "because of " + reason);
-			//there are two options: close session or reopen it
-			closeSession();
-			
 			
 		}
 	

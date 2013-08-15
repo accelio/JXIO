@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.logging.Level;
 
 
-public abstract class SessionServer implements Eventable {//extends SessionBase{
+public abstract class SessionServer implements Eventable {
 	
 	private long id = 0; //represents pointer to server struct
 	private long ptrEventQueue = 0;
@@ -13,6 +13,8 @@ public abstract class SessionServer implements Eventable {//extends SessionBase{
 	
 	
 	abstract public void onRequestCallback();
+	abstract public void onSessionErrorCallback(int session_event, String reason );
+	abstract public void onMsgErrorCallback();
 	
 	private static JXLog logger = JXLog.getLog(SessionServer.class.getCanonicalName());
 
@@ -22,10 +24,9 @@ public abstract class SessionServer implements Eventable {//extends SessionBase{
 		this.port = port;
 		logger.log(Level.INFO, "uri inside SessionServer is "+url);
 		this.id = JXBridge.startServer(url, port, ptrEventQueue);
-		// TODO Auto-generated constructor stub
 	}
 	
-	public long getId(){ return id;}
+
 	
 	public void onEvent(int eventType, ByteBuffer buf){
 		switch (eventType){
@@ -57,8 +58,8 @@ public abstract class SessionServer implements Eventable {//extends SessionBase{
 		JXBridge.stopServer(id);
 	}
 	
+	public long getId(){ return id;}
 	
-	abstract public void onSessionErrorCallback(int session_event, String reason );
-	abstract public void onMsgErrorCallback();
+	
 
 }

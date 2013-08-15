@@ -4,17 +4,19 @@ import java.nio.ByteBuffer;
 import java.util.logging.Level;
 
 
-public abstract class SessionClient implements Eventable{// extends SessionBase {
+public abstract class SessionClient implements Eventable{
 	
 	private long id = 0;
 	private long ptrEventQueue = 0;
 	protected String url;
 	protected int port;
-	
 	protected long conID = 0;
 	
 	abstract public void onReplyCallback();
 	abstract public void onSessionEstablished();
+	abstract public void onSessionErrorCallback(int session_event, String reason );
+	abstract public void onMsgErrorCallback();
+
 	
 	private static JXLog logger = JXLog.getLog(SessionClient.class.getCanonicalName());
 	
@@ -24,12 +26,10 @@ public abstract class SessionClient implements Eventable{// extends SessionBase 
 		this.url = url;
 		this.port = port;
 		
-		long [] ar;
+		long [] ar = JXBridge.startClientSession(url, port, ptrEventQueue);
 		
-		ar = JXBridge.startClientSession(url, port, ptrEventQueue);
-		
-		id = ar[0];
-		logger.log(Level.INFO, "katya3 id is "+id);
+		this.id = ar[0];
+		logger.log(Level.INFO, "id is "+id);
 		this.conID = ar[1];
 	}
 	
@@ -40,7 +40,8 @@ public abstract class SessionClient implements Eventable{// extends SessionBase 
 		
 		
 		case 0: //session error event
-			logger.log(Level.INFO, "received session error event");
+//			logger.log(Level.INFO, "received session error event");
+			System.out.println("received session error event");
 			int errorType = buf.getInt();
 			int reason = buf.getInt();
 			String s = JXBridge.getError(reason);
@@ -48,39 +49,40 @@ public abstract class SessionClient implements Eventable{// extends SessionBase 
 			break;
 			
 		case 1: //msg error
-			logger.log(Level.INFO, "received msg error event");
+//			logger.log(Level.INFO, "received msg error event");
+			System.out.println("received msg error event");
 			this.onMsgErrorCallback();
 			break;
 
 		case 2: //session established
-			logger.log(Level.INFO, "received session established event");
+//			logger.log(Level.INFO, "received session established event");
+			System.out.println("received session established event");
 			this.onSessionEstablished();
 			break;
 			
 		case 3: //on reply
-			logger.log(Level.INFO, "received msg event");
+//			logger.log(Level.INFO, "received msg event");
+			System.out.println("received msg event");
 			this.onReplyCallback();
 			break;
 			
 		default:
-			logger.log(Level.SEVERE, "received an unknown event "+ eventType);
+//			logger.log(Level.SEVERE, "received an unknown event "+ eventType);
+			System.out.println("received an unknown event "+ eventType);
 		}
 		
 	}
 	
+	public boolean closeSession(){
+		return JXBridge.closeSessionClient(id);
+	}
 	
-	abstract public void onSessionErrorCallback(int session_event, String reason );
-	abstract public void onMsgErrorCallback();
-
 	public long getId(){ return id;}
+	
 	
 	public boolean close (){
 //		eventQHandler.removeSesssion (this); //TODO: fix this
 		return JXBridge.closeConnectionClient(conID);		
-	}
-	
-	public boolean closeSession(){
-		return JXBridge.closeSessionClient(id);
 	}
 	
 }
