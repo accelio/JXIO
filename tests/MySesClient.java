@@ -31,19 +31,19 @@ import com.mellanox.*;
 				break;
 			case 1:
 				event = "SESSION_TEARDOWN";
+				closeSession(); //through the bridge calls d-tor of cjxsession(which does nothing)
 				break;
 			case 2:
 				event = "CONNECTION_CLOSED";
 //				System.out.println("GOT EVENT CONNECTION_CLOSED");
 				//this is fine - connection closed by choice
 				//there are two options: close session or reopen it
-				closeSession();
 				break;
 			case 3:
 				event = "CONNECTION_ERROR";
 				////disconnect session
 //				System.out.println("GOT EVENT CONNECTION_ERROR");
-				close();
+				closeConnection(); //through the bridge calls connection close
 				break;
 			case 4:
 				event = "SESSION_ERROR";

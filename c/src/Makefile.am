@@ -19,7 +19,7 @@ AM_LDFLAGS = -lxio -lrdmacm -libverbs -lrt -ldl \
 bin_PROGRAMS = libjx.so
 
 # the sources to add to the library and to add to the source distribution
-libjx_so_SOURCES = cJXBridge.cc
+libjx_so_SOURCES = cJXBridge.cc CallbackFunctions.cc cJXCtx.cc cJXSession.cc cJXServer.cc Events.cc EventQueue.cc Utils.cc
 	
 				
 libjx_so_LDFLAGS = -shared -rdynamic 		\

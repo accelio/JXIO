@@ -47,6 +47,10 @@ public abstract class SessionServer implements Eventable {
 			logger.log(Level.INFO, "received msg event");
 			this.onRequestCallback();
 			break;
+		
+		case 5: //msg sent complete
+			logger.log(Level.INFO, "received msg sent complete event");
+			break;
 			
 		default:
 			logger.log(Level.SEVERE, "received an unknown event "+ eventType);	
@@ -54,8 +58,9 @@ public abstract class SessionServer implements Eventable {
 		
 	}
 	
-	public void close(){
+	public boolean close(){
 		JXBridge.stopServer(id);
+		return true;
 	}
 	
 	public long getId(){ return id;}

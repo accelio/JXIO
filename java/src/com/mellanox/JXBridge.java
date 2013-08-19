@@ -49,14 +49,17 @@ public class JXBridge {
 	}
 
 	
-	private static native long[] startClientSessionNative(String url, int port, long ptrCtx);
-	static long[] startClientSession(String url, int port, long ptrCtx){
-		long ar[];
+	private static native long startClientSessionNative(String url, int port, long ptrCtx);
+	static long startClientSession(String url, int port, long ptrCtx){
 		logger.log(Level.INFO, "invoking startSessionNative");
-		ar = startClientSessionNative(url, port, ptrCtx);		
+		long p = startClientSessionNative(url, port, ptrCtx);		
 		logger.log(Level.INFO, "finished startSessionNative ");
-		return ar;
+		return p;
 	}
+	
+
+	
+
 
 	private static native long startServerNative(String url, int port, long ptrCtx);
 	static long  startServer(String url, int port, long ptrCtx){
@@ -101,30 +104,7 @@ public class JXBridge {
 	}
 	
 	
-	private static native long[] createEQHNative();
-	static long[] createEQH(){
-		logger.log(Level.INFO, "invoking Bridge.createEQHNative");
-		long[] ar = createEQHNative();
-		logger.log(Level.INFO, "finished Bridge.createEQHNative");
-		return ar;
-	}
 	
-	private static native ByteBuffer allocateEventQNative(long ptrCtx, long ptrEvLoop, int eventQSize);
-	static ByteBuffer allocateEventQ(long ptrCtx, long ptrEvLoop, int eventQSize){
-		logger.log(Level.INFO, "invoking Bridge.allocateEventQNative");
-		ByteBuffer b = allocateEventQNative(ptrCtx, ptrEvLoop, eventQSize);
-		logger.log(Level.INFO, "finished Bridge.allocateEventQNative");
-		return b;
-	}
-	
-	
-	private static native void closeEQHNative(long ptrCtx, long ptrEvLoop);
-	static void closeEQH(long ptrCtx, long ptrEvLoop){
-		logger.log(Level.INFO, "invoking Bridge.closeEQHNative");
-		closeEQHNative(ptrCtx, ptrEvLoop);
-		logger.log(Level.INFO, "finished Bridge.closeEQHNative" );
-	}
-
 	private static native int runEventLoopNative(long ptr);
 	static void runEventLoop(long ptr){
 		logger.log(Level.INFO, "invoking Bridge.runEventLoopNative");
@@ -132,18 +112,26 @@ public class JXBridge {
 		logger.log(Level.INFO, "finished Bridge.runEventLoopNative=" + ret);
 	}
 	
+	
+	private static native void stopEventLoopNative(long ptr);
+	static void stopEventLoop(long ptr){
+		logger.log(Level.INFO, "invoking stopEventLoopNative");
+		stopEventLoopNative(ptr);
+		logger.log(Level.INFO, "finished stopEventLoopNative");
+	}
+	/*
 	private static native boolean closeSessionClientNative(long sesPtr);
 	static boolean closeSessionClient(long sesPtr){
 		logger.log(Level.INFO, "invoking Bridge.closeSessionClient");
 		boolean ret = closeSessionClientNative(sesPtr);
 		logger.log(Level.INFO, "finished Bridge.closeSessionClient=" + ret);
 		return ret;
-	}
+	}*/
 	
-	private static native boolean closeConnectionClientNative(long conPtr);
-	static boolean closeConnectionClient(long conPtr){
+	private static native boolean closeConnectionClientNative(long sesPtr);
+	static boolean closeConnectionClient(long sesPtr){
 		logger.log(Level.INFO, "invoking closeConnectionClientNative");
-		boolean ret = closeConnectionClientNative(conPtr);
+		boolean ret = closeConnectionClientNative(sesPtr);
 		logger.log(Level.INFO, "finished closeConnectionClientNative=" + ret);
 		return ret;
 	}
@@ -152,5 +140,22 @@ public class JXBridge {
 	public static void on_event(){
 		logger.log(Level.INFO, "event queue contains msgs");
 	}
+	
+	private static native boolean createCtxNative(int eventQueueSize, Object dataFromC);
+	static boolean createCtx(int eventQueueSize, Object dataFromC) {
+		logger.log(Level.INFO, "invoking closeConnectionClientNative");
+		boolean ret = createCtxNative(eventQueueSize, dataFromC);
+		logger.log(Level.INFO, "finished closeConnectionClientNative=" + ret);
+		return ret;
+		
+	}
+
+	private static native void closeCtxNative(long ptr);
+		static void closeCtx(long ptr) {
+			logger.log(Level.INFO, "invoking closeCtxNative");
+			closeCtxNative(ptr);
+			logger.log(Level.INFO, "finished closeCtxNative" );
+			
+		}
 }
 

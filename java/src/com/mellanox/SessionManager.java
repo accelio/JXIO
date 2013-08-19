@@ -26,8 +26,9 @@ public abstract class SessionManager implements Eventable{
 		eventQHndl.runEventLoop(1, 0);
 	}
 	
-	public void close(){
+	public boolean close(){
 		JXBridge.stopServer(id);
+		return true;
 	}
 	
 	public void forward(SessionServer ses, long ptrSes){

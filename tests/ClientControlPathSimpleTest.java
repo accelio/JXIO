@@ -26,13 +26,12 @@ public class ClientControlPathSimpleTest {
 			ses = new MySesClient(eventQHndl, url,Integer.parseInt(port));
 			eventQHndl.addEventHandler (ses);
 			eventQHndl.runEventLoop(1, 0);
-			eventQHndl.runEventLoop(1, 0);
+//			eventQHndl.runEventLoop(1, 0);
 			//for checking if server sends hello
-			ses.close();
 			//for checking for event session tear down
 			eventQHndl.runEventLoop(1, 0);
 			
 		}
-		eventQHndl.close();
+		eventQHndl.stopAndClose();
 	}
 }

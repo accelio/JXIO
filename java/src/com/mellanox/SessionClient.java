@@ -10,7 +10,7 @@ public abstract class SessionClient implements Eventable{
 	private long ptrEventQueue = 0;
 	protected String url;
 	protected int port;
-	protected long conID = 0;
+
 	
 	abstract public void onReplyCallback();
 	abstract public void onSessionEstablished();
@@ -26,19 +26,16 @@ public abstract class SessionClient implements Eventable{
 		this.url = url;
 		this.port = port;
 		
-		long [] ar = JXBridge.startClientSession(url, port, ptrEventQueue);
-		
-		this.id = ar[0];
+		this.id = JXBridge.startClientSession(url, port, ptrEventQueue);
 		logger.log(Level.INFO, "id is "+id);
-		this.conID = ar[1];
+
 	}
 	
 	
 	public void onEvent(int eventType, ByteBuffer buf){
 		
 		switch (eventType){
-		
-		
+
 		case 0: //session error event
 //			logger.log(Level.INFO, "received session error event");
 			System.out.println("received session error event");
@@ -73,16 +70,16 @@ public abstract class SessionClient implements Eventable{
 		
 	}
 	
-	public boolean closeSession(){
-		return JXBridge.closeSessionClient(id);
-	}
+//	public boolean closeSession(){
+//		return JXBridge.closeSessionClient(id);
+//	}
 	
 	public long getId(){ return id;}
 	
 	
 	public boolean close (){
 //		eventQHandler.removeSesssion (this); //TODO: fix this
-		return JXBridge.closeConnectionClient(conID);		
+		return JXBridge.closeConnectionClient(id);		
 	}
 	
 }
