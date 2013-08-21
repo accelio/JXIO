@@ -46,7 +46,9 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_libjx_so_OBJECTS = cJXBridge.$(OBJEXT)
+am_libjx_so_OBJECTS = cJXBridge.$(OBJEXT) CallbackFunctions.$(OBJEXT) \
+	cJXCtx.$(OBJEXT) cJXSession.$(OBJEXT) cJXServer.$(OBJEXT) \
+	Events.$(OBJEXT) EventQueue.$(OBJEXT) Utils.$(OBJEXT)
 libjx_so_OBJECTS = $(am_libjx_so_OBJECTS)
 am__DEPENDENCIES_1 =
 libjx_so_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -167,7 +169,7 @@ AM_CPPFLAGS = -fPIC -DPIC  				\
 
 
 # the sources to add to the library and to add to the source distribution
-libjx_so_SOURCES = cJXBridge.cc
+libjx_so_SOURCES = cJXBridge.cc CallbackFunctions.cc cJXCtx.cc cJXSession.cc cJXServer.cc Events.cc EventQueue.cc Utils.cc
 libjx_so_LDFLAGS = -shared -rdynamic 		\
 				     -L$(topdir)libtrdma/lib -lxio -lrdmacm -libverbs -lrt -ldl
 
@@ -253,7 +255,14 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CallbackFunctions.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/EventQueue.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Events.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cJXBridge.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cJXCtx.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cJXServer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cJXSession.Po@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
