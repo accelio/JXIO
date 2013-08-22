@@ -8,7 +8,7 @@ public abstract class SessionClient implements Eventable{
 	private long id = 0;
 	protected EventQueueHandler eventQHandler  =null;
 	protected String url;
-	protected int port;
+//	protected int port;
 
 	
 	abstract public void onReplyCallback();
@@ -19,12 +19,11 @@ public abstract class SessionClient implements Eventable{
 	
 	private static JXLog logger = JXLog.getLog(SessionClient.class.getCanonicalName());
 	
-	public SessionClient(EventQueueHandler eventQHandler, String url, int port){
+	public SessionClient(EventQueueHandler eventQHandler, String url){
 		this.eventQHandler = eventQHandler;
 		this.url = url;
-		this.port = port;
 		
-		this.id = JXBridge.startClientSession(url, port, eventQHandler.getID());
+		this.id = JXBridge.startClientSession(url, eventQHandler.getID());
 		logger.log(Level.INFO, "id is "+id);
 
 	}

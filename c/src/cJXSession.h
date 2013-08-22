@@ -14,7 +14,7 @@ class cJXCtx;
 class cJXSession:public Contexable{
 public:
 	//to move some to private?
-	cJXSession(const char	*hostname, int port, long ptrCtx);
+	cJXSession(const char	*url, long ptrCtx);
 	~cJXSession();
 	bool closeConnection();
 	int closeSession();

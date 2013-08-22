@@ -49,10 +49,10 @@ public class JXBridge {
 	}
 
 	
-	private static native long startClientSessionNative(String url, int port, long ptrCtx);
-	static long startClientSession(String url, int port, long ptrCtx){
+	private static native long startClientSessionNative(String url, long ptrCtx);
+	static long startClientSession(String url, long ptrCtx){
 		logger.log(Level.INFO, "invoking startSessionNative");
-		long p = startClientSessionNative(url, port, ptrCtx);		
+		long p = startClientSessionNative(url, ptrCtx);		
 		logger.log(Level.INFO, "finished startSessionNative ");
 		return p;
 	}
@@ -61,18 +61,18 @@ public class JXBridge {
 	
 
 
-	private static native long startServerNative(String url, int port, long ptrCtx);
-	static long  startServer(String url, int port, long ptrCtx){
+	private static native long startServerNative(String url, long ptrCtx);
+	static long  startServer(String url, long ptrCtx){
 		logger.log(Level.INFO, "invoking startServerNative");
-		long ptr = startServerNative(url, port, ptrCtx);
+		long ptr = startServerNative(url, ptrCtx);
 		logger.log(Level.INFO, "finished startServerNative");
 		return ptr;
 	}
 	
-	private static native long forwardSessionNative(String url, int port, long ptrSes);
-	static long  forwardSession(String url, int port, long ptrSes){
+	private static native long forwardSessionNative(String url, long ptrSes);
+	static long  forwardSession(String url, long ptrSes){
 		logger.log(Level.INFO, "invoking forwardSessionNative");
-		long ptr = forwardSessionNative(url, port, ptrSes);
+		long ptr = forwardSessionNative(url, ptrSes);
 		logger.log(Level.INFO, "finished forwardSessionNative");
 		return ptr;
 	}

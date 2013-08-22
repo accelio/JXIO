@@ -2,17 +2,17 @@
 #include "cJXSession.h"
 
 
-cJXSession::cJXSession(const char*	hostname, int port, long ptrCtx){
+cJXSession::cJXSession(const char*	url, long ptrCtx){
 
 	struct xio_session_ops ses_ops;
 	struct xio_session_attr attr;
-	char			url[256];
+//	char			url[256];
 
 
 	cJXCtx *ctxClass = (cJXCtx *)ptrCtx;
 	setCtxClass(ctxClass);
 
-	sprintf(url, "rdma://%s:%d", hostname, port);
+//	sprintf(url, "rdma://%s:%d", hostname, port);
 
 		//defining structs to send to xio library
 	ses_ops.on_session_event		=  on_session_event_callback;

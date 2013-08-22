@@ -183,11 +183,11 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_stopServerNative(JN
 
 
 
-extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startClientSessionNative(JNIEnv *env, jclass cls, jstring jhostname, jint port, jlong ptrCtx) {
+extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startClientSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx) {
 
-	const char *hostname = env->GetStringUTFChars(jhostname, NULL);
-	cJXSession * ses = new cJXSession(hostname, port, ptrCtx);
-	env->ReleaseStringUTFChars(jhostname, hostname);
+	const char *url = env->GetStringUTFChars(jurl, NULL);
+	cJXSession * ses = new cJXSession(url, ptrCtx);
+	env->ReleaseStringUTFChars(jurl, url);
 	return (jlong)(intptr_t) ses;
 
 }
@@ -209,38 +209,38 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_JXBridge_getErrorNative(J
 
 
 
-extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startServerNative(JNIEnv *env, jclass cls, jstring jhostname, jint port, jlong ptrCtx) {
+extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startServerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx) {
 
 
-	const char *hostname = env->GetStringUTFChars(jhostname, NULL);
-	cJXServer * server = new cJXServer(hostname, port, ptrCtx);
-	env->ReleaseStringUTFChars(jhostname, hostname);
+	const char *url = env->GetStringUTFChars(jurl, NULL);
+	cJXServer * server = new cJXServer(url, ptrCtx);
+	env->ReleaseStringUTFChars(jurl, url);
 	return (jlong)(intptr_t) server;
 
 }
 
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jhostname, jint port, jlong ptrSession) {
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrSession) {
 
 	struct xio_session	*session;	
-	char			portal[256];
-	const char* constPortal[1];
+//	char			portal[256];
+//	const char* constPortal[1];
 	int retVal;
 
 
-	const char *hostname = env->GetStringUTFChars(jhostname, NULL);
+	const char *url = env->GetStringUTFChars(jurl, NULL);
 
-	sprintf(portal, "rdma://%s:%d", hostname, port);
+//	sprintf(portal, "rdma://%s:%d", hostname, port);
 
-	constPortal[0] = (const char*)portal;
+//	constPortal[0] = (const char*)portal;
 
 	session = (struct xio_session *)ptrSession;
 	
-	retVal = xio_accept (session, constPortal, 1, NULL, 0);
+	retVal = xio_accept (session, &url, 1, NULL, 0);
 
 //	retVal = xio_accept(session, NULL, 0, NULL, 0);
 
-	env->ReleaseStringUTFChars(jhostname, hostname);
+	env->ReleaseStringUTFChars(jurl, url);
 
     if (retVal){
     	log (lsERROR, "Error in accepting session. error %d\n", retVal);

@@ -9,7 +9,6 @@ public abstract class SessionServer implements Eventable {
 	private long id = 0; //represents pointer to server struct
 //	private long ptrEventQueue = 0;
 	protected String url;
-	protected int port;
 	private EventQueueHandler eventQHandler  =null;
 	
 	
@@ -19,12 +18,11 @@ public abstract class SessionServer implements Eventable {
 	
 	private static JXLog logger = JXLog.getLog(SessionServer.class.getCanonicalName());
 
-	protected SessionServer(EventQueueHandler eventQHandler, String url, int port) {
+	protected SessionServer(EventQueueHandler eventQHandler, String url) {
 		this.eventQHandler = eventQHandler;
 		this.url = url;
-		this.port = port;
 		logger.log(Level.INFO, "uri inside SessionServer is "+url);
-		this.id = JXBridge.startServer(url, port, eventQHandler.getID());
+		this.id = JXBridge.startServer(url, eventQHandler.getID());
 	}
 	
 

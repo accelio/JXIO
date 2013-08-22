@@ -15,10 +15,9 @@ public abstract class SessionManager implements Eventable{
 	public abstract void onSession(long ptrSes, String uri, String srcIP);
 	public abstract void onSessionError(int errorType, String reason);
 	
-	public SessionManager(String url, int port){
+	public SessionManager(String url){
 		eventQHndl = new EventQueueHandler (sizeEventQ);
-		logger.log(Level.INFO, "url is "+url+" port is "+port);
-		id = JXBridge.startServer(url, port, eventQHndl.getID());
+		id = JXBridge.startServer(url, eventQHndl.getID());
 		if (id == 0){
 			logger.log(Level.SEVERE, "could not start server");
 		}
@@ -33,7 +32,7 @@ public abstract class SessionManager implements Eventable{
 	}
 	
 	public void forward(SessionServer ses, long ptrSes){
-		JXBridge.forwardSession(ses.url, ses.port, ptrSes);
+		JXBridge.forwardSession(ses.url, ptrSes);
 	}
 	
 	

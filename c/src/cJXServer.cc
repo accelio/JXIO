@@ -2,7 +2,7 @@
 #include "cJXServer.h"
 
 
-cJXServer::cJXServer(const char	*hostname, int port, long ptrCtx){
+cJXServer::cJXServer(const char	*url, long ptrCtx){
 
 	printf("inside startServerNative method\n");
 
@@ -15,7 +15,7 @@ cJXServer::cJXServer(const char	*hostname, int port, long ptrCtx){
 
 
 
-	char			url[256];
+//	char			url[256];
 	struct xio_context	*ctx;
 
 	cJXCtx *ctxClass = (cJXCtx *)ptrCtx;
@@ -23,7 +23,7 @@ cJXServer::cJXServer(const char	*hostname, int port, long ptrCtx){
 
 
 		/* create url to connect to */
-	sprintf(url, "rdma://%s:%d", hostname, port);
+//	sprintf(url, "rdma://%s:%d", hostname, port);
 
 	/* bind a listener server to a portal/url */
 

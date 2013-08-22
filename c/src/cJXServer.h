@@ -14,7 +14,7 @@ class cJXCtx;
 class cJXServer:public Contexable{
 public:
 	//to move some to private?
-	cJXServer(const char	*hostname, int port, long ptrCtx);
+	cJXServer(const char	*url, long ptrCtx);
 	~cJXServer();
 
 	struct xio_server	*server;
