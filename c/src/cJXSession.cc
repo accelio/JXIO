@@ -1,8 +1,5 @@
-#include "cJXCtx.h"
+
 #include "cJXSession.h"
-
-
-
 
 
 cJXSession::cJXSession(const char*	hostname, int port, long ptrCtx){
@@ -13,7 +10,7 @@ cJXSession::cJXSession(const char*	hostname, int port, long ptrCtx){
 
 
 	cJXCtx *ctxClass = (cJXCtx *)ptrCtx;
-	this->ctx = ctxClass;
+	setCtxClass(ctxClass);
 
 	sprintf(url, "rdma://%s:%d", hostname, port);
 
@@ -28,27 +25,39 @@ cJXSession::cJXSession(const char*	hostname, int port, long ptrCtx){
 	attr.user_context_len = 0;
 
 	this->session = xio_session_open(XIO_SESSION_REQ,
-					   &attr, url, 0, ctxClass);
+					   &attr, url, 0, this);
 
 	if (session == NULL){
-		printf("Error in creating session\n");
+		log (lsERROR, "Error in creating session\n");
 		return;
 	}
 
 		/* connect the session  */
-	this->con = xio_connect(session, ctxClass->ctx, 0, ctxClass);
+	this->con = xio_connect(session, ctxClass->ctx, 0, this);
 
 	if (con == NULL){
-		printf("Error in creating connection\n");
+		log (lsERROR, "Error in creating connection\n");
 		return;
 	}
 
 
+	if (ctxClass->mapSession == NULL){
+		ctxClass->mapSession = new std::map<void*,cJXSession*> ();
+		if(ctxClass->mapSession== NULL){
+			log (lsERROR, "Error, Could not allocate memory\n");
+			return;
+		}
+	}
+
+	ctxClass->mapSession->insert(std::pair<void*, cJXSession*>(session, this));
+
 	printf("startClientSession done with \n");
+
+	log (lsDEBUG, "****** inside c-tor of session private data is %p\n",this);
 
 
 	//	 printf("for debugging \n");
-	#ifdef K_DEBUG
+//	#ifdef K_DEBUG
 		 struct xio_msg *req = (struct xio_msg *) malloc(sizeof(struct xio_msg));
 
 		 // create "hello world" message
@@ -58,7 +67,7 @@ cJXSession::cJXSession(const char*	hostname, int port, long ptrCtx){
 		 	// send first message
 		 xio_send_request(con, req);
 	//	 printf("done debugging \n");
-	#endif
+//	#endif
 
 }
 
@@ -75,10 +84,13 @@ bool cJXSession::closeConnection(){
 		return false;
 	}
 
+	log (lsDEBUG, "connection closed successfully\n");
 	return true;
 }
 
-
+int cJXSession::closeSession(){
+	return xio_session_close(session);
+}
 
 
 

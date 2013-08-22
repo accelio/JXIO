@@ -6,7 +6,11 @@
 #include <stdio.h>
 #include "EventQueue.h"
 #include "Events.h"
+//#include "cJXSession.h"
 #include "Utils.h"
+#include <map>
+
+class cJXSession;
 
 class cJXCtx{
 public:
@@ -32,6 +36,10 @@ public:
 //	int eventQSize;
 //	int offset;
 	int eventsNum;
+
+	//this map is needed since in case of event Disconnected action needs to be done
+	//on a session without going back to java
+	std::map<void*,cJXSession*>* mapSession;
 
 };
 

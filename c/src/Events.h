@@ -6,36 +6,40 @@
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <libxio.h>
+#include "Utils.h"
 
 
-struct eventNewSession{
-	intptr_t ptrSession;
+class Contexable;
+
+struct  eventNewSession{
+	int64_t ptrSession;
 	int32_t lenUri;
-	char * uri;
+	char  uri [0]; //to indicate that string uri is written to buffer
 	int32_t ipLen;
-	char *ip;
+	char ip [0]; //to  indicate that ip string is written to buffer
+}__attribute__ ((packed));
+
+struct __attribute__ ((packed)) eventSessionEstablished{
 };
 
-struct eventSessionEstablished{
-};
-
-struct eventSessionError{
+struct __attribute__ ((packed)) eventSessionError{
 
 	int32_t error_type;
 	int32_t error_reason;
 };
 
-struct eventMsgComplete{
+struct __attribute__ ((packed)) eventMsgComplete{
 };
 
-struct eventMsgError{
+struct __attribute__ ((packed)) eventMsgError{
 };
 
-struct eventMsgReceived{
+struct __attribute__ ((packed)) eventMsgReceived {
 };
 
-struct eventStruct{
+struct  eventStruct{
 	int32_t type;
+	int64_t ptr;//this will indicate on which session the event arrived
 	union{
 		struct eventNewSession newSession;
 		struct eventSessionEstablished sessionEstablished;
@@ -43,8 +47,18 @@ struct eventStruct{
 		struct eventMsgComplete msgComplete;
 		struct eventMsgError msgError;
 		struct eventMsgReceived msgReceived;
-	}eventSpecific;
+	} eventSpecific;
+}__attribute__ ((packed));
+
+/*
+struct __attribute__ ((packed)) vma_datagram_t {
+        void*           datagram_id;            // datagram identifier
+        size_t          sz_iov;                 // number of fragments
+        struct iovec    iov[];                  // fragments size+data
 };
+*/
+
+
 
 
 class Events{
@@ -55,23 +69,23 @@ public:
 
 	Events();
 
-	int writeOnSessionErrorEvent(char *buf, struct xio_session *session,
+	int writeOnSessionErrorEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
 			struct xio_session_event_data *event_data,
 			void *cb_prv_data);
-	int writeOnSessionEstablishedEvent (char *buf, struct xio_session *session,
+	int writeOnSessionEstablishedEvent (char *buf, Contexable *ptrForJava, struct xio_session *session,
 			struct xio_new_session_rsp *rsp,
 			void *cb_prv_data);
-	int writeOnNewSessionEvent(char *buf, struct xio_session *session,
+	int writeOnNewSessionEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
 			struct xio_new_session_req *req,
 			void *cb_prv_data);
-	int writeOnMsgSendCompleteEvent(char *buf, struct xio_session *session,
+	int writeOnMsgSendCompleteEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
 			struct xio_msg *msg,
 			void *cb_prv_data);
-	int writeOnMsgErrorEvent(char *buf, struct xio_session *session,
+	int writeOnMsgErrorEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
             enum xio_status error,
             struct xio_msg  *msg,
             void *conn_user_context);
-	int writeOnMsgReceivedEvent(char *buf, struct xio_session *session,
+	int writeOnMsgReceivedEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
 			struct xio_msg *msg,
 			int more_in_batch,
 			void *cb_prv_data);

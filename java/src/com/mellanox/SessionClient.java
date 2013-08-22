@@ -1,13 +1,12 @@
 package com.mellanox;
 
-import java.nio.ByteBuffer;
 import java.util.logging.Level;
 
 
 public abstract class SessionClient implements Eventable{
 	
 	private long id = 0;
-	private long ptrEventQueue = 0;
+	protected EventQueueHandler eventQHandler  =null;
 	protected String url;
 	protected int port;
 
@@ -20,52 +19,47 @@ public abstract class SessionClient implements Eventable{
 	
 	private static JXLog logger = JXLog.getLog(SessionClient.class.getCanonicalName());
 	
-	public SessionClient(long eqhPtr, String url, int port){
-		//call omx create session
-		this.ptrEventQueue = eqhPtr;
+	public SessionClient(EventQueueHandler eventQHandler, String url, int port){
+		this.eventQHandler = eventQHandler;
 		this.url = url;
 		this.port = port;
 		
-		this.id = JXBridge.startClientSession(url, port, ptrEventQueue);
+		this.id = JXBridge.startClientSession(url, port, eventQHandler.getID());
 		logger.log(Level.INFO, "id is "+id);
 
 	}
 	
 	
-	public void onEvent(int eventType, ByteBuffer buf){
+	public void onEvent(int eventType, Event ev){
 		
 		switch (eventType){
 
 		case 0: //session error event
-//			logger.log(Level.INFO, "received session error event");
-			System.out.println("received session error event");
-			int errorType = buf.getInt();
-			int reason = buf.getInt();
-			String s = JXBridge.getError(reason);
-			this.onSessionErrorCallback(errorType, s);
+			logger.log(Level.INFO, "received session error event");
+			if (ev  instanceof EventSession){
+				int errorType = ((EventSession) ev).errorType;
+				String reason = ((EventSession) ev).reason;
+				this.onSessionErrorCallback(errorType, reason);
+			}
 			break;
 			
 		case 1: //msg error
-//			logger.log(Level.INFO, "received msg error event");
-			System.out.println("received msg error event");
+			logger.log(Level.INFO, "received msg error event");
 			this.onMsgErrorCallback();
 			break;
 
 		case 2: //session established
-//			logger.log(Level.INFO, "received session established event");
-			System.out.println("received session established event");
+			logger.log(Level.INFO, "received session established event");
 			this.onSessionEstablished();
 			break;
 			
 		case 3: //on reply
-//			logger.log(Level.INFO, "received msg event");
-			System.out.println("received msg event");
+			logger.log(Level.INFO, "received msg event");
 			this.onReplyCallback();
 			break;
 			
 		default:
-//			logger.log(Level.SEVERE, "received an unknown event "+ eventType);
-			System.out.println("received an unknown event "+ eventType);
+			logger.log(Level.SEVERE, "received an unknown event "+ eventType);
 		}
 		
 	}
@@ -78,8 +72,17 @@ public abstract class SessionClient implements Eventable{
 	
 	
 	public boolean close (){
-//		eventQHandler.removeSesssion (this); //TODO: fix this
-		return JXBridge.closeConnectionClient(id);		
+		//calls connection close
+//		logger.log(Level.INFO, "inside SessionClientClose");
+//		eventQHandler.removeSesssion (this); 
+		JXBridge.closeSessionClient(id);	
+		logger.log(Level.INFO, "in the end of SessionClientClose");
+		return true;
 	}
-	
+/*	
+	public void closeSession(){
+		//calls d-tor of cjxsession(which does nothing)
+		JXBridge.closeSessionClient(id);
+	}
+*/	
 }

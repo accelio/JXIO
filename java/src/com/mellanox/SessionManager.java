@@ -22,11 +22,12 @@ public abstract class SessionManager implements Eventable{
 		if (id == 0){
 			logger.log(Level.SEVERE, "could not start server");
 		}
-		eventQHndl.addEventHandler (this); 
+		eventQHndl.addEventable (this); 
 		eventQHndl.runEventLoop(1, 0);
 	}
 	
 	public boolean close(){
+		eventQHndl.removeEventable (this); //TODO: fix this
 		JXBridge.stopServer(id);
 		return true;
 	}
@@ -44,26 +45,29 @@ public abstract class SessionManager implements Eventable{
 		}
 	}
 	
+	public long getId(){ return id;} //getId()
 	
 	
-	public void onEvent (int eventType, ByteBuffer buffer){
+	public void onEvent (int eventType, Event ev){
 		switch (eventType){
 		
 		case 0: //session error event
-			int errorType = buffer.getInt();
-			int reason = buffer.getInt();
-			String s = JXBridge.getError(reason);
-			logger.log(Level.INFO, "received session error event "+errorType+" due to "+s);
-			onSessionError(errorType, s);
+			logger.log(Level.INFO, "received session error event");
+			if (ev  instanceof EventSession){
+				int errorType = ((EventSession) ev).errorType;
+				String reason = ((EventSession) ev).reason;
+				this.onSessionError(errorType, reason);
+			}
 			break;
 			
 		case 4: //on new session
-			long ptrSes = buffer.getLong();
-			String uri = readString(buffer);
-			String ip = getIP(uri);			
-			String srcIP = readString(buffer);
-			
-			onSession(ptrSes, ip, srcIP);
+			logger.log(Level.INFO, "received session error event");
+			if (ev  instanceof EventNewSession){
+				long ptrSes = ((EventNewSession) ev).ptrSes;
+				String uri = ((EventNewSession) ev).uri;		
+				String srcIP = ((EventNewSession) ev).srcIP;
+				this.onSession(ptrSes, uri, srcIP);
+			}
 			break;
 		
 		default:
@@ -71,15 +75,7 @@ public abstract class SessionManager implements Eventable{
 		}
 	}
 	
-	private String getIP(String uri) {
-//		rdma://36.0.0.121:1234
-		int begin = uri.lastIndexOf("/");
-		int end = uri.lastIndexOf(":");
-		String ip = uri.substring(begin+1, end);
-		logger.log(Level.INFO, "katya ip is "+ip);
-		return ip;
-	}
-
+/*
 	private String readString (ByteBuffer buf){
 		int len = buf.getInt();
 		byte b[] = new byte[len+1];
@@ -89,7 +85,7 @@ public abstract class SessionManager implements Eventable{
 
 		return s1;
 	}
-	
+	*/
 	
 	
 	/*amir's code

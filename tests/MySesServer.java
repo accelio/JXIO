@@ -8,7 +8,7 @@ public class MySesServer extends SessionServer {
 	EventQueueHandler eqh = null;
 
 	public MySesServer(EventQueueHandler eqh, String uri, int port){
-		super (eqh.getID(), uri, port);
+		super (eqh, uri, port);
 		this.eqh = eqh;
 	}
 

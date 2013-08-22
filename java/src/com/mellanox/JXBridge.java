@@ -80,9 +80,9 @@ public class JXBridge {
 	
 	private static native String getErrorNative(int errorReason);
 	static String getError(int errorReason){
-		logger.log(Level.INFO, "invoking getErrorNative");
+//		logger.log(Level.FINE, "invoking getErrorNative");
 		String s = getErrorNative(errorReason);
-		logger.log(Level.INFO, "finished getErrorNative. error was "+s);
+//		logger.log(Level.FINE, "finished getErrorNative. error was "+s);
 		return s;
 	}
 	
@@ -106,10 +106,11 @@ public class JXBridge {
 	
 	
 	private static native int runEventLoopNative(long ptr);
-	static void runEventLoop(long ptr){
+	static int runEventLoop(long ptr){
 		logger.log(Level.INFO, "invoking Bridge.runEventLoopNative");
 		int ret = runEventLoopNative(ptr);
 		logger.log(Level.INFO, "finished Bridge.runEventLoopNative=" + ret);
+		return ret;
 	}
 	
 	
@@ -128,6 +129,15 @@ public class JXBridge {
 		return ret;
 	}*/
 	
+	
+	private static native void closeSessionClientNative(long sesPtr);
+	static void closeSessionClient(long sesPtr){
+		logger.log(Level.INFO, "invoking Bridge.closeSessionClient");
+		closeSessionClientNative(sesPtr);
+		logger.log(Level.INFO, "finished Bridge.closeSessionClient");
+	}
+	
+	
 	private static native boolean closeConnectionClientNative(long sesPtr);
 	static boolean closeConnectionClient(long sesPtr){
 		logger.log(Level.INFO, "invoking closeConnectionClientNative");
@@ -136,10 +146,6 @@ public class JXBridge {
 		return ret;
 	}
 	
-	// callback method from C code 
-	public static void on_event(){
-		logger.log(Level.INFO, "event queue contains msgs");
-	}
 	
 	private static native boolean createCtxNative(int eventQueueSize, Object dataFromC);
 	static boolean createCtx(int eventQueueSize, Object dataFromC) {

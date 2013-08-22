@@ -9,7 +9,7 @@
 
 static jclass cls;
 static JavaVM *cached_jvm;
-static jmethodID jmethodID_on_event; // handle to java cb method
+//static jmethodID jmethodID_on_event; // handle to java cb method
 
 
 static jclass cls_data;
@@ -40,13 +40,13 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 		fprintf(stderr, "in cJXBridge - java class was NOT found\n");
 		return JNI_ERR;
 	}
-
+/*
 	jmethodID_on_event = env->GetStaticMethodID(cls, "on_event", "()V");
 	if (jmethodID_on_event == NULL) {
 		fprintf(stderr,"in cJXBridge - on_event() callback method was NOT found\n");
 		return JNI_ERR;
 	}
-
+*/
 
 	cls_data = env->FindClass("com/mellanox/EventQueueHandler$DataFromC");
 	if (cls_data == NULL) {
@@ -147,21 +147,12 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_stopEventLoopNative
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
 {
 
-	int ret_val;
-	struct xio_session *session;
-
-	session = (struct xio_session *)ptrSes;
-	ret_val = xio_session_close (session);
-	if (ret_val){
-		log (lsERROR, "xio_session_close failed");
-		return false;
-	}
-
-	log (lsDEBUG, "end of closeSessionClient");
-	return true;
+	cJXSession * ses = (cJXSession*)ptrSes;
+	return ses->closeConnection();
 
 }
 
+/*
 //Katya
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeConnectionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
 {
@@ -169,6 +160,15 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeConnection
 	cJXSession * ses = (cJXSession*)ptrSes;
 	return ses->closeConnection();
 }
+
+//Katya
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
+{
+
+	cJXSession * ses = (cJXSession*)ptrSes;
+	delete(ses);
+}
+*/
 
 
 

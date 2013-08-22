@@ -19,6 +19,7 @@ cJXCtx::cJXCtx(int eventQSize){
 
 	this->eventQueue = new EventQueue(eventQSize);
 	this->events = new Events();
+	this->mapSession = NULL;
 
 
 	this->eventsNum = 0;
@@ -27,6 +28,9 @@ cJXCtx::cJXCtx(int eventQSize){
 
 
 cJXCtx::~cJXCtx(){
+	if (this->mapSession != NULL){
+		delete (this->mapSession);
+	}
 	delete (this->eventQueue);
 	delete (this->events);
 	xio_ctx_close(ctx);
@@ -40,7 +44,7 @@ int cJXCtx::runEventLoop(){
 	this->eventsNum = 0;
 
 	xio_ev_loop_run(this->evLoop);
-	log (lsDEBUG, "after xio_ev_loop_run\n");
+	log (lsDEBUG, "after xio_ev_loop_run. there are %d evetns\n", this->eventsNum);
 
 	return this->eventsNum;
 }

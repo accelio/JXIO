@@ -8,7 +8,11 @@
 #include <libxio.h>
 #include "cJXCtx.h"
 #include "Utils.h"
+#include "cJXSession.h"
 
+
+
+//class cJXSession;
 
 int on_new_session_callback(struct xio_session *session,
 		struct xio_new_session_req *req,

@@ -1,8 +1,5 @@
-#include "cJXCtx.h"
+
 #include "cJXServer.h"
-
-
-
 
 
 cJXServer::cJXServer(const char	*hostname, int port, long ptrCtx){
@@ -22,7 +19,7 @@ cJXServer::cJXServer(const char	*hostname, int port, long ptrCtx){
 	struct xio_context	*ctx;
 
 	cJXCtx *ctxClass = (cJXCtx *)ptrCtx;
-	this->ctx = ctxClass;
+	setCtxClass(ctxClass);
 
 
 		/* create url to connect to */
@@ -30,10 +27,14 @@ cJXServer::cJXServer(const char	*hostname, int port, long ptrCtx){
 
 	/* bind a listener server to a portal/url */
 
-	this->server = xio_bind(ctxClass->ctx, &server_ops, url, this->ctx);
+
+	this->server = xio_bind(ctxClass->ctx, &server_ops, url, this);
 	if (server == NULL){
-		printf("Error in binding server\n");
+		log (lsERROR, "Error in binding server\n");
 	}
+	log (lsDEBUG, "****** inside c-tor of server private data is %p\n",this);
+
+
 
 }
 
@@ -41,7 +42,7 @@ cJXServer::cJXServer(const char	*hostname, int port, long ptrCtx){
 cJXServer::~cJXServer(){
 
 	if (xio_unbind (this->server)){
-		fprintf(stderr, "Error, xio_unbind failed");
+		log (lsERROR, "Error xio_unbind failed\n");
 	}
 
 }

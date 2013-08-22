@@ -1,9 +1,8 @@
 package com.mellanox;
 
-import java.nio.ByteBuffer;
 
 public interface Eventable {
-	public void onEvent (int eventType, ByteBuffer buffer);
+	public void onEvent (int eventType,Event ev);
 /*
 	enum eventType {
 		sessionError, msgError, sessionEstablished, msgRecieved,
@@ -11,5 +10,7 @@ public interface Eventable {
 	}
 */
 	public boolean close();
+	
+	public long getId();
 
 }

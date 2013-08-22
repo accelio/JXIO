@@ -18,7 +18,7 @@ public class MySesManager extends SessionManager{
 		
 		MyEQH eventQHndl = new MyEQH (10000);	
 		MySesServer ses = new MySesServer(eventQHndl, uri, port);
-		eventQHndl.addEventHandler (ses);
+		eventQHndl.addEventable (ses);
 		forward(ses, ptrSes);
 		
 		Thread t = new Thread (eventQHndl);

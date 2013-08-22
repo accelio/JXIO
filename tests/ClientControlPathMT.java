@@ -21,30 +21,33 @@ private static JXLog logger = JXLog.getLog(ClientControlPathSimpleTest.class.get
 		for (int i=0; i<num_times; i++){
 			
 			ses = new MySesClient(eventQHndl, url,Integer.parseInt(port));
-			eventQHndl.addEventHandler (ses);
+			eventQHndl.addEventable (ses);
 			Thread t = new Thread (eventQHndl);
 			t.start();
 			
 			
 			Thread.currentThread();
 			try {
-					Thread.sleep(1000);
+					Thread.sleep(5000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				
-/*				
+
+			System.out.println("***********************after sleep");
+			ses.close();
+			System.out.println("***********************here");
 			try {
 				t.join();
+				System.out.println("***********************here2");
 			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			*/
-			ses.close();
 			
 		}
-		eventQHndl.close();
+		
+//		eventQHndl.close();
 
 	}
 }

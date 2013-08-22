@@ -6,10 +6,12 @@
 #include <stdio.h>
 
 #include "CallbackFunctions.h"
+//#include "cJXCtx.h"
 
 
+class cJXCtx;
 
-class cJXServer{
+class cJXServer:public Contexable{
 public:
 	//to move some to private?
 	cJXServer(const char	*hostname, int port, long ptrCtx);
@@ -17,7 +19,7 @@ public:
 
 	struct xio_server	*server;
 
-	cJXCtx* ctx;
+//	cJXCtx* ctx;
 
 };
 

@@ -7,9 +7,10 @@ import java.util.logging.Level;
 public abstract class SessionServer implements Eventable {
 	
 	private long id = 0; //represents pointer to server struct
-	private long ptrEventQueue = 0;
+//	private long ptrEventQueue = 0;
 	protected String url;
 	protected int port;
+	private EventQueueHandler eventQHandler  =null;
 	
 	
 	abstract public void onRequestCallback();
@@ -18,24 +19,25 @@ public abstract class SessionServer implements Eventable {
 	
 	private static JXLog logger = JXLog.getLog(SessionServer.class.getCanonicalName());
 
-	protected SessionServer(long eqh, String url, int port) {
-		this.ptrEventQueue = eqh;
+	protected SessionServer(EventQueueHandler eventQHandler, String url, int port) {
+		this.eventQHandler = eventQHandler;
 		this.url = url;
 		this.port = port;
 		logger.log(Level.INFO, "uri inside SessionServer is "+url);
-		this.id = JXBridge.startServer(url, port, ptrEventQueue);
+		this.id = JXBridge.startServer(url, port, eventQHandler.getID());
 	}
 	
 
 	
-	public void onEvent(int eventType, ByteBuffer buf){
+	public void onEvent(int eventType, Event ev){
 		switch (eventType){
 		case 0: //session error event
 			logger.log(Level.INFO, "received session error event");
-			int errorType = buf.getInt();
-			int reason = buf.getInt();
-			String s = JXBridge.getError(reason);
-			this.onSessionErrorCallback(errorType, s);
+			if (ev  instanceof EventSession){
+				int errorType = ((EventSession) ev).errorType;
+				String reason = ((EventSession) ev).reason;
+				this.onSessionErrorCallback(errorType, reason);
+			}
 			break;
 			
 		case 1: //msg error
@@ -59,6 +61,7 @@ public abstract class SessionServer implements Eventable {
 	}
 	
 	public boolean close(){
+		eventQHandler.removeEventable (this); //TODO: fix this
 		JXBridge.stopServer(id);
 		return true;
 	}

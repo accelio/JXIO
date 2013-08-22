@@ -8,7 +8,7 @@ import com.mellanox.*;
 		
 		
 		public MySesClient(EventQueueHandler eqh, String uri, int port){
-			super (eqh.getID(), uri, port);	
+			super (eqh, uri, port);	
 		}
 		
 		
@@ -31,7 +31,7 @@ import com.mellanox.*;
 				break;
 			case 1:
 				event = "SESSION_TEARDOWN";
-				closeSession(); //through the bridge calls d-tor of cjxsession(which does nothing)
+				eventQHandler.removeEventable (this); 
 				break;
 			case 2:
 				event = "CONNECTION_CLOSED";
@@ -43,7 +43,7 @@ import com.mellanox.*;
 				event = "CONNECTION_ERROR";
 				////disconnect session
 //				System.out.println("GOT EVENT CONNECTION_ERROR");
-				closeConnection(); //through the bridge calls connection close
+				close(); //through the bridge calls connection close
 				break;
 			case 4:
 				event = "SESSION_ERROR";
@@ -52,8 +52,8 @@ import com.mellanox.*;
 				event = "UNKNOWN";
 				break;
 			}
-			logger.log(Level.SEVERE, "GOT EVENT " + event + "because of " + reason);
-			System.out.println("GOT EVENT " + event + "because of " + reason);
+			logger.log(Level.SEVERE, "GOT EVENT " + event + " because of " + reason);
+//			System.out.println("GOT EVENT " + event + "because of " + reason);
 			
 		}
 	
