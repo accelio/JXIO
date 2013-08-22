@@ -42,6 +42,9 @@ public abstract class SessionClient implements Eventable{
 				int errorType = ((EventSession) ev).errorType;
 				String reason = ((EventSession) ev).reason;
 				this.onSessionErrorCallback(errorType, reason);
+				if (errorType == 1) {//event = "SESSION_TEARDOWN";
+					eventQHandler.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
+				}
 			}
 			break;
 			
@@ -80,6 +83,7 @@ public abstract class SessionClient implements Eventable{
 			return false;
 		}
 		JXBridge.closeSessionClient(id);	
+		
 		logger.log(Level.INFO, "in the end of SessionClientClose");
 		return true;
 	}

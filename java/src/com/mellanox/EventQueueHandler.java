@@ -148,12 +148,11 @@ public class EventQueueHandler {
 	
 	//this function closes all sessions on this eqh
 	public void stopAndClose(){
-		
+		logger.log(Level.INFO, "inside stop and close");
 		JXBridge.stopEventLoop(id);
 		//process all events in buffer
 		 int numEvents = JXBridge.getNumEventsQ(id);
-//		logger.log(Level.INFO, "there are "+numEvents+" events");
-	     System.out.println("there are "+numEvents+" events");
+		logger.log(Level.INFO, "there are "+numEvents+" events");
 	     for(int i=0; i<numEvents; i++){
 	    	int eventType = eventQueue.getInt();
 	    	long id = eventQueue.getLong();
@@ -164,6 +163,7 @@ public class EventQueueHandler {
 	     
 	     for (Map.Entry<Long,Eventable> entry : eventables.entrySet())
 	     {
+	    	 logger.log(Level.INFO, "closing eventable with id "+entry.getKey()); 
 	        entry.getValue().close();
 	     }
  

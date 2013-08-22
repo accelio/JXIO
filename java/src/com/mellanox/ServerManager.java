@@ -5,6 +5,7 @@ import java.util.logging.Level;
 public abstract class ServerManager implements Eventable{
 	private EventQueueHandler eventQHndl = null;
 	private long id = 0;
+	private int port;
 	static protected int sizeEventQ = 10000;
 	
 	private static JXLog logger = JXLog.getLog(ServerManager.class.getCanonicalName());
@@ -14,7 +15,10 @@ public abstract class ServerManager implements Eventable{
 	
 	public ServerManager(EventQueueHandler eventQHandler,String url){
 		eventQHndl = eventQHandler;
-		id = JXBridge.startServer(url, eventQHndl.getID());
+		
+		long [] ar = JXBridge.startServer(url, eventQHandler.getID());
+		this.id = ar [0];
+		this.port = (int) ar[1];
 		
 		if (this.id == 0){
 			logger.log(Level.SEVERE, "there was an error creating SessionManager");
@@ -59,6 +63,9 @@ public abstract class ServerManager implements Eventable{
 				int errorType = ((EventSession) ev).errorType;
 				String reason = ((EventSession) ev).reason;
 				this.onSessionError(errorType, reason);
+				if (errorType == 1) {//event = "SESSION_TEARDOWN";
+					eventQHndl.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
+				}
 			}
 			break;
 			

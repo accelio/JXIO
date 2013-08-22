@@ -58,13 +58,10 @@ public class JXBridge {
 	}
 	
 
-	
-
-
-	private static native long startServerNative(String url, long ptrCtx);
-	static long  startServer(String url, long ptrCtx){
+	private static native long [] startServerNative(String url, long ptrCtx);
+	static long [] startServer(String url, long ptrCtx){
 		logger.log(Level.INFO, "invoking startServerNative");
-		long ptr = startServerNative(url, ptrCtx);
+		long ptr [] = startServerNative(url, ptrCtx);
 		logger.log(Level.INFO, "finished startServerNative");
 		return ptr;
 	}

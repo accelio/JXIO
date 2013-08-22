@@ -8,6 +8,7 @@ public abstract class SessionServer implements Eventable {
 	
 	private long id = 0; //represents pointer to server struct
 //	private long ptrEventQueue = 0;
+	private int port;
 	protected String url;
 	private EventQueueHandler eventQHandler  =null;
 	
@@ -22,7 +23,9 @@ public abstract class SessionServer implements Eventable {
 		this.eventQHandler = eventQHandler;
 		this.url = url;
 		logger.log(Level.INFO, "uri inside SessionServer is "+url);
-		this.id = JXBridge.startServer(url, eventQHandler.getID());
+		long [] ar = JXBridge.startServer(url, eventQHandler.getID());
+		this.id = ar [0];
+		this.port = (int) ar[1];
 		if (this.id == 0){
 			logger.log(Level.SEVERE, "there was an error creating SessionServer");
 		}
@@ -38,6 +41,9 @@ public abstract class SessionServer implements Eventable {
 				int errorType = ((EventSession) ev).errorType;
 				String reason = ((EventSession) ev).reason;
 				this.onSessionErrorCallback(errorType, reason);
+				if (errorType == 1) {//event = "SESSION_TEARDOWN";
+					eventQHandler.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
+				}
 			}
 			break;
 			
