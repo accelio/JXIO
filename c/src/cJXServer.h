@@ -20,6 +20,7 @@ public:
 	struct xio_server	*server;
 
 	bool errorCreating;
+	int port; //indicates the actual port on which the server listens
 
 //	cJXCtx* ctx;
 

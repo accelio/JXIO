@@ -73,6 +73,7 @@ cJXSession::cJXSession(const char*	url, long ptrCtx){
 		 xio_send_request(con, req);
 	//	 printf("done debugging \n");
 	#endif
+	return;
 
 cleanupCon:
 		xio_disconnect(this->con);

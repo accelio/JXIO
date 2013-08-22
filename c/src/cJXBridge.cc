@@ -102,10 +102,8 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_createCtxNative
 	env->SetLongField(dataToC, fidPtr, ptr);
 	env->SetObjectField(dataToC, fidBuf, jbuf);
 
-
 	return ctx->errorCreating;
 }
-
 
 
 
