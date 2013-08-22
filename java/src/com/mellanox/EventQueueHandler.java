@@ -16,7 +16,7 @@ public class EventQueueHandler {
 	private int eventQueueSize = 1000; //size of byteBuffer
 	
 	private long id = 0;
-	private int eventsNotRead = 0;
+	private int eventsWaitingInQ = 0;
 	// Direct buffer to the registered memory
 	ByteBuffer eventQueue = null;
 	//this will be map in the future
@@ -49,7 +49,9 @@ public class EventQueueHandler {
 	
 	public void addEventable(Eventable eventable){
 		logger.log(Level.INFO, "** adding "+eventable.getId()+" to map ");
-		eventables.put(eventable.getId(), eventable);
+		if (eventable.getId() != 0){
+			eventables.put(eventable.getId(), eventable);
+		}
 	}
 	
 	public void removeEventable(Eventable eventable){
@@ -85,22 +87,34 @@ public class EventQueueHandler {
 	
 	
 	public int runEventLoop (int maxEvents, int timeOut){
-		logger.log(Level.INFO, "there are "+eventsNotRead+" events");
-        for(int i=0; i<eventsNotRead; i++){
-                 int eventType = eventQueue.getInt();
-                 long id = eventQueue.getLong();
-                 System.out.println("***** event is "+eventType);
-         		Event event = parseEvent(eventType, eventQueue);
-         		Eventable eventable = eventables.get(id);
-         		logger.log(Level.INFO, "** eventable "+eventable+" id "+ id);
-                eventable.onEvent(eventType, event);
-		}
-		eventQueue.rewind();
-		eventsNotRead = 0;
+		logger.log(Level.INFO, "there are "+eventsWaitingInQ+" events");
+		int eventToRead = Math.min (maxEvents, eventsWaitingInQ);
 		
-		eventsNotRead = JXBridge.runEventLoop(id);
+	        for(int i=0; i<eventToRead; i++){
+	                int eventType = eventQueue.getInt();
+	                long id = eventQueue.getLong();
+	                System.out.println("***** event is "+eventType);
+	         		Event event = parseEvent(eventType, eventQueue);
+	         		Eventable eventable = eventables.get(id);
+	         		logger.log(Level.INFO, "** eventable "+eventable+" id "+ id);
+	                eventable.onEvent(eventType, event);
+			}
+	        eventsWaitingInQ -= eventToRead;
+	        maxEvents -= eventToRead;
+			
+			if (eventsWaitingInQ > 0){//there are still events to be read, but they exceed maxEvents
+				return eventToRead;
+			}
+
+			
+			if (eventToRead == 0){//the event queue is empty now)
+				eventQueue.rewind();
+				eventsWaitingInQ = JXBridge.runEventLoop(id);
+			}
+			
+		int	eventToRead2 = Math.min (maxEvents, eventsWaitingInQ);
          
-		for(int i=0; i<eventsNotRead; i++){
+		for(int i=0; i<eventToRead2; i++){
             int eventType = eventQueue.getInt();
             long id = eventQueue.getLong();
             System.out.println("***** event is "+eventType);
@@ -109,8 +123,11 @@ public class EventQueueHandler {
      		logger.log(Level.INFO, "** eventable "+eventable+" id "+ id);
             eventable.onEvent(eventType, event);
 		}
-		eventsNotRead = 0;
-         return 0;
+		
+		 eventsWaitingInQ -= eventToRead2;
+		 
+		 return eventToRead+eventToRead2;
+
 
 	}
 	

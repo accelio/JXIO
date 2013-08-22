@@ -189,6 +189,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startClientSession
 	cJXSession * ses = new cJXSession(url, ptrCtx);
 	env->ReleaseStringUTFChars(jurl, url);
 	if (ses->errorCreating){
+		delete (ses);
 		return 0;
 	}
 	return (jlong)(intptr_t) ses;
@@ -212,16 +213,25 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_JXBridge_getErrorNative(J
 
 
 
-extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startServerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx) {
+extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx) {
 
+	jlongArray dataToJava;
+	jlong temp[2];
 
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	cJXServer * server = new cJXServer(url, ptrCtx);
 	env->ReleaseStringUTFChars(jurl, url);
 	if (server->errorCreating){
-		return 0;
+		temp[0] = 0;
+		temp[1]=0;
+		delete(server);
+	}else{
+		temp [0] = (jlong)(intptr_t) server;
+		temp[1] = (jlong)server->port;
 	}
-	return (jlong)(intptr_t) server;
+
+	env->SetLongArrayRegion(dataToJava,0, 2, temp);
+	return dataToJava;
 
 }
 

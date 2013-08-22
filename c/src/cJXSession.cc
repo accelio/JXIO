@@ -1,6 +1,7 @@
 
 #include "cJXSession.h"
 
+#define K_DEBUG 1
 
 cJXSession::cJXSession(const char*	url, long ptrCtx){
 
@@ -9,6 +10,7 @@ cJXSession::cJXSession(const char*	url, long ptrCtx){
 //	char			url[256];
 	errorCreating = false;
 
+	struct xio_msg *req;
 
 	cJXCtx *ctxClass = (cJXCtx *)ptrCtx;
 	setCtxClass(ctxClass);
@@ -39,8 +41,8 @@ cJXSession::cJXSession(const char*	url, long ptrCtx){
 
 	if (con == NULL){
 		log (lsERROR, "Error in creating connection\n");
-		errorCreating = true;
-		return;
+		goto cleanupSes;
+
 	}
 
 
@@ -48,8 +50,7 @@ cJXSession::cJXSession(const char*	url, long ptrCtx){
 		ctxClass->mapSession = new std::map<void*,cJXSession*> ();
 		if(ctxClass->mapSession== NULL){
 			log (lsERROR, "Error, Could not allocate memory\n");
-			errorCreating = true;
-			return;
+			goto cleanupCon;
 		}
 	}
 
@@ -61,8 +62,8 @@ cJXSession::cJXSession(const char*	url, long ptrCtx){
 
 
 	//	 printf("for debugging \n");
-//	#ifdef K_DEBUG
-		 struct xio_msg *req = (struct xio_msg *) malloc(sizeof(struct xio_msg));
+	#ifdef K_DEBUG
+		 req = (struct xio_msg *) malloc(sizeof(struct xio_msg));
 
 		 // create "hello world" message
 		 memset(req, 0, sizeof(req));
@@ -71,8 +72,14 @@ cJXSession::cJXSession(const char*	url, long ptrCtx){
 		 	// send first message
 		 xio_send_request(con, req);
 	//	 printf("done debugging \n");
-//	#endif
+	#endif
 
+cleanupCon:
+		xio_disconnect(this->con);
+
+cleanupSes:
+		xio_session_close(this->session);
+		errorCreating = true;
 }
 
 

@@ -16,19 +16,10 @@ cJXServer::cJXServer(const char	*url, long ptrCtx){
 	server_ops.on_msg_send_complete         =  NULL;
 
 
-
-//	char			url[256];
 	struct xio_context	*ctx;
 
 	cJXCtx *ctxClass = (cJXCtx *)ptrCtx;
 	setCtxClass(ctxClass);
-
-
-		/* create url to connect to */
-//	sprintf(url, "rdma://%s:%d", hostname, port);
-
-	/* bind a listener server to a portal/url */
-
 
 	this->server = xio_bind(ctxClass->ctx, &server_ops, url, this);
 	if (server == NULL){
@@ -37,6 +28,7 @@ cJXServer::cJXServer(const char	*url, long ptrCtx){
 	}
 	log (lsDEBUG, "****** inside c-tor of server private data is %p\n",this);
 
+	this->port = 5678; //TODO: some global shit
 
 
 }
