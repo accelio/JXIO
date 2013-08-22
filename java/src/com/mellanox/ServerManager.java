@@ -1,11 +1,8 @@
 package com.mellanox;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
-public abstract class SessionManager implements Eventable{
+public abstract class ServerManager implements Eventable{
 	private EventQueueHandler eventQHndl = null;
 	private long id = 0;
 	static protected int sizeEventQ = 10000;
@@ -15,8 +12,8 @@ public abstract class SessionManager implements Eventable{
 	public abstract void onSession(long ptrSes, String uri, String srcIP);
 	public abstract void onSessionError(int errorType, String reason);
 	
-	public SessionManager(String url){
-		eventQHndl = new EventQueueHandler (sizeEventQ);
+	public ServerManager(EventQueueHandler eventQHandler,String url){
+		eventQHndl = eventQHandler;
 		id = JXBridge.startServer(url, eventQHndl.getID());
 		
 		if (this.id == 0){
