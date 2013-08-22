@@ -20,7 +20,7 @@ private static JXLog logger = JXLog.getLog(ClientControlPathSimpleTest.class.get
 		
 		for (int i=0; i<num_times; i++){
 			
-			ses = new MySesClient(eventQHndl, url,Integer.parseInt(port));
+			ses = new MySesClient(eventQHndl, url);
 			eventQHndl.addEventable (ses);
 			Thread t = new Thread (eventQHndl);
 			t.start();

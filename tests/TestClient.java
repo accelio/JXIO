@@ -4,54 +4,58 @@ import com.mellanox.JXLog;
 
 
 public class TestClient {
-
-	public static int numberOfTests = 3;
-	private static JXLog testLog = JXLog.getLog(TestClient.class.getCanonicalName());
-	private static boolean[] successIndicators = new boolean[3];
+	
+	// Client Parameters
 	private static MySesClient sClient;
-	private static MySesClient[] sClientArray;
-	private static int numOfSessionClients = 3;
 	public static String url;
+	public static String hostname;
 	public static int port;
 	public static int portRange = 1234;
+	// Multiple Clients Parameters
+	private static MySesClient[] sClientArray;
+	private static int numOfSessionClients = 3;
+	// General Parameters
+	private static JXLog testLog = JXLog.getLog(TestClient.class.getCanonicalName());
+	private static int requestedTest;
+	public static int numberOfTests = 3;
+	private static boolean[] successIndicators = new boolean[3];
 	
 	public static void main(String[] args) {
-		if (args.length <= 0){
-			print("[TEST ERROR] Missing argument.");
-			help();
+		
+		// Check arguments
+		if (! argsCheck(args)){
 			return;
-		} else if (args.length > 1){
-			print("[TEST ERROR] Too many arguments.");
-			help();
-			return;
-		} else if (args[0].equals("--help")){
-				help();
-              	return;
 		} else {
-			// Run Tests
-			print("\n*** Starting a Session Client Test ***");
+			
+			// Get Hostname and Port
+			hostname = args[0];
+			port = Integer.parseInt(args[1]);
+			// Get requested tests
+			requestedTest = Integer.parseInt(args[2]);
+			
+			print("*** Starting a Session Client Test ***");
 			// Setting up and Event Queue Handler
-			print("\n----- Setting up and Event Queue Handler...");
+			print("----- Setting up and Event Queue Handler...");
 			int size = 1000; // TODO Why does it even need a size if it is not used?
 			MyEQH eqh = new MyEQH(size);
-			if (args[0].equals("--1")){
-				clientTest1(eqh);
-				report();
-				return;
-			} else if (args[0].equals("--2")){
-				clientTest2(eqh);
-				report();
-				return;
-			} else if (args[0].equals("--3")){
-				clientTest3(eqh);
-				report();
-				return;
-			}  else if (args[0].equals("--all")){
-				clientTest1(eqh);
-				clientTest2(eqh);
-				clientTest3(eqh);
-				report();
-				return;
+			// Run Tests
+			switch(requestedTest){
+			case 0: clientTest1(eqh);
+					clientTest2(eqh);
+					clientTest3(eqh);
+					report();
+					return;
+			case 1:	clientTest1(eqh);
+					report();
+					return;
+			case 2:	clientTest2(eqh);
+					report();
+					return;
+			case 3: clientTest3(eqh);
+					report();
+					return;
+			default: print("[TEST ERROR] Unknow test number.");
+					return;
 			}
 		}
 	}
@@ -61,11 +65,12 @@ public class TestClient {
 		// Open and close a client 
 		print("*** Test 1: Open and close a client *** ");
 		
+		// Get url
+		url = "rdma://" + hostname + ":" + port;
+		
 		// Setting up a session client
 		print("----- Setting up a session client...");
-		url = "36.0.0.114"; 
-		port = 1234;
-		sClient = new MySesClient(eqh, url, port);
+		sClient = new MySesClient(eqh, url);
 		
 		// Closing the session client
 		print("------ Closing the session client...");
@@ -80,11 +85,12 @@ public class TestClient {
 		// A non existing IP address
 		print("*** Test 2: A non existing IP address *** ");
 		
+		// Get url
+		url = "rdma://" + "0.0.0.0" + ":" + port;
+		
 		// Setting up a session client
 		print("----- Setting up a session client...");
-		url = "0.0.0.0"; 
-		port = 1234;
-		sClient = new MySesClient(eqh, url, port);
+		sClient = new MySesClient(eqh, url);
 		
 		// Closing the session client
 		print("------ Closing the session client...");
@@ -101,12 +107,16 @@ public class TestClient {
 		
 		// Setting up a multiple session clients
 		print("----- Setting up a multiple session clients...");
-		url = "36.0.0.114"; 
 		Random portGenerator = new Random();
 		sClientArray = new MySesClient[numOfSessionClients];
 		for (int i = 0; i < numOfSessionClients; i++){
+			// Rnadomize Port
 			port = portGenerator.nextInt(portRange) + 1;
-			sClientArray[i] = new MySesClient(eqh, url, port);
+			
+			// Get url
+			url = "rdma://" + hostname + ":" + port;
+			
+			sClientArray[i] = new MySesClient(eqh, url);
 		}
 		
 		// Closing the session clients
@@ -119,6 +129,18 @@ public class TestClient {
 		print("*** Test 3 Passed! *** ");
 	}
 	
+	private static boolean argsCheck(String[] args){
+		if (args.length <= 0){
+			print("[TEST ERROR] Missing arguments.");
+			usage();
+			return false;
+		} else if (args.length < 3){
+			usage();
+			return false;
+		}
+		return true;
+	}
+	
 	private static void report(){
 		String passed;
 		String report = "Tests Report:\n=============\n";
@@ -129,8 +151,8 @@ public class TestClient {
 		print(report);
 	}
 	
-	public static void help(){
-		print("Usage: run_test [--options]\nWhere options include\n--all		Run all tests \n--<n>		Run test number <n> \n--help 	Show this help");
+	public static void usage(){
+		print("Usage: ./runClientTest.sh <HOSTNAME> <PORT> [test]\nWhere [test] includes:\n0		Run all tests \n<n>		Run test number <n>\n");
 	}
 	
 	private static void print(String str){
