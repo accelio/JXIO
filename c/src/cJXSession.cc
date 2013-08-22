@@ -7,6 +7,7 @@ cJXSession::cJXSession(const char*	url, long ptrCtx){
 	struct xio_session_ops ses_ops;
 	struct xio_session_attr attr;
 //	char			url[256];
+	errorCreating = false;
 
 
 	cJXCtx *ctxClass = (cJXCtx *)ptrCtx;
@@ -29,6 +30,7 @@ cJXSession::cJXSession(const char*	url, long ptrCtx){
 
 	if (session == NULL){
 		log (lsERROR, "Error in creating session\n");
+		errorCreating = true;
 		return;
 	}
 
@@ -37,6 +39,7 @@ cJXSession::cJXSession(const char*	url, long ptrCtx){
 
 	if (con == NULL){
 		log (lsERROR, "Error in creating connection\n");
+		errorCreating = true;
 		return;
 	}
 
@@ -45,6 +48,7 @@ cJXSession::cJXSession(const char*	url, long ptrCtx){
 		ctxClass->mapSession = new std::map<void*,cJXSession*> ();
 		if(ctxClass->mapSession== NULL){
 			log (lsERROR, "Error, Could not allocate memory\n");
+			errorCreating = true;
 			return;
 		}
 	}

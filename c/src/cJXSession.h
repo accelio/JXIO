@@ -22,6 +22,7 @@ public:
 	struct xio_session	*session;
 	struct xio_connection * con;
 
+	bool errorCreating;
 //	cJXCtx* ctx;
 
 };

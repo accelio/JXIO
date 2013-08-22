@@ -18,9 +18,11 @@ public abstract class SessionManager implements Eventable{
 	public SessionManager(String url){
 		eventQHndl = new EventQueueHandler (sizeEventQ);
 		id = JXBridge.startServer(url, eventQHndl.getID());
-		if (id == 0){
-			logger.log(Level.SEVERE, "could not start server");
+		
+		if (this.id == 0){
+			logger.log(Level.SEVERE, "there was an error creating SessionManager");
 		}
+		
 		eventQHndl.addEventable (this); 
 		eventQHndl.runEventLoop(1, 0);
 	}

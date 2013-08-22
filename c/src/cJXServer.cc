@@ -6,6 +6,8 @@ cJXServer::cJXServer(const char	*url, long ptrCtx){
 
 	printf("inside startServerNative method\n");
 
+	errorCreating = false;
+
 	struct xio_server_ops server_ops;
 	server_ops.on_session_event			    =  on_session_event_callback;
 	server_ops.on_msg	  		        	=  on_msg_callback; //TODO: to separate into 2 different classes
@@ -31,6 +33,7 @@ cJXServer::cJXServer(const char	*url, long ptrCtx){
 	this->server = xio_bind(ctxClass->ctx, &server_ops, url, this);
 	if (server == NULL){
 		log (lsERROR, "Error in binding server\n");
+		errorCreating = true;
 	}
 	log (lsDEBUG, "****** inside c-tor of server private data is %p\n",this);
 

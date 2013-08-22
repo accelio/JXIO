@@ -188,6 +188,9 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startClientSession
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	cJXSession * ses = new cJXSession(url, ptrCtx);
 	env->ReleaseStringUTFChars(jurl, url);
+	if (ses->errorCreating){
+		return 0;
+	}
 	return (jlong)(intptr_t) ses;
 
 }
@@ -215,6 +218,9 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startServerNative(
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	cJXServer * server = new cJXServer(url, ptrCtx);
 	env->ReleaseStringUTFChars(jurl, url);
+	if (server->errorCreating){
+		return 0;
+	}
 	return (jlong)(intptr_t) server;
 
 }

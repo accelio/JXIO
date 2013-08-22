@@ -19,6 +19,8 @@ public:
 
 	struct xio_server	*server;
 
+	bool errorCreating;
+
 //	cJXCtx* ctx;
 
 };

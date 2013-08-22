@@ -23,6 +23,9 @@ public abstract class SessionServer implements Eventable {
 		this.url = url;
 		logger.log(Level.INFO, "uri inside SessionServer is "+url);
 		this.id = JXBridge.startServer(url, eventQHandler.getID());
+		if (this.id == 0){
+			logger.log(Level.SEVERE, "there was an error creating SessionServer");
+		}
 	}
 	
 
