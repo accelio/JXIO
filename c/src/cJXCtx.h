@@ -29,7 +29,7 @@ public:
 
 
 //	char* byteBuffer;
-	bool error;
+	bool errorCreating;
 
 	void* evLoop;
 	struct xio_context	*ctx;
@@ -40,6 +40,7 @@ public:
 	//this map is needed since in case of event Disconnected action needs to be done
 	//on a session without going back to java
 	std::map<void*,cJXSession*>* mapSession;
+
 
 };
 

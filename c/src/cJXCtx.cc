@@ -1,33 +1,49 @@
 #include "cJXCtx.h"
 
 cJXCtx::cJXCtx(int eventQSize){
-	error = false;
+	errorCreating = false;
+	this->mapSession = NULL;
+
+
+	this->eventsNum = 0;
 	evLoop = xio_ev_loop_init();
 	if (evLoop == NULL){
 		log (lsERROR, "Error, xio_ev_loop_init failed\n");
-		error = true;
+		errorCreating = true;
 		return;
+
 	}
 
 	ctx = xio_ctx_open(NULL, evLoop);
 	if (ctx == NULL){
 		log (lsERROR, "Error, xio_ctx_open failed\n");
-		error = true;
-		return;
+		goto cleanupEvLoop;
 	}
 
-
 	this->eventQueue = new EventQueue(eventQSize);
+	if (this->eventQueue->errorCreating){
+		log (lsERROR, "Error, fail in create of EventQueue object\n");
+		goto cleanupCtx;
+	}
 	this->events = new Events();
-	this->mapSession = NULL;
+	return;
 
+cleanupCtx:
+	xio_ctx_close(ctx);
+	delete (this->eventQueue);
 
-	this->eventsNum = 0;
+cleanupEvLoop:
+	xio_ev_loop_destroy(&evLoop);
+	errorCreating = true;
+
 
 }
 
 
 cJXCtx::~cJXCtx(){
+	if (errorCreating){
+		return;
+	}
 	if (this->mapSession != NULL){
 		delete (this->mapSession);
 	}

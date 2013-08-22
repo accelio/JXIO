@@ -90,6 +90,10 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_createCtxNative
 {
 	int size = eventQueueSize;
 	cJXCtx *ctx = new cJXCtx (size);
+	if (ctx->errorCreating){
+		delete (ctx);
+		return false;
+	}
 	jobject jbuf = env->NewDirectByteBuffer(ctx->eventQueue->getBuffer(), eventQueueSize );
 
 	jlong ptr = (jlong)(intptr_t) ctx;
@@ -99,7 +103,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_createCtxNative
 	env->SetObjectField(dataToC, fidBuf, jbuf);
 
 
-	return ctx->error;
+	return ctx->errorCreating;
 }
 
 

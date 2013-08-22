@@ -18,6 +18,8 @@ public:
 	void reset();
 	void increaseOffset(int increase);
 
+	bool errorCreating;
+
 private:
 	int offset;
 	char * buf;
