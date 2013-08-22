@@ -63,6 +63,10 @@ public abstract class SessionServer implements Eventable {
 	
 	public boolean close(){
 		eventQHandler.removeEventable (this); //TODO: fix this
+		if (id == 0){
+			logger.log(Level.SEVERE, "closing SessionServer with empty id");
+			return false;
+		}
 		JXBridge.stopServer(id);
 		return true;
 	}

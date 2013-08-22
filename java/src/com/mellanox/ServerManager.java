@@ -7,7 +7,7 @@ public abstract class ServerManager implements Eventable{
 	private long id = 0;
 	static protected int sizeEventQ = 10000;
 	
-	private static JXLog logger = JXLog.getLog(SessionManager.class.getCanonicalName());
+	private static JXLog logger = JXLog.getLog(ServerManager.class.getCanonicalName());
 	
 	public abstract void onSession(long ptrSes, String uri, String srcIP);
 	public abstract void onSessionError(int errorType, String reason);
@@ -26,6 +26,10 @@ public abstract class ServerManager implements Eventable{
 	
 	public boolean close(){
 		eventQHndl.removeEventable (this); //TODO: fix this
+		if (id == 0){
+			logger.log(Level.SEVERE, "closing ServerManager with empty id");
+			return false;
+		}
 		JXBridge.stopServer(id);
 		return true;
 	}
