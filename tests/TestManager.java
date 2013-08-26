@@ -4,16 +4,16 @@ import com.mellanox.EventQueueHandler;
 import com.mellanox.JXLog;
 
 
-public class TestClient {
+public class TestManager {
 	
-	// Client Parameters
+	// Manager Parameters
 	public static String hostname;
 	public static int port;
 	public static int portRange = 1234;
 	// General Parameters
-	private static JXLog testLog = JXLog.getLog(TestClient.class.getCanonicalName());
+	private static JXLog testLog = JXLog.getLog(TestManager.class.getCanonicalName());
 	private static int requestedTest;
-	public static int numberOfTests = 4;
+	public static int numberOfTests = 5;
 	private static boolean[] successIndicators = new boolean[numberOfTests];
 	
 	public static void main(String[] args) {
@@ -36,22 +36,26 @@ public class TestClient {
 			MyEQH eqh = new MyEQH(size);
 			// Run Tests
 			switch(requestedTest){
-			case 0: clientTest1(eqh);
-					clientTest2(eqh);
-					clientTest3(eqh);
-					clientTest4();
+			case 0: serverTest1(eqh);
+					serverTest2(eqh);
+					serverTest3(eqh);
+					serverTest4();
+					serverTest5(eqh);
 					report();
 					return;
-			case 1:	clientTest1(eqh);
+			case 1:	serverTest1(eqh);
 					report();
 					return;
-			case 2:	clientTest2(eqh);
+			case 2:	serverTest2(eqh);
 					report();
 					return;
-			case 3: clientTest3(eqh);
+			case 3: serverTest3(eqh);
 					report();
 					return;
-			case 4: clientTest4();
+			case 4: serverTest4();
+					report();
+					return;
+			case 5: serverTest5(eqh);
 					report();
 					return;
 			default: print("[TEST ERROR] Unknow test number.");
@@ -60,89 +64,89 @@ public class TestClient {
 		}
 	}
 	
-	private static void clientTest1(MyEQH eqh){
+	private static void serverTest1(MyEQH eqh){
 		///////////////////// Test 1 /////////////////////
-		// Open and close a client 
-		print("*** Test 1: Open and close a client *** ");
+		// Open and close a server 
+		print("*** Test 1: Open and close a server *** ");
 		
 		// Setup parameters
-		MySesClient sClient;
+		MySesManager sManager;
 		String url;
 		
 		// Get url
 		url = "rdma://" + hostname + ":" + port;
 		
-		// Setting up a session client
-		print("----- Setting up a session client...");
-		sClient = new MySesClient(eqh, url);
+		// Setting up a session server
+		print("----- Setting up a session server...");
+		sManager = new MySesManager(eqh, url);
 		
-		// Closing the session client
-		print("------ Closing the session client...");
-		sClient.close();
+		// Closing the session server
+		print("------ Closing the session server...");
+		sManager.close();
 
 		successIndicators[0] = true;
 		print("*** Test 1 Passed! *** ");
 	}
 	
-	private static void clientTest2(MyEQH eqh){
+	private static void serverTest2(MyEQH eqh){
 		///////////////////// Test 2 /////////////////////
 		// A non existing IP address
 		print("*** Test 2: A non existing IP address *** ");
 		
 		// Setup parameters
-		MySesClient sClient;
+		MySesManager sManager;
 		String url;
 		
 		// Get url
 		url = "rdma://" + "0.0.0.0" + ":" + port;
 		
-		// Setting up a session client
-		print("----- Setting up a session client...");
-		sClient = new MySesClient(eqh, url);
+		// Setting up a session server
+		print("----- Setting up a session server...");
+		sManager = new MySesManager(eqh, url);
 		
-		// Closing the session client
-		print("------ Closing the session client...");
-		sClient.close();
+		// Closing the session server
+		print("------ Closing the session server...");
+		sManager.close();
 
 		successIndicators[1] = true;
 		print("*** Test 2 Passed! *** ");
 	}
 	
-	private static void clientTest3(MyEQH eqh){
+	private static void serverTest3(MyEQH eqh){
 		///////////////////// Test 3 /////////////////////
-		// Multiple session client on the same EQH
-		print("*** Test 3: Multiple session client on the same EQH *** ");
+		// Multiple session server on the same EQH
+		print("*** Test 3: Multiple session managers on the same EQH *** ");
 		
-		// Setup Multiple Clients Parameters
-		MySesClient[] sClientArray;
-		int numOfSessionClients = 3;
+		// Setup Multiple servers Parameters
+		MySesManager[] sManagerArray;
+		int numOfSessionManagers = 3;
 		String url;
 		
-		// Setting up a multiple session clients
-		print("----- Setting up a multiple session clients...");
+		// Setting up a multiple session servers
+		print("----- Setting up a multiple session servers...");
 		Random portGenerator = new Random();
-		sClientArray = new MySesClient[numOfSessionClients];
-		for (int i = 0; i < numOfSessionClients; i++){
+		sManagerArray = new MySesManager[numOfSessionManagers];
+		for (int i = 0; i < numOfSessionManagers; i++){
 			// Rnadomize Port
 			port = portGenerator.nextInt(portRange) + 1;
 			
 			// Get url
 			url = "rdma://" + hostname + ":" + port;
 			
-			sClientArray[i] = new MySesClient(eqh, url);
+			sManagerArray[i] = new MySesManager(eqh, url);
 		}
 		
-		// Closing the session clients
-		print("------ Closing the session client...");
-		for (int i = 0; i < numOfSessionClients; i++){
-			sClientArray[i].close();
+		// Closing the session servers
+		print("------ Closing the session server...");
+		for (int i = 0; i < numOfSessionManagers; i++){
+			sManagerArray[i].close();
 		}
 		
 		successIndicators[2] = true;
 		print("*** Test 3 Passed! *** ");
 	}
 	
-	private static void clientTest4(){
+	private static void serverTest4(){
 		///////////////////// Test 4 /////////////////////
 		// Multipule threads on the same EQH
 		print("*** Test 4: Multipule threads on the same EQH*** ");
@@ -153,13 +157,13 @@ public class TestClient {
 		// Get url
 		url = "rdma://" + hostname + ":" + port;
 		
-		TestClient tc = new TestClient();
-		MyThread t1 = tc.new MyThread("t1", new MyEQH(1000), url);
-		MyThread t2 = tc.new MyThread("t2", new MyEQH(1000), url);
-		MyThread t3 = tc.new MyThread("t3", new MyEQH(1000), url);
-		MyThread t4 = tc.new MyThread("t4", new MyEQH(1000), url);
-		MyThread t5 = tc.new MyThread("t5", new MyEQH(1000), url);
-		MyThread t6 = tc.new MyThread("t6", new MyEQH(1000), url);
+		TestManager ts = new TestManager();
+		MyThread t1 = ts.new MyThread("t1", new MyEQH(1000), url);
+		MyThread t2 = ts.new MyThread("t2", new MyEQH(1000), url);
+		MyThread t3 = ts.new MyThread("t3", new MyEQH(1000), url);
+		MyThread t4 = ts.new MyThread("t4", new MyEQH(1000), url);
+		MyThread t5 = ts.new MyThread("t5", new MyEQH(1000), url);
+		MyThread t6 = ts.new MyThread("t6", new MyEQH(1000), url);
 		
 		t1.start();
 		t2.start();
@@ -184,11 +188,43 @@ public class TestClient {
 		print("*** Test 4 Passed! *** ");
 	}
 	
+	private static void serverTest5(MyEQH eqh){
+		///////////////////// Test 5 /////////////////////
+		// Forwarding
+		print("*** Test 1: Forwarding *** ");
+		
+		// Setup parameters
+		MySesManager sManager;
+		String url;
+		
+		// Get url
+		url = "rdma://" + hostname + ":" + port;
+		
+		// Setting up a session server
+		print("----- Setting up a session server...");
+		sManager = new MySesManager(eqh, url);
+		
+		// Forward
+		sManager.forward(new MySesServer(eqh, url), 1000);
+		
+		// Closing the session server
+		print("------ Closing the session server...");
+		sManager.close();
+
+		successIndicators[0] = true;
+		print("*** Test 1 Passed! *** ");
+		
+		
+		
+		successIndicators[4] = true;
+		print("*** Test 5 Passed! *** ");
+	}
+	
 	class MyThread extends Thread{
 		
 		EventQueueHandler eqh;
 		String url;
-		MySesClient sClient;
+		MySesManager sManager;
 		
 		public MyThread(String caption, EventQueueHandler eqh, String url) {
 			super(caption);
@@ -197,9 +233,9 @@ public class TestClient {
 		}
 		
 		public void run(){
-			// Setting up a session client
-			print("----- Setting up a session client...");
-			sClient = new MySesClient(eqh, url);
+			// Setting up a session server
+			print("----- Setting up a session server...");
+			sManager = new MySesManager(eqh, url);
 			
 			// Wait
 			try{
@@ -208,9 +244,9 @@ public class TestClient {
 				
 			}
 			
-			// Closing the session client
-			print("------ Closing the session client...");
-			sClient.close();
+			// Closing the session server
+			print("------ Closing the session server...");
+			sManager.close();
 		}
 	}
 	
@@ -237,7 +273,7 @@ public class TestClient {
 	}
 	
 	public static void usage(){
-		print("Usage: ./runClientTest.sh <HOSTNAME> <PORT> [test]\nWhere [test] includes:\n0		Run all tests \n<n>		Run test number <n>\n");
+		print("Usage: ./runServerTest.sh <HOSTNAME> <PORT> [test]\nWhere [test] includes:\n0		Run all tests \n<n>		Run test number <n>\n");
 	}
 	
 	private static void print(String str){

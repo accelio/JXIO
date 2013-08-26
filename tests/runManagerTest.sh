@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ## 11 August 2013
-## ===========================
-## JX Verification Client Test
-## ===========================
-## This script compiles and runs the JX verification test of the session client.
+## ============================
+## JX Verification Manager Test
+## ============================
+## This script compiles and runs the JX verification test of the session maneger.
 
-echo -e "\n******************* JX Verification Client Test *******************"
+echo -e "\n******************* JX Verification Manager Test *******************"
 
 # Checks to see if JAVA path is valid
 if [ ! -e ${JAVA_HOME} ]; then
@@ -21,6 +21,7 @@ fi
 
 # Remove temporary files and cores
 rm -rf JXLog.txt*
+rm -rf *.log
 rm -rf /.autodirect/mtrswgwork/UDA/core_files_TEMP/*
 
 # Check arguments
@@ -44,4 +45,4 @@ TEST_NUMBER=$3
 javac -cp "jx.jar:." *.java
 
 # Run the tests
-java -classpath jx.jar:. TestClient $IP $PORT $TEST_NUMBER
+java -classpath jx.jar:. TestManager $IP $PORT $TEST_NUMBER

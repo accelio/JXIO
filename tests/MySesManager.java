@@ -36,21 +36,27 @@ public class MySesManager extends ServerManager{
 		switch (session_event){
 		case 0:
 			event = "SESSION_REJECT";
+			this.close(); // Added
 			break;
 		case 1:
 			event = "SESSION_TEARDOWN";
+			this.close(); // Added
 			break;
 		case 2:
 			event = "CONNECTION_CLOSED";
+			this.close(); // Added
 			break;
 		case 3:
 			event = "CONNECTION_ERROR";
+			this.close(); // Added
 			break;
 		case 4:
 			event = "SESSION_ERROR";
+			this.close(); // Added
 			break;
 		default:
 			event = "UNKNOWN";
+			this.close(); // Added
 			break;
 		}
 		logger.log(Level.SEVERE, "GOT EVENT " + event + "because of " + reason);
