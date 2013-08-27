@@ -9,7 +9,7 @@ public abstract class SessionClient implements Eventable{
 	protected EventQueueHandler eventQHandler  =null;
 	protected String url;
 //	protected int port;
-
+	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
 	
 	abstract public void onReplyCallback();
 	abstract public void onSessionEstablished();
@@ -77,6 +77,8 @@ public abstract class SessionClient implements Eventable{
 	
 	public long getId(){ return id;}
 	
+	public boolean isClosing() {return isClosing;}
+	
 	
 	public boolean close (){
 
@@ -84,9 +86,10 @@ public abstract class SessionClient implements Eventable{
 			logger.log(Level.SEVERE, "closing Session with empty id");
 			return false;
 		}
-//		JXBridge.closeSessionClient(id);	
+		JXBridge.closeSessionClient(id);	
 		
 		logger.log(Level.INFO, "in the end of SessionClientClose");
+		isClosing = true;
 		return true;
 	}
 /*	

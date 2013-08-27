@@ -7,6 +7,7 @@ public abstract class ServerManager implements Eventable{
 	private long id = 0;
 	private int port;
 	static protected int sizeEventQ = 10000;
+	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
 	
 	private static JXLog logger = JXLog.getLog(ServerManager.class.getCanonicalName());
 	
@@ -35,6 +36,7 @@ public abstract class ServerManager implements Eventable{
 			return false;
 		}
 		JXBridge.stopServer(id);
+		isClosing = true;
 		return true;
 	}
 	
@@ -51,7 +53,8 @@ public abstract class ServerManager implements Eventable{
 		}
 	}
 	
-	public long getId(){ return id;} //getId()
+	public long getId(){ return id;} 
+	public boolean isClosing() {return isClosing;}
 	
 	
 	public void onEvent (int eventType, Event ev){

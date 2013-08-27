@@ -12,5 +12,8 @@ public interface Eventable {
 	public boolean close();
 	
 	public long getId();
+	
+	public boolean isClosing();
+	
 
 }

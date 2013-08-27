@@ -110,21 +110,12 @@ public class JXBridge {
 		return ret;
 	}
 	
-	
 	private static native void stopEventLoopNative(long ptr);
 	static void stopEventLoop(long ptr){
 		logger.log(Level.INFO, "invoking stopEventLoopNative");
 		stopEventLoopNative(ptr);
 		logger.log(Level.INFO, "finished stopEventLoopNative");
 	}
-	/*
-	private static native boolean closeSessionClientNative(long sesPtr);
-	static boolean closeSessionClient(long sesPtr){
-		logger.log(Level.INFO, "invoking Bridge.closeSessionClient");
-		boolean ret = closeSessionClientNative(sesPtr);
-		logger.log(Level.INFO, "finished Bridge.closeSessionClient=" + ret);
-		return ret;
-	}*/
 	
 	
 	private static native void closeSessionClientNative(long sesPtr);

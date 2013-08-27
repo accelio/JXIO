@@ -11,7 +11,7 @@ public abstract class SessionServer implements Eventable {
 	private int port;
 	protected String url;
 	private EventQueueHandler eventQHandler  =null;
-	
+	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
 	
 	abstract public void onRequestCallback();
 	abstract public void onSessionErrorCallback(int session_event, String reason );
@@ -69,17 +69,18 @@ public abstract class SessionServer implements Eventable {
 	}
 	
 	public boolean close(){
-		eventQHandler.removeEventable (this); //TODO: fix this
+//		eventQHandler.removeEventable (this); //TODO: fix this
 		if (id == 0){
 			logger.log(Level.SEVERE, "closing SessionServer with empty id");
 			return false;
 		}
 		JXBridge.stopServer(id);
+		isClosing = true;
 		return true;
 	}
 	
 	public long getId(){ return id;}
 	
-	
+	public boolean isClosing() {return isClosing;}
 
 }

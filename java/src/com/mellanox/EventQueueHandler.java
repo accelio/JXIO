@@ -27,7 +27,7 @@ public class EventQueueHandler {
 	
 	Map <Long,Eventable> eventables = new HashMap<Long,Eventable>();
 //	int offset = 0;
-	protected boolean stopLoop = false;
+	public boolean stopLoop = false;
 	
 	private static JXLog logger = JXLog.getLog(EventQueueHandler.class.getCanonicalName());
 	
@@ -133,18 +133,32 @@ public class EventQueueHandler {
 	
 
 	public void close (){
-		if (!this.eventables.isEmpty()){
-			logger.log(Level.WARNING, "attempting to close EQH while objects are still listening. aborting");
-			return;
+		while (!this.eventables.isEmpty()){
+		    for (Map.Entry<Long,Eventable> entry : eventables.entrySet())
+		     {
+			Eventable ev = entry.getValue();
+			if (!ev.isClosing()){
+			    logger.log(Level.INFO, "closing eventable with id "+entry.getKey()); 
+			    ev.close();
+			}
+		     }
+		    runEventLoop (1,0);
+		    logger.log(Level.WARNING, "attempting to close EQH while objects "+this.eventables.keySet()+" are still listening. aborting");
+//			runEventLoop (1,0);
 		}
 		logger.log(Level.INFO, "no more objects listening");
 		JXBridge.closeCtx(id);
 		this.stopLoop = true;
 	}
+
 	
 	
 	public long getID(){return id;}
 
+	public void stopEventLoop(){
+	    JXBridge.stopEventLoop(id);
+	}
+	
 	
 	//this function closes all sessions on this eqh
 	public void stopAndClose(){

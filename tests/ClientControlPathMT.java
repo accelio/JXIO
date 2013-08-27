@@ -38,8 +38,10 @@ private static JXLog logger = JXLog.getLog(ClientControlPathSimpleTest.class.get
 			ses.close();
 			System.out.println("***********************here");
 			try {
+			    	eventQHndl.stopLoop = true;
+			    	eventQHndl.stopEventLoop();
 				t.join();
-				System.out.println("***********************here2");
+				System.out.println("***********************after join");
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -47,7 +49,7 @@ private static JXLog logger = JXLog.getLog(ClientControlPathSimpleTest.class.get
 			
 		}
 		
-//		eventQHndl.close();
+		eventQHndl.close();
 
 	}
 }
