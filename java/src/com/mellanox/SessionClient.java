@@ -28,6 +28,8 @@ public abstract class SessionClient implements Eventable{
 			logger.log(Level.SEVERE, "there was an error creating session");
 		}
 		logger.log(Level.INFO, "id is "+id);
+		
+		this.eventQHandler.addEventable (this); 
 
 	}
 	

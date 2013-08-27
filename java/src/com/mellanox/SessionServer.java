@@ -29,6 +29,7 @@ public abstract class SessionServer implements Eventable {
 		if (this.id == 0){
 			logger.log(Level.SEVERE, "there was an error creating SessionServer");
 		}
+		this.eventQHandler.addEventable (this);
 	}
 	
 
