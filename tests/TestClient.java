@@ -155,27 +155,34 @@ public class TestClient {
 		
 		TestClient tc = new TestClient();
 		MyThread t1 = tc.new MyThread("t1", new MyEQH(1000), url);
-		MyThread t2 = tc.new MyThread("t2", new MyEQH(1000), url);
-		MyThread t3 = tc.new MyThread("t3", new MyEQH(1000), url);
-		MyThread t4 = tc.new MyThread("t4", new MyEQH(1000), url);
-		MyThread t5 = tc.new MyThread("t5", new MyEQH(1000), url);
-		MyThread t6 = tc.new MyThread("t6", new MyEQH(1000), url);
+		//MyThread t2 = tc.new MyThread("t2", new MyEQH(1000), url);
+		//MyThread t3 = tc.new MyThread("t3", new MyEQH(1000), url);
+		//MyThread t4 = tc.new MyThread("t4", new MyEQH(1000), url);
+		//MyThread t5 = tc.new MyThread("t5", new MyEQH(1000), url);
+		//MyThread t6 = tc.new MyThread("t6", new MyEQH(1000), url);
 		
-		t1.start();
-		t2.start();
-		t3.start();
-		t4.start();
-		t5.start();
-		t6.start();
+		Thread t11 = new Thread(t1);
+		//Thread t22 = new Thread(t2);
+		//Thread t33 = new Thread(t3);
+		//Thread t44 = new Thread(t4);
+		//Thread t55 = new Thread(t5);
+		//Thread t66 = new Thread(t6);
+		
+		t11.start();
+		//t22.start();
+		//t33.start();
+		//t44.start();
+		//t55.start();
+		//t66.start();
 		
 		// Wait for theard to end
 		try{
-			t1.join();
-			t2.join();
-			t3.join();
-			t4.join();
-			t5.join();
-			t6.join();
+			t11.join();
+			//t22.join();
+			//t33.join();
+			//t44.join();
+			//t55.join();
+			//t66.join();
 		} catch (InterruptedException e){
 			
 		}
@@ -184,14 +191,13 @@ public class TestClient {
 		print("*** Test 4 Passed! *** ");
 	}
 	
-	class MyThread extends Thread{
+	class MyThread implements Runnable{
 		
 		EventQueueHandler eqh;
 		String url;
 		MySesClient sClient;
 		
 		public MyThread(String caption, EventQueueHandler eqh, String url) {
-			super(caption);
 			this.eqh = eqh;
 			this.url = url;
 		}
@@ -201,12 +207,8 @@ public class TestClient {
 			print("----- Setting up a session client...");
 			sClient = new MySesClient(eqh, url);
 			
-			// Wait
-			try{
-				sleep((long)(Math.random()*1000));
-			} catch (InterruptedException e){
-				
-			}
+			// Run Event Loop
+			eqh.runEventLoop(1, 0);
 			
 			// Closing the session client
 			print("------ Closing the session client...");
