@@ -217,8 +217,12 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_JXBridge_getErrorNative(J
 
 extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx) {
 
-	jlongArray dataToJava;
 	jlong temp[2];
+
+	jlongArray dataToJava = env->NewLongArray(2);
+	if (dataToJava == NULL) {
+		return NULL; /* out of memory error thrown */
+	}
 
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	cJXServer * server = new cJXServer(url, ptrCtx);
