@@ -24,7 +24,7 @@ public class ClientControlPathSimpleTest {
 		for (int i=0; i<num_times; i++){
 			
 			ses = new MySesClient(eventQHndl, url);
-			eventQHndl.addEventable (ses);
+//			eventQHndl.addEventable (ses);
 			eventQHndl.runEventLoop(1, 0);
 //			eventQHndl.runEventLoop(1, 0);
 			//for checking if server sends hello

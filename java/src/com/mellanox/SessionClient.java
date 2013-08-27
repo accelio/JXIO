@@ -84,7 +84,7 @@ public abstract class SessionClient implements Eventable{
 			logger.log(Level.SEVERE, "closing Session with empty id");
 			return false;
 		}
-		JXBridge.closeSessionClient(id);	
+//		JXBridge.closeSessionClient(id);	
 		
 		logger.log(Level.INFO, "in the end of SessionClientClose");
 		return true;
