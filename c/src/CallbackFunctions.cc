@@ -6,7 +6,7 @@
 #include "CallbackFunctions.h"
 
 
-void doneEventCreating(cJXCtx *ctx){
+void doneEventCreating(cJXCtx *ctx, int sizeWritten){
 	ctx->eventQueue->increaseOffset(sizeWritten);
 
 	//need to stop the event queue only if this is the first callback
@@ -31,7 +31,7 @@ int on_new_session_callback(struct xio_session *session,
 	char* buf = ctx->eventQueue->getBuffer();
 	int sizeWritten = ctx->events->writeOnNewSessionEvent(buf, cntxbl, session, req, cb_prv_data);
 
-	doneEventCreating(ctx);
+	doneEventCreating(ctx, sizeWritten);
 
 	log (lsDEBUG, "the end of new session callback\n");
 
@@ -52,7 +52,7 @@ int on_msg_send_complete_callback(struct xio_session *session,
 
 	char* buf = ctx->eventQueue->getBuffer();
 	int sizeWritten = ctx->events->writeOnMsgSendCompleteEvent(buf, cntxbl, session, msg, cb_prv_data);
-	doneEventCreating(ctx);
+	doneEventCreating(ctx, sizeWritten);
 		
 	log (lsDEBUG, "finished on_msg_send_complete_callback\n");
 	return 0;
@@ -75,7 +75,7 @@ int on_msg_callback(struct xio_session *session,
 
 	char* buf = ctx->eventQueue->getBuffer();
 	int sizeWritten = ctx->events->writeOnMsgReceivedEvent(buf, cntxbl, session, msg, more_in_batch, cb_prv_data);
-	doneEventCreating(ctx);
+	doneEventCreating(ctx, sizeWritten);
 
 	return 0;
 }
@@ -95,7 +95,7 @@ int on_msg_error_callback(struct xio_session *session,
 //	cJXCtx *ctx = (cJXCtx*)conn_user_context;
 	char* buf = ctx->eventQueue->getBuffer();
 	int sizeWritten = ctx->events->writeOnMsgErrorEvent(buf, cntxbl, session, error, msg, conn_user_context);
-	doneEventCreating(ctx);
+	doneEventCreating(ctx, sizeWritten);
 	return 0;
 }
 
@@ -115,7 +115,7 @@ int on_session_established_callback(struct xio_session *session,
 //	cJXCtx *ctx = (cJXCtx*)cb_prv_data;
 	char* buf = ctx->eventQueue->getBuffer();
 	int sizeWritten = ctx->events->writeOnSessionEstablishedEvent(buf, cntxbl, session, rsp, cb_prv_data);
-	doneEventCreating(ctx);
+	doneEventCreating(ctx, sizeWritten);
 
 	return 0;
 }
@@ -169,7 +169,7 @@ int on_session_event_callback(struct xio_session *session,
 
 		char* buf = ctx->eventQueue->getBuffer();
 		int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, cntxbl, session, event_data, cb_prv_data);
-		doneEventCreating(ctx);
+		doneEventCreating(ctx, sizeWritten);
 
 	}
 

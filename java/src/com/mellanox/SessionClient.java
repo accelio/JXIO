@@ -23,7 +23,7 @@ public abstract class SessionClient implements Eventable{
 		this.eventQHandler = eventQHandler;
 		this.url = url;
 		
-		this.id = JXBridge.startClientSession(url, eventQHandler.getID());
+		this.id = JXBridge.startSessionClient(url, eventQHandler.getID());
 		if (this.id == 0){
 			logger.log(Level.SEVERE, "there was an error creating session");
 		}

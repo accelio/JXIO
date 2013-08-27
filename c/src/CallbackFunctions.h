@@ -64,7 +64,7 @@ int on_session_event_callback(struct xio_session *session,
 		struct xio_session_event_data *event_data,
 		void *cb_prv_data);
 
-void doneEventCreating(cJXCtx *ctx);
+void doneEventCreating(cJXCtx *ctx, int sizeWritten);
 
 
 

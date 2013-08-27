@@ -4,8 +4,16 @@
 #include <map>
 #include <jni.h>
 
-#include "cJXBridge.h"
+#include <libxio.h>
 
+#include "CallbackFunctions.h"
+#include "cJXSession.h"
+#include "cJXServer.h"
+
+#include "cJXCtx.h"
+#include "Utils.h"
+
+#define bla 2000
 
 static jclass cls;
 static JavaVM *cached_jvm;
@@ -106,8 +114,6 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_createCtxNative
 }
 
 
-
-
 //Katya
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_closeCtxNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
@@ -144,48 +150,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_stopEventLoopNative
 
 
 
-
-//Katya
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
-{
-
-	cJXSession * ses = (cJXSession*)ptrSes;
-	return ses->closeConnection();
-
-}
-
-/*
-//Katya
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeConnectionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
-{
-
-	cJXSession * ses = (cJXSession*)ptrSes;
-	return ses->closeConnection();
-}
-
-//Katya
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
-{
-
-	cJXSession * ses = (cJXSession*)ptrSes;
-	delete(ses);
-}
-*/
-
-
-
-
-//Katya
-extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_stopServerNative(JNIEnv *env, jclass cls, jlong ptrServer)
-{
-	cJXServer *server = (cJXServer *)ptrServer;
-	delete server;
-
-}
-
-
-
-extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startClientSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx) {
+extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx) {
 
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	cJXSession * ses = new cJXSession(url, ptrCtx);
@@ -199,19 +164,14 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startClientSession
 }
 
 
-extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_JXBridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason) {
+//Katya
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
+{
 
-	struct xio_session	*session;
-	const char * error;
-	jstring str;
-	
-	error = xio_strerror(errorReason);
-	str = env->NewStringUTF(error);
-//	free(error); TODO: to free it????
-	return str;
- 
+	cJXSession * ses = (cJXSession*)ptrSes;
+	return ses->closeConnection();
+
 }
-
 
 
 
@@ -225,6 +185,7 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerNa
 	}
 
 	const char *url = env->GetStringUTFChars(jurl, NULL);
+
 	cJXServer * server = new cJXServer(url, ptrCtx);
 	env->ReleaseStringUTFChars(jurl, url);
 	if (server->errorCreating){
@@ -242,19 +203,24 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerNa
 }
 
 
+//Katya
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_stopServerNative(JNIEnv *env, jclass cls, jlong ptrServer)
+{
+	cJXServer *server = (cJXServer *)ptrServer;
+	delete server;
+
+}
+
+
+
+
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrSession) {
 
 	struct xio_session	*session;	
-//	char			portal[256];
-//	const char* constPortal[1];
 	int retVal;
 
 
 	const char *url = env->GetStringUTFChars(jurl, NULL);
-
-//	sprintf(portal, "rdma://%s:%d", hostname, port);
-
-//	constPortal[0] = (const char*)portal;
 
 	session = (struct xio_session *)ptrSession;
 	
@@ -271,6 +237,24 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_forwardSessionN
 	return true;
 	
 }
+
+
+extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_JXBridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason) {
+
+	struct xio_session	*session;
+	const char * error;
+	jstring str;
+
+	error = xio_strerror(errorReason);
+	str = env->NewStringUTF(error);
+//	free(error); TODO: to free it????
+	return str;
+
+}
+
+
+
+
 
 
 
