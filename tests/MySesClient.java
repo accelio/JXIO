@@ -38,7 +38,7 @@ import com.mellanox.*;
 				break;
 			case 3:
 				event = "CONNECTION_ERROR";
-				this.close(); //through the bridge calls connection close
+//				this.close(); //through the bridge calls connection close
 				break;
 			case 4:
 				event = "SESSION_ERROR";
@@ -49,7 +49,7 @@ import com.mellanox.*;
 			}
 			
 			logger.log(Level.SEVERE, "[EVENT] GOT EVENT " + event + " because of " + reason);
-			System.out.println("[EVENT] GOT EVENT " + event + " because of " + reason);
+//			System.out.println("[EVENT] GOT EVENT " + event + " because of " + reason);
 			
 		}
 	

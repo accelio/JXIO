@@ -146,9 +146,9 @@ public class JXBridge {
 	
 	private static native boolean createCtxNative(int eventQueueSize, Object dataFromC);
 	static boolean createCtx(int eventQueueSize, Object dataFromC) {
-		logger.log(Level.INFO, "invoking closeConnectionClientNative");
+		logger.log(Level.INFO, "invoking createCtxNative");
 		boolean ret = createCtxNative(eventQueueSize, dataFromC);
-		logger.log(Level.INFO, "finished closeConnectionClientNative=" + ret);
+		logger.log(Level.INFO, "finished createCtxNative");
 		return ret;
 		
 	}

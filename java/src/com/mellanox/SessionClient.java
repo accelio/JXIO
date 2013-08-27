@@ -39,7 +39,7 @@ public abstract class SessionClient implements Eventable{
 		switch (eventType){
 
 		case 0: //session error event
-			logger.log(Level.INFO, "received session error event");
+			logger.log(Level.INFO, "received session event");
 			if (ev  instanceof EventSession){
 				int errorType = ((EventSession) ev).errorType;
 				String reason = ((EventSession) ev).reason;
