@@ -6,7 +6,16 @@
 #include "CallbackFunctions.h"
 
 
+void doneEventCreating(cJXCtx *ctx){
+	ctx->eventQueue->increaseOffset(sizeWritten);
 
+	//need to stop the event queue only if this is the first callback
+	if (!ctx->eventsNum){
+		log (lsDEBUG, "inside on_new_session_callback - stopping the event queue\n");
+		xio_ev_loop_stop(ctx->evLoop);
+	}
+	ctx->eventsNum++;
+}
 
 
 // implementation of the XIO callbacks
@@ -21,15 +30,8 @@ int on_new_session_callback(struct xio_session *session,
 	cJXCtx *ctx = cntxbl->getCtxClass();
 	char* buf = ctx->eventQueue->getBuffer();
 	int sizeWritten = ctx->events->writeOnNewSessionEvent(buf, cntxbl, session, req, cb_prv_data);
-	ctx->eventQueue->increaseOffset(sizeWritten);
 
-	//need to stop the event queue only if this is the first callback
-	if (!ctx->eventsNum){
-		log (lsDEBUG, "inside on_new_session_callback - stopping the event queue\n");
-		xio_ev_loop_stop(ctx->evLoop);
-	}
-	ctx->eventsNum++;
-
+	doneEventCreating(ctx);
 
 	log (lsDEBUG, "the end of new session callback\n");
 
@@ -50,7 +52,7 @@ int on_msg_send_complete_callback(struct xio_session *session,
 
 	char* buf = ctx->eventQueue->getBuffer();
 	int sizeWritten = ctx->events->writeOnMsgSendCompleteEvent(buf, cntxbl, session, msg, cb_prv_data);
-	ctx->eventQueue->increaseOffset(sizeWritten);
+	doneEventCreating(ctx);
 		
 	log (lsDEBUG, "finished on_msg_send_complete_callback\n");
 	return 0;
@@ -73,14 +75,7 @@ int on_msg_callback(struct xio_session *session,
 
 	char* buf = ctx->eventQueue->getBuffer();
 	int sizeWritten = ctx->events->writeOnMsgReceivedEvent(buf, cntxbl, session, msg, more_in_batch, cb_prv_data);
-	ctx->eventQueue->increaseOffset(sizeWritten);
-
-	//need to stop the event queue only if this is the first callback
-	if (!ctx->eventsNum){
-		log (lsDEBUG, "inside on_msg_callback - stopping the event queue\n");
-		xio_ev_loop_stop(ctx->evLoop);
-	}
-	ctx->eventsNum++;
+	doneEventCreating(ctx);
 
 	return 0;
 }
@@ -100,14 +95,7 @@ int on_msg_error_callback(struct xio_session *session,
 //	cJXCtx *ctx = (cJXCtx*)conn_user_context;
 	char* buf = ctx->eventQueue->getBuffer();
 	int sizeWritten = ctx->events->writeOnMsgErrorEvent(buf, cntxbl, session, error, msg, conn_user_context);
-	ctx->eventQueue->increaseOffset(sizeWritten);
-
-	//need to stop the event queue only if this is the first callback
-	if (!ctx->eventsNum){
-		log (lsDEBUG, "inside on_msg_error_callback - stopping the event queue\n");
-			xio_ev_loop_stop(ctx->evLoop);
-	}
-	ctx->eventsNum++;
+	doneEventCreating(ctx);
 	return 0;
 }
 
@@ -127,14 +115,7 @@ int on_session_established_callback(struct xio_session *session,
 //	cJXCtx *ctx = (cJXCtx*)cb_prv_data;
 	char* buf = ctx->eventQueue->getBuffer();
 	int sizeWritten = ctx->events->writeOnSessionEstablishedEvent(buf, cntxbl, session, rsp, cb_prv_data);
-	ctx->eventQueue->increaseOffset(sizeWritten);
-
-	//need to stop the event queue only if this is the first callback
-	if (!ctx->eventsNum){
-		log (lsDEBUG, "inside on_session_established_callback - stopping the event queue\n");
-		xio_ev_loop_stop(ctx->evLoop);
-	}
-	ctx->eventsNum++;
+	doneEventCreating(ctx);
 
 	return 0;
 }
@@ -179,18 +160,16 @@ int on_session_event_callback(struct xio_session *session,
 		//the event should also be written to buffer to let user know that the session was closed
 //		break;
 	}
+	case(XIO_SESSION_CONNECTION_ERROR_EVENT):
+	{
+		log (lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
+
+	}
 	default:
 
 		char* buf = ctx->eventQueue->getBuffer();
 		int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, cntxbl, session, event_data, cb_prv_data);
-		ctx->eventQueue->increaseOffset(sizeWritten);
-
-		//need to stop the event queue only if this is the first callback
-		if (!ctx->eventsNum){
-			log (lsDEBUG, "inside on_session_event_callback - stopping the event queue\n");
-			xio_ev_loop_stop(ctx->evLoop);
-		}
-		ctx->eventsNum++;
+		doneEventCreating(ctx);
 
 	}
 
