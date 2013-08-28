@@ -2,9 +2,6 @@ package clientTests;
 
 import java.util.Random;
 
-import Tests.MyEQH;
-import Tests.MySesClient;
-
 public class MutipleClientsOnSameEQHTest implements Runnable{
 
 	public void run(){

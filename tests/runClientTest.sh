@@ -41,7 +41,7 @@ PORT=$2
 TEST_NUMBER=$3
 
 # Compile
-javac -cp "jx.jar:." Tests/*.java clientTests/*.java
+javac -cp "jx.jar:." ./*.java clientTests/*.java
 
 # Run the tests
 java -classpath jx.jar:. clientTests/TestClient $IP $PORT $TEST_NUMBER
