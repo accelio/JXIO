@@ -1,10 +1,9 @@
 #!/bin/bash
 
-## 11 August 2013
 ## ============================
 ## JX Verification Manager Test
 ## ============================
-## This script compiles and runs the JX verification test of the session maneger.
+## This script compiles and runs the JX verification test of the session manager.
 
 echo -e "\n******************* JX Verification Manager Test *******************"
 
@@ -20,8 +19,8 @@ if [ ! -e ${LD_LIBRARY_PATH} ]; then
 fi
 
 # Remove temporary files and cores
-rm -rf JXLog.txt*
-rm -rf *.log
+rm -f bla
+rm -f JXLog.txt*
 rm -rf /.autodirect/mtrswgwork/UDA/core_files_TEMP/*
 
 # Check arguments
@@ -42,7 +41,7 @@ PORT=$2
 TEST_NUMBER=$3
 
 # Compile
-javac -cp "jx.jar:." *.java
+javac -cp "jx.jar:." Tests/*.java managerTests/*.java
 
 # Run the tests
-java -classpath jx.jar:. TestManager $IP $PORT $TEST_NUMBER
+java -classpath jx.jar:. managerTests/TestManager $IP $PORT $TEST_NUMBER

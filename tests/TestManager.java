@@ -1,3 +1,5 @@
+package Tests;
+
 import java.util.logging.Level;
 import java.util.Random;
 import com.mellanox.EventQueueHandler;
