@@ -6,10 +6,11 @@ topdir=../../
 # additi-onal include paths necessary to compile the C library
 AM_CPPFLAGS = -fPIC -DPIC  				\
 		-I$(JDK)/include -I$(JDK)/include/linux \
-		-I$(topdir)/libtrdma/include  
+		-I$(topdir)/libxio/include  
 	    @AM_CFLAGS@
-AM_LDFLAGS = -lxio -lrdmacm -libverbs -lrt -ldl \
-			 -L$(topdir)libtrdma/src 
+#AM_LDFLAGS = -lxio -lrdmacm -libverbs -lrt -ldl \
+AM_LDFLAGS =  -lrdmacm -libverbs -lrt -ldl \
+			 -L$(topdir)libxio/src 
 
 ###############################################################################
 # THE LIBRARIES TO BUILD
@@ -19,12 +20,12 @@ AM_LDFLAGS = -lxio -lrdmacm -libverbs -lrt -ldl \
 bin_PROGRAMS = libjx.so
 
 # the sources to add to the library and to add to the source distribution
-libjx_so_SOURCES = Utils.cc EventQueue.cc Events.cc CallbackFunctions.cc cJXServer.cc cJXSession.cc cJXCtx.cc cJXBridge.cc
-#cJXBridge.cc  CallbackFunctions.cc cJXCtx.cc cJXSession.cc cJXServer.cc Events.cc EventQueue.cc Utils.cc
+libjx_so_SOURCES = Utils.cc Event_queue.cc Events.cc CallbackFunctions.cc Server.cc Client.cc Context.cc Bridge.cc
 	
 				
 libjx_so_LDFLAGS = -shared -rdynamic 		\
-				     -L$(topdir)libtrdma/lib -lxio -lrdmacm -libverbs -lrt -ldl
+		   -L$(topdir)libxio/lib  -lrdmacm -libverbs -lrt -ldl
+#				     -L$(topdir)libxio/lib -lxio -lrdmacm -libverbs -lrt -ldl
 
 libjx_so_LDADD = $(AM_LDFLAGS)
 
