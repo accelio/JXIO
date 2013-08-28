@@ -1,6 +1,6 @@
-package clientTests;
+//package clientTests;
 
-public class MutipleThreads implements Runnable{
+public class MutipleThreadsClient implements Runnable{
 
 	public void run(){
 		///////////////////// Test 4 /////////////////////

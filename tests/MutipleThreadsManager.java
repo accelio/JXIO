@@ -1,6 +1,6 @@
-package managerTests;
+//package managerTests;
 
-public class MutipleThreads implements Runnable{
+public class MutipleThreadsManager implements Runnable{
 
 	public void run(){
 		///////////////////// Test 4 /////////////////////

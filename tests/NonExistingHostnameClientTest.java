@@ -1,9 +1,6 @@
-package clientTests;
+//package clientTests;
 
-import Tests.MyEQH;
-import Tests.MySesClient;
-
-public class NonExistingHostnameTest implements Runnable{
+public class NonExistingHostnameClientTest implements Runnable{
 
 	public void run(){
 		///////////////////// Test 2 /////////////////////

@@ -1,7 +1,4 @@
-package clientTests;
-
-import Tests.MyEQH;
-import Tests.MySesClient;
+//package clientTests;
 
 public class OpenCloseClientTest implements Runnable{
 

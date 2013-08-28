@@ -1,7 +1,4 @@
-package managerTests;
-
-import Tests.MyEQH;
-import Tests.MySesManager;
+//package managerTests;
 
 public class OpenCloseManagerTest implements Runnable{
 

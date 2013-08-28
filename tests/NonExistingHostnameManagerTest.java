@@ -1,9 +1,6 @@
-package managerTests;
+//package managerTests;
 
-import Tests.MyEQH;
-import Tests.MySesManager;
-
-public class NonExistingHostnameTest implements Runnable{
+public class NonExistingHostnameManagerTest implements Runnable{
 
 	public void run(){
 		///////////////////// Test 2 /////////////////////

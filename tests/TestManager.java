@@ -1,11 +1,7 @@
-package managerTests;
+//package managerTests;
 
 import java.util.logging.Level;
 import java.util.Random;
-
-import Tests.MyEQH;
-import Tests.MySesManager;
-
 import com.mellanox.EventQueueHandler;
 import com.mellanox.JXLog;
 
@@ -44,13 +40,13 @@ public class TestManager {
 			switch(requestedTest){
 			case 0: test = new OpenCloseManagerTest();
 					test.run();
-					test = new NonExistingHostnameTest();
+					test = new NonExistingHostnameManagerTest();
 					test.run();
 					test = new MutipleManagersOnSameEQHTest();
 					test.run();
 					test = new OpenRunEventLoopCloseManagerTest();
 					test.run();
-					test = new MutipleThreads();
+					test = new MutipleThreadsManager();
 					test.run();
 					report();
 					return;
@@ -58,7 +54,7 @@ public class TestManager {
 					test.run();
 					report();
 					return;
-			case 2:	test = new NonExistingHostnameTest();
+			case 2:	test = new NonExistingHostnameManagerTest();
 					test.run();
 					report();
 					return;
@@ -70,7 +66,7 @@ public class TestManager {
 					test.run();
 					report();
 					return;
-			case 5: test = new MutipleThreads();
+			case 5: test = new MutipleThreadsManager();
 					test.run();
 					report();
 						return;
