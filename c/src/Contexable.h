@@ -25,11 +25,11 @@ class Contexable{
 
 
 public:
-	cJXCtx* getCtxClass(){return ctxClass;}
-	void setCtxClass(cJXCtx* c){this->ctxClass = c;}
+	cJXCtx* get_ctx_class(){return ctx_class;}
+	void set_ctx_class(cJXCtx* c){this->ctx_class = c;}
 
 private:
-	cJXCtx* ctxClass;
+	cJXCtx* ctx_class;
 
 };
 

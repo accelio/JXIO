@@ -33,9 +33,11 @@ public:
 	cJXServer(const char	*url, long ptrCtx);
 	~cJXServer();
 
+	bool forward(struct xio_session *, const char * url);
+
 	struct xio_server	*server;
 
-	bool errorCreating;
+	bool error_creating;
 	int port; //indicates the actual port on which the server listens
 
 //	cJXCtx* ctx;

@@ -57,7 +57,7 @@ public abstract class ServerManager implements Eventable{
 	}
 	
 	public void forward(SessionServer ses, long ptrSes){
-		JXBridge.forwardSession(ses.url, ptrSes);
+		JXBridge.forwardSession(ses.url, ptrSes, ses.getId());
 	}
 	
 	

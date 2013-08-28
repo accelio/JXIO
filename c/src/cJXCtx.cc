@@ -17,28 +17,29 @@
 
 #include "cJXCtx.h"
 
-cJXCtx::cJXCtx(int eventQSize){
-	errorCreating = false;
-	this->mapSession = NULL;
+cJXCtx::cJXCtx(int eventQSize)
+{
+	error_creating = false;
+	this->map_session = NULL;
 
 
-	this->eventsNum = 0;
-	evLoop = xio_ev_loop_init();
-	if (evLoop == NULL){
+	this->events_num = 0;
+	ev_loop = xio_ev_loop_init();
+	if (ev_loop == NULL){
 		log (lsERROR, "Error, xio_ev_loop_init failed\n");
-		errorCreating = true;
+		error_creating = true;
 		return;
 
 	}
 
-	ctx = xio_ctx_open(NULL, evLoop);
+	ctx = xio_ctx_open(NULL, ev_loop);
 	if (ctx == NULL){
 		log (lsERROR, "Error, xio_ctx_open failed\n");
 		goto cleanupEvLoop;
 	}
 
-	this->eventQueue = new EventQueue(eventQSize);
-	if (this->eventQueue->errorCreating){
+	this->event_queue = new EventQueue(eventQSize);
+	if (this->event_queue->error_creating){
 		log (lsERROR, "Error, fail in create of EventQueue object\n");
 		goto cleanupCtx;
 	}
@@ -47,43 +48,43 @@ cJXCtx::cJXCtx(int eventQSize){
 
 cleanupCtx:
 	xio_ctx_close(ctx);
-	delete (this->eventQueue);
+	delete (this->event_queue);
 
 cleanupEvLoop:
-	xio_ev_loop_destroy(&evLoop);
-	errorCreating = true;
-
-
+	xio_ev_loop_destroy(&ev_loop);
+	error_creating = true;
 }
 
-
-cJXCtx::~cJXCtx(){
-	if (errorCreating){
+cJXCtx::~cJXCtx()
+{
+	if (error_creating){
 		return;
 	}
-	if (this->mapSession != NULL){
-		delete (this->mapSession);
+	if (this->map_session != NULL){
+		delete (this->map_session);
 	}
-	delete (this->eventQueue);
+	delete (this->event_queue);
 	delete (this->events);
 	xio_ctx_close(ctx);
 	/* destroy the event loop */
-	xio_ev_loop_destroy(&evLoop);
+	xio_ev_loop_destroy(&ev_loop);
 }
 
-int cJXCtx::runEventLoop(){
+int cJXCtx::run_event_loop()
+{
     //update offset to 0: for indication if this is the first callback called
-	this->eventQueue->reset();
-	this->eventsNum = 0;
+	this->event_queue->reset();
+	this->events_num = 0;
 
-	xio_ev_loop_run(this->evLoop);
-	log (lsDEBUG, "after xio_ev_loop_run. there are %d evetns\n", this->eventsNum);
+	xio_ev_loop_run(this->ev_loop);
+	log (lsDEBUG, "after xio_ev_loop_run. there are %d evetns\n", this->events_num);
 
-	return this->eventsNum;
+	return this->events_num;
 }
 
-void cJXCtx::stopEventLoop(){
-	xio_ev_loop_stop(evLoop);
+void cJXCtx::stop_event_loop()
+{
+	xio_ev_loop_stop(ev_loop);
 }
 
 

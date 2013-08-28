@@ -22,24 +22,22 @@
 
 
 
-Events::Events(){
-
+Events::Events()
+{
 	this->size = 0;
 
 }
 
-
-
 int Events::writeOnSessionErrorEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
 			struct xio_session_event_data *event_data,
-			void *cb_prv_data){
-
+			void *cb_prv_data)
+{
 	log (lsDEBUG, "****** inside writeOnSessionErrorEvent private data is %p\n",cb_prv_data);
 
 	this->event.type = htonl (0);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
-	this->event.eventSpecific.sessionError.error_type = htonl(event_data->event);
-	this->event.eventSpecific.sessionError.error_reason = htonl (event_data->reason);
+	this->event.event_specific.session_error.error_type = htonl(event_data->event);
+	this->event.event_specific.session_error.error_reason = htonl (event_data->reason);
 
 	this->size = sizeof(int32_t) *3 + sizeof(int64_t);
 
@@ -47,33 +45,30 @@ int Events::writeOnSessionErrorEvent(char *buf, Contexable *ptrForJava, struct x
 	return this->size;
 }
 
-
 int Events::writeOnSessionEstablishedEvent (char *buf, Contexable *ptrForJava, struct xio_session *session,
 			struct xio_new_session_rsp *rsp,
-			void *cb_prv_data){
+			void *cb_prv_data)
+{
 	log (lsDEBUG, "****** inside writeOnSessionEstablishedEvent private data is %p\n",cb_prv_data);
-
 	event.type = htonl (2);
 	event.ptr = htobe64(intptr_t(ptrForJava));
 	this->size = sizeof(int32_t) + sizeof(int64_t);
 	memcpy(buf, &this->event, this->size);
 	return this->size;
-
 }
-
 
 int Events::writeOnNewSessionEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
 			struct xio_new_session_req *req,
-			void *cb_prv_data){
+			void *cb_prv_data)
+{
 
 	log (lsDEBUG, "****** inside writeOnNewSessionEvent private data is %p\n",cb_prv_data);
-
 	void* p1 =  session;
 
 	event.type = htonl (4);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
-	event.eventSpecific.newSession.ptrSession = htobe64(intptr_t(p1));
-	event.eventSpecific.newSession.lenUri = htonl(req->uri_len);
+	event.event_specific.new_session.ptr_session = htobe64(intptr_t(p1));
+	event.event_specific.new_session.uri_len = htonl(req->uri_len);
 
 	//copy data so far
 	this->size = sizeof(int64_t)*2 + sizeof(int32_t)*2;
@@ -100,73 +95,63 @@ int Events::writeOnNewSessionEvent(char *buf, Contexable *ptrForJava, struct xio
 							 addr, INET_ADDRSTRLEN);
 				len = INET_ADDRSTRLEN;
 
-
 	}else if (ipStruct->sa_family == AF_INET6) {
 			static char addr[INET6_ADDRSTRLEN];
 			struct sockaddr_in6 *v6 = (struct sockaddr_in6 *)ipStruct;
 			ip = (char *)inet_ntop(AF_INET6, &(v6->sin6_addr),
 						 addr, INET6_ADDRSTRLEN);
 			len = INET6_ADDRSTRLEN;
-
 	}else{
-			fprintf(stderr, "can not get src ip");
+			log(lsERROR, "can not get src ip\n");
 			len = 0;
 
 	}
 
-	event.eventSpecific.newSession.ipLen = htonl (len);
-	memcpy(buf + this->size, &event.eventSpecific.newSession.ipLen, sizeof(int32_t));
+	event.event_specific.new_session.ip_len = htonl (len);
+	memcpy(buf + this->size, &event.event_specific.new_session.ip_len, sizeof(int32_t));
 
 	this->size += sizeof(int32_t);
-	strcpy(buf + this->size,event.eventSpecific.newSession.ip);
+	strcpy(buf + this->size,event.event_specific.new_session.ip_str);
 
 	this->size += len ;
 
 	return this->size;
-
-
 }
+
 int Events::writeOnMsgSendCompleteEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
 			struct xio_msg *msg,
-			void *cb_prv_data){
-
+			void *cb_prv_data)
+{
 	event.type = htonl (5);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
 	this->size = sizeof(int32_t) + sizeof(int64_t);
 	memcpy(buf, &this->event, this->size);
 	return this->size;
-
-
 }
-
 
 int Events::writeOnMsgErrorEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
             enum xio_status error,
             struct xio_msg  *msg,
-            void *conn_user_context){
-
+            void *conn_user_context)
+{
 	event.type = htonl (1);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
 	this->size = sizeof(int32_t) + sizeof(int64_t);
 	memcpy(buf, &this->event, this->size);
 	return this->size;
-
-
 }
 
 
 int Events::writeOnMsgReceivedEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
 		struct xio_msg *msg,
 		int more_in_batch,
-		void *cb_prv_data){
-
+		void *cb_prv_data)
+{
 	event.type = htonl (3);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
 	this->size = sizeof(int32_t) + sizeof(int64_t);
 	memcpy(buf, &this->event, this->size);
 	return this->size;
-
-
 }
 
 

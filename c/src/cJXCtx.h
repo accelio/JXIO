@@ -34,28 +34,23 @@ public:
 	cJXCtx(int size);
 	~cJXCtx();
 
-	int runEventLoop();
+	int run_event_loop();
 
-	void stopEventLoop();
+	void stop_event_loop();
 
 
-	EventQueue * eventQueue;
+	EventQueue * event_queue;
 	Events *events;
 
+	bool error_creating;
 
-
-//	char* byteBuffer;
-	bool errorCreating;
-
-	void* evLoop;
+	void* ev_loop;
 	struct xio_context	*ctx;
-//	int eventQSize;
-//	int offset;
-	int eventsNum;
+	int events_num;
 
 	//this map is needed since in case of event Disconnected action needs to be done
 	//on a session without going back to java
-	std::map<void*,cJXSession*>* mapSession;
+	std::map<void*,cJXSession*>* map_session;
 
 
 };

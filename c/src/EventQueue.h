@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-
+#include "Utils.h"
 
 //TODO:: check for overflow of the buffer
 class EventQueue{
@@ -30,11 +30,11 @@ class EventQueue{
 public:
 	EventQueue(int size);
 	~EventQueue();
-	char* getBuffer();
+	char* get_buffer();
 	void reset();
-	void increaseOffset(int increase);
+	void increase_offset(int increase);
 
-	bool errorCreating;
+	bool error_creating;
 
 private:
 	int offset;

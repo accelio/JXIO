@@ -42,12 +42,7 @@ static jfieldID fidBuf;
 static jfieldID fidError;
 
 
-
-
 // JNI inner functions implementations
-
-
-
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 {
 	printf("in cJXBridge - JNI_OnLoad\n");
@@ -90,27 +85,25 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 
 }
 
-
-
 extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *jvm, void* reserved)
 {
 	// NOTE: We never reached this place
 	return;
 }
 
-
-
-
-
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_createCtxNative(JNIEnv *env, jclass cls, jint eventQueueSize, jobject dataToC)
 {
 	int size = eventQueueSize;
 	cJXCtx *ctx = new cJXCtx (size);
-	if (ctx->errorCreating){
+	if (ctx == NULL){
+		log(lsERROR, "memory allocation failed\n");
+		return false;
+	}
+	if (ctx->error_creating){
 		delete (ctx);
 		return false;
 	}
-	jobject jbuf = env->NewDirectByteBuffer(ctx->eventQueue->getBuffer(), eventQueueSize );
+	jobject jbuf = env->NewDirectByteBuffer(ctx->event_queue->get_buffer(), eventQueueSize );
 
 	jlong ptr = (jlong)(intptr_t) ctx;
 
@@ -118,52 +111,48 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_createCtxNative
 	env->SetLongField(dataToC, fidPtr, ptr);
 	env->SetObjectField(dataToC, fidBuf, jbuf);
 
-	return ctx->errorCreating;
+	return ctx->error_creating;
 }
 
-
-//Katya
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_closeCtxNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
 	cJXCtx *ctx = (cJXCtx *)ptrCtx;
 	delete (ctx);
-	printf("end of closeCTX\n");
+	log(lsDEBUG, "end of closeCTX\n");
 }
 
-//Katya
 extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_getNumEventsQNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
 	cJXCtx *ctx = (cJXCtx *)ptrCtx;
-	return ctx->eventsNum;
+	return ctx->events_num;
 }
 
-
-
-//Katya
 extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
 	cJXCtx *ctx = (cJXCtx *)ptrCtx;
-	return ctx->runEventLoop();
+	return ctx->run_event_loop();
 
 }
 
-
-//Katya
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_stopEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
 
 	cJXCtx *ctx = (cJXCtx *)ptrCtx;
-	ctx->stopEventLoop();
+	ctx->stop_event_loop();
 }
 
-
-
-extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx) {
+extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
+{
 
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	cJXSession * ses = new cJXSession(url, ptrCtx);
 	env->ReleaseStringUTFChars(jurl, url);
-	if (ses->errorCreating){
+
+	if (ses == NULL){
+		log(lsERROR, "memory allocation failed\n");
+		return NULL;
+	}
+	if (ses->error_creating){
 		delete (ses);
 		return 0;
 	}
@@ -171,19 +160,16 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startSessionClient
 
 }
 
-
-//Katya
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
 {
 
 	cJXSession * ses = (cJXSession*)ptrSes;
-	return ses->closeConnection();
+	return ses->close_connection();
 
 }
 
-
-
-extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx) {
+extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
+{
 
 	jlong temp[2];
 
@@ -196,7 +182,12 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerNa
 
 	cJXServer * server = new cJXServer(url, ptrCtx);
 	env->ReleaseStringUTFChars(jurl, url);
-	if (server->errorCreating){
+
+	if (server == NULL){
+		log(lsERROR, "memory allocation failed\n");
+		return NULL;
+	}
+	if (server->error_creating){
 		temp[0] = 0;
 		temp[1]=0;
 		delete(server);
@@ -210,8 +201,6 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerNa
 
 }
 
-
-//Katya
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_stopServerNative(JNIEnv *env, jclass cls, jlong ptrServer)
 {
 	cJXServer *server = (cJXServer *)ptrServer;
@@ -219,35 +208,27 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_stopServerNative(JN
 
 }
 
-
-
-
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrSession) {
-
-	struct xio_session	*session;	
-	int retVal;
-
-
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_server)
+{
 	const char *url = env->GetStringUTFChars(jurl, NULL);
-
-	session = (struct xio_session *)ptrSession;
-	
-	retVal = xio_accept (session, &url, 1, NULL, 0);
-
-//	retVal = xio_accept(session, NULL, 0, NULL, 0);
-
+	struct xio_session	*session = (struct xio_session *)ptr_session;
+	cJXServer * server = (cJXServer *) ptr_server;
+	bool retVal = server->forward(session, url);
+//	retVal = xio_accept (session, &url, 1, NULL, 0);
 	env->ReleaseStringUTFChars(jurl, url);
 
-    if (retVal){
-    	log (lsERROR, "Error in accepting session. error %d\n", retVal);
-		return false;
-	}
-	return true;
+	return retVal;
+
+//    if (retVal){
+ //   	log (lsERROR, "Error in accepting session. error %d\n", retVal);
+//		return false;
+//	}
+//	return true;
 	
 }
 
-
-extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_JXBridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason) {
+extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_JXBridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason)
+{
 
 	struct xio_session	*session;
 	const char * error;
@@ -259,12 +240,6 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_JXBridge_getErrorNative(J
 	return str;
 
 }
-
-
-
-
-
-
 
 JNIEnv *JX_attachNativeThread()
 {

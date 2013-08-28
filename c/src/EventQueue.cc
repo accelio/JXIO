@@ -20,39 +20,40 @@
 
 #include "EventQueue.h"
 
-
-
 EventQueue::EventQueue(int size)
 {
-	errorCreating = false;
+	error_creating = false;
 	this->buf = (char*)malloc(size * sizeof(char));
 	if (this->buf== NULL){
-		fprintf(stderr, "Error, Could not allocate memory for Event Queue buffer");
-		errorCreating = true;
+		log(lsERROR, "Could not allocate memory for Event Queue buffer\n");
+		error_creating = true;
 		return;
 	}
 
 	this->offset = 0;
 	this->size = size;
-
 }
 
 
-EventQueue::~EventQueue(){
+EventQueue::~EventQueue()
+{
 	if (this->buf!= NULL){
 		free(this->buf);
 	}
 }
 
-void EventQueue::reset(){
+void EventQueue::reset()
+{
 	this->offset = 0;
 }
 
-char* EventQueue::getBuffer(){
+char* EventQueue::get_buffer()
+{
 	return this->buf + this->offset;
 }
 
-void EventQueue::increaseOffset(int increase){
+void EventQueue::increase_offset(int increase)
+{
 	this->offset += increase;
 }
 

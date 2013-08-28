@@ -18,21 +18,20 @@
 
 #define K_DEBUG 1
 
-cJXSession::cJXSession(const char*	url, long ptrCtx){
+cJXSession::cJXSession(const char*	url, long ptrCtx)
+{
 
 	struct xio_session_ops ses_ops;
 	struct xio_session_attr attr;
 //	char			url[256];
-	errorCreating = false;
+	error_creating = false;
 
 	struct xio_msg *req;
 
 	cJXCtx *ctxClass = (cJXCtx *)ptrCtx;
-	setCtxClass(ctxClass);
+	set_ctx_class(ctxClass);
 
-//	sprintf(url, "rdma://%s:%d", hostname, port);
-
-		//defining structs to send to xio library
+	//defining structs to send to xio library
 	ses_ops.on_session_event		=  on_session_event_callback;
 	ses_ops.on_session_established		=  on_session_established_callback;
 	ses_ops.on_msg				=  on_msg_callback;
@@ -47,7 +46,7 @@ cJXSession::cJXSession(const char*	url, long ptrCtx){
 
 	if (session == NULL){
 		log (lsERROR, "Error in creating session\n");
-		errorCreating = true;
+		error_creating = true;
 		return;
 	}
 
@@ -60,23 +59,18 @@ cJXSession::cJXSession(const char*	url, long ptrCtx){
 
 	}
 
-
-	if (ctxClass->mapSession == NULL){
-		ctxClass->mapSession = new std::map<void*,cJXSession*> ();
-		if(ctxClass->mapSession== NULL){
+	if (ctxClass->map_session == NULL){
+		ctxClass->map_session = new std::map<void*,cJXSession*> ();
+		if(ctxClass->map_session== NULL){
 			log (lsERROR, "Error, Could not allocate memory\n");
 			goto cleanupCon;
 		}
 	}
 
-	ctxClass->mapSession->insert(std::pair<void*, cJXSession*>(session, this));
+	ctxClass->map_session->insert(std::pair<void*, cJXSession*>(session, this));
 
-	printf("startClientSession done with \n");
+	log (lsDEBUG, "startClientSession done with \n");
 
-	log (lsDEBUG, "****** inside c-tor of session private data is %p\n",this);
-
-
-	//	 printf("for debugging \n");
 	#ifdef K_DEBUG
 		 req = (struct xio_msg *) malloc(sizeof(struct xio_msg));
 
@@ -86,7 +80,6 @@ cJXSession::cJXSession(const char*	url, long ptrCtx){
 		 req->out.header.iov_len = strlen("hello world header request");
 		 	// send first message
 		 xio_send_request(con, req);
-	//	 printf("done debugging \n");
 	#endif
 	return;
 
@@ -95,19 +88,17 @@ cleanupCon:
 
 cleanupSes:
 		xio_session_close(this->session);
-		errorCreating = true;
+		error_creating = true;
 }
 
-
-cJXSession::~cJXSession(){
-
+cJXSession::~cJXSession()
+{
 }
 
-bool cJXSession::closeConnection(){
-
-
+bool cJXSession::close_connection()
+{
 	if (xio_disconnect (this->con)){
-		fprintf(stderr, "Error, xio_disconnect failed");
+		log(lsERROR, "xio_disconnect failed");
 		return false;
 	}
 
@@ -115,7 +106,8 @@ bool cJXSession::closeConnection(){
 	return true;
 }
 
-int cJXSession::closeSession(){
+int cJXSession::close_session()
+{
 	return xio_session_close(session);
 }
 

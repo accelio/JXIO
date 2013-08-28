@@ -95,10 +95,10 @@ public class JXBridge {
 		return ret;
 	}
 
-	private static native long forwardSessionNative(String url, long ptrSes);
-	static long  forwardSession(String url, long ptrSes){
+	private static native long forwardSessionNative(String url, long ptrSes, long ptrServer);
+	static long  forwardSession(String url, long ptrSes, long ptrServer){
 		logger.log(Level.INFO, "invoking forwardSessionNative");
-		long ptr = forwardSessionNative(url, ptrSes);
+		long ptr = forwardSessionNative(url, ptrSes, ptrServer);
 		logger.log(Level.INFO, "finished forwardSessionNative");
 		return ptr;
 	}

@@ -32,13 +32,13 @@ public:
 	//to move some to private?
 	cJXSession(const char	*url, long ptrCtx);
 	~cJXSession();
-	bool closeConnection();
-	int closeSession();
+	bool close_connection();
+	int close_session();
 
 	struct xio_session	*session;
 	struct xio_connection * con;
 
-	bool errorCreating;
+	bool error_creating;
 //	cJXCtx* ctx;
 
 };

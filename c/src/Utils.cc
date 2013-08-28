@@ -25,13 +25,9 @@ void log_func(const char * func, const char * file, int line, log_severity_t sev
     va_start(ap, fmt);
     int n = vsnprintf(s1, SIZE, fmt, ap);
     va_end(ap);
-
-
 //	sprintf(full_path, "%s/hadoop-%s-udaMOFSupplier-%s.log", rdmalog_dir, user, host);
 //	printf("log will go to: %s\n", full_path);
 	log_file = fopen ("bla","a");
-
-
 
     if (n < 0) return; //error
 
@@ -54,7 +50,6 @@ void log_func(const char * func, const char * file, int line, log_severity_t sev
 				  (int)pthread_self(), func, file, line, s1);
 
 //		fflush(log_file);
-
 }
 
 

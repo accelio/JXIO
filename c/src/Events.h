@@ -27,60 +27,51 @@
 
 class Contexable;
 
-struct  eventNewSession{
-	int64_t ptrSession;
-	int32_t lenUri;
-	char  uri [0]; //to indicate that string uri is written to buffer
-	int32_t ipLen;
-	char ip [0]; //to  indicate that ip string is written to buffer
-}__attribute__ ((packed));
+struct  event_new_session {
+	int64_t 	ptr_session;
+	int32_t 	uri_len;
+	char  		uri_str[0]; //to indicate that string uri is written to buffer
+	int32_t 	ip_len;
+	char 		ip_str[0]; //to  indicate that ip string is written to buffer
+} __attribute__ ((packed));
 
-struct __attribute__ ((packed)) eventSessionEstablished{
+struct __attribute__ ((packed)) event_session_established{
 };
 
-struct __attribute__ ((packed)) eventSessionError{
+struct __attribute__ ((packed)) event_session_error{
 
 	int32_t error_type;
 	int32_t error_reason;
 };
 
-struct __attribute__ ((packed)) eventMsgComplete{
+struct __attribute__ ((packed)) event_msg_complete{
 };
 
-struct __attribute__ ((packed)) eventMsgError{
+struct __attribute__ ((packed)) event_msg_error{
 };
 
-struct __attribute__ ((packed)) eventMsgReceived {
+struct __attribute__ ((packed)) event_msg_received {
 };
 
-struct  eventStruct{
+struct  event_struct{
 	int32_t type;
 	int64_t ptr;//this will indicate on which session the event arrived
 	union{
-		struct eventNewSession newSession;
-		struct eventSessionEstablished sessionEstablished;
-		struct eventSessionError sessionError;
-		struct eventMsgComplete msgComplete;
-		struct eventMsgError msgError;
-		struct eventMsgReceived msgReceived;
-	} eventSpecific;
+		struct event_new_session new_session;
+		struct event_session_established session_established;
+		struct event_session_error session_error;
+		struct event_msg_complete msg_complete;
+		struct event_msg_error msg_error;
+		struct event_msg_received msg_received;
+	} event_specific;
 }__attribute__ ((packed));
-
-/*
-struct __attribute__ ((packed)) vma_datagram_t {
-        void*           datagram_id;            // datagram identifier
-        size_t          sz_iov;                 // number of fragments
-        struct iovec    iov[];                  // fragments size+data
-};
-*/
-
 
 
 
 class Events{
 public:
 	int size;
-	struct eventStruct event;
+	struct event_struct event;
 
 
 	Events();
