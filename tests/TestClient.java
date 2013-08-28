@@ -3,9 +3,6 @@
 import java.util.logging.Level;
 import java.util.Random;
 
-import Tests.MyEQH;
-import Tests.MySesClient;
-
 import com.mellanox.EventQueueHandler;
 import com.mellanox.JXLog;
 

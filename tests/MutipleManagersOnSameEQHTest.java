@@ -2,9 +2,6 @@
 
 import java.util.Random;
 
-import Tests.MyEQH;
-import Tests.MySesManager;
-
 public class MutipleManagersOnSameEQHTest implements Runnable{
 
 	public void run(){
