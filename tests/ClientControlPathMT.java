@@ -34,7 +34,15 @@ private static JXLog logger = JXLog.getLog(ClientControlPathSimpleTest.class.get
 					e.printStackTrace();
 				}
 
-			System.out.println("***********************after sleep");
+			System.out.println("***********************after sleep1");
+			
+			try {
+			    t.sleep(5000);
+			    System.out.println("***********************after sleep2");
+			} catch (InterruptedException e1) {
+			    // TODO Auto-generated catch block
+			    e1.printStackTrace();
+			}
 			ses.close();
 			System.out.println("***********************here");
 			try {

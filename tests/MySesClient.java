@@ -10,9 +10,7 @@ import com.mellanox.*;
 		}
 		
 		public void onMsgErrorCallback(){	
-			logger.log(Level.INFO, "[SUCCESS] onMsgErrorCallback");
-			System.out.println("!!!!!!! onMsgErrorCallback !!!!!!!");
-			this.close();
+			logger.log(Level.INFO, "onMsgErrorCallback");
 		}
 		
 		public void onSessionEstablished(){
@@ -29,7 +27,6 @@ import com.mellanox.*;
 				break;
 			case 1:
 				event = "SESSION_TEARDOWN";
-				this.close();
 				break;
 			case 2:
 				event = "CONNECTION_CLOSED";
@@ -49,7 +46,6 @@ import com.mellanox.*;
 			}
 			
 			logger.log(Level.SEVERE, "[EVENT] GOT EVENT " + event + " because of " + reason);
-//			System.out.println("[EVENT] GOT EVENT " + event + " because of " + reason);
 			
 		}
 	

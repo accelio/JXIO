@@ -26,7 +26,7 @@ void done_event_creating(cJXCtx *ctx, int sizeWritten)
 
 	//need to stop the event queue only if this is the first callback
 	if (!ctx->events_num){
-		log (lsDEBUG, "inside on_new_session_callback - stopping the event queue\n");
+		log (lsDEBUG, "inside a callback - stopping the event queue\n");
 		xio_ev_loop_stop(ctx->ev_loop);
 	}
 	ctx->events_num++;
@@ -132,6 +132,23 @@ int on_session_event_callback(struct xio_session *session,
 		log (lsINFO, "got XIO_SESSION_CONNECTION_CLOSED_EVENT. must close the session\n");
 
 		break;
+
+	case(XIO_SESSION_CONNECTION_ERROR_EVENT):
+		{
+			log (lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
+			std::map<void*,cJXSession*>::iterator it;
+			it = ctx->map_session->find(session);
+
+			if (it == ctx->map_session->end()){
+				log(lsERROR, "no entry for this ctx\n");
+			}else{
+				cJXSession * ses = it->second;
+				ses->close_connection();
+			}
+			break;
+
+		}
+
 	case(XIO_SESSION_TEARDOWN_EVENT):
 	{
 		log(lsINFO, "got XIO_SESSION_TEARDOWN_EVENT. must delete session class\n");
@@ -149,22 +166,8 @@ int on_session_event_callback(struct xio_session *session,
 			ctx->map_session->erase(it);
 		}
 		//the event should also be written to buffer to let user know that the session was closed
-//		break;
 	}
-	case(XIO_SESSION_CONNECTION_ERROR_EVENT):
-	{
-		log (lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
-		std::map<void*,cJXSession*>::iterator it;
-		it = ctx->map_session->find(session);
 
-		if (it == ctx->map_session->end()){
-			log(lsERROR, "no entry for this ctx\n");
-		}else{
-			cJXSession * ses = it->second;
-			ses->close_connection();
-		}
-
-	}
 	default:
 
 		char* buf = ctx->event_queue->get_buffer();
