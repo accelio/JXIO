@@ -20,7 +20,7 @@
 
 #include "CallbackFunctions.h"
 
-void done_event_creating(cJXCtx *ctx, int sizeWritten)
+void done_event_creating(Context *ctx, int sizeWritten)
 {
 	ctx->event_queue->increase_offset(sizeWritten);
 
@@ -41,7 +41,7 @@ int on_new_session_callback(struct xio_session *session,
 	log (lsDEBUG, "got on_new_session_callback\n");
 
 	Contexable *cntxbl = (Contexable*)cb_prv_data;
-	cJXCtx *ctx = cntxbl->get_ctx_class();
+	Context *ctx = cntxbl->get_ctx_class();
 	char* buf = ctx->event_queue->get_buffer();
 	int sizeWritten = ctx->events->writeOnNewSessionEvent(buf, cntxbl, session, req, cb_prv_data);
 
@@ -59,7 +59,7 @@ int on_msg_send_complete_callback(struct xio_session *session,
 	log (lsDEBUG, "got on_msg_send_complete_callback\n");
 
 	Contexable *cntxbl = (Contexable*)cb_prv_data;
-	cJXCtx *ctx = cntxbl->get_ctx_class();
+	Context *ctx = cntxbl->get_ctx_class();
 
 	char* buf = ctx->event_queue->get_buffer();
 	int sizeWritten = ctx->events->writeOnMsgSendCompleteEvent(buf, cntxbl, session, msg, cb_prv_data);
@@ -77,7 +77,7 @@ int on_msg_callback(struct xio_session *session,
 	log (lsDEBUG, "got on_msg_callback\n");
 
 	Contexable *cntxbl = (Contexable*)cb_prv_data;
-	cJXCtx *ctx = cntxbl->get_ctx_class();
+	Context *ctx = cntxbl->get_ctx_class();
 
 	char* buf = ctx->event_queue->get_buffer();
 	int sizeWritten = ctx->events->writeOnMsgReceivedEvent(buf, cntxbl, session, msg, more_in_batch, cb_prv_data);
@@ -93,7 +93,7 @@ int on_msg_error_callback(struct xio_session *session,
 {
 	log (lsDEBUG, "got on_msg_error_callback\n");
 	Contexable *cntxbl = (Contexable*)conn_user_context;
-	cJXCtx *ctx = cntxbl->get_ctx_class();
+	Context *ctx = cntxbl->get_ctx_class();
 
 	char* buf = ctx->event_queue->get_buffer();
 	int sizeWritten = ctx->events->writeOnMsgErrorEvent(buf, cntxbl, session, error, msg, conn_user_context);
@@ -108,7 +108,7 @@ int on_session_established_callback(struct xio_session *session,
 
 	log (lsDEBUG, "got on_session_established_callback\n");
 	Contexable *cntxbl = (Contexable*)cb_prv_data;
-	cJXCtx *ctx = cntxbl->get_ctx_class();
+	Context *ctx = cntxbl->get_ctx_class();
 
 	char* buf = ctx->event_queue->get_buffer();
 	int sizeWritten = ctx->events->writeOnSessionEstablishedEvent(buf, cntxbl, session, rsp, cb_prv_data);
@@ -125,7 +125,7 @@ int on_session_event_callback(struct xio_session *session,
 	log (lsDEBUG, "got on_session_event_callback\n");
 
 	Contexable *cntxbl = (Contexable*)cb_prv_data;
-	cJXCtx *ctx = cntxbl->get_ctx_class();
+	Context *ctx = cntxbl->get_ctx_class();
 
 	switch (event_data->event){
 	case (XIO_SESSION_CONNECTION_CLOSED_EVENT):
@@ -136,13 +136,13 @@ int on_session_event_callback(struct xio_session *session,
 	case(XIO_SESSION_CONNECTION_ERROR_EVENT):
 		{
 			log (lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
-			std::map<void*,cJXSession*>::iterator it;
+			std::map<void*,Client*>::iterator it;
 			it = ctx->map_session->find(session);
 
 			if (it == ctx->map_session->end()){
 				log(lsERROR, "no entry for this ctx\n");
 			}else{
-				cJXSession * ses = it->second;
+				Client * ses = it->second;
 				ses->close_connection();
 			}
 			break;
@@ -153,14 +153,14 @@ int on_session_event_callback(struct xio_session *session,
 	{
 		log(lsINFO, "got XIO_SESSION_TEARDOWN_EVENT. must delete session class\n");
 
-		std::map<void*,cJXSession*>::iterator it;
+		std::map<void*,Client*>::iterator it;
 		it = ctx->map_session->find(session);
 
 		if (it == ctx->map_session->end()){
 			log(lsERROR, "no entry for this ctx\n");
 		}else{
 			//delete from map
-			cJXSession * ses = it->second;
+			Client * ses = it->second;
 			ses->close_session();
 			delete (ses);
 			ctx->map_session->erase(it);

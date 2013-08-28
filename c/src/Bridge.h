@@ -14,26 +14,9 @@
 ** governing permissions and  limitations under the License.
 **
 */
-
-
-#ifndef Contexable__H___
-#define Contexable__H___
-
-class Context;
-
-class Contexable{
-
-
-public:
-	Context* get_ctx_class(){return ctx_class;}
-	void set_ctx_class(Context* c){this->ctx_class = c;}
-
-private:
-	Context* ctx_class;
-
-};
+#ifndef cJXBridge__H___
+#define cJXridge__H___
 
 
 
-
-#endif // ! Contexable__H___
+#endif // ! cJxBridge__H___

@@ -14,26 +14,35 @@
 ** governing permissions and  limitations under the License.
 **
 */
+#ifndef Client__H___
+#define Client__H___
+
+#include <errno.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "CallbackFunctions.h"
+#include "Context.h"
+#include "Contexable.h"
 
 
-#ifndef Contexable__H___
-#define Contexable__H___
-
-class Context;
-
-class Contexable{
-
-
+class Client:public Contexable{
 public:
-	Context* get_ctx_class(){return ctx_class;}
-	void set_ctx_class(Context* c){this->ctx_class = c;}
+	//to move some to private?
+	Client(const char	*url, long ptrCtx);
+	~Client();
+	bool close_connection();
+	int close_session();
 
-private:
-	Context* ctx_class;
+	struct xio_session	*session;
+	struct xio_connection * con;
+
+	bool error_creating;
+//	cJXCtx* ctx;
 
 };
 
 
 
 
-#endif // ! Contexable__H___
+#endif // ! Client__H___

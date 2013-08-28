@@ -14,26 +14,37 @@
 ** governing permissions and  limitations under the License.
 **
 */
+#ifndef Server__H___
+#define Server__H___
 
+#include <errno.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-#ifndef Contexable__H___
-#define Contexable__H___
+#include "CallbackFunctions.h"
+//#include "cJXCtx.h"
+
 
 class Context;
 
-class Contexable{
-
-
+class Server:public Contexable{
 public:
-	Context* get_ctx_class(){return ctx_class;}
-	void set_ctx_class(Context* c){this->ctx_class = c;}
+	//to move some to private?
+	Server(const char	*url, long ptrCtx);
+	~Server();
 
-private:
-	Context* ctx_class;
+	bool forward(struct xio_session *, const char * url);
+
+	struct xio_server	*server;
+
+	bool error_creating;
+	int port; //indicates the actual port on which the server listens
+
+//	cJXCtx* ctx;
 
 };
 
 
 
 
-#endif // ! Contexable__H___
+#endif // ! cJXServer__H___
