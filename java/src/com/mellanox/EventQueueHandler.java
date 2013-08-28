@@ -27,7 +27,7 @@ import java.util.logging.Level;
 import com.mellanox.Event.*;
 import com.mellanox.JXBridge;
 
-public class EventQueueHandler {
+public class EventQueueHandler implements Runnable{
 	
 	private int eventQueueSize = 1000; //size of byteBuffer
 	
@@ -75,31 +75,12 @@ public class EventQueueHandler {
 		eventables.remove(eventable.getId());
 	}
 	
-	/*
-	public int runEventLoop2 (int maxEvents, int timeOut){
 
-		int numEvents = JXBridge.getNumEventsQ(id);
-		logger.log(Level.INFO, "there are "+numEvents+" events in queue. Max events is "+maxEvents);
-		int eventsLeftInQ = numEvents - eventsRead;
-		if (eventsLeftInQ <= maxEvents){ //all events from buffer must be read
-			for(int i=0; i<eventsLeftInQ; i++){
-				int eventType = eventQueue.getInt();
-				eventable.onEvent(eventType, eventQueue);
-			}
-			eventQueue.rewind();
-			eventsRead = 0;
-			JXBridge.runEventLoop(id);
-			}else { //there are more events in buffer than need to be read
-				for(int i=0; i<maxEvents; i++){
-					int eventType = eventQueue.getInt();
-					eventable.onEvent(eventType, eventQueue);
-				}
-				eventsRead += maxEvents;
-				
-			}
-		return maxEvents;
-	}*/
-	
+	public void run() {
+	    while (!this.stopLoop) {
+		runEventLoop(1, 0);
+	    }    
+	}
 	
 	
 	public int runEventLoop (int maxEvents, int timeOut){
@@ -263,6 +244,8 @@ public class EventQueueHandler {
 			eventQueue = null;
 		}
 	}
+
+	
 	
 	
 }
