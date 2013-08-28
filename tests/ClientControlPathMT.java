@@ -1,7 +1,5 @@
 import com.mellanox.*;
 
-
-
 public class ClientControlPathMT {
 private static JXLog logger = JXLog.getLog(ClientControlPathSimpleTest.class.getCanonicalName());
 
