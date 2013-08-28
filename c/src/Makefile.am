@@ -8,8 +8,7 @@ AM_CPPFLAGS = -fPIC -DPIC  				\
 		-I$(JDK)/include -I$(JDK)/include/linux \
 		-I$(topdir)/libxio/include  
 	    @AM_CFLAGS@
-#AM_LDFLAGS = -lxio -lrdmacm -libverbs -lrt -ldl \
-AM_LDFLAGS =  -lrdmacm -libverbs -lrt -ldl \
+AM_LDFLAGS = -lxio -lrdmacm -libverbs -lrt -ldl \
 			 -L$(topdir)libxio/src 
 
 ###############################################################################
@@ -24,8 +23,7 @@ libjx_so_SOURCES = Utils.cc Event_queue.cc Events.cc CallbackFunctions.cc Server
 	
 				
 libjx_so_LDFLAGS = -shared -rdynamic 		\
-		   -L$(topdir)libxio/lib  -lrdmacm -libverbs -lrt -ldl
-#				     -L$(topdir)libxio/lib -lxio -lrdmacm -libverbs -lrt -ldl
+				     -L$(topdir)libxio/src/usr/ -lxio -lrdmacm -libverbs -lrt -ldl
 
 libjx_so_LDADD = $(AM_LDFLAGS)
 
