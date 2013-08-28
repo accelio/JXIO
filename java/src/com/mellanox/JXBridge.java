@@ -104,7 +104,7 @@ public class JXBridge {
 	}
 	
 	
-	
+	/*
 	private static native int getNumEventsQNative(long ptr);
 	static int getNumEventsQ(long ptr){
 		logger.log(Level.INFO, "invoking getNumEventsQNative");
@@ -112,7 +112,7 @@ public class JXBridge {
 		logger.log(Level.INFO, "finished getNumEventsQNative");
 		return ret;
 	}
-
+*/
 	private static native String getErrorNative(int errorReason);
 	static String getError(int errorReason){
 //		logger.log(Level.FINE, "invoking getErrorNative");

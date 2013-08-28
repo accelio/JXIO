@@ -121,12 +121,6 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_closeCtxNative(JNIE
 	log(lsDEBUG, "end of closeCTX\n");
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_getNumEventsQNative(JNIEnv *env, jclass cls, jlong ptrCtx)
-{
-	Context *ctx = (Context *)ptrCtx;
-	return ctx->events_num;
-}
-
 extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
 	Context *ctx = (Context *)ptrCtx;

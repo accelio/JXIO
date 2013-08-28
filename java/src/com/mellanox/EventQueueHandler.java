@@ -155,33 +155,7 @@ public class EventQueueHandler implements Runnable{
 	public void stopEventLoop(){
 	    JXBridge.stopEventLoop(id);
 	}
-	
-	
-	//this function closes all sessions on this eqh
-	public void stopAndClose(){
-		logger.log(Level.INFO, "inside stop and close");
-		JXBridge.stopEventLoop(id);
-		//process all events in buffer
-		 int numEvents = JXBridge.getNumEventsQ(id);
-		logger.log(Level.INFO, "there are "+numEvents+" events");
-	     for(int i=0; i<numEvents; i++){
-	    	int eventType = eventQueue.getInt();
-	    	long id = eventQueue.getLong();
-	    	Event event = parseEvent(eventType, eventQueue);
-      		Eventable eventable = eventables.get(id);
-            eventable.onEvent(eventType, event);
-		}
-	     
-	     for (Map.Entry<Long,Eventable> entry : eventables.entrySet())
-	     {
-	    	 logger.log(Level.INFO, "closing eventable with id "+entry.getKey()); 
-	        entry.getValue().close();
-	     }
- 
-	    
-	     close();
-		
-	}
+
 	
 	public Event parseEvent(int eventType, ByteBuffer eventQueue){
 		
