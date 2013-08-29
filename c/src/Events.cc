@@ -39,7 +39,10 @@ int Events::writeOnSessionErrorEvent(char *buf, Contexable *ptrForJava, struct x
 	this->event.event_specific.session_error.error_type = htonl(event_data->event);
 	this->event.event_specific.session_error.error_reason = htonl (event_data->reason);
 
-	this->size = sizeof(int32_t) *3 + sizeof(int64_t);
+	this->size = sizeof(struct event_session_error) + sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+
+
+
 
 	memcpy(buf, &this->event, this->size);
 	return this->size;
@@ -52,7 +55,7 @@ int Events::writeOnSessionEstablishedEvent (char *buf, Contexable *ptrForJava, s
 	log (lsDEBUG, "****** inside writeOnSessionEstablishedEvent private data is %p\n",cb_prv_data);
 	event.type = htonl (2);
 	event.ptr = htobe64(intptr_t(ptrForJava));
-	this->size = sizeof(int32_t) + sizeof(int64_t);
+	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 	memcpy(buf, &this->event, this->size);
 	return this->size;
 }
@@ -71,7 +74,10 @@ int Events::writeOnNewSessionEvent(char *buf, Contexable *ptrForJava, struct xio
 	event.event_specific.new_session.uri_len = htonl(req->uri_len);
 
 	//copy data so far
-	this->size = sizeof(int64_t)*2 + sizeof(int32_t)*2;
+	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr +
+			sizeof((struct event_new_session *)0)->ptr_session + sizeof((struct event_new_session *)0)->uri_len;
+
+			sizeof(int64_t)*2 + sizeof(int32_t)*2;
 //	this->size =  sizeof(int32_t) *2;
 
 //	memset (buf ,0, this->size );
@@ -93,7 +99,7 @@ int Events::writeOnNewSessionEvent(char *buf, Contexable *ptrForJava, struct xio
 				struct sockaddr_in *v4 = (struct sockaddr_in *)ipStruct;
 				ip = (char *)inet_ntop(AF_INET, &(v4->sin_addr),
 							 addr, INET_ADDRSTRLEN);
-				len = INET_ADDRSTRLEN;
+				len = strlen(ip);
 
 	}else if (ipStruct->sa_family == AF_INET6) {
 			static char addr[INET6_ADDRSTRLEN];
@@ -103,15 +109,15 @@ int Events::writeOnNewSessionEvent(char *buf, Contexable *ptrForJava, struct xio
 			len = INET6_ADDRSTRLEN;
 	}else{
 			log(lsERROR, "can not get src ip\n");
-			len = 0;
+			len = strlen(ip);
 
 	}
 
 	event.event_specific.new_session.ip_len = htonl (len);
 	memcpy(buf + this->size, &event.event_specific.new_session.ip_len, sizeof(int32_t));
 
-	this->size += sizeof(int32_t);
-	strcpy(buf + this->size,event.event_specific.new_session.ip_str);
+	this->size += sizeof((struct event_new_session *)0)->ip_len;
+	strcpy(buf + this->size,ip);
 
 	this->size += len ;
 
@@ -124,7 +130,7 @@ int Events::writeOnMsgSendCompleteEvent(char *buf, Contexable *ptrForJava, struc
 {
 	event.type = htonl (5);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
-	this->size = sizeof(int32_t) + sizeof(int64_t);
+	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 	memcpy(buf, &this->event, this->size);
 	return this->size;
 }
@@ -136,7 +142,7 @@ int Events::writeOnMsgErrorEvent(char *buf, Contexable *ptrForJava, struct xio_s
 {
 	event.type = htonl (1);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
-	this->size = sizeof(int32_t) + sizeof(int64_t);
+	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 	memcpy(buf, &this->event, this->size);
 	return this->size;
 }
@@ -149,7 +155,7 @@ int Events::writeOnMsgReceivedEvent(char *buf, Contexable *ptrForJava, struct xi
 {
 	event.type = htonl (3);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
-	this->size = sizeof(int32_t) + sizeof(int64_t);
+	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 	memcpy(buf, &this->event, this->size);
 	return this->size;
 }
