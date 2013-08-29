@@ -4,7 +4,8 @@ JX_SO=libjx.so
 
 FILES=java/src/com/mellanox/*.java
 
-
+git submodule init
+git submodule update
 cd libxio/; ./autogen.sh && ./configure && make ; cd ..
 cd c/; ./autogen.sh && ./configure && make ; cd ..
 mkdir -p java/bin
