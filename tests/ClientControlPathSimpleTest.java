@@ -32,6 +32,6 @@ public class ClientControlPathSimpleTest {
 			eventQHndl.runEventLoop(1, 0);
 			
 		}
-		eventQHndl.stopAndClose();
+		eventQHndl.close();
 	}
 }

@@ -72,15 +72,6 @@ public abstract class ServerManager implements Eventable{
 		JXBridge.forwardSession(ses.url, ptrSes, ses.getId());
 	}
 	
-	
-	public void run(){
-		//event loop that waits for on_session events
-		while (true) {
-			System.out.println("SessionManager: before run event loop");
-			eventQHndl.runEventLoop(1, 0);
-		}
-	}
-	
 	public long getId(){ return id;} 
 	public boolean isClosing() {return isClosing;}
 	

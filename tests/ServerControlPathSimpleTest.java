@@ -12,12 +12,12 @@ private static JXLog logger = JXLog.getLog(ServerControlPathSimpleTest.class.get
 		String port = args[1];
 		String combined_url = "rdma://"+url+":"+port;
 		MySesClient ses;
-		EventQueueHandler eventQHndl = new MyEQH(1000);
+		EventQueueHandler eventQHndl = new EventQueueHandler(1000);
 
 
 		ServerManager man = new MySesManager(eventQHndl, url);
 		
-		man.run(); //will wait for on_session event
+		eventQHndl.run(); 
 	}
 		
 }
