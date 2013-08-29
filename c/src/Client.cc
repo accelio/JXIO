@@ -93,6 +93,9 @@ cleanupSes:
 
 Client::~Client()
 {
+	if (xio_session_close(session)){
+		log (lsERROR, "Error xio_session_close failed\n");
+	}
 }
 
 bool Client::close_connection()
@@ -106,12 +109,29 @@ bool Client::close_connection()
 	return true;
 }
 
-int Client::close_session()
-{
-	return xio_session_close(session);
+
+bool Client::onSessionEvent(int eventType){
+	switch (eventType){
+		case (XIO_SESSION_CONNECTION_CLOSED_EVENT):
+			log (lsINFO, "got XIO_SESSION_CONNECTION_CLOSED_EVENT. must close the session\n");
+			return false;
+
+		case(XIO_SESSION_CONNECTION_ERROR_EVENT):
+				log (lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
+				close_connection();
+				return false;
+
+		case(XIO_SESSION_TEARDOWN_EVENT):
+			log(lsINFO, "got XIO_SESSION_TEARDOWN_EVENT. must delete session class\n");
+			delete (this);
+			//the event should also be written to buffer to let user know that the session was closed
+			return true;
+		default:
+			log(lsINFO, "got event %d. \n", eventType);
+			return true;
+	}
+
 }
-
-
 
 
 

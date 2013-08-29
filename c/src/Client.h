@@ -32,12 +32,12 @@ public:
 	Client(const char	*url, long ptrCtx);
 	~Client();
 	bool close_connection();
-	int close_session();
 
 	struct xio_session	*session;
 	struct xio_connection * con;
 
 	bool error_creating;
+	bool onSessionEvent(int eventType);
 //	cJXCtx* ctx;
 
 };

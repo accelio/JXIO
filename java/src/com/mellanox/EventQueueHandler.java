@@ -153,6 +153,7 @@ public class EventQueueHandler implements Runnable{
 	public long getID(){return id;}
 
 	public void stopEventLoop(){
+	    this.stopLoop = true;
 	    JXBridge.stopEventLoop(id);
 	}
 

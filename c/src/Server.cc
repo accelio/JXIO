@@ -31,6 +31,7 @@ Server::Server(const char	*url, long ptrCtx)
 	server_ops.on_new_session		        =  on_new_session_callback;
 	server_ops.on_msg_send_complete         =  NULL;
 
+	this->session = NULL;
 
 	struct xio_context	*ctx;
 
@@ -49,7 +50,11 @@ Server::Server(const char	*url, long ptrCtx)
 
 Server::~Server()
 {
-
+	if (session){
+		if (xio_session_close(session)){
+			log (lsERROR, "Error xio_session_close failed\n");
+		}
+	}
 	if (xio_unbind (this->server)){
 		log (lsERROR, "Error xio_unbind failed\n");
 	}
@@ -62,10 +67,32 @@ bool Server::forward(struct xio_session *session, const char * url){
 		log (lsERROR, "Error in accepting session. error %d\n", retVal);
 		return false;
 	}
+	this->session = session;
 	return true;
 }
 
 
+
+bool Server::onSessionEvent(int eventType){
+	switch (eventType){
+		case (XIO_SESSION_CONNECTION_CLOSED_EVENT):
+			log (lsINFO, "got XIO_SESSION_CONNECTION_CLOSED_EVENT\n");
+			return false;
+
+		case(XIO_SESSION_CONNECTION_ERROR_EVENT):
+			log (lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
+			return true;
+
+		case(XIO_SESSION_TEARDOWN_EVENT):
+			log(lsINFO, "got XIO_SESSION_TEARDOWN_EVENT. must delete session class\n");
+			delete (this);
+			return true;
+		default:
+			log(lsINFO, "got event %d. \n", eventType);
+			return true;
+	}
+
+}
 
 
 

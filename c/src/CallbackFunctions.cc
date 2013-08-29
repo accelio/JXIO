@@ -127,53 +127,10 @@ int on_session_event_callback(struct xio_session *session,
 	Contexable *cntxbl = (Contexable*)cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
 
-	switch (event_data->event){
-	case (XIO_SESSION_CONNECTION_CLOSED_EVENT):
-		log (lsINFO, "got XIO_SESSION_CONNECTION_CLOSED_EVENT. must close the session\n");
-
-		break;
-
-	case(XIO_SESSION_CONNECTION_ERROR_EVENT):
-		{
-			log (lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
-			std::map<void*,Client*>::iterator it;
-			it = ctx->map_session->find(session);
-
-			if (it == ctx->map_session->end()){
-				log(lsERROR, "no entry for this ctx\n");
-			}else{
-				Client * ses = it->second;
-				ses->close_connection();
-			}
-			break;
-
-		}
-
-	case(XIO_SESSION_TEARDOWN_EVENT):
-	{
-		log(lsINFO, "got XIO_SESSION_TEARDOWN_EVENT. must delete session class\n");
-
-		std::map<void*,Client*>::iterator it;
-		it = ctx->map_session->find(session);
-
-		if (it == ctx->map_session->end()){
-			log(lsERROR, "no entry for this ctx\n");
-		}else{
-			//delete from map
-			Client * ses = it->second;
-			ses->close_session();
-			delete (ses);
-			ctx->map_session->erase(it);
-		}
-		//the event should also be written to buffer to let user know that the session was closed
-	}
-
-	default:
-
+	if (cntxbl->onSessionEvent(event_data->event)){
 		char* buf = ctx->event_queue->get_buffer();
 		int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, cntxbl, session, event_data, cb_prv_data);
 		done_event_creating(ctx, sizeWritten);
-
 	}
 	return 0;
 }

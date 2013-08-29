@@ -22,6 +22,8 @@ public abstract class ServerManager implements Eventable{
 	private EventQueueHandler eventQHndl = null;
 	private long id = 0;
 	private int port;
+	private String url;
+	private String urlPort0;
 	static protected int sizeEventQ = 10000;
 	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
 	
@@ -31,6 +33,7 @@ public abstract class ServerManager implements Eventable{
 	public abstract void onSessionError(int errorType, String reason);
 	
 	public ServerManager(EventQueueHandler eventQHandler,String url){
+	    	this.url = url;
 		eventQHndl = eventQHandler;
 		
 		long [] ar = JXBridge.startServer(url, eventQHandler.getID());
@@ -40,10 +43,19 @@ public abstract class ServerManager implements Eventable{
 		if (this.id == 0){
 			logger.log(Level.SEVERE, "there was an error creating SessionManager");
 		}
+		createUrlForServerSession();
+		logger.log(Level.INFO, "urlForServerSession is "+urlPort0);
 		
 		eventQHndl.addEventable (this); 
 		eventQHndl.runEventLoop(1, 0);
 	}
+	
+	private void createUrlForServerSession(){
+	    //parse url so it would replace port number on which the server listens with 0
+	    int index = url.lastIndexOf(":"); 
+	    urlPort0 = url.substring(0, index+1)+"0";
+	}
+	
 	
 	public boolean close(){
 		eventQHndl.removeEventable (this); //TODO: fix this
@@ -103,59 +115,5 @@ public abstract class ServerManager implements Eventable{
 		}
 	}
 	
-/*
-	private String readString (ByteBuffer buf){
-		int len = buf.getInt();
-		byte b[] = new byte[len+1];
-		
-		buf.get(b, 0, len);
-		String s1 = new String(b, Charset.forName("US-ASCII"));
 
-		return s1;
-	}
-	*/
-	
-	
-	/*amir's code
-	
-	private static AtomicInteger id_counter ;
-	private static JXSessionBase[] sessions ;
-	private static SessionManager manager = null ;
-	
-	
-	private SessionManager(int array_size){
-		
-		id_counter = new AtomicInteger(0);
-		sessions = new JXSessionBase[array_size];
-	}
-	
-	public static SessionManager getSessionManager(){
-		if(manager==null){
-			manager = new SessionManager(1000);
-		}
-		return manager;
-	}
-	
-	public synchronized  int setSessionEntry(JXSessionBase s){
-		int session_id = id_counter.getAndIncrement();
-		if(session_id == sessions.length){
-			enlargeArray();
-		}
-		sessions[session_id] = s;
-		return session_id;
-	}
-	
-	public void deleteSessionEntry(int session_id)
-	{}
-	
-	public JXSessionBase getSession(int session_id){
-		return sessions[session_id];
-	}
-	
-	
-	// to be implemented
-	private void enlargeArray()
-	{}
-
-	*/
 }

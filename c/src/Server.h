@@ -36,9 +36,11 @@ public:
 	bool forward(struct xio_session *, const char * url);
 
 	struct xio_server	*server;
+	struct xio_session *session;
 
 	bool error_creating;
 	int port; //indicates the actual port on which the server listens
+	bool onSessionEvent(int eventType);
 
 //	cJXCtx* ctx;
 
