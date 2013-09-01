@@ -3,7 +3,7 @@
 public class MutipleThreadsClient implements Runnable{
 
 	public void run(){
-		///////////////////// Test 4 /////////////////////
+		///////////////////// Test 5 /////////////////////
 		// Multiple threads on the same EQH
 		TestClient.print("*** Test 4: Multipule threads on the same EQH*** ");
 
@@ -41,7 +41,7 @@ public class MutipleThreadsClient implements Runnable{
 			
 		}
 		
-		TestClient.setSuccess(4);
-		TestClient.print("*** Test 4 Passed! *** ");
+		TestClient.setSuccess(5);
+		TestClient.print("*** Test 5 Passed! *** ");
 	}
 }

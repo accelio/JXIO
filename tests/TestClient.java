@@ -1,10 +1,9 @@
 //package clientTests;
 
 import java.util.logging.Level;
-import java.util.Random;
 
-import com.mellanox.JXIOEventQueueHandler;
-import com.mellanox.JXIOLog;
+import com.mellanox.EventQueueHandler;
+import com.mellanox.JXLog;
 
 
 public class TestClient {
@@ -17,9 +16,10 @@ public class TestClient {
 	// General Parameters
 	private static int requestedTest;
 	public static int numberOfTests = 5;
+	private static Runnable[] tests = new Runnable[numberOfTests + 1];
 	private static boolean[] successIndicators = new boolean[numberOfTests];
 	// Log
-	private static JXIOLog testLog = JXIOLog.getLog(TestClient.class.getCanonicalName());
+	private static JXLog testLog = JXLog.getLog(TestClient.class.getCanonicalName());
 	
 	public static void main(String[] args) {
 		
@@ -27,6 +27,8 @@ public class TestClient {
 		if (! argsCheck(args)){
 			return;
 		} else {
+			//Configure Tests
+			configure();
 			
 			// Get Hostname and Port
 			hostname = args[0];
@@ -35,71 +37,29 @@ public class TestClient {
 			requestedTest = Integer.parseInt(args[2]);
 			
 			print("*** Starting a Session Client Test ***");
-			// Setting up and JXIOEvent Queue Handler
 			// Run Tests
-			Runnable test;
-			switch(requestedTest){
-			case 0: test = new OpenCloseClientTest();
-					test.run();
-					test = new NonExistingHostnameClientTest();
-					test.run();
-					test = new MutipleClientsOnSameEQHTest();
-					test.run();
-					test = new OpenRunEventLoopCloseClientTest();
-					test.run();
-					test = new MutipleThreadsClient();
-					test.run();
-					report();
-					return;
-			case 1:	test = new OpenCloseClientTest();
-					test.run();
-					report();
-					return;
-			case 2:	test = new NonExistingHostnameClientTest();
-					test.run();
-					report();
-					return;
-			case 3: test = new MutipleClientsOnSameEQHTest();
-					test.run();
-					report();
-					return;
-			case 4: test = new OpenRunEventLoopCloseClientTest();
-					test.run();
-					report();
-					return;
-			case 5: test = new MutipleThreadsClient();
-					test.run();
-					report();
-						return;
-			default: print("[TEST ERROR] Unknow test number.");
-					return;
+			if (requestedTest > numberOfTests){
+				print("[TEST ERROR] Unknow test number.");
+				return;
+			}
+			if (requestedTest == 0){
+				for (int i = 1; i <= numberOfTests; i++){
+					tests[i].run();
+				}
+				report();
+			} else {
+				tests[requestedTest].run();
+				report();
 			}
 		}
 	}
 	
-	class MyThread implements Runnable{
-		
-		JXIOEventQueueHandler eqh;
-		String url;
-		MySesClient sClient;
-		
-		public MyThread(String caption, JXIOEventQueueHandler eqh, String url) {
-			this.eqh = eqh;
-			this.url = url;
-		}
-		
-		public void run(){
-			// Setting up a session client
-			print("----- Setting up a session client...");
-			sClient = new MySesClient(eqh, url);
-			
-			// Run JXIOEvent Loop
-			eqh.runEventLoop(1, 0);
-			
-			// Closing the session client
-			print("------ Closing the session client...");
-			sClient.close();
-		}
+	private static void configure(){
+		tests[1] = new OpenCloseClientTest();
+		tests[2] = new NonExistingHostnameClientTest();
+		tests[3] = new MutipleClientsOnSameEQHTest();
+		tests[4] = new OpenRunEventLoopCloseClientTest();
+		tests[5] = new MutipleThreadsClient();
 	}
 	
 	private static boolean argsCheck(String[] args){
@@ -119,8 +79,8 @@ public class TestClient {
 	}
 	
 	public static void print(String str){
-		System.out.println("\n" + str + "\n");
-		//testLog.log(Level.INFO, str);
+		//System.out.println("\n" + str + "\n");
+		testLog.log(Level.INFO, str);
 	}
 	
 	public static void setSuccess(int test){

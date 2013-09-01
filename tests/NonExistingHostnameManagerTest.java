@@ -1,4 +1,5 @@
 //package managerTests;
+
 import com.mellanox.*;
 
 public class NonExistingHostnameManagerTest implements Runnable{
@@ -10,14 +11,14 @@ public class NonExistingHostnameManagerTest implements Runnable{
 		
 		// Setup parameters
 		String url;
-		JXIOEventQueueHandler eqh;
+		EventQueueHandler eqh;
 		MySesManager sManager;
 		
 		// Get url
 		url = "rdma://" + "0.0.0.0" + ":" + TestManager.port;
 		
-		// Setting up a JXIOEvent Queue Hanler
-		eqh = new JXIOEventQueueHandler(TestManager.eqhSize);
+		// Setting up a Event Queue Hanler
+		eqh = new EventQueueHandler(TestManager.eqhSize);
 		
 		// Setting up a session manager
 		TestManager.print("----- Setting up a session manager...");
