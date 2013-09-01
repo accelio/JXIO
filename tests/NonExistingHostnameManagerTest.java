@@ -11,14 +11,14 @@ public class NonExistingHostnameManagerTest implements Runnable{
 		
 		// Setup parameters
 		String url;
-		EventQueueHandler eqh;
+		JXIOEventQueueHandler eqh;
 		MySesManager sManager;
 		
 		// Get url
 		url = "rdma://" + "0.0.0.0" + ":" + TestManager.port;
 		
 		// Setting up a Event Queue Hanler
-		eqh = new EventQueueHandler(TestManager.eqhSize);
+		eqh = new JXIOEventQueueHandler(TestManager.eqhSize);
 		
 		// Setting up a session manager
 		TestManager.print("----- Setting up a session manager...");

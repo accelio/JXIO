@@ -11,14 +11,14 @@ public class OpenCloseClientTest implements Runnable{
 		
 		// Setup parameters
 		String url;
-		EventQueueHandler eqh;
+		JXIOEventQueueHandler eqh;
 		MySesClient sClient;
 		
 		// Get url
 		url = "rdma://" + TestClient.hostname + ":" + TestClient.port;
 		
 		// Setting up a Event Queue Hanler
-		eqh = new EventQueueHandler(TestClient.eqhSize);
+		eqh = new JXIOEventQueueHandler(TestClient.eqhSize);
 		
 		// Setting up a session client
 		TestClient.print("----- Setting up a session client...");

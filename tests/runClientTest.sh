@@ -1,11 +1,15 @@
 #!/bin/bash
 
 ## ===========================
-## JX Verification Client Test
+## JXIO Verification Client Test
 ## ===========================
-## This script compiles and runs the JX verification test of the session client.
+## This script compiles and runs the JXIO verification test of the session client.
 
-echo -e "\n******************* JX Verification Client Test *******************"
+echo -e "\n******************* JXIO Verification Client Test *******************"
+
+# Get Running Directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR
 
 # Checks to see if JAVA path is valid
 if [ ! -e ${JAVA_HOME} ]; then
@@ -20,7 +24,7 @@ fi
 
 # Remove temporary files and cores
 rm -f bla
-rm -f JXLog.txt*
+rm -f JXIOLog.txt*
 rm -rf /.autodirect/mtrswgwork/UDA/core_files_TEMP/*
 
 # Check arguments
@@ -41,7 +45,9 @@ PORT=$2
 TEST_NUMBER=$3
 
 # Compile
+echo -e "\nCompiling JAVA files....\n"
 javac -cp "jx.jar:." ./*.java
 
 # Run the tests
+echo -e "\nRunning client test....\n"
 java -classpath jx.jar:. TestClient $IP $PORT $TEST_NUMBER

@@ -13,12 +13,12 @@ public class MutipleManagersOnSameEQHTest implements Runnable{
 		
 		// Setup Multiple Clients Parameters
 		String url;
-		EventQueueHandler eqh;
+		JXIOEventQueueHandler eqh;
 		MySesManager[] sManagerArray;
 		int numOfSessionManagers = 3;
 		
 		// Setting up a Event Queue Hanler
-		eqh = new EventQueueHandler(TestManager.eqhSize);
+		eqh = new JXIOEventQueueHandler(TestManager.eqhSize);
 		
 		// Setting up a multiple session managers
 		TestManager.print("----- Setting up a multiple session managers...");

@@ -11,14 +11,14 @@ public class OpenRunEventLoopCloseManagerTest implements Runnable{
 		
 		// Setup parameters
 		String url;
-		EventQueueHandler eqh;
+		JXIOEventQueueHandler eqh;
 		MySesManager sManager;
 		
 		// Get url
 		url = "rdma://" + TestManager.hostname + ":" + TestManager.port;
 		
 		// Setting up a Event Queue Hanler
-		eqh = new EventQueueHandler(TestManager.eqhSize);
+		eqh = new JXIOEventQueueHandler(TestManager.eqhSize);
 		
 		// Setting up a session manager
 		TestManager.print("----- Setting up a session manager...");
