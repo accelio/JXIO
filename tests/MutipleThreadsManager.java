@@ -3,7 +3,7 @@
 public class MutipleThreadsManager implements Runnable{
 
 	public void run(){
-		///////////////////// Test 4 /////////////////////
+		///////////////////// Test 5 /////////////////////
 		// Multiple threads on the same EQH
 		TestManager.print("*** Test 4: Multipule threads on the same EQH*** ");
 
@@ -41,7 +41,7 @@ public class MutipleThreadsManager implements Runnable{
 			
 		}
 		
-		TestManager.setSuccess(4);
-		TestManager.print("*** Test 4 Passed! *** ");
+		TestManager.setSuccess(5);
+		TestManager.print("*** Test 5 Passed! *** ");
 	}
 }

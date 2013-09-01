@@ -2,17 +2,17 @@ import java.util.logging.Level;
 
 import com.mellanox.*;
 
-public class MySesManager extends JXIOServerManager{
+public class MySesManager extends ServerManager{
 
-	private static JXIOLog logger = JXIOLog.getLog(MySesManager.class.getCanonicalName());
+	private static JXLog logger = JXLog.getLog(MySesManager.class.getCanonicalName());
 	
-	public MySesManager(JXIOEventQueueHandler eqh, String url) {
+	public MySesManager(EventQueueHandler eqh, String url) {
 		super(eqh, url);
 	}
 	
 	
 	public void onSession(long ptrSes, String uriSrc, String srcIP) {		
-	    	JXIOEventQueueHandler eventQHndl = new JXIOEventQueueHandler (10000);	
+	    	EventQueueHandler eventQHndl = new EventQueueHandler (10000);	
 		MySesServer ses = new MySesServer(eventQHndl, super.getUrlForServer());
 		eventQHndl.addEventable (ses);
 		forward(ses, ptrSes);
@@ -31,7 +31,7 @@ public class MySesManager extends JXIOServerManager{
 			break;
 		case 1:
 			event = "SESSION_TEARDOWN";
-//			this.close(); // Added
+			this.close(); // Added
 			break;
 		case 2:
 			event = "CONNECTION_CLOSED";

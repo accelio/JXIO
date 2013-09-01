@@ -1,9 +1,8 @@
 //package managerTests;
 
 import java.util.logging.Level;
-import java.util.Random;
-import com.mellanox.JXIOEventQueueHandler;
-import com.mellanox.JXIOLog;
+import com.mellanox.EventQueueHandler;
+import com.mellanox.JXLog;
 
 
 public class TestManager {
@@ -16,9 +15,10 @@ public class TestManager {
 	// General Parameters
 	private static int requestedTest;
 	public static int numberOfTests = 5;
+	private static Runnable[] tests = new Runnable[numberOfTests + 1];
 	private static boolean[] successIndicators = new boolean[numberOfTests];
 	// Log
-	private static JXIOLog testLog = JXIOLog.getLog(TestManager.class.getCanonicalName());
+	private static JXLog testLog = JXLog.getLog(TestManager.class.getCanonicalName());
 	
 	public static void main(String[] args) {
 		
@@ -26,6 +26,8 @@ public class TestManager {
 		if (! argsCheck(args)){
 			return;
 		} else {
+			//Configure Tests
+			configure();
 			
 			// Get Hostname and Port
 			hostname = args[0];
@@ -34,73 +36,31 @@ public class TestManager {
 			requestedTest = Integer.parseInt(args[2]);
 			
 			print("*** Starting a Session Manager Test ***");
-			// Setting up and JXIOEvent Queue Handler
 			// Run Tests
-			Runnable test;
-			switch(requestedTest){
-			case 0: test = new OpenCloseManagerTest();
-					test.run();
-					test = new NonExistingHostnameManagerTest();
-					test.run();
-					test = new MutipleManagersOnSameEQHTest();
-					test.run();
-					test = new OpenRunEventLoopCloseManagerTest();
-					test.run();
-					test = new MutipleThreadsManager();
-					test.run();
-					report();
-					return;
-			case 1:	test = new OpenCloseManagerTest();
-					test.run();
-					report();
-					return;
-			case 2:	test = new NonExistingHostnameManagerTest();
-					test.run();
-					report();
-					return;
-			case 3: test = new MutipleManagersOnSameEQHTest();
-					test.run();
-					report();
-					return;
-			case 4: test = new OpenRunEventLoopCloseManagerTest();
-					test.run();
-					report();
-					return;
-			case 5: test = new MutipleThreadsManager();
-					test.run();
-					report();
-						return;
-			default: print("[TEST ERROR] Unknow test number.");
-					return;
+			if (requestedTest > numberOfTests){
+				print("[TEST ERROR] Unknow test number.");
+				return;
+			}
+			if (requestedTest == 0){
+				for (int i = 1; i <= numberOfTests; i++){
+					tests[i].run();
+				}
+				report();
+			} else {
+				tests[requestedTest].run();
+				report();
 			}
 		}
 	}
 	
-	class MyThread implements Runnable{
-		
-		JXIOEventQueueHandler eqh;
-		String url;
-		MySesManager sManager;
-		
-		public MyThread(String caption, JXIOEventQueueHandler eqh, String url) {
-			this.eqh = eqh;
-			this.url = url;
-		}
-		
-		public void run(){
-			// Setting up a session manager
-			print("----- Setting up a session manager...");
-			sManager = new MySesManager(eqh, url);
-			
-			// Run JXIOEvent Loop
-			eqh.runEventLoop(1, 0);
-			
-			// Closing the session manager
-			print("------ Closing the session manager...");
-			sManager.close();
-		}
+	private static void configure(){
+		tests[1] = new OpenCloseManagerTest();
+		tests[2] = new NonExistingHostnameManagerTest();
+		tests[3] = new MutipleManagersOnSameEQHTest();
+		tests[4] = new OpenRunEventLoopCloseClientTest();
+		tests[5] = new MutipleThreadsManager();
 	}
-	
+		
 	private static boolean argsCheck(String[] args){
 		if (args.length <= 0){
 			print("[TEST ERROR] Missing arguments.");
@@ -118,8 +78,8 @@ public class TestManager {
 	}
 	
 	public static void print(String str){
-		System.out.println("\n" + str + "\n");
-		//testLog.log(Level.INFO, str);
+		//System.out.println("\n" + str + "\n");
+		testLog.log(Level.INFO, str);
 	}
 	
 	public static void setSuccess(int test){
