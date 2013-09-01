@@ -3,11 +3,11 @@ import java.util.logging.Level;
 import com.mellanox.*;
 
 
-public class MySesServer extends SessionServer {
-	private static JXLog logger = JXLog.getLog(MySesServer.class.getCanonicalName());
-	EventQueueHandler eqh = null;
+public class MySesServer extends JXIOServerSession {
+	private static JXIOLog logger = JXIOLog.getLog(MySesServer.class.getCanonicalName());
+	JXIOEventQueueHandler eqh = null;
 
-	public MySesServer(EventQueueHandler eqh, String uri){
+	public MySesServer(JXIOEventQueueHandler eqh, String uri){
 		super (eqh, uri);
 		this.eqh = eqh;
 	}

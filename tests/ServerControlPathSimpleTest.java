@@ -3,7 +3,7 @@ import com.mellanox.*;
 
 
 public class ServerControlPathSimpleTest {
-private static JXLog logger = JXLog.getLog(ServerControlPathSimpleTest.class.getCanonicalName());
+private static JXIOLog logger = JXIOLog.getLog(ServerControlPathSimpleTest.class.getCanonicalName());
 
 	
 	public static void main(String[] args){
@@ -12,10 +12,10 @@ private static JXLog logger = JXLog.getLog(ServerControlPathSimpleTest.class.get
 		String port = args[1];
 		String combined_url = "rdma://"+url+":"+port;
 		MySesClient ses;
-		EventQueueHandler eventQHndl = new EventQueueHandler(500);
+		JXIOEventQueueHandler eventQHndl = new JXIOEventQueueHandler(500);
 
 
-		ServerManager man = new MySesManager(eventQHndl, url);
+		JXIOServerManager man = new MySesManager(eventQHndl, url);
 		
 		eventQHndl.run(); 
 	}

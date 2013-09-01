@@ -2,17 +2,17 @@ import java.util.logging.Level;
 
 import com.mellanox.*;
 
-public class MySesManager extends ServerManager{
+public class MySesManager extends JXIOServerManager{
 
-	private static JXLog logger = JXLog.getLog(MySesManager.class.getCanonicalName());
+	private static JXIOLog logger = JXIOLog.getLog(MySesManager.class.getCanonicalName());
 	
-	public MySesManager(EventQueueHandler eqh, String url) {
+	public MySesManager(JXIOEventQueueHandler eqh, String url) {
 		super(eqh, url);
 	}
 	
 	
 	public void onSession(long ptrSes, String uriSrc, String srcIP) {		
-	    	EventQueueHandler eventQHndl = new EventQueueHandler (10000);	
+	    	JXIOEventQueueHandler eventQHndl = new JXIOEventQueueHandler (10000);	
 		MySesServer ses = new MySesServer(eventQHndl, super.getUrlForServer());
 		eventQHndl.addEventable (ses);
 		forward(ses, ptrSes);

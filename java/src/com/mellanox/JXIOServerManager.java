@@ -1,0 +1,113 @@
+/*
+** Copyright (C) 2013 Mellanox Technologies
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at:
+**
+** http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+** either express or implied. See the License for the specific language
+** governing permissions and  limitations under the License.
+**
+*/
+package com.mellanox;
+
+import java.util.logging.Level;
+
+public abstract class JXIOServerManager implements JXIOEventable{
+	private JXIOEventQueueHandler eventQHndl = null;
+	private long id = 0;
+	private int port;
+	private String url;
+	private String urlPort0;
+	static protected int sizeEventQ = 10000;
+	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
+	
+	private static JXIOLog logger = JXIOLog.getLog(JXIOServerManager.class.getCanonicalName());
+	
+	public abstract void onSession(long ptrSes, String uri, String srcIP);
+	public abstract void onSessionError(int errorType, String reason);
+	
+	public JXIOServerManager(JXIOEventQueueHandler eventQHandler,String url){
+	    	this.url = url;
+		eventQHndl = eventQHandler;
+		
+		long [] ar = JXIOBridge.startServer(url, eventQHandler.getID());
+		this.id = ar [0];
+		this.port = (int) ar[1];
+		
+		if (this.id == 0){
+			logger.log(Level.SEVERE, "there was an error creating SessionManager");
+		}
+		createUrlForServerSession();
+		logger.log(Level.INFO, "urlForServerSession is "+urlPort0);
+		
+		eventQHndl.addEventable (this); 
+		eventQHndl.runEventLoop(1, 0);
+	}
+	
+	private void createUrlForServerSession(){
+	    //parse url so it would replace port number on which the server listens with 0
+	    int index = url.lastIndexOf(":"); 
+	    urlPort0 = url.substring(0, index+1)+"0";
+	}
+	
+	public String getUrlForServer(){return urlPort0;}
+	
+	public boolean close(){
+		eventQHndl.removeEventable (this); //TODO: fix this
+		if (id == 0){
+			logger.log(Level.SEVERE, "closing JXIOServerManager with empty id");
+			return false;
+		}
+		JXIOBridge.stopServer(id);
+		isClosing = true;
+		return true;
+	}
+	
+	public void forward(JXIOServerSession ses, long ptrSes){
+	    logger.log(Level.INFO, "****** new url inside forward  is "+ses.url);
+	    
+		JXIOBridge.forwardSession(ses.url, ptrSes, ses.getId());
+	}
+	
+	public long getId(){ return id;} 
+	public boolean isClosing() {return isClosing;}
+	
+	
+	public void onEvent (int eventType, JXIOEvent ev){
+		switch (eventType){
+		
+		case 0: //session error event
+			logger.log(Level.INFO, "received session error event");
+			if (ev  instanceof JXIOEventSession){
+				int errorType = ((JXIOEventSession) ev).errorType;
+				String reason = ((JXIOEventSession) ev).reason;
+				this.onSessionError(errorType, reason);
+				if (errorType == 1) {//event = "SESSION_TEARDOWN";
+					eventQHndl.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
+				}
+			}
+			break;
+			
+		case 4: //on new session
+			logger.log(Level.INFO, "received session error event");
+			if (ev  instanceof JXIOEventNewSession){
+				long ptrSes = ((JXIOEventNewSession) ev).ptrSes;
+				String uri = ((JXIOEventNewSession) ev).uri;		
+				String srcIP = ((JXIOEventNewSession) ev).srcIP;
+				this.onSession(ptrSes, uri, srcIP);
+			}
+			break;
+		
+		default:
+			logger.log(Level.SEVERE, "received an unknown event "+ eventType);
+		}
+	}
+	
+
+}

@@ -1,4 +1,5 @@
 //package clientTests;
+import com.mellanox.*;
 
 public class OpenRunEventLoopCloseClientTest implements Runnable{
 
@@ -9,21 +10,21 @@ public class OpenRunEventLoopCloseClientTest implements Runnable{
 		
 		// Setup parameters
 		String url;
-		MyEQH eqh;
+		JXIOEventQueueHandler eqh;
 		MySesClient sClient;
 		
 		// Get url
 		url = "rdma://" + TestClient.hostname + ":" + TestClient.port;
 		
-		// Setting up a Event Queue Hanler
-		eqh = new MyEQH(TestClient.eqhSize);
+		// Setting up a JXIOEvent Queue Hanler
+		eqh = new JXIOEventQueueHandler(TestClient.eqhSize);
 		
 		// Setting up a session client
 		TestClient.print("----- Setting up a session client...");
 		sClient = new MySesClient(eqh, url);
 		
 		// Run EQh
-		TestClient.print("----- Run Event Loop...");
+		TestClient.print("----- Run JXIOEvent Loop...");
 		eqh.runEventLoop(1, 0);
 		
 		// Closing the session client

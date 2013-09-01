@@ -1,4 +1,5 @@
 //package managerTests;
+import com.mellanox.*;
 
 public class OpenRunEventLoopCloseManagerTest implements Runnable{
 
@@ -9,21 +10,21 @@ public class OpenRunEventLoopCloseManagerTest implements Runnable{
 		
 		// Setup parameters
 		String url;
-		MyEQH eqh;
+		JXIOEventQueueHandler eqh;
 		MySesManager sManager;
 		
 		// Get url
 		url = "rdma://" + TestManager.hostname + ":" + TestManager.port;
 		
-		// Setting up a Event Queue Hanler
-		eqh = new MyEQH(TestManager.eqhSize);
+		// Setting up a JXIOEvent Queue Hanler
+		eqh = new JXIOEventQueueHandler(TestManager.eqhSize);
 		
 		// Setting up a session manager
 		TestManager.print("----- Setting up a session manager...");
 		sManager = new MySesManager(eqh, url);
 		
 		// Run EQh
-		TestManager.print("----- Run Event Loop...");
+		TestManager.print("----- Run JXIOEvent Loop...");
 		eqh.runEventLoop(1, 0);
 		
 		// Closing the session manager

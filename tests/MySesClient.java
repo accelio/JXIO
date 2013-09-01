@@ -1,11 +1,11 @@
 import java.util.logging.Level;
 import com.mellanox.*;
 
-	public class MySesClient extends SessionClient{
+	public class MySesClient extends JXIOClientSession{
 		
-		private static JXLog logger = JXLog.getLog(MySesClient.class.getCanonicalName());
+		private static JXIOLog logger = JXIOLog.getLog(MySesClient.class.getCanonicalName());
 		
-		public MySesClient(EventQueueHandler eqh, String uri){
+		public MySesClient(JXIOEventQueueHandler eqh, String uri){
 			super (eqh, uri);	
 		}
 		
