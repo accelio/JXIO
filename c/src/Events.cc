@@ -32,8 +32,6 @@ int Events::writeOnSessionErrorEvent(char *buf, Contexable *ptrForJava, struct x
 			struct xio_session_event_data *event_data,
 			void *cb_prv_data)
 {
-	log (lsDEBUG, "****** inside writeOnSessionErrorEvent private data is %p\n",cb_prv_data);
-
 	this->event.type = htonl (0);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
 	this->event.event_specific.session_error.error_type = htonl(event_data->event);
@@ -52,7 +50,6 @@ int Events::writeOnSessionEstablishedEvent (char *buf, Contexable *ptrForJava, s
 			struct xio_new_session_rsp *rsp,
 			void *cb_prv_data)
 {
-	log (lsDEBUG, "****** inside writeOnSessionEstablishedEvent private data is %p\n",cb_prv_data);
 	event.type = htonl (2);
 	event.ptr = htobe64(intptr_t(ptrForJava));
 	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
@@ -64,8 +61,6 @@ int Events::writeOnNewSessionEvent(char *buf, Contexable *ptrForJava, struct xio
 			struct xio_new_session_req *req,
 			void *cb_prv_data)
 {
-
-	log (lsDEBUG, "****** inside writeOnNewSessionEvent private data is %p\n",cb_prv_data);
 	void* p1 =  session;
 
 	event.type = htonl (4);

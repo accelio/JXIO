@@ -90,10 +90,8 @@ public class EventQueueHandler implements Runnable{
 	        for(int i=0; i<eventToRead; i++){
 	                int eventType = eventQueue.getInt();
 	                long id = eventQueue.getLong();
-	                System.out.println("***** event is "+eventType);
-	         		Event event = parseEvent(eventType, eventQueue);
-	         		Eventable eventable = eventables.get(id);
-	         		logger.log(Level.INFO, "** eventable "+eventable+" id "+ id);
+	         	Event event = parseEvent(eventType, eventQueue);
+	         	Eventable eventable = eventables.get(id);
 	                eventable.onEvent(eventType, event);
 			}
 	        eventsWaitingInQ -= eventToRead;
@@ -112,13 +110,11 @@ public class EventQueueHandler implements Runnable{
 		int	eventToRead2 = Math.min (maxEvents, eventsWaitingInQ);
          
 		for(int i=0; i<eventToRead2; i++){
-            int eventType = eventQueue.getInt();
-            long id = eventQueue.getLong();
-            System.out.println("***** event is "+eventType);
-            Event event = parseEvent(eventType, eventQueue);
-     		Eventable eventable =  eventables.get(id);
-     		logger.log(Level.INFO, "** eventable "+eventable+" id "+ id);
-            eventable.onEvent(eventType, event);
+		    int eventType = eventQueue.getInt();
+		    long id = eventQueue.getLong();
+		    Event event = parseEvent(eventType, eventQueue);
+		    Eventable eventable =  eventables.get(id);
+		    eventable.onEvent(eventType, event);
 		}
 		
 		 eventsWaitingInQ -= eventToRead2;

@@ -10,24 +10,15 @@ public class MySesManager extends ServerManager{
 		super(eqh, url);
 	}
 	
-	public void onSession(long ptrSes, String uri, String srcIP) {
-		//has some logic on which port the new session will listen
-		int port = 1235;
-		logger.log(Level.INFO, "MySesManager.onSession uri is "+uri);
-		
-		MyEQH eventQHndl = new MyEQH (10000);	
-		MySesServer ses = new MySesServer(eventQHndl, uri);
+	
+	public void onSession(long ptrSes, String uriSrc, String srcIP) {		
+	    	EventQueueHandler eventQHndl = new EventQueueHandler (10000);	
+		MySesServer ses = new MySesServer(eventQHndl, super.getUrlForServer());
 		eventQHndl.addEventable (ses);
 		forward(ses, ptrSes);
 		
 		Thread t = new Thread (eventQHndl);
-		t.start();
-
-		
-//		eventQHndl.runEventLoop2(1, 0);
-//		eventQHndl.runEventLoop2(1, 0);
-//		eventQHndl.runEventLoop2(1, 0);
-		
+		t.start();	
 		
 	}
 
@@ -40,7 +31,7 @@ public class MySesManager extends ServerManager{
 			break;
 		case 1:
 			event = "SESSION_TEARDOWN";
-			this.close(); // Added
+//			this.close(); // Added
 			break;
 		case 2:
 			event = "CONNECTION_CLOSED";

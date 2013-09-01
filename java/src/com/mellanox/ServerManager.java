@@ -56,6 +56,7 @@ public abstract class ServerManager implements Eventable{
 	    urlPort0 = url.substring(0, index+1)+"0";
 	}
 	
+	public String getUrlForServer(){return urlPort0;}
 	
 	public boolean close(){
 		eventQHndl.removeEventable (this); //TODO: fix this
@@ -69,6 +70,8 @@ public abstract class ServerManager implements Eventable{
 	}
 	
 	public void forward(SessionServer ses, long ptrSes){
+	    logger.log(Level.INFO, "****** new url inside forward  is "+ses.url);
+	    
 		JXBridge.forwardSession(ses.url, ptrSes, ses.getId());
 	}
 	

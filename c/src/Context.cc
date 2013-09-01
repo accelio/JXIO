@@ -32,7 +32,7 @@ Context::Context(int eventQSize)
 
 	}
 
-	ctx = xio_ctx_open(NULL, ev_loop);
+	ctx = xio_ctx_open(NULL, ev_loop, 0);
 	if (ctx == NULL){
 		log (lsERROR, "Error, xio_ctx_open failed\n");
 		goto cleanupEvLoop;

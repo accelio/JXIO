@@ -39,9 +39,10 @@ public:
 	struct xio_session *session;
 
 	bool error_creating;
-	int port; //indicates the actual port on which the server listens
+	uint16_t port; //indicates the actual port on which the server listens
 	bool onSessionEvent(int eventType);
-
+	bool closingInProcess;
+	bool close();
 //	cJXCtx* ctx;
 
 };

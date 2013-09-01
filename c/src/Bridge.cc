@@ -198,7 +198,7 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerNa
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_stopServerNative(JNIEnv *env, jclass cls, jlong ptrServer)
 {
 	Server *server = (Server *)ptrServer;
-	delete server;
+	server->close();
 
 }
 
@@ -208,16 +208,9 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_forwardSessionN
 	struct xio_session	*session = (struct xio_session *)ptr_session;
 	Server * server = (Server *) ptr_server;
 	bool retVal = server->forward(session, url);
-//	retVal = xio_accept (session, &url, 1, NULL, 0);
 	env->ReleaseStringUTFChars(jurl, url);
 
 	return retVal;
-
-//    if (retVal){
- //   	log (lsERROR, "Error in accepting session. error %d\n", retVal);
-//		return false;
-//	}
-//	return true;
 	
 }
 

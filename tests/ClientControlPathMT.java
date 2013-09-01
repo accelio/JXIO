@@ -10,11 +10,11 @@ private static JXLog logger = JXLog.getLog(ClientControlPathSimpleTest.class.get
 		String port = args[1];
 		String combined_url = "rdma://"+url+":"+port;
 		MySesClient ses;
-		MyEQH eventQHndl;
+		EventQueueHandler eventQHndl;
 		
 		int num_times = 1;
 		
-		eventQHndl = new MyEQH (1000);
+		eventQHndl = new EventQueueHandler (1000);
 		
 		for (int i=0; i<num_times; i++){
 			

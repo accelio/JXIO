@@ -45,6 +45,12 @@ public abstract class SessionServer implements Eventable {
 		if (this.id == 0){
 			logger.log(Level.SEVERE, "there was an error creating SessionServer");
 		}
+		//modify url to include the new port number
+		int index = url.lastIndexOf(":"); 
+
+
+		this.url = url.substring(0, index+1)+Integer.toString(port);
+		logger.log(Level.INFO, "****** new url is "+this.url);
 		this.eventQHandler.addEventable (this);
 	}
 	

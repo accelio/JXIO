@@ -38,30 +38,35 @@ Server::Server(const char	*url, long ptrCtx)
 	Context *ctxClass = (Context *)ptrCtx;
 	set_ctx_class(ctxClass);
 
-	this->server = xio_bind(ctxClass->ctx, &server_ops, url, this);
+	this->server = xio_bind(ctxClass->ctx, &server_ops, url, &this->port, this);
+
 	if (server == NULL){
 		log (lsERROR, "Error in binding server\n");
 		error_creating = true;
 	}
-	log (lsDEBUG, "****** inside c-tor of server private data is %p\n",this);
+	log (lsDEBUG, "****** port number is %d\n",this->port);
 
-	this->port = 5678; //TODO: some global shit
+	this->closingInProcess = false;
 }
 
 Server::~Server()
 {
-	if (session){
-		if (xio_session_close(session)){
-			log (lsERROR, "Error xio_session_close failed\n");
+	if (!error_creating){
+		if (session){
+			if (xio_session_close(session)){
+				log (lsERROR, "Error xio_session_close failed\n");
+			}
 		}
-	}
-	if (xio_unbind (this->server)){
-		log (lsERROR, "Error xio_unbind failed\n");
+		if (xio_unbind (this->server)){
+			log (lsERROR, "Error xio_unbind failed\n");
+		}
 	}
 }
 
 
 bool Server::forward(struct xio_session *session, const char * url){
+	log (lsDEBUG, "***********************url before forward is %s\n", url);
+
 	int retVal = xio_accept (session, &url, 1, NULL, 0);
 	if (retVal){
 		log (lsERROR, "Error in accepting session. error %d\n", retVal);
@@ -73,10 +78,25 @@ bool Server::forward(struct xio_session *session, const char * url){
 
 
 
+bool Server::close(){
+	this->closingInProcess = true;
+	xio_connection * con = xio_get_connection(this->session, this->get_ctx_class()->ctx);
+	if (con != NULL){
+		if (xio_disconnect (con)){
+				log(lsERROR, "xio_disconnect failed");
+				return false;
+			}
+	}
+	return true;
+}
+
 bool Server::onSessionEvent(int eventType){
 	switch (eventType){
 		case (XIO_SESSION_CONNECTION_CLOSED_EVENT):
 			log (lsINFO, "got XIO_SESSION_CONNECTION_CLOSED_EVENT\n");
+			if (closingInProcess){
+				close();
+			}
 			return false;
 
 		case(XIO_SESSION_CONNECTION_ERROR_EVENT):
