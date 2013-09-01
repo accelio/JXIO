@@ -53,13 +53,13 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 		return JNI_ERR; /* JNI version not supported */
 	}
 
-	cls = env->FindClass("com/mellanox/JXBridge");
+	cls = env->FindClass("com/mellanox/JXIOBridge");
 	if (cls == NULL) {
 		fprintf(stderr, "in cJXBridge - java class was NOT found\n");
 		return JNI_ERR;
 	}
 
-	cls_data = env->FindClass("com/mellanox/EventQueueHandler$DataFromC");
+	cls_data = env->FindClass("com/mellanox/JXIOEventQueueHandler$DataFromC");
 	if (cls_data == NULL) {
 			fprintf(stderr, "in cJXBridge - java class was NOT found\n");
 			return JNI_ERR;
@@ -91,7 +91,7 @@ extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *jvm, void* reserved)
 	return;
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_createCtxNative(JNIEnv *env, jclass cls, jint eventQueueSize, jobject dataToC)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXIOBridge_createCtxNative(JNIEnv *env, jclass cls, jint eventQueueSize, jobject dataToC)
 {
 	int size = eventQueueSize;
 	Context *ctx = new Context (size);
@@ -114,28 +114,28 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_createCtxNative
 	return ctx->error_creating;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_closeCtxNative(JNIEnv *env, jclass cls, jlong ptrCtx)
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXIOBridge_closeCtxNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
 	Context *ctx = (Context *)ptrCtx;
 	delete (ctx);
 	log(lsDEBUG, "end of closeCTX\n");
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXBridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXIOBridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
 	Context *ctx = (Context *)ptrCtx;
 	return ctx->run_event_loop();
 
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_stopEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXIOBridge_stopEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
 
 	Context *ctx = (Context *)ptrCtx;
 	ctx->stop_event_loop();
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
+extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXIOBridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
 {
 
 	const char *url = env->GetStringUTFChars(jurl, NULL);
@@ -154,7 +154,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXBridge_startSessionClient
 
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXIOBridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
 {
 
 	Client * ses = (Client*)ptrSes;
@@ -162,7 +162,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_closeSessionCli
 
 }
 
-extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
+extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXIOBridge_startServerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
 {
 
 	jlong temp[2];
@@ -195,14 +195,14 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXBridge_startServerNa
 
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXBridge_stopServerNative(JNIEnv *env, jclass cls, jlong ptrServer)
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXIOBridge_stopServerNative(JNIEnv *env, jclass cls, jlong ptrServer)
 {
 	Server *server = (Server *)ptrServer;
 	server->close();
 
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_server)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXIOBridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_server)
 {
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	struct xio_session	*session = (struct xio_session *)ptr_session;
@@ -214,7 +214,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXBridge_forwardSessionN
 	
 }
 
-extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_JXBridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason)
+extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_JXIOBridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason)
 {
 
 	struct xio_session	*session;
