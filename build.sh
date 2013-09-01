@@ -6,7 +6,7 @@ FILES=java/src/com/mellanox/*.java
 
 git submodule init
 git submodule update
-cd libxio/; ./autogen.sh && ./configure && make ; cd ..
+cd libxio/; git pull origin master && ./autogen.sh && ./configure && make ; cd ..
 cd c/; ./autogen.sh && ./configure && make ; cd ..
 mkdir -p java/bin
 javac -d java/bin/ $FILES
