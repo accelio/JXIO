@@ -26,7 +26,7 @@ import com.mellanox.JXIOBridge;
 
 public class JXIOEventQueueHandler implements Runnable{
 	
-	private int eventQueueSize = 1000; //size of byteBuffer
+	private int eventQueueSize = 5000; //size of byteBuffer
 	
 	private long id = 0;
 	private int eventsWaitingInQ = 0;
