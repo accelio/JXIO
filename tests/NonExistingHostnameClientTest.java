@@ -15,7 +15,7 @@ public class NonExistingHostnameClientTest implements Runnable{
 		MySesClient sClient;
 		
 		// Get url
-		url = "rdma://" + "0.0.0.0" + ":" + TestClient.port;
+		url = "rdma://" + "1.0.0.0" + ":" + TestClient.port;
 		
 		// Setting up a Event Queue Hanler
 		eqh = new JXIOEventQueueHandler(TestClient.eqhSize);

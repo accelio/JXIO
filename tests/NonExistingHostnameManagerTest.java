@@ -15,7 +15,7 @@ public class NonExistingHostnameManagerTest implements Runnable{
 		MySesManager sManager;
 		
 		// Get url
-		url = "rdma://" + "0.0.0.0" + ":" + TestManager.port;
+		url = "rdma://" + "1.0.0.0" + ":" + TestManager.port;
 		
 		// Setting up a Event Queue Hanler
 		eqh = new JXIOEventQueueHandler(TestManager.eqhSize);

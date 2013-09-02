@@ -9,7 +9,7 @@ public class TestClient {
 	// Client Parameters
 	public static String hostname;
 	public static int port;
-	public static int portRange = 1234;
+	public static int portRange = 1233;
 	public static int eqhSize = 1000;
 	// General Parameters
 	private static int requestedTest;
@@ -28,6 +28,10 @@ public class TestClient {
 			//Configure Tests
 			configure();
 			
+			//Print Given Arguments
+			for (int i = 0; i < args.length; i++){
+				System.out.println(i + " " + args[i] + " ");
+			}
 			// Get Hostname and Port
 			hostname = args[0];
 			port = Integer.parseInt(args[1]);

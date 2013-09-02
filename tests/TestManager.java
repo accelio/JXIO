@@ -8,7 +8,7 @@ public class TestManager {
 	// Manager Parameters
 	public static String hostname;
 	public static int port;
-	public static int portRange = 1234;
+	public static int portRange = 1233;
 	public static int eqhSize = 1000;
 	// General Parameters
 	private static int requestedTest;

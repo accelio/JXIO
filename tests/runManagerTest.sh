@@ -11,14 +11,13 @@ echo -e "\n******************* JXIO Verification Manager Test ******************
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR
 
+# Exporting LD library
+export LD_LIBRARY_PATH=$DIR
+echo -e "\nLD library is: $LD_LIBRARY_PATH\n"
+
 # Checks to see if JAVA path is valid
 if [ ! -e ${JAVA_HOME} ]; then
         echo -e "\nError: JAVA not found!\n"
-        exit 1
-fi
-# Checks to see if LD library path is valid
-if [ ! -e ${LD_LIBRARY_PATH} ]; then
-        echo -e "\nError: LD_LIBRAry not found!\n"
         exit 1
 fi
 
