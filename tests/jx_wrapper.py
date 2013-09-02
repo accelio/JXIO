@@ -17,9 +17,9 @@ class JxWrapper(ClientServerWrapper):
         super(JxWrapper, self).configure_parser()
  
         # Arguments
-        self.add_client_cmd_argument('--host', help='The host ip or name of the server.', type=str, value_only=True)
-        self.add_client_cmd_argument('--port', help='Port number of the server.', type=int, value_only=True)
-        self.add_client_cmd_argument('--test_num', help='The test number to run.', type=int, value_only=True)
+        self.add_client_cmd_argument('--host', help='The host ip or name of the server.', type=str, value_only=True, priority=1)
+        self.add_client_cmd_argument('--port', help='Port number of the server.', type=int, value_only=True, priority=2)
+        self.add_client_cmd_argument('--test_num', help='The test number to run.', type=int, value_only=True, priority=3)
 
 #     def get_server_manage_ip(self):
 #         return self.ServerPlayer.Ip
