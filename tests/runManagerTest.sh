@@ -46,8 +46,8 @@ TEST_NUMBER=$3
 
 # Compile
 echo -e "\nCompiling JAVA files....\n"
-javac -cp "jx.jar:." Tests/*.java managerTests/*.java
+javac -cp "jx.jar:." ./*.java
 
 # Run the tests
 echo -e "\nRunning manager test....\n"
-java -classpath jx.jar:. managerTests/TestManager $IP $PORT $TEST_NUMBER
+java -classpath jx.jar:. TestManager $IP $PORT $TEST_NUMBER
