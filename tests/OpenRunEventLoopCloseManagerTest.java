@@ -26,7 +26,7 @@ public class OpenRunEventLoopCloseManagerTest implements Runnable{
 		
 		// Run EQh
 		TestManager.print("----- Run Event Loop...");
-		eqh.runEventLoop(1, 0);
+		eqh.runEventLoop(1000, -1 /* Infinite */);
 		
 		// Closing the session manager
 		TestManager.print("------ Closing the session manager...");

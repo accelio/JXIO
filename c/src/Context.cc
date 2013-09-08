@@ -15,6 +15,8 @@
 **
 */
 
+#include <sys/timerfd.h>
+
 #include "Context.h"
 
 Context::Context(int eventQSize)
@@ -44,6 +46,10 @@ Context::Context(int eventQSize)
 		goto cleanupCtx;
 	}
 	this->events = new Events();
+
+	this->timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
+	add_event_loop_fd(this->timer_fd, XIO_POLLIN, this);
+
 	return;
 
 cleanupCtx:
@@ -57,38 +63,70 @@ cleanupEvLoop:
 
 Context::~Context()
 {
-	if (error_creating){
+	if (error_creating) {
 		return;
 	}
-	if (this->map_session != NULL){
+
+	if (timer_fd) {
+		del_event_loop_fd(this->timer_fd);
+		close(this->timer_fd);
+	}
+
+	if (this->map_session != NULL) {
 		delete (this->map_session);
 	}
 	delete (this->event_queue);
 	delete (this->events);
 	xio_ctx_close(ctx);
-	/* destroy the event loop */
+	// destroy the event loop
 	xio_ev_loop_destroy(&ev_loop);
 }
 
-int Context::run_event_loop()
+int Context::run_event_loop(long timeout_micro_sec)
 {
-    //update offset to 0: for indication if this is the first callback called
+	//update offset to 0: for indication if this is the first callback called
 	this->event_queue->reset();
 	this->events_num = 0;
 
+	// Set the timeout if
+	if (timeout_micro_sec < 0) {
+		timeout_micro_sec = 0;	// Infinite timeout on timerfd
+	}
+	else if (timeout_micro_sec == 0) {
+		timeout_micro_sec = 1;	// Minimal timeout  on timerfd (use 1 micro sec instead on zero which is infinite)
+	}
+
+	struct itimerspec timeout;
+	timeout.it_value.tv_sec = timeout_micro_sec/1000000;
+	timeout.it_value.tv_nsec = (timeout_micro_sec - timeout.it_value.tv_sec*1000000) * 1000;
+	timerfd_settime(this->timer_fd, 0, &timeout, NULL);
+
+	log (lsDEBUG, "[%p] before ev_loop_run. requested timeout is %d usec\n", this, timeout_micro_sec);
 	xio_ev_loop_run(this->ev_loop);
-	log (lsDEBUG, "after xio_ev_loop_run. there are %d evetns\n", this->events_num);
+	log (lsDEBUG, "[%p] after ev_loop_run. there are %d events\n", this, this->events_num);
 
 	return this->events_num;
 }
 
 void Context::stop_event_loop()
 {
-	xio_ev_loop_stop(ev_loop);
+	xio_ev_loop_stop(this->ev_loop);
 }
 
+int Context::add_event_loop_fd(int fd, int events, void *data)
+{
+	return xio_ev_loop_add(this->ev_loop, fd, events, Context::on_event_loop_handler, data);
+}
 
+int Context::del_event_loop_fd(int fd)
+{
+	return xio_ev_loop_del(this->ev_loop, fd);
+}
 
-
-
-
+void Context::on_event_loop_handler(int fd, int events, void *data)
+{
+	// Timer callback - stop event loop
+	log (lsDEBUG, "[%p] timeout in ev_loop_run\n", data);
+	Context *ctx = (Context *)data;
+	ctx->stop_event_loop();
+}

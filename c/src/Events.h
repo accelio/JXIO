@@ -35,28 +35,28 @@ struct  event_new_session {
 	char 		ip_str[0]; //to  indicate that ip string is written to buffer
 } __attribute__ ((packed));
 
-struct __attribute__ ((packed)) event_session_established{
+struct __attribute__ ((packed)) event_session_established {
 };
 
-struct __attribute__ ((packed)) event_session_error{
+struct __attribute__ ((packed)) event_session_error {
 
 	int32_t error_type;
 	int32_t error_reason;
 };
 
-struct __attribute__ ((packed)) event_msg_complete{
+struct __attribute__ ((packed)) event_msg_complete {
 };
 
-struct __attribute__ ((packed)) event_msg_error{
+struct __attribute__ ((packed)) event_msg_error {
 };
 
 struct __attribute__ ((packed)) event_msg_received {
 };
 
-struct  event_struct{
+struct  event_struct {
 	int32_t type;
 	int64_t ptr;//this will indicate on which session the event arrived
-	union{
+	union {
 		struct event_new_session new_session;
 		struct event_session_established session_established;
 		struct event_session_error session_error;
@@ -64,15 +64,14 @@ struct  event_struct{
 		struct event_msg_error msg_error;
 		struct event_msg_received msg_received;
 	} event_specific;
-}__attribute__ ((packed));
+} __attribute__ ((packed));
 
 
 
-class Events{
+class Events {
 public:
 	int size;
 	struct event_struct event;
-
 
 	Events();
 
@@ -96,10 +95,6 @@ public:
 			struct xio_msg *msg,
 			int more_in_batch,
 			void *cb_prv_data);
-
 };
-
-
-
 
 #endif // ! Events__H___

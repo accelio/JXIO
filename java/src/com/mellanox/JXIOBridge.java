@@ -47,32 +47,29 @@ public class JXIOBridge {
 		logger.log(Level.INFO, "finished closeCtxNative" );
 			
 	}
-	private static native int runEventLoopNative(long ptr);
-	static int runEventLoop(long ptr){
+	private static native int runEventLoopNative(long ptr, long timeOutMicroSec);
+	static int runEventLoop(long ptr, long timeOutMicroSec) {
 	    logger.log(Level.INFO, "invoking Bridge.runEventLoopNative");
-	    int ret = runEventLoopNative(ptr);
+	    int ret = runEventLoopNative(ptr, timeOutMicroSec);
 	    logger.log(Level.INFO, "finished Bridge.runEventLoopNative=" + ret);
 	    return ret;
 	}	
 	private static native void stopEventLoopNative(long ptr);
-	static void stopEventLoop(long ptr){
+	static void stopEventLoop(long ptr) {
 	    logger.log(Level.INFO, "invoking stopEventLoopNative");
 	    stopEventLoopNative(ptr);
 	    logger.log(Level.INFO, "finished stopEventLoopNative");
 	}
 
-	
-		
-		
 	private static native long startSessionClientNative(String url, long ptrCtx);
-	static long startSessionClient(String url, long ptrCtx){
+	static long startSessionClient(String url, long ptrCtx) {
 		logger.log(Level.INFO, "invoking startSessionNative");
 		long p = startSessionClientNative(url, ptrCtx);		
 		logger.log(Level.INFO, "finished startSessionNative ");
 		return p;
 	}	
 	private static native void closeSessionClientNative(long sesPtr);
-	static void closeSessionClient(long sesPtr){
+	static void closeSessionClient(long sesPtr) {
 		logger.log(Level.INFO, "invoking Bridge.closeSessionClient");
 		closeSessionClientNative(sesPtr);
 		logger.log(Level.INFO, "finished Bridge.closeSessionClient");
@@ -80,14 +77,14 @@ public class JXIOBridge {
 
 	
 	private static native long [] startServerNative(String url, long ptrCtx);
-	static long [] startServer(String url, long ptrCtx){
+	static long [] startServer(String url, long ptrCtx) {
 		logger.log(Level.INFO, "invoking startServerNative");
 		long ptr [] = startServerNative(url, ptrCtx);
 		logger.log(Level.INFO, "finished startServerNative");
 		return ptr;
 	}
 	private static native boolean stopServerNative(long ptr);
-	static boolean stopServer(long ptr){
+	static boolean stopServer(long ptr) {
 		logger.log(Level.INFO, "invoking stopServerNative");
 		boolean ret = stopServerNative(ptr);
 		logger.log(Level.INFO, "finished stopServerNative ret=" + ret);
@@ -95,7 +92,7 @@ public class JXIOBridge {
 	}
 
 	private static native long forwardSessionNative(String url, long ptrSes, long ptrServer);
-	static long  forwardSession(String url, long ptrSes, long ptrServer){
+	static long  forwardSession(String url, long ptrSes, long ptrServer) {
 		logger.log(Level.INFO, "invoking forwardSessionNative");
 		long ptr = forwardSessionNative(url, ptrSes, ptrServer);
 		logger.log(Level.INFO, "finished forwardSessionNative");
@@ -105,7 +102,7 @@ public class JXIOBridge {
 	
 	/*
 	private static native int getNumEventsQNative(long ptr);
-	static int getNumEventsQ(long ptr){
+	static int getNumEventsQ(long ptr) {
 		logger.log(Level.INFO, "invoking getNumEventsQNative");
 		int ret = getNumEventsQNative(ptr);
 		logger.log(Level.INFO, "finished getNumEventsQNative");
@@ -113,14 +110,10 @@ public class JXIOBridge {
 	}
 */
 	private static native String getErrorNative(int errorReason);
-	static String getError(int errorReason){
+	static String getError(int errorReason) {
 //		logger.log(Level.FINE, "invoking getErrorNative");
 		String s = getErrorNative(errorReason);
 //		logger.log(Level.FINE, "finished getErrorNative. error was "+s);
 		return s;
 	}
-
-	
-	
 }
-

@@ -82,7 +82,6 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 	printf("in cJXBridge -  java callback methods were found and cached\n");
 
 	return JNI_VERSION_1_4;  //direct buffer requires java 1.4
-
 }
 
 extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *jvm, void* reserved)
@@ -95,18 +94,17 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXIOBridge_createCtxNati
 {
 	int size = eventQueueSize;
 	Context *ctx = new Context (size);
-	if (ctx == NULL){
+	if (ctx == NULL) {
 		log(lsERROR, "memory allocation failed\n");
 		return false;
 	}
-	if (ctx->error_creating){
+	if (ctx->error_creating) {
 		delete (ctx);
 		return false;
 	}
 	jobject jbuf = env->NewDirectByteBuffer(ctx->event_queue->get_buffer(), eventQueueSize );
 
 	jlong ptr = (jlong)(intptr_t) ctx;
-
 
 	env->SetLongField(dataToC, fidPtr, ptr);
 	env->SetObjectField(dataToC, fidBuf, jbuf);
@@ -121,50 +119,55 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXIOBridge_closeCtxNative(JN
 	log(lsDEBUG, "end of closeCTX\n");
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXIOBridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXIOBridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx, jlong timeOutMicroSec)
 {
 	Context *ctx = (Context *)ptrCtx;
-	return ctx->run_event_loop();
-
+	return ctx->run_event_loop((long)timeOutMicroSec);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXIOBridge_stopEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
-
 	Context *ctx = (Context *)ptrCtx;
 	ctx->stop_event_loop();
 }
 
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXIOBridge_addEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd, jint events, jlong data)
+{
+	Context *ctx = (Context *)ptrCtx;
+	return ctx->add_event_loop_fd(fd, events, (void*)data);
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXIOBridge_delEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd)
+{
+	Context *ctx = (Context *)ptrCtx;
+	return ctx->del_event_loop_fd(fd);
+}
+
 extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXIOBridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
 {
-
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	Client * ses = new Client(url, ptrCtx);
 	env->ReleaseStringUTFChars(jurl, url);
 
-	if (ses == NULL){
+	if (ses == NULL) {
 		log(lsERROR, "memory allocation failed\n");
 		return NULL;
 	}
-	if (ses->error_creating){
+	if (ses->error_creating) {
 		delete (ses);
 		return 0;
 	}
 	return (jlong)(intptr_t) ses;
-
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXIOBridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
 {
-
-	Client * ses = (Client*)ptrSes;
+	Client *ses = (Client*)ptrSes;
 	return ses->close_connection();
-
 }
 
 extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXIOBridge_startServerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
 {
-
 	jlong temp[2];
 
 	jlongArray dataToJava = env->NewLongArray(2);
@@ -174,50 +177,46 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXIOBridge_startServer
 
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 
-	Server * server = new Server(url, ptrCtx);
+	Server *server = new Server(url, ptrCtx);
 	env->ReleaseStringUTFChars(jurl, url);
 
-	if (server == NULL){
+	if (server == NULL) {
 		log(lsERROR, "memory allocation failed\n");
 		return NULL;
 	}
-	if (server->error_creating){
+	if (server->error_creating) {
 		temp[0] = 0;
 		temp[1]=0;
 		delete(server);
-	}else{
+	} else {
 		temp [0] = (jlong)(intptr_t) server;
 		temp[1] = (jlong)server->port;
 	}
 
 	env->SetLongArrayRegion(dataToJava,0, 2, temp);
 	return dataToJava;
-
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXIOBridge_stopServerNative(JNIEnv *env, jclass cls, jlong ptrServer)
 {
 	Server *server = (Server *)ptrServer;
 	server->close();
-
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXIOBridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_server)
 {
 	const char *url = env->GetStringUTFChars(jurl, NULL);
-	struct xio_session	*session = (struct xio_session *)ptr_session;
+	struct xio_session *session = (struct xio_session *)ptr_session;
 	Server * server = (Server *) ptr_server;
 	bool retVal = server->forward(session, url);
 	env->ReleaseStringUTFChars(jurl, url);
 
 	return retVal;
-	
 }
 
 extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_JXIOBridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason)
 {
-
-	struct xio_session	*session;
+	struct xio_session *session;
 	const char * error;
 	jstring str;
 
@@ -225,22 +224,21 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_JXIOBridge_getErrorNative
 	str = env->NewStringUTF(error);
 //	free(error); TODO: to free it????
 	return str;
-
 }
 
 JNIEnv *JX_attachNativeThread()
 {
-    JNIEnv *env;
+	JNIEnv *env;
 	if (! cached_jvm) {
 		printf("cached_jvm is NULL");
 	}
-    jint ret = cached_jvm->AttachCurrentThread((void **)&env, NULL);
+	jint ret = cached_jvm->AttachCurrentThread((void **)&env, NULL);
 
 	if (ret < 0) {
 		printf("cached_jvm->AttachCurrentThread failed ret=%d", ret);
 	}
 	printf("completed successfully env=%p", env);
-    return env; // note: this handler is valid for all functions in this thread
+	return env; // note: this handler is valid for all functions in this thread
 }
 
 
