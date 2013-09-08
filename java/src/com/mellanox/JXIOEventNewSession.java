@@ -16,11 +16,13 @@
 */
 package com.mellanox;
 
-class JXIOEventNewSession extends JXIOEvent{
+class JXIOEventNewSession extends JXIOEvent {
 	long ptrSes;
 	String uri;
 	String srcIP;
-	JXIOEventNewSession (long ptr, String uri, String ip){
+
+	JXIOEventNewSession (int eventType, long id, long ptr, String uri, String ip) {
+		super(eventType, id); 
 		this.ptrSes = ptr;
 		this.uri = uri;
 		this.srcIP = ip;

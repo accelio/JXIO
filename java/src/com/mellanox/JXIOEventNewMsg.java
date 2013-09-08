@@ -16,7 +16,8 @@
 */
 package com.mellanox;
 
-public class JXIOEventNewMsg extends JXIOEvent{
-	JXIOEventNewMsg(){}
-	
+public class JXIOEventNewMsg extends JXIOEvent {
+	JXIOEventNewMsg(int eventType, long id) {
+		super(eventType, id);
+	}
 }

@@ -18,7 +18,7 @@ package com.mellanox;
 
 
 public interface JXIOEventable {
-	public void onEvent (int eventType,JXIOEvent ev);
+	public void onEvent(JXIOEvent ev);
 /*
 	enum eventType {
 		sessionError, msgError, sessionEstablished, msgRecieved,

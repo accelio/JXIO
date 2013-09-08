@@ -16,6 +16,8 @@
 */
 package com.mellanox;
 
-public class JXIOEventMsgSendComplete extends JXIOEvent{
-	JXIOEventMsgSendComplete(){}
+public class JXIOEventMsgSendComplete extends JXIOEvent {
+	JXIOEventMsgSendComplete(int eventType, long id) {
+		super(eventType, id);
+	}
 }

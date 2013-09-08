@@ -26,7 +26,7 @@ public class OpenRunEventLoopCloseClientTest implements Runnable{
 		
 		// Run EQh
 		TestClient.print("----- Run Event Loop...");
-		eqh.runEventLoop(1, 0);
+		eqh.runEventLoop(1000, -1 /* Infinite */);
 		
 		// Closing the session client
 		TestClient.print("------ Closing the session client...");

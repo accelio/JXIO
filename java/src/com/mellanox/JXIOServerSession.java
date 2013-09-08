@@ -56,8 +56,8 @@ public abstract class JXIOServerSession implements JXIOEventable {
 	
 
 	
-	public void onEvent(int eventType, JXIOEvent ev){
-		switch (eventType){
+	public void onEvent(JXIOEvent ev) {
+		switch (ev.getEventType()) {
 		case 0: //session error event
 			logger.log(Level.INFO, "received session error event");
 			if (ev  instanceof JXIOEventSession){
@@ -85,7 +85,7 @@ public abstract class JXIOServerSession implements JXIOEventable {
 			break;
 			
 		default:
-			logger.log(Level.SEVERE, "received an unknown event "+ eventType);	
+			logger.log(Level.SEVERE, "received an unknown event "+ ev.getEventType());	
 		}
 		
 	}

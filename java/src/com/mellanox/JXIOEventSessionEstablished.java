@@ -17,5 +17,7 @@
 package com.mellanox;
 
 public class JXIOEventSessionEstablished extends JXIOEvent{
-	JXIOEventSessionEstablished(){}
+	JXIOEventSessionEstablished(int eventType, long id) {
+		super(eventType, id);
+	}
 }

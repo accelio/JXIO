@@ -32,7 +32,7 @@ public abstract class JXIOServerManager implements JXIOEventable{
 	public abstract void onSession(long ptrSes, String uri, String srcIP);
 	public abstract void onSessionError(int errorType, String reason);
 	
-	public JXIOServerManager(JXIOEventQueueHandler eventQHandler,String url){
+	public JXIOServerManager(JXIOEventQueueHandler eventQHandler,String url) {
 	    	this.url = url;
 		eventQHndl = eventQHandler;
 		
@@ -47,7 +47,7 @@ public abstract class JXIOServerManager implements JXIOEventable{
 		logger.log(Level.INFO, "urlForServerSession is "+urlPort0);
 		
 		eventQHndl.addEventable (this); 
-		eventQHndl.runEventLoop(1, 0);
+		eventQHndl.runEventLoop(1000, -1 /* Infinite */);
 	}
 	
 	private void createUrlForServerSession(){
@@ -79,8 +79,8 @@ public abstract class JXIOServerManager implements JXIOEventable{
 	public boolean isClosing() {return isClosing;}
 	
 	
-	public void onEvent (int eventType, JXIOEvent ev){
-		switch (eventType){
+	public void onEvent(JXIOEvent ev) {
+		switch (ev.getEventType()) {
 		
 		case 0: //session error event
 			logger.log(Level.INFO, "received session error event");
@@ -105,7 +105,7 @@ public abstract class JXIOServerManager implements JXIOEventable{
 			break;
 		
 		default:
-			logger.log(Level.SEVERE, "received an unknown event "+ eventType);
+			logger.log(Level.SEVERE, "received an unknown event "+ ev.getEventType());
 		}
 	}
 	

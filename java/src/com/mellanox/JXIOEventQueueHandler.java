@@ -79,17 +79,20 @@ public class JXIOEventQueueHandler implements Runnable {
 
 	public void run() {
 		while (!this.stopLoop) {
-			runEventLoop(100, -1 /*Infinite*/);
+			runEventLoop(1000, -1 /* Infinite */);
 		}    
 	}
 
 	public int runEventLoop (int maxEvents, long timeOutMicroSec) {
 
-		logger.log(Level.INFO, "["+id+"] there are "+eventsWaitingInQ+" events in Q. requested to handle "+maxEvents+" max events, for a max duration of "+timeOutMicroSec/1000+" msec.");
+		boolean is_forever = (timeOutMicroSec == -1) ? true : false;
+		if (is_forever)
+			logger.log(Level.INFO, "["+id+"] there are "+eventsWaitingInQ+" events in Q. requested to handle "+maxEvents+" max events, for infinite duration");
+		else 
+			logger.log(Level.INFO, "["+id+"] there are "+eventsWaitingInQ+" events in Q. requested to handle "+maxEvents+" max events, for a max duration of "+timeOutMicroSec/1000+" msec.");
 
 		elapsedTime.resetStartTime();
 		int eventsHandled = 0;
-		boolean is_forever = (timeOutMicroSec == -1) ? true : false;
 
 		while ((maxEvents > eventsHandled) && ((is_forever) || (!elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
 
@@ -100,12 +103,10 @@ public class JXIOEventQueueHandler implements Runnable {
 
 			// process in eventQueue pending events
 			if (eventsWaitingInQ > 0) { // there are still events to be read, but they exceed maxEvents
-				int eventType = eventQueue.getInt();
-				long id = eventQueue.getLong();
-				JXIOEvent event = parseEvent(eventType, eventQueue);
-				JXIOEventable eventable = eventables.get(id);
+				JXIOEvent event = parseEvent(eventQueue);
+				JXIOEventable eventable = eventables.get(event.getId());
 
-				eventable.onEvent(eventType, event);
+				eventable.onEvent(event);
 
 				eventsHandled++;
 				eventsWaitingInQ--;
@@ -152,7 +153,10 @@ public class JXIOEventQueueHandler implements Runnable {
 		JXIOBridge.stopEventLoop(id);
 	}
 
-	public JXIOEvent parseEvent(int eventType, ByteBuffer eventQueue) {
+	public JXIOEvent parseEvent(ByteBuffer eventQueue) {
+
+		int eventType = eventQueue.getInt();
+		long id = eventQueue.getLong();
 
 		switch (eventType) {
 
@@ -161,19 +165,19 @@ public class JXIOEventQueueHandler implements Runnable {
 			int errorType = eventQueue.getInt();
 			int reason = eventQueue.getInt();
 			String s = JXIOBridge.getError(reason);
-			JXIOEventSession evSes = new JXIOEventSession(errorType, s);
+			JXIOEventSession evSes = new JXIOEventSession(eventType, id, errorType, s);
 			return evSes;
 		}	
 		case 1: //msg error
-			JXIOEventMsgError evMsgErr = new JXIOEventMsgError();
+			JXIOEventMsgError evMsgErr = new JXIOEventMsgError(eventType, id);
 			return evMsgErr;
 
 		case 2: //session established
-			JXIOEventSessionEstablished evSesEstab = new JXIOEventSessionEstablished();
+			JXIOEventSessionEstablished evSesEstab = new JXIOEventSessionEstablished(eventType, id);
 			return evSesEstab;
 
 		case 3: //on reply
-			JXIOEventNewMsg evMsg = new JXIOEventNewMsg();
+			JXIOEventNewMsg evMsg = new JXIOEventNewMsg(eventType, id);
 			return evMsg;
 
 		case 4: //on new session
@@ -181,7 +185,7 @@ public class JXIOEventQueueHandler implements Runnable {
 			String uri = readString(eventQueue);		
 			String srcIP = readString(eventQueue);			
 
-			JXIOEventNewSession evNewSes = new JXIOEventNewSession(ptrSes, uri, srcIP);
+			JXIOEventNewSession evNewSes = new JXIOEventNewSession(eventType, id, ptrSes, uri, srcIP);
 			return evNewSes;
 
 		default:

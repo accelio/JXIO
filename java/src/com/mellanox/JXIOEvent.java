@@ -18,7 +18,15 @@ package com.mellanox;
 
 public class JXIOEvent {
 	
+	int eventType;
+	long id;
+	JXIOEvent(int eventType, long id) {
+		this.eventType = eventType;
+		this.id = id;
+	}
 	
+	int getEventType() {return eventType;}
+	long getId() {return id;}
 }
 	
 	

@@ -16,10 +16,12 @@
 */
 package com.mellanox;
 
-public class JXIOEventSession extends JXIOEvent{
+public class JXIOEventSession extends JXIOEvent {
 	int errorType;
 	String reason;
-	JXIOEventSession(int error, String s){
+	
+	JXIOEventSession(int eventType, long id, int error, String s){
+		super(eventType, id); 
 		this.errorType = error;
 		this.reason = s;
 	}

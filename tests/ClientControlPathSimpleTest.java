@@ -25,7 +25,7 @@ public class ClientControlPathSimpleTest {
 			
 			ses = new MySesClient(eventQHndl, url);
 //			eventQHndl.addEventable (ses);
-			eventQHndl.runEventLoop(1, 0);
+			eventQHndl.runEventLoop(1000, -1 /* Infinite */);
 //			eventQHndl.runEventLoop(1, 0);
 			//for checking if server sends hello
 			//for checking for event session tear down

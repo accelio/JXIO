@@ -16,6 +16,8 @@
 */
 package com.mellanox;
 
-public class JXIOEventMsgError extends JXIOEvent{
-	JXIOEventMsgError(){}	
+public class JXIOEventMsgError extends JXIOEvent {
+	JXIOEventMsgError(int eventType, long id) {
+		super(eventType, id);
+	}
 }
