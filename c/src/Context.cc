@@ -113,9 +113,9 @@ void Context::stop_event_loop()
 	xio_ev_loop_stop(this->ev_loop);
 }
 
-int Context::add_event_loop_fd(int fd, int events, void *data)
+int Context::add_event_loop_fd(int fd, int events, void *priv_data)
 {
-	return xio_ev_loop_add(this->ev_loop, fd, events, Context::on_event_loop_handler, data);
+	return xio_ev_loop_add(this->ev_loop, fd, events, Context::on_event_loop_handler, priv_data);
 }
 
 int Context::del_event_loop_fd(int fd)
@@ -125,8 +125,13 @@ int Context::del_event_loop_fd(int fd)
 
 void Context::on_event_loop_handler(int fd, int events, void *data)
 {
-	// Timer callback - stop event loop
-	log (lsDEBUG, "[%p] timeout in ev_loop_run\n", data);
 	Context *ctx = (Context *)data;
-	ctx->stop_event_loop();
+	if (fd == ctx->timer_fd) {
+		// Timer callback - stop event loop
+		log (lsDEBUG, "[%p] timeout in ev_loop_run\n", ctx);
+		ctx->stop_event_loop();
+	}
+	else {
+		// Pass an 'FD wakeup' event to Java
+	}
 }

@@ -37,10 +37,10 @@ public:
 	int 	run_event_loop(long timeout_micro_sec);
 	void 	stop_event_loop();
 
-	int 	add_event_loop_fd(int fd, int events, void *data);
+	int 	add_event_loop_fd(int fd, int events, void *priv_data);
 	int 	del_event_loop_fd(int fd);
 
-	static void on_event_loop_handler(int fd, int events, void *data);
+	static void on_event_loop_handler(int fd, int events, void *priv_data);
 
 	Event_queue *event_queue;
 	Events *events;

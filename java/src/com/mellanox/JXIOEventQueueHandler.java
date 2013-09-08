@@ -85,8 +85,7 @@ public class JXIOEventQueueHandler implements Runnable {
 
 	public int runEventLoop (int maxEvents, long timeOutMicroSec) {
 
-		timeOutMicroSec = -1;
-		logger.log(Level.INFO, "there are "+eventsWaitingInQ+" events in Q. requested to handle "+maxEvents+" max events, for a max duration of "+timeOutMicroSec/1000+" msec.");
+		logger.log(Level.INFO, "["+id+"] there are "+eventsWaitingInQ+" events in Q. requested to handle "+maxEvents+" max events, for a max duration of "+timeOutMicroSec/1000+" msec.");
 
 		elapsedTime.resetStartTime();
 		int eventsHandled = 0;
@@ -112,11 +111,19 @@ public class JXIOEventQueueHandler implements Runnable {
 				eventsWaitingInQ--;
 			}
 
-			logger.log(Level.INFO, "there are "+eventsWaitingInQ+" events in Q. handled "+eventsHandled+" events, elapsed time is "+ elapsedTime.getElapsedTimeMicro()+" usec.");
+			logger.log(Level.INFO, "["+id+"] there are "+eventsWaitingInQ+" events in Q. handled "+eventsHandled+" events, elapsed time is "+ elapsedTime.getElapsedTimeMicro()+" usec.");
 		}
 
-		logger.log(Level.INFO, "returning with "+eventsWaitingInQ+" events in Q. handled "+eventsHandled+" events, elapsed time is "+ elapsedTime.getElapsedTimeMicro()+" usec.");
+		logger.log(Level.INFO, "["+id+"] returning with "+eventsWaitingInQ+" events in Q. handled "+eventsHandled+" events, elapsed time is "+ elapsedTime.getElapsedTimeMicro()+" usec.");
 		return eventsHandled;
+	}
+	
+	public int addEventLoopFd (long fd, int events, long priv_data) {
+		return JXIOBridge.addEventLoopFd(id, fd, events, priv_data);
+	}
+	
+	public int delEventLoopFd (long fd) {
+		return JXIOBridge.delEventLoopFd(id, fd);
 	}
 	
 	public void close () {
@@ -129,7 +136,7 @@ public class JXIOEventQueueHandler implements Runnable {
 					ev.close();
 				}
 			}
-			runEventLoop (1,0);
+			runEventLoop(1,-1);
 			logger.log(Level.WARNING, "attempting to close EQH while objects "+this.eventables.keySet()+" are still listening. aborting");
 //			runEventLoop (1,0);
 		}

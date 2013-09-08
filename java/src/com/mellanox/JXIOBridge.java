@@ -60,6 +60,21 @@ public class JXIOBridge {
 	    stopEventLoopNative(ptr);
 	    logger.log(Level.INFO, "finished stopEventLoopNative");
 	}
+	private static native int addEventLoopFdNative(long ptr, long fd, int events, long priv_data);
+	static int addEventLoopFd(long ptr, long fd, int events, long priv_data) {
+	    logger.log(Level.INFO, "invoking addEventLoopFdNative");
+	    int ret = addEventLoopFdNative(ptr, fd, events, priv_data);
+	    logger.log(Level.INFO, "finished addEventLoopFdNative");
+	    return ret;
+	}
+	private static native int delEventLoopFdNative(long ptr, long fd);
+	static int delEventLoopFd(long ptr, long fd) {
+	    logger.log(Level.INFO, "invoking delEventLoopFdNative");
+	    int ret = delEventLoopFdNative(ptr, fd);
+	    logger.log(Level.INFO, "finished delEventLoopFdNative");
+	    return ret;
+	}
+
 
 	private static native long startSessionClientNative(String url, long ptrCtx);
 	static long startSessionClient(String url, long ptrCtx) {

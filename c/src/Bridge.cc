@@ -131,10 +131,10 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXIOBridge_stopEventLoopNati
 	ctx->stop_event_loop();
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXIOBridge_addEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd, jint events, jlong data)
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXIOBridge_addEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd, jint events, jlong priv_data)
 {
 	Context *ctx = (Context *)ptrCtx;
-	return ctx->add_event_loop_fd(fd, events, (void*)data);
+	return ctx->add_event_loop_fd(fd, events, (void*)priv_data);
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXIOBridge_delEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd)
