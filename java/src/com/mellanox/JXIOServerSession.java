@@ -39,7 +39,7 @@ public abstract class JXIOServerSession implements JXIOEventable {
 		this.eventQHandler = eventQHandler;
 		this.url = url;
 		logger.log(Level.INFO, "uri inside JXIOServerSession is "+url);
-		long [] ar = JXIOBridge.startServer(url, eventQHandler.getID());
+		long [] ar = JXIOBridge.startServer(url, eventQHandler.getId());
 		this.id = ar [0];
 		this.port = (int) ar[1];
 		if (this.id == 0){
@@ -90,7 +90,7 @@ public abstract class JXIOServerSession implements JXIOEventable {
 		
 	}
 	
-	public boolean close(){
+	public boolean close() {
 //		eventQHandler.removeEventable (this); //TODO: fix this
 		if (id == 0){
 			logger.log(Level.SEVERE, "closing JXIOServerSession with empty id");
@@ -101,8 +101,7 @@ public abstract class JXIOServerSession implements JXIOEventable {
 		return true;
 	}
 	
-	public long getId(){ return id;}
+	public long getId() { return id; }
 	
-	public boolean isClosing() {return isClosing;}
-
+	public boolean isClosing() { return isClosing; }
 }

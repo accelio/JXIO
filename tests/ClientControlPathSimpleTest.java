@@ -9,7 +9,7 @@ public class ClientControlPathSimpleTest {
 	private static JXIOLog logger = JXIOLog.getLog(ClientControlPathSimpleTest.class.getCanonicalName());
 
 	
-	public static void main(String[] args){
+	public static void main(String[] args) {
 		
 		String url = args[0];
 		String port = args[1];
@@ -19,9 +19,9 @@ public class ClientControlPathSimpleTest {
 		
 		int num_times = 1;
 		
-		eventQHndl = new JXIOEventQueueHandler (1000);
+		eventQHndl = new JXIOEventQueueHandler();
 		
-		for (int i=0; i<num_times; i++){
+		for (int i=0; i<num_times; i++) {
 			
 			ses = new MySesClient(eventQHndl, url);
 //			eventQHndl.addEventable (ses);

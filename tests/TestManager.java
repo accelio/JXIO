@@ -9,7 +9,7 @@ public class TestManager {
 	public static String hostname;
 	public static int port;
 	public static int portRange = 1233;
-	public static int eqhSize = 1000;
+
 	// General Parameters
 	private static int requestedTest;
 	public static int numberOfTests = 5;
@@ -21,7 +21,7 @@ public class TestManager {
 	public static void main(String[] args) {
 		
 		// Check arguments
-		if (! argsCheck(args)){
+		if (! argsCheck(args)) {
 			return;
 		} else {
 			//Configure Tests
@@ -40,7 +40,7 @@ public class TestManager {
 				return;
 			}
 			if (requestedTest == 0){
-				for (int i = 1; i <= numberOfTests; i++){
+				for (int i = 1; i <= numberOfTests; i++) {
 					tests[i].run();
 				}
 				report();
@@ -51,7 +51,7 @@ public class TestManager {
 		}
 	}
 	
-	private static void configure(){
+	private static void configure() {
 		tests[1] = new OpenCloseManagerTest();
 		tests[2] = new NonExistingHostnameManagerTest();
 		tests[3] = new MutipleManagersOnSameEQHTest();
@@ -59,7 +59,7 @@ public class TestManager {
 		tests[5] = new MutipleThreadsManager();
 	}
 		
-	private static boolean argsCheck(String[] args){
+	private static boolean argsCheck(String[] args) {
 		if (args.length <= 0){
 			print("[TEST ERROR] Missing arguments.");
 			usage();
@@ -71,16 +71,16 @@ public class TestManager {
 		return true;
 	}
 	
-	public static void usage(){
+	public static void usage() {
 		print("Usage: ./runManagerTest.sh <HOSTNAME> <PORT> [test]\nWhere [test] includes:\n0		Run all tests \n<n>		Run test number <n>\n");
 	}
 	
-	public static void print(String str){
+	public static void print(String str) {
 		//System.out.println("\n" + str + "\n");
 		testLog.log(Level.INFO, str);
 	}
 	
-	public static void setSuccess(int test){
+	public static void setSuccess(int test) {
 		successIndicators[test - 1] = true;
 	}
 	
@@ -93,5 +93,4 @@ public class TestManager {
 		}
 		print(report);
 	}
-
 }

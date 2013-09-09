@@ -18,7 +18,7 @@ package com.mellanox;
 
 import java.util.logging.Level;
 
-public abstract class JXIOServerManager implements JXIOEventable{
+public abstract class JXIOServerManager implements JXIOEventable {
 	private JXIOEventQueueHandler eventQHndl = null;
 	private long id = 0;
 	private int port;
@@ -36,7 +36,7 @@ public abstract class JXIOServerManager implements JXIOEventable{
 	    	this.url = url;
 		eventQHndl = eventQHandler;
 		
-		long [] ar = JXIOBridge.startServer(url, eventQHandler.getID());
+		long [] ar = JXIOBridge.startServer(url, eventQHandler.getId());
 		this.id = ar [0];
 		this.port = (int) ar[1];
 		
@@ -50,15 +50,15 @@ public abstract class JXIOServerManager implements JXIOEventable{
 		eventQHndl.runEventLoop(1000, -1 /* Infinite */);
 	}
 	
-	private void createUrlForServerSession(){
+	private void createUrlForServerSession() {
 	    //parse url so it would replace port number on which the server listens with 0
 	    int index = url.lastIndexOf(":"); 
 	    urlPort0 = url.substring(0, index+1)+"0";
 	}
 	
-	public String getUrlForServer(){return urlPort0;}
+	public String getUrlForServer() {return urlPort0;}
 	
-	public boolean close(){
+	public boolean close() {
 		eventQHndl.removeEventable (this); //TODO: fix this
 		if (id == 0){
 			logger.log(Level.SEVERE, "closing JXIOServerManager with empty id");
@@ -108,6 +108,4 @@ public abstract class JXIOServerManager implements JXIOEventable{
 			logger.log(Level.SEVERE, "received an unknown event "+ ev.getEventType());
 		}
 	}
-	
-
 }

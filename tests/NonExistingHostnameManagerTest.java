@@ -2,7 +2,7 @@
 
 import com.mellanox.*;
 
-public class NonExistingHostnameManagerTest implements Runnable{
+public class NonExistingHostnameManagerTest implements Runnable {
 
 	public void run(){
 		///////////////////// Test 2 /////////////////////
@@ -18,7 +18,7 @@ public class NonExistingHostnameManagerTest implements Runnable{
 		url = "rdma://" + "1.0.0.0" + ":" + TestManager.port;
 		
 		// Setting up a Event Queue Hanler
-		eqh = new JXIOEventQueueHandler(TestManager.eqhSize);
+		eqh = new JXIOEventQueueHandler();
 		
 		// Setting up a session manager
 		TestManager.print("----- Setting up a session manager...");

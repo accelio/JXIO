@@ -2,7 +2,7 @@
 
 import com.mellanox.*;
 
-public class OpenCloseManagerTest implements Runnable{
+public class OpenCloseManagerTest implements Runnable {
 
 	public void run(){
 		///////////////////// Test 1 /////////////////////
@@ -18,7 +18,7 @@ public class OpenCloseManagerTest implements Runnable{
 		url = "rdma://" + TestManager.hostname + ":" + TestManager.port;
 		
 		// Setting up a Event Queue Hanler
-		eqh = new JXIOEventQueueHandler(TestManager.eqhSize);
+		eqh = new JXIOEventQueueHandler();
 		
 		// Setting up a session client
 		TestManager.print("----- Setting up a session manager...");

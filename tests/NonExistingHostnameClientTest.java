@@ -2,9 +2,9 @@
 
 import com.mellanox.*;
 
-public class NonExistingHostnameClientTest implements Runnable{
+public class NonExistingHostnameClientTest implements Runnable {
 
-	public void run(){
+	public void run() {
 		///////////////////// Test 2 /////////////////////
 		// A non existing IP address
 		TestClient.print("*** Test 2: A non existing IP address *** ");
@@ -18,7 +18,7 @@ public class NonExistingHostnameClientTest implements Runnable{
 		url = "rdma://" + "1.0.0.0" + ":" + TestClient.port;
 		
 		// Setting up a Event Queue Hanler
-		eqh = new JXIOEventQueueHandler(TestClient.eqhSize);
+		eqh = new JXIOEventQueueHandler();
 		
 		// Setting up a session client
 		TestClient.print("----- Setting up a session client...");

@@ -2,7 +2,7 @@
 
 import com.mellanox.*;
 
-public class OpenCloseClientTest implements Runnable{
+public class OpenCloseClientTest implements Runnable {
 
 	public void run(){
 		///////////////////// Test 1 /////////////////////
@@ -18,7 +18,7 @@ public class OpenCloseClientTest implements Runnable{
 		url = "rdma://" + TestClient.hostname + ":" + TestClient.port;
 		
 		// Setting up a Event Queue Hanler
-		eqh = new JXIOEventQueueHandler(TestClient.eqhSize);
+		eqh = new JXIOEventQueueHandler();
 		
 		// Setting up a session client
 		TestClient.print("----- Setting up a session client...");

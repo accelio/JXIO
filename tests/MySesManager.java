@@ -2,7 +2,7 @@ import java.util.logging.Level;
 
 import com.mellanox.*;
 
-public class MySesManager extends JXIOServerManager{
+public class MySesManager extends JXIOServerManager {
 
 	private static JXIOLog logger = JXIOLog.getLog(MySesManager.class.getCanonicalName());
 	
@@ -12,7 +12,7 @@ public class MySesManager extends JXIOServerManager{
 	
 	
 	public void onSession(long ptrSes, String uriSrc, String srcIP) {		
-			JXIOEventQueueHandler eventQHndl = new JXIOEventQueueHandler (10000);	
+			JXIOEventQueueHandler eventQHndl = new JXIOEventQueueHandler();	
 		MySesServer ses = new MySesServer(eventQHndl, super.getUrlForServer());
 		eventQHndl.addEventable (ses);
 		forward(ses, ptrSes);
@@ -51,8 +51,5 @@ public class MySesManager extends JXIOServerManager{
 			break;
 		}
 		logger.log(Level.SEVERE, "GOT EVENT " + event + "because of " + reason);
-		
 	}
-
-
 }

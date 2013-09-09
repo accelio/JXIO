@@ -51,7 +51,7 @@ public class JXIOEventQueueHandler implements Runnable {
 
 
 	//c-tor
-	public JXIOEventQueueHandler(int size) {
+	public JXIOEventQueueHandler() {
 
 		DataFromC dataFromC = new DataFromC();
 		boolean statusError = JXIOBridge.createCtx(eventQueueSize, dataFromC);
@@ -119,14 +119,6 @@ public class JXIOEventQueueHandler implements Runnable {
 		return eventsHandled;
 	}
 	
-	public int addEventLoopFd (long fd, int events, long priv_data) {
-		return JXIOBridge.addEventLoopFd(id, fd, events, priv_data);
-	}
-	
-	public int delEventLoopFd (long fd) {
-		return JXIOBridge.delEventLoopFd(id, fd);
-	}
-	
 	public void close () {
 		while (!this.eventables.isEmpty()) {
 			for (Map.Entry<Long,JXIOEventable> entry : eventables.entrySet())
@@ -146,7 +138,7 @@ public class JXIOEventQueueHandler implements Runnable {
 		this.stopLoop = true;
 	}
 
-	public long getID() { return id; }
+	public long getId() { return id; }
 
 	public void stopEventLoop() {
 		this.stopLoop = true;

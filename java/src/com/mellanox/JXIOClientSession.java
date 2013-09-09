@@ -35,18 +35,17 @@ public abstract class JXIOClientSession implements JXIOEventable{
 	
 	private static JXIOLog logger = JXIOLog.getLog(JXIOClientSession.class.getCanonicalName());
 	
-	public JXIOClientSession(JXIOEventQueueHandler eventQHandler, String url){
+	public JXIOClientSession(JXIOEventQueueHandler eventQHandler, String url) {
 		this.eventQHandler = eventQHandler;
 		this.url = url;
 		
-		this.id = JXIOBridge.startSessionClient(url, eventQHandler.getID());
+		this.id = JXIOBridge.startSessionClient(url, eventQHandler.getId());
 		if (this.id == 0){
 			logger.log(Level.SEVERE, "there was an error creating session");
 		}
 		logger.log(Level.INFO, "id is "+id);
 		
 		this.eventQHandler.addEventable (this); 
-
 	}
 	
 	
@@ -83,7 +82,6 @@ public abstract class JXIOClientSession implements JXIOEventable{
 		default:
 			logger.log(Level.SEVERE, "received an unknown event "+ ev.getEventType());
 		}
-		
 	}
 	
 //	public boolean closeSession(){

@@ -4,9 +4,9 @@ import com.mellanox.*;
 import java.util.Random;
 
 
-public class MutipleClientsOnSameEQHTest implements Runnable{
+public class MutipleClientsOnSameEQHTest implements Runnable {
 
-	public void run(){
+	public void run() {
 		///////////////////// Test 3 /////////////////////
 		// Multiple session client on the same EQH
 		TestClient.print("*** Test 3: Multiple session client on the same EQH *** ");
@@ -18,7 +18,7 @@ public class MutipleClientsOnSameEQHTest implements Runnable{
 		int numOfSessionClients = 3;
 		
 		// Setting up a Event Queue Hanler
-		eqh = new JXIOEventQueueHandler(TestClient.eqhSize);
+		eqh = new JXIOEventQueueHandler();
 		
 		// Setting up a multiple session clients
 		TestClient.print("----- Setting up a multiple session clients...");

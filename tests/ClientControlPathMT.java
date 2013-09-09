@@ -4,7 +4,7 @@ public class ClientControlPathMT {
 private static JXIOLog logger = JXIOLog.getLog(ClientControlPathSimpleTest.class.getCanonicalName());
 
 	
-	public static void main(String[] args){
+	public static void main(String[] args) {
 		
 		String url = args[0];
 		String port = args[1];
@@ -14,7 +14,7 @@ private static JXIOLog logger = JXIOLog.getLog(ClientControlPathSimpleTest.class
 		
 		int num_times = 1;
 		
-		eventQHndl = new JXIOEventQueueHandler (1000);
+		eventQHndl = new JXIOEventQueueHandler();
 		
 		for (int i=0; i<num_times; i++){
 			
@@ -55,6 +55,5 @@ private static JXIOLog logger = JXIOLog.getLog(ClientControlPathSimpleTest.class
 		}
 		
 		eventQHndl.close();
-
 	}
 }
