@@ -39,9 +39,6 @@ int Events::writeOnSessionErrorEvent(char *buf, Contexable *ptrForJava, struct x
 
 	this->size = sizeof(struct event_session_error) + sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 
-
-
-
 	memcpy(buf, &this->event, this->size);
 	return this->size;
 }

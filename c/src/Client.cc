@@ -14,16 +14,16 @@
 ** governing permissions and  limitations under the License.
 **
 */
+
 #include "Client.h"
 
 #define K_DEBUG 1
 
 Client::Client(const char*	url, long ptrCtx)
 {
-
 	struct xio_session_ops ses_ops;
 	struct xio_session_attr attr;
-//	char			url[256];
+	//	char			url[256];
 	error_creating = false;
 
 	struct xio_msg *req;
@@ -41,27 +41,26 @@ Client::Client(const char*	url, long ptrCtx)
 	attr.user_context = NULL;	  /* no need to pass the server private data */
 	attr.user_context_len = 0;
 
-	this->session = xio_session_open(XIO_SESSION_REQ,
-					   &attr, url, 0, this);
+	this->session = xio_session_open(XIO_SESSION_REQ, &attr, url, 0, 0, this);
 
-	if (session == NULL){
+	if (session == NULL) {
 		log (lsERROR, "Error in creating session\n");
 		error_creating = true;
 		return;
 	}
 
-		/* connect the session  */
+	/* connect the session  */
 	this->con = xio_connect(session, ctxClass->ctx, 0, this);
 
-	if (con == NULL){
+	if (con == NULL) {
 		log (lsERROR, "Error in creating connection\n");
 		goto cleanupSes;
 
 	}
 
-	if (ctxClass->map_session == NULL){
+	if (ctxClass->map_session == NULL) {
 		ctxClass->map_session = new std::map<void*,Client*> ();
-		if(ctxClass->map_session== NULL){
+		if(ctxClass->map_session == NULL) {
 			log (lsERROR, "Error, Could not allocate memory\n");
 			goto cleanupCon;
 		}
@@ -71,36 +70,37 @@ Client::Client(const char*	url, long ptrCtx)
 
 	log (lsDEBUG, "startClientSession done with \n");
 
-	#ifdef K_DEBUG
-		 req = (struct xio_msg *) malloc(sizeof(struct xio_msg));
+#ifdef K_DEBUG
+	req = (struct xio_msg *) malloc(sizeof(struct xio_msg));
 
-		 // create "hello world" message
-		 memset(req, 0, sizeof(req));
-		 req->out.header.iov_base = strdup("hello world header request");
-		 req->out.header.iov_len = strlen("hello world header request");
-		 	// send first message
-		 xio_send_request(con, req);
-	#endif
+	// create "hello world" message
+	memset(req, 0, sizeof(req));
+	req->out.header.iov_base = strdup("hello world header request");
+	req->out.header.iov_len = strlen("hello world header request");
+	// send first message
+	xio_send_request(con, req);
+#endif
 	return;
 
 cleanupCon:
-		xio_disconnect(this->con);
+	xio_disconnect(this->con);
 
 cleanupSes:
-		xio_session_close(this->session);
-		error_creating = true;
+	xio_session_close(this->session);
+	error_creating = true;
+	return;
 }
 
 Client::~Client()
 {
-	if (xio_session_close(session)){
+	if (xio_session_close(session)) {
 		log (lsERROR, "Error xio_session_close failed\n");
 	}
 }
 
 bool Client::close_connection()
 {
-	if (xio_disconnect (this->con)){
+	if (xio_disconnect (this->con)) {
 		log(lsERROR, "xio_disconnect failed");
 		return false;
 	}
@@ -109,31 +109,25 @@ bool Client::close_connection()
 	return true;
 }
 
-
-bool Client::onSessionEvent(int eventType){
+bool Client::onSessionEvent(int eventType)
+{
 	switch (eventType){
-		case (XIO_SESSION_CONNECTION_CLOSED_EVENT):
-			log (lsINFO, "got XIO_SESSION_CONNECTION_CLOSED_EVENT. must close the session\n");
-			return false;
+	case (XIO_SESSION_CONNECTION_CLOSED_EVENT):
+		log (lsINFO, "got XIO_SESSION_CONNECTION_CLOSED_EVENT. must close the session\n");
+		return false;
 
-		case(XIO_SESSION_CONNECTION_ERROR_EVENT):
-				log (lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
-				close_connection();
-				return false;
+	case(XIO_SESSION_CONNECTION_ERROR_EVENT):
+		log (lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
+		close_connection();
+		return false;
 
-		case(XIO_SESSION_TEARDOWN_EVENT):
-			log(lsINFO, "got XIO_SESSION_TEARDOWN_EVENT. must delete session class\n");
-			delete (this);
-			//the event should also be written to buffer to let user know that the session was closed
-			return true;
-		default:
-			log(lsINFO, "got event %d. \n", eventType);
-			return true;
+	case(XIO_SESSION_TEARDOWN_EVENT):
+		log(lsINFO, "got XIO_SESSION_TEARDOWN_EVENT. must delete session class\n");
+		delete (this);
+		//the event should also be written to buffer to let user know that the session was closed
+		return true;
+	default:
+		log(lsINFO, "got event %d. \n", eventType);
+		return true;
 	}
-
 }
-
-
-
-
-

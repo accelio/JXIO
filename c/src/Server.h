@@ -14,6 +14,7 @@
 ** governing permissions and  limitations under the License.
 **
 */
+
 #ifndef Server__H___
 #define Server__H___
 
@@ -22,7 +23,6 @@
 #include <stdio.h>
 
 #include "CallbackFunctions.h"
-//#include "cJXCtx.h"
 
 
 class Context;

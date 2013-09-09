@@ -15,10 +15,8 @@
 **
 */
 
-
 #ifndef CallbackFunctions__H___
 #define CallbackFunctions__H___
-
 
 #include <errno.h>
 #include <libxio.h>

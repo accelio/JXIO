@@ -14,31 +14,28 @@
 ** governing permissions and  limitations under the License.
 **
 */
+
 #include "Server.h"
 
-
-Server::Server(const char	*url, long ptrCtx)
+Server::Server(const char *url, long ptrCtx)
 {
-
 	log (lsDEBUG, "inside startServerNative method\n");
 
 	error_creating = false;
 
 	struct xio_server_ops server_ops;
-	server_ops.on_session_event			    =  on_session_event_callback;
-	server_ops.on_msg	  		        	=  on_msg_callback; //TODO: to separate into 2 different classes
-	server_ops.on_msg_error				    =  NULL;
-	server_ops.on_new_session		        =  on_new_session_callback;
-	server_ops.on_msg_send_complete         =  NULL;
+	server_ops.on_session_event     =  on_session_event_callback;
+	server_ops.on_msg               =  on_msg_callback; //TODO: to separate into 2 different classes
+	server_ops.on_msg_error         =  NULL;
+	server_ops.on_new_session       =  on_new_session_callback;
+	server_ops.on_msg_send_complete =  NULL;
 
 	this->session = NULL;
-
-	struct xio_context	*ctx;
 
 	Context *ctxClass = (Context *)ptrCtx;
 	set_ctx_class(ctxClass);
 
-	this->server = xio_bind(ctxClass->ctx, &server_ops, url, &this->port, this);
+	this->server = xio_bind(ctxClass->ctx, &server_ops, url, &this->port, 0, this);
 
 	if (server == NULL){
 		log (lsERROR, "Error in binding server\n");
@@ -51,9 +48,9 @@ Server::Server(const char	*url, long ptrCtx)
 
 Server::~Server()
 {
-	if (!error_creating){
-		if (session){
-			if (xio_session_close(session)){
+	if (!error_creating) {
+		if (session) {
+			if (xio_session_close(session)) {
 				log (lsERROR, "Error xio_session_close failed\n");
 			}
 		}
@@ -63,8 +60,8 @@ Server::~Server()
 	}
 }
 
-
-bool Server::forward(struct xio_session *session, const char * url){
+bool Server::forward(struct xio_session *session, const char * url)
+{
 	log (lsDEBUG, "***********************url before forward is %s\n", url);
 
 	int retVal = xio_accept (session, &url, 1, NULL, 0);
@@ -76,43 +73,40 @@ bool Server::forward(struct xio_session *session, const char * url){
 	return true;
 }
 
-
-
-bool Server::close(){
+bool Server::close()
+{
 	this->closingInProcess = true;
 	xio_connection * con = xio_get_connection(this->session, this->get_ctx_class()->ctx);
-	if (con != NULL){
-		if (xio_disconnect (con)){
-				log(lsERROR, "xio_disconnect failed");
-				return false;
-			}
+	if (con != NULL) {
+		if (xio_disconnect (con)) {
+			log(lsERROR, "xio_disconnect failed");
+			return false;
+		}
 	}
 	return true;
 }
 
-bool Server::onSessionEvent(int eventType){
-	switch (eventType){
-		case (XIO_SESSION_CONNECTION_CLOSED_EVENT):
-			log (lsINFO, "got XIO_SESSION_CONNECTION_CLOSED_EVENT\n");
-			if (closingInProcess){
-				close();
-			}
-			return false;
+bool Server::onSessionEvent(int eventType)
+{
+	switch (eventType) {
+	case (XIO_SESSION_CONNECTION_CLOSED_EVENT):
+		log (lsINFO, "got XIO_SESSION_CONNECTION_CLOSED_EVENT\n");
+		if (closingInProcess) {
+			close();
+		}
+		return false;
 
-		case(XIO_SESSION_CONNECTION_ERROR_EVENT):
-			log (lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
-			return true;
+	case(XIO_SESSION_CONNECTION_ERROR_EVENT):
+		log (lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
+		return true;
 
-		case(XIO_SESSION_TEARDOWN_EVENT):
-			log(lsINFO, "got XIO_SESSION_TEARDOWN_EVENT. must delete session class\n");
-			delete (this);
-			return true;
-		default:
-			log(lsINFO, "got event %d. \n", eventType);
-			return true;
+	case(XIO_SESSION_TEARDOWN_EVENT):
+		log(lsINFO, "got XIO_SESSION_TEARDOWN_EVENT. must delete session class\n");
+		delete (this);
+		return true;
+	default:
+		log(lsINFO, "got event %d. \n", eventType);
+		return true;
 	}
-
 }
-
-
 
