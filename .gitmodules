@@ -1,3 +1,6 @@
 [submodule "libxio"]
 	path = libxio
 	url = git:/mswg/git/accellio.git/
+[submodule "accellio"]
+	path = accellio
+	url = /.autodirect/mswg/git/accellio.git
