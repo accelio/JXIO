@@ -18,15 +18,25 @@ rm -f java/bin/libxio.so
 rm -f tests/libxio.so
 
 ## Build Accellio
+echo "Build Accellio....(libxio c code)"
 git submodule update --init
 cd accellio/ && ./autogen.sh && ./configure --disable-raio-build && make && cd ..
+if [[ $? != 0 ]] ; then
+    exit 1
+fi
 
 ## Build JX
+echo "Build JXIO... (c code)"
 cd c/ && ./autogen.sh && ./configure && make && cd ..
+if [[ $? != 0 ]] ; then
+    exit 1
+fi
 
+echo "Build JXIO... (java code)"
 mkdir -p java/bin
 javac -d java/bin/ $FILES
 cd java/bin ;jar -cvf $TARGET com ; cd ../..
+
 cp -f java/bin/$TARGET tests/
 cp -f c/src/libjx.so java/bin
 cp -f c/src/libjx.so tests/
