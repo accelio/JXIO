@@ -19,7 +19,7 @@ rm -f tests/libxio.so
 
 ## Build Accellio
 git submodule update --init
-cd accellio/ && ./autogen.sh && ./configure && make && cd ..
+cd accellio/ && ./autogen.sh && ./configure --disable-raio-build && make && cd ..
 
 ## Build JX
 cd c/ && ./autogen.sh && ./configure && make && cd ..
