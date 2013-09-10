@@ -17,21 +17,21 @@ rm -f tests/libjx.so
 rm -f java/bin/libxio.so
 rm -f tests/libxio.so
 
-## Build
-#git submodule init
-#git submodule update
-cd libxio/;
-#git pull origin master
-./autogen.sh && ./configure && make ; cd ..
-cd c/; ./autogen.sh && ./configure && make ; cd ..
+## Build Accellio
+git submodule update --init
+cd accellio/ && ./autogen.sh && ./configure && make && cd ..
+
+## Build JX
+cd c/ && ./autogen.sh && ./configure && make && cd ..
+
 mkdir -p java/bin
 javac -d java/bin/ $FILES
 cd java/bin ;jar -cvf $TARGET com ; cd ../..
 cp -f java/bin/$TARGET tests/
 cp -f c/src/libjx.so java/bin
 cp -f c/src/libjx.so tests/
-cp -f libxio/src/usr/libxio.so java/bin
-cp -f libxio/src/usr/libxio.so tests/
+cp -f accellio/src/usr/libxio.so java/bin
+cp -f accellio/src/usr/libxio.so tests/
 
 
 

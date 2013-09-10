@@ -23,7 +23,7 @@ Client::Client(const char*	url, long ptrCtx)
 {
 	struct xio_session_ops ses_ops;
 	struct xio_session_attr attr;
-	//	char			url[256];
+//	char			url[256];
 	error_creating = false;
 
 	struct xio_msg *req;
