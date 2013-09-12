@@ -32,15 +32,31 @@ Server::Server(const char *url, long ptrCtx)
 
 	this->session = NULL;
 
+	struct xio_context	*ctx;
+
+
 	Context *ctxClass = (Context *)ptrCtx;
 	set_ctx_class(ctxClass);
 
+		
 	this->server = xio_bind(ctxClass->ctx, &server_ops, url, &this->port, 0, this);
 
 	if (server == NULL){
 		log (lsERROR, "Error in binding server\n");
 		error_creating = true;
 	}
+	if (ctxClass->map_session == NULL){
+			ctxClass->map_session = new std::map<void*,Contexable*> ();
+			if(ctxClass->map_session== NULL){
+				log (lsERROR, "Error, Could not allocate memory\n");
+				xio_unbind (this->server);
+				error_creating = true;
+			}
+	}
+
+
+	ctxClass->map_session->insert(std::pair<void*, Contexable*>(session, this));
+
 	log (lsDEBUG, "****** port number is %d\n",this->port);
 
 	this->closingInProcess = false;

@@ -28,10 +28,10 @@ public abstract class JXIOEventQueueHandlerEx extends JXIOEventQueueHandler {
 	public abstract void onFdReady(long fd, int events, long priv_data);
 
 	public int addEventLoopFd(long fd, int events, long priv_data) {
-		return JXIOBridge.addEventLoopFd(getId(), fd, events, priv_data);
+		return JXIOBridge.addEventLoopFd(getID(), fd, events, priv_data);
 	}
 	
 	public int delEventLoopFd(long fd) {
-		return JXIOBridge.delEventLoopFd(getId(), fd);
+		return JXIOBridge.delEventLoopFd(getID(), fd);
 	}
 }

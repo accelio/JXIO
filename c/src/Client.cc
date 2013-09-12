@@ -58,15 +58,6 @@ Client::Client(const char*	url, long ptrCtx)
 
 	}
 
-	if (ctxClass->map_session == NULL) {
-		ctxClass->map_session = new std::map<void*,Client*> ();
-		if(ctxClass->map_session == NULL) {
-			log (lsERROR, "Error, Could not allocate memory\n");
-			goto cleanupCon;
-		}
-	}
-
-	ctxClass->map_session->insert(std::pair<void*, Client*>(session, this));
 
 	log (lsDEBUG, "startClientSession done with \n");
 
@@ -82,8 +73,8 @@ Client::Client(const char*	url, long ptrCtx)
 #endif
 	return;
 
-cleanupCon:
-	xio_disconnect(this->con);
+//cleanupCon:
+//	xio_disconnect(this->con);
 
 cleanupSes:
 	xio_session_close(this->session);

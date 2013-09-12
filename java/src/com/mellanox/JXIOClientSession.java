@@ -27,10 +27,10 @@ public abstract class JXIOClientSession implements JXIOEventable{
 //	protected int port;
 	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
 	
-	abstract public void onReplyCallback();
+	abstract public void onReply();
 	abstract public void onSessionEstablished();
-	abstract public void onSessionErrorCallback(int session_event, String reason );
-	abstract public void onMsgErrorCallback();
+	abstract public void onSessionError(int session_event, String reason );
+	abstract public void onMsgError();
 
 	
 	private static JXIOLog logger = JXIOLog.getLog(JXIOClientSession.class.getCanonicalName());
@@ -39,7 +39,7 @@ public abstract class JXIOClientSession implements JXIOEventable{
 		this.eventQHandler = eventQHandler;
 		this.url = url;
 		
-		this.id = JXIOBridge.startSessionClient(url, eventQHandler.getId());
+		this.id = JXIOBridge.startSessionClient(url, eventQHandler.getID());
 		if (this.id == 0){
 			logger.log(Level.SEVERE, "there was an error creating session");
 		}
@@ -57,7 +57,7 @@ public abstract class JXIOClientSession implements JXIOEventable{
 			if (ev  instanceof JXIOEventSession){
 				int errorType = ((JXIOEventSession) ev).errorType;
 				String reason = ((JXIOEventSession) ev).reason;
-				this.onSessionErrorCallback(errorType, reason);
+				this.onSessionError(errorType, reason);
 				if (errorType == 1) {//event = "SESSION_TEARDOWN";
 					eventQHandler.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
 				}
@@ -66,7 +66,7 @@ public abstract class JXIOClientSession implements JXIOEventable{
 			
 		case 1: //msg error
 			logger.log(Level.INFO, "received msg error event");
-			this.onMsgErrorCallback();
+			this.onMsgError();
 			break;
 
 		case 2: //session established
@@ -76,7 +76,7 @@ public abstract class JXIOClientSession implements JXIOEventable{
 			
 		case 3: //on reply
 			logger.log(Level.INFO, "received msg event");
-			this.onReplyCallback();
+			this.onReply();
 			break;
 			
 		default:

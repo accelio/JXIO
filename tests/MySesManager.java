@@ -14,7 +14,6 @@ public class MySesManager extends JXIOServerManager {
 	public void onSession(long ptrSes, String uriSrc, String srcIP) {		
 			JXIOEventQueueHandler eventQHndl = new JXIOEventQueueHandler();	
 		MySesServer ses = new MySesServer(eventQHndl, super.getUrlForServer());
-		eventQHndl.addEventable (ses);
 		forward(ses, ptrSes);
 		
 		Thread t = new Thread (eventQHndl);

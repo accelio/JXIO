@@ -12,11 +12,11 @@ public class MySesServer extends JXIOServerSession {
 		this.eqh = eqh;
 	}
 
-	public void onRequestCallback() {
+	public void onRequest() {
 		logger.log(Level.INFO, "got a request! Bring the champagne!!!!!");
 	}
 
-	public void onSessionErrorCallback(int session_event, String reason) {
+	public void onSessionError(int session_event, String reason) {
 		String event;
 		switch (session_event){
 		case 0:
@@ -41,7 +41,7 @@ public class MySesServer extends JXIOServerSession {
 		logger.log(Level.SEVERE, "GOT EVENT " + event + "because of " + reason);
 	}
 		
-	public void onMsgErrorCallback() {
+	public void onMsgError() {
 		logger.log(Level.INFO, "onMsgErrorCallback");
 		
 	}

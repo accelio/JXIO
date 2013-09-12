@@ -138,7 +138,7 @@ public class JXIOEventQueueHandler implements Runnable {
 		this.stopLoop = true;
 	}
 
-	public long getId() { return id; }
+	public long getID() { return id; }
 
 	public void stopEventLoop() {
 		this.stopLoop = true;

@@ -36,7 +36,7 @@ public abstract class JXIOServerManager implements JXIOEventable {
 	    	this.url = url;
 		eventQHndl = eventQHandler;
 		
-		long [] ar = JXIOBridge.startServer(url, eventQHandler.getId());
+		long [] ar = JXIOBridge.startServer(url, eventQHandler.getID());
 		this.id = ar [0];
 		this.port = (int) ar[1];
 		

@@ -55,7 +55,7 @@ public:
 
 	//this map is needed since in case of event Disconnected action needs to be done
 	//on a session without going back to java
-	std::map<void*,Client*>* map_session;
+	std::map<void*,Contexable*>* map_session;
 };
 
 #endif // ! cJXCtx__H___

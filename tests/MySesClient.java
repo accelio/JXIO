@@ -9,7 +9,7 @@ import com.mellanox.*;
 			super (eqh, uri);	
 		}
 		
-		public void onMsgErrorCallback(){	
+		public void onMsgError(){	
 			logger.log(Level.INFO, "onMsgErrorCallback");
 		}
 		
@@ -17,7 +17,7 @@ import com.mellanox.*;
 			logger.log(Level.INFO, "[SUCCESS] Session Established! Bring the champagne!");
 		}
 
-		public void onSessionErrorCallback(int session_event, String reason ){
+		public void onSessionError(int session_event, String reason ){
 			
 			String event;
 			switch (session_event)
@@ -49,7 +49,7 @@ import com.mellanox.*;
 			
 		}
 	
-		public void onReplyCallback(){	
+		public void onReply(){	
 			logger.log(Level.INFO, "[SUCCESS] Got a message! Bring the champagne!");
 		}
 

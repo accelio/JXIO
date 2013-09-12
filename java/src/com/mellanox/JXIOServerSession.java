@@ -29,9 +29,9 @@ public abstract class JXIOServerSession implements JXIOEventable {
 	private JXIOEventQueueHandler eventQHandler  =null;
 	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
 	
-	abstract public void onRequestCallback();
-	abstract public void onSessionErrorCallback(int session_event, String reason );
-	abstract public void onMsgErrorCallback();
+	abstract public void onRequest();
+	abstract public void onSessionError(int session_event, String reason );
+	abstract public void onMsgError();
 	
 	private static JXIOLog logger = JXIOLog.getLog(JXIOServerSession.class.getCanonicalName());
 
@@ -39,7 +39,7 @@ public abstract class JXIOServerSession implements JXIOEventable {
 		this.eventQHandler = eventQHandler;
 		this.url = url;
 		logger.log(Level.INFO, "uri inside JXIOServerSession is "+url);
-		long [] ar = JXIOBridge.startServer(url, eventQHandler.getId());
+		long [] ar = JXIOBridge.startServer(url, eventQHandler.getID());
 		this.id = ar [0];
 		this.port = (int) ar[1];
 		if (this.id == 0){
@@ -63,7 +63,7 @@ public abstract class JXIOServerSession implements JXIOEventable {
 			if (ev  instanceof JXIOEventSession){
 				int errorType = ((JXIOEventSession) ev).errorType;
 				String reason = ((JXIOEventSession) ev).reason;
-				this.onSessionErrorCallback(errorType, reason);
+				this.onSessionError(errorType, reason);
 				if (errorType == 1) {//event = "SESSION_TEARDOWN";
 					eventQHandler.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
 				}
@@ -72,12 +72,12 @@ public abstract class JXIOServerSession implements JXIOEventable {
 			
 		case 1: //msg error
 			logger.log(Level.INFO, "received msg error event");
-			this.onMsgErrorCallback();
+			this.onMsgError();
 			break;
 
 		case 3: //on request
 			logger.log(Level.INFO, "received msg event");
-			this.onRequestCallback();
+			this.onRequest();
 			break;
 		
 		case 5: //msg sent complete
