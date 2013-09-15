@@ -29,6 +29,7 @@
 
 #include "Context.h"
 #include "Utils.h"
+#include "MsgPool.h"
 
 
 static jclass cls;
@@ -53,13 +54,13 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 		return JNI_ERR; /* JNI version not supported */
 	}
 
-	cls = env->FindClass("com/mellanox/JXIOBridge");
+	cls = env->FindClass("com/mellanox/jxio/Bridge");
 	if (cls == NULL) {
 		fprintf(stderr, "in cJXBridge - java class was NOT found\n");
 		return JNI_ERR;
 	}
 
-	cls_data = env->FindClass("com/mellanox/JXIOEventQueueHandler$DataFromC");
+	cls_data = env->FindClass("com/mellanox/jxio/EventQueueHandler$DataFromC");
 	if (cls_data == NULL) {
 			fprintf(stderr, "in cJXBridge - java class was NOT found\n");
 			return JNI_ERR;
@@ -90,7 +91,7 @@ extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *jvm, void* reserved)
 	return;
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXIOBridge_createCtxNative(JNIEnv *env, jclass cls, jint eventQueueSize, jobject dataToC)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_Bridge_createCtxNative(JNIEnv *env, jclass cls, jint eventQueueSize, jobject dataToC)
 {
 	int size = eventQueueSize;
 	Context *ctx = new Context (size);
@@ -112,38 +113,38 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXIOBridge_createCtxNati
 	return ctx->error_creating;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXIOBridge_closeCtxNative(JNIEnv *env, jclass cls, jlong ptrCtx)
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_Bridge_closeCtxNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
 	Context *ctx = (Context *)ptrCtx;
 	delete (ctx);
 	log(lsDEBUG, "end of closeCTX\n");
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXIOBridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx, jlong timeOutMicroSec)
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_Bridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx, jlong timeOutMicroSec)
 {
 	Context *ctx = (Context *)ptrCtx;
 	return ctx->run_event_loop((long)timeOutMicroSec);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXIOBridge_stopEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_Bridge_stopEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
 	Context *ctx = (Context *)ptrCtx;
 	ctx->stop_event_loop();
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXIOBridge_addEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd, jint events, jlong priv_data)
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_Bridge_addEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd, jint events, jlong priv_data)
 {
 	Context *ctx = (Context *)ptrCtx;
 	return ctx->add_event_loop_fd(fd, events, (void*)priv_data);
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_JXIOBridge_delEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd)
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_Bridge_delEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd)
 {
 	Context *ctx = (Context *)ptrCtx;
 	return ctx->del_event_loop_fd(fd);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXIOBridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
+extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_Bridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
 {
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	Client * ses = new Client(url, ptrCtx);
@@ -160,13 +161,13 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_JXIOBridge_startSessionClie
 	return (jlong)(intptr_t) ses;
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXIOBridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_Bridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
 {
 	Client *ses = (Client*)ptrSes;
 	return ses->close_connection();
 }
 
-extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXIOBridge_startServerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
+extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_jxio_Bridge_startServerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
 {
 	jlong temp[2];
 
@@ -197,13 +198,13 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_JXIOBridge_startServer
 	return dataToJava;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_mellanox_JXIOBridge_stopServerNative(JNIEnv *env, jclass cls, jlong ptrServer)
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_Bridge_stopServerNative(JNIEnv *env, jclass cls, jlong ptrServer)
 {
 	Server *server = (Server *)ptrServer;
 	server->close();
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXIOBridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_server)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_server)
 {
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	struct xio_session *session = (struct xio_session *)ptr_session;
@@ -214,7 +215,25 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_JXIOBridge_forwardSessio
 	return retVal;
 }
 
-extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_JXIOBridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason)
+
+extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_Bridge_createMsgPoolNative(JNIEnv *env, jclass cls, jint msg_num, jint in_size, jint out_size)
+{
+	MsgPool *pool = new MsgPool (msg_num, in_size, out_size);
+	if (pool == NULL) {
+		log(lsERROR, "memory allocation failed\n");
+		return NULL;
+	}
+	if (pool->error_creating) {
+		delete (pool);
+		return NULL;
+	}
+	jobject jbuf = env->NewDirectByteBuffer(pool->buf, pool->buf_size);
+
+	return jbuf;
+}
+
+
+extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_jxio_Bridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason)
 {
 	struct xio_session *session;
 	const char * error;

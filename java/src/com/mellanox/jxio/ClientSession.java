@@ -14,15 +14,15 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox;
+package com.mellanox.jxio;
 
 import java.util.logging.Level;
 
 
-public abstract class JXIOClientSession implements JXIOEventable{
+public abstract class ClientSession implements Eventable{
 	
 	private long id = 0;
-	protected JXIOEventQueueHandler eventQHandler  =null;
+	protected EventQueueHandler eventQHandler  =null;
 	protected String url;
 //	protected int port;
 	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
@@ -33,13 +33,13 @@ public abstract class JXIOClientSession implements JXIOEventable{
 	abstract public void onMsgError();
 
 	
-	private static JXIOLog logger = JXIOLog.getLog(JXIOClientSession.class.getCanonicalName());
+	private static Log logger = Log.getLog(ClientSession.class.getCanonicalName());
 	
-	public JXIOClientSession(JXIOEventQueueHandler eventQHandler, String url) {
+	public ClientSession(EventQueueHandler eventQHandler, String url) {
 		this.eventQHandler = eventQHandler;
 		this.url = url;
 		
-		this.id = JXIOBridge.startSessionClient(url, eventQHandler.getID());
+		this.id = Bridge.startSessionClient(url, eventQHandler.getID());
 		if (this.id == 0){
 			logger.log(Level.SEVERE, "there was an error creating session");
 		}
@@ -49,14 +49,14 @@ public abstract class JXIOClientSession implements JXIOEventable{
 	}
 	
 	
-	public void onEvent(JXIOEvent ev) {
+	public void onEvent(Event ev) {
 		switch (ev.getEventType()) {
 
 		case 0: //session error event
 			logger.log(Level.INFO, "received session event");
-			if (ev  instanceof JXIOEventSession){
-				int errorType = ((JXIOEventSession) ev).errorType;
-				String reason = ((JXIOEventSession) ev).reason;
+			if (ev  instanceof EventSession){
+				int errorType = ((EventSession) ev).errorType;
+				String reason = ((EventSession) ev).reason;
 				this.onSessionError(errorType, reason);
 				if (errorType == 1) {//event = "SESSION_TEARDOWN";
 					eventQHandler.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
@@ -85,7 +85,7 @@ public abstract class JXIOClientSession implements JXIOEventable{
 	}
 	
 //	public boolean closeSession(){
-//		return JXIOBridge.closeSessionClient(id);
+//		return Bridge.closeSessionClient(id);
 //	}
 	
 	public long getId(){ return id;}
@@ -99,7 +99,7 @@ public abstract class JXIOClientSession implements JXIOEventable{
 			logger.log(Level.SEVERE, "closing Session with empty id");
 			return false;
 		}
-		JXIOBridge.closeSessionClient(id);	
+		Bridge.closeSessionClient(id);	
 		
 		logger.log(Level.INFO, "in the end of SessionClientClose");
 		isClosing = true;
@@ -108,7 +108,7 @@ public abstract class JXIOClientSession implements JXIOEventable{
 /*	
 	public void closeSession(){
 		//calls d-tor of cjxsession(which does nothing)
-		JXIOBridge.closeSessionClient(id);
+		Bridge.closeSessionClient(id);
 	}
 */	
 }

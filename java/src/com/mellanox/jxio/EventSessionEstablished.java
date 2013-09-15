@@ -14,9 +14,10 @@
 ** governing permissions and  limitations under the License.
 **
 */
-#ifndef cJXBridge__H___
-#define cJXridge__H___
+package com.mellanox.jxio;
 
-
-
-#endif // ! cJxBridge__H___
+public class EventSessionEstablished extends Event{
+	EventSessionEstablished(int eventType, long id) {
+		super(eventType, id);
+	}
+}

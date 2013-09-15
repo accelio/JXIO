@@ -14,37 +14,24 @@
 ** governing permissions and  limitations under the License.
 **
 */
-#ifndef Client__H___
-#define Client__H___
+package com.mellanox.jxio;
 
-#include <errno.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-#include "CallbackFunctions.h"
-#include "Context.h"
-#include "Contexable.h"
-#include "Msg.h"
-
-
-class Client:public Contexable{
-public:
-	//to move some to private?
-	Client(const char	*url, long ptrCtx);
-	~Client();
-	bool close_connection();
-	bool send_msg (Msg* m);
-
-	struct xio_session	*session;
-	struct xio_connection * con;
-
-	bool error_creating;
-	bool onSessionEvent(int eventType);
-//	cJXCtx* ctx;
-
-};
+import com.mellanox.jxio.Bridge;
+import com.mellanox.jxio.EventQueueHandler;
+import com.mellanox.jxio.Event.*;
 
 
 
+public abstract class EventQueueHandlerEx extends EventQueueHandler {
 
-#endif // ! Client__H___
+	// Callback function to deliver the ready FD events
+	public abstract void onFdReady(long fd, int events, long priv_data);
+
+	public int addEventLoopFd(long fd, int events, long priv_data) {
+		return Bridge.addEventLoopFd(getID(), fd, events, priv_data);
+	}
+	
+	public int delEventLoopFd(long fd) {
+		return Bridge.delEventLoopFd(getID(), fd);
+	}
+}

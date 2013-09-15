@@ -14,10 +14,25 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox;
+package com.mellanox.jxio;
 
-public class JXIOEventMsgSendComplete extends JXIOEvent {
-	JXIOEventMsgSendComplete(int eventType, long id) {
-		super(eventType, id);
-	}
+import java.nio.ByteBuffer;
+
+public class Msg {
+	
+    private static Log logger = Log.getLog(Msg.class.getCanonicalName());
+    private long id;
+    
+    public Msg(ByteBuffer buffer, int inSize, int outSize, long id){
+	
+	
+    }
 }
+	
+	
+
+	
+	
+	
+	
+	

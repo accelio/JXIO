@@ -14,15 +14,10 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox;
+package com.mellanox.jxio;
 
-public class JXIOEventSession extends JXIOEvent {
-	int errorType;
-	String reason;
-	
-	JXIOEventSession(int eventType, long id, int error, String s){
-		super(eventType, id); 
-		this.errorType = error;
-		this.reason = s;
+public class EventNewMsg extends Event {
+	EventNewMsg(int eventType, long id) {
+		super(eventType, id);
 	}
 }

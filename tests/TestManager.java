@@ -1,7 +1,8 @@
 //package managerTests;
 
 import java.util.logging.Level;
-import com.mellanox.*;
+
+import com.mellanox.jxio.*;
 
 public class TestManager {
 	
@@ -16,7 +17,7 @@ public class TestManager {
 	private static Runnable[] tests = new Runnable[numberOfTests + 1];
 	private static boolean[] successIndicators = new boolean[numberOfTests];
 	// Log
-	private static JXIOLog testLog = JXIOLog.getLog(TestManager.class.getCanonicalName());
+	private static Log testLog = Log.getLog(TestManager.class.getCanonicalName());
 	
 	public static void main(String[] args) {
 		

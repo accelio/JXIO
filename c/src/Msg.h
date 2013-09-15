@@ -14,24 +14,32 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox;
-
-import com.mellanox.JXIOEvent.*;
-import com.mellanox.JXIOBridge;
-import com.mellanox.JXIOEventQueueHandler;
+#ifndef Msg__H___
+#define Msg__H___
 
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <libxio.h>
 
-public abstract class JXIOEventQueueHandlerEx extends JXIOEventQueueHandler {
 
-	// Callback function to deliver the ready FD events
-	public abstract void onFdReady(long fd, int events, long priv_data);
 
-	public int addEventLoopFd(long fd, int events, long priv_data) {
-		return JXIOBridge.addEventLoopFd(getID(), fd, events, priv_data);
-	}
-	
-	public int delEventLoopFd(long fd) {
-		return JXIOBridge.delEventLoopFd(getID(), fd);
-	}
-}
+class Msg {
+public:
+	Msg(void * buf, struct xio_mr 	*xio_mr,  int in_buf_size, int out_buf_size);
+	~Msg();
+	void set_xio_msg();
+	struct xio_msg 	* get_xio_msg(){return xio_msg;}
+
+private:
+	void * 			buf;
+	int 			in_size;
+	int 			out_size;
+	struct xio_mr 	*xio_mr;
+	struct xio_msg 	*xio_msg;
+	int				serial_number;
+	int 			in_buf_size;
+	int 			out_buf_size;
+};
+
+#endif // ! Msg__H___

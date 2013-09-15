@@ -1,6 +1,7 @@
 //package managerTests;
 
-import com.mellanox.*;
+import com.mellanox.jxio.*;
+
 import java.util.Random;
 
 
@@ -13,12 +14,12 @@ public class MutipleManagersOnSameEQHTest implements Runnable {
 		
 		// Setup Multiple Clients Parameters
 		String url;
-		JXIOEventQueueHandler eqh;
+		EventQueueHandler eqh;
 		MySesManager[] sManagerArray;
 		int numOfSessionManagers = 3;
 		
 		// Setting up a Event Queue Hanler
-		eqh = new JXIOEventQueueHandler();
+		eqh = new EventQueueHandler();
 		
 		// Setting up a multiple session managers
 		TestManager.print("----- Setting up a multiple session managers...");

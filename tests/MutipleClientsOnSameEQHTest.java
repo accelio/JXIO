@@ -1,6 +1,7 @@
 //package clientTests;
 
-import com.mellanox.*;
+import com.mellanox.jxio.*;
+
 import java.util.Random;
 
 
@@ -13,12 +14,12 @@ public class MutipleClientsOnSameEQHTest implements Runnable {
 		
 		// Setup Multiple Clients Parameters
 		String url;
-		JXIOEventQueueHandler eqh;
+		EventQueueHandler eqh;
 		MySesClient[] sClientArray;
 		int numOfSessionClients = 3;
 		
 		// Setting up a Event Queue Hanler
-		eqh = new JXIOEventQueueHandler();
+		eqh = new EventQueueHandler();
 		
 		// Setting up a multiple session clients
 		TestClient.print("----- Setting up a multiple session clients...");

@@ -14,8 +14,8 @@
 ** governing permissions and  limitations under the License.
 **
 */
-#ifndef cJXCtx__H___
-#define cJXCtx__H___
+#ifndef Context__H___
+#define Context__H___
 
 #include <errno.h>
 #include <stdlib.h>
@@ -58,4 +58,4 @@ public:
 	std::map<void*,Contexable*>* map_session;
 };
 
-#endif // ! cJXCtx__H___
+#endif // ! Context__H___

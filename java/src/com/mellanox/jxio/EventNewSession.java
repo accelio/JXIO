@@ -14,10 +14,17 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox;
+package com.mellanox.jxio;
 
-public class JXIOEventNewMsg extends JXIOEvent {
-	JXIOEventNewMsg(int eventType, long id) {
-		super(eventType, id);
+class EventNewSession extends Event {
+	long ptrSes;
+	String uri;
+	String srcIP;
+
+	EventNewSession (int eventType, long id, long ptr, String uri, String ip) {
+		super(eventType, id); 
+		this.ptrSes = ptr;
+		this.uri = uri;
+		this.srcIP = ip;
 	}
 }

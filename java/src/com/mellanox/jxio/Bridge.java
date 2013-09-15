@@ -14,20 +14,20 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox;
+package com.mellanox.jxio;
 
 import java.util.logging.Level;
 
 
-public class JXIOBridge {
+public class Bridge {
 
 
     static {  
-		String s1=JXIOBridge.class.getProtectionDomain().getCodeSource().getLocation().getPath(); 
+		String s1=Bridge.class.getProtectionDomain().getCodeSource().getLocation().getPath(); 
 		String s2=s1.substring(0, s1.lastIndexOf("/")+1);
 		Runtime.getRuntime().load(s2 + "libjx.so");
     }
-	private static JXIOLog logger = JXIOLog.getLog(JXIOBridge.class.getCanonicalName());
+	private static Log logger = Log.getLog(Bridge.class.getCanonicalName());
 
 	// Native methods and their wrappers start here
     
@@ -114,7 +114,13 @@ public class JXIOBridge {
 		return ptr;
 	}
 	
-	
+	private static native long createMsgPoolNative(int count, int inSize, int outSize);
+	static long  createMsgPool(int count, int inSize, int outSize) {
+		logger.log(Level.INFO, "invoking forwardSessionNative");
+		long ptr = createMsgPoolNative(count, inSize, outSize);
+		logger.log(Level.INFO, "finished forwardSessionNative");
+		return ptr;
+	}
 	/*
 	private static native int getNumEventsQNative(long ptr);
 	static int getNumEventsQ(long ptr) {

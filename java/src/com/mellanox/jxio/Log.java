@@ -14,20 +14,20 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox;
+package com.mellanox.jxio;
 
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-public class JXIOLog extends Logger{
+public class Log extends Logger{
 		
-		private String file_name = "JXIOLog.txt"; 
+		private String file_name = "Log.txt"; 
 //		FileHandler handler;
 		ConsoleHandler handler;
 	
-		private JXIOLog(String name, String resourceBundleName) {
+		private Log(String name, String resourceBundleName) {
 			super(name, resourceBundleName);
 			try {
 //				handler = new FileHandler(file_name);
@@ -41,8 +41,8 @@ public class JXIOLog extends Logger{
 			
 	}
 
-		public static JXIOLog getLog(String class_name){
-			return new JXIOLog(class_name, null);
+		public static Log getLog(String class_name){
+			return new Log(class_name, null);
 			}
 
 }	

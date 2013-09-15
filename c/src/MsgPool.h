@@ -14,17 +14,39 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox;
+#ifndef MsgPool__H___
+#define MsgPool__H___
 
-class JXIOEventNewSession extends JXIOEvent {
-	long ptrSes;
-	String uri;
-	String srcIP;
 
-	JXIOEventNewSession (int eventType, long id, long ptr, String uri, String ip) {
-		super(eventType, id); 
-		this.ptrSes = ptr;
-		this.uri = uri;
-		this.srcIP = ip;
-	}
-}
+#include <stdlib.h>
+#include <stdio.h>
+#include <list>
+
+#include "Utils.h"
+#include <libxio.h>
+#include "Msg.h"
+
+
+class MsgPool {
+public:
+	MsgPool (int msg_num, int in_size, int out_size);
+	~MsgPool();
+
+	Msg * getMsgFromPool ();
+	void addMsgToPool(Msg * msg);
+
+	bool error_creating;
+	void   			*buf;
+	int 			buf_size;
+
+private:
+	struct xio_mr	*xio_mr;
+	struct xio_buf  *x_buf;
+	int 			msg_num;
+	int 			in_size;
+	int 			out_size;
+	std::list<Msg*> *msg_list;
+
+};
+
+#endif // ! MsgPool__H___

@@ -3,7 +3,7 @@
 TARGET=jx.jar
 JX_SO=libjx.so
 
-FILES=java/src/com/mellanox/*.java \
+FILES=java/src/com/mellanox/jxio/*.java \
 
 all: $(TARGET)
 

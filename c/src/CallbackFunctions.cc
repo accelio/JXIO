@@ -63,6 +63,7 @@ int on_msg_send_complete_callback(struct xio_session *session,
 
 	char* buf = ctx->event_queue->get_buffer();
 	int sizeWritten = ctx->events->writeOnMsgSendCompleteEvent(buf, cntxbl, session, msg, cb_prv_data);
+
 	done_event_creating(ctx, sizeWritten);
 		
 	log (lsDEBUG, "finished on_msg_send_complete_callback\n");
@@ -80,8 +81,11 @@ int on_msg_callback(struct xio_session *session,
 	Context *ctx = cntxbl->get_ctx_class();
 
 	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnMsgReceivedEvent(buf, cntxbl, session, msg, more_in_batch, cb_prv_data);
+//	int sizeWritten = ctx->events->writeOnMsgReceivedEvent(buf, cntxbl, session, msg, more_in_batch, cb_prv_data);
+	int sizeWritten = ctx->events->writeOnMsgReceivedEvent(buf, msg->user_context, session, msg, more_in_batch, cb_prv_data);
 	done_event_creating(ctx, sizeWritten);
+
+	xio_release_response (msg);
 
 	return 0;
 }
@@ -96,8 +100,10 @@ int on_msg_error_callback(struct xio_session *session,
 	Context *ctx = cntxbl->get_ctx_class();
 
 	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnMsgErrorEvent(buf, cntxbl, session, error, msg, conn_user_context);
+//	int sizeWritten = ctx->events->writeOnMsgErrorEvent(buf, cntxbl, session, error, msg, conn_user_context);
+	int sizeWritten = ctx->events->writeOnMsgErrorEvent(buf, msg->user_context, session, error, msg, conn_user_context);
 	done_event_creating(ctx, sizeWritten);
+
 	return 0;
 }
 

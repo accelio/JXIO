@@ -14,10 +14,10 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox;
+package com.mellanox.jxio;
 
-public class JXIOEventSessionEstablished extends JXIOEvent{
-	JXIOEventSessionEstablished(int eventType, long id) {
+public class EventMsgSendComplete extends Event {
+	EventMsgSendComplete(int eventType, long id) {
 		super(eventType, id);
 	}
 }

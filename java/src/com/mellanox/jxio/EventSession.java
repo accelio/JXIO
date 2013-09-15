@@ -14,37 +14,15 @@
 ** governing permissions and  limitations under the License.
 **
 */
-#ifndef Client__H___
-#define Client__H___
+package com.mellanox.jxio;
 
-#include <errno.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-#include "CallbackFunctions.h"
-#include "Context.h"
-#include "Contexable.h"
-#include "Msg.h"
-
-
-class Client:public Contexable{
-public:
-	//to move some to private?
-	Client(const char	*url, long ptrCtx);
-	~Client();
-	bool close_connection();
-	bool send_msg (Msg* m);
-
-	struct xio_session	*session;
-	struct xio_connection * con;
-
-	bool error_creating;
-	bool onSessionEvent(int eventType);
-//	cJXCtx* ctx;
-
-};
-
-
-
-
-#endif // ! Client__H___
+public class EventSession extends Event {
+	int errorType;
+	String reason;
+	
+	EventSession(int eventType, long id, int error, String s){
+		super(eventType, id); 
+		this.errorType = error;
+		this.reason = s;
+	}
+}

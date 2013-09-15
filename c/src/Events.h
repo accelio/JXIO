@@ -51,6 +51,8 @@ struct __attribute__ ((packed)) event_msg_error {
 };
 
 struct __attribute__ ((packed)) event_msg_received {
+//	int64_t		ptr_msg;
+	//use the ptr inside event_struct for passing the pointer to msg class in java
 };
 
 struct  event_struct {
@@ -75,23 +77,23 @@ public:
 
 	Events();
 
-	int writeOnSessionErrorEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
+	int writeOnSessionErrorEvent(char *buf, void *ptrForJava, struct xio_session *session,
 			struct xio_session_event_data *event_data,
 			void *cb_prv_data);
-	int writeOnSessionEstablishedEvent (char *buf, Contexable *ptrForJava, struct xio_session *session,
+	int writeOnSessionEstablishedEvent (char *buf, void *ptrForJava, struct xio_session *session,
 			struct xio_new_session_rsp *rsp,
 			void *cb_prv_data);
-	int writeOnNewSessionEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
+	int writeOnNewSessionEvent(char *buf, void *ptrForJava, struct xio_session *session,
 			struct xio_new_session_req *req,
 			void *cb_prv_data);
-	int writeOnMsgSendCompleteEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
+	int writeOnMsgSendCompleteEvent(char *buf, void *ptrForJava, struct xio_session *session,
 			struct xio_msg *msg,
 			void *cb_prv_data);
-	int writeOnMsgErrorEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
+	int writeOnMsgErrorEvent(char *buf, void *ptrForJava, struct xio_session *session,
             enum xio_status error,
             struct xio_msg  *msg,
             void *conn_user_context);
-	int writeOnMsgReceivedEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
+	int writeOnMsgReceivedEvent(char *buf, void *ptrForJava, struct xio_session *session,
 			struct xio_msg *msg,
 			int more_in_batch,
 			void *cb_prv_data);

@@ -1,12 +1,13 @@
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Level;
-import com.mellanox.*;
+
+import com.mellanox.jxio.*;
 
 
 public class ClientControlPathSimpleTest {
 	
-	private static JXIOLog logger = JXIOLog.getLog(ClientControlPathSimpleTest.class.getCanonicalName());
+	private static Log logger = Log.getLog(ClientControlPathSimpleTest.class.getCanonicalName());
 
 	
 	public static void main(String[] args) {
@@ -15,11 +16,11 @@ public class ClientControlPathSimpleTest {
 		String port = args[1];
 		String combined_url = "rdma://"+url+":"+port;
 		MySesClient ses;
-		JXIOEventQueueHandler eventQHndl;
+		EventQueueHandler eventQHndl;
 		
 		int num_times = 1;
 		
-		eventQHndl = new JXIOEventQueueHandler();
+		eventQHndl = new EventQueueHandler();
 		
 		for (int i=0; i<num_times; i++) {
 			

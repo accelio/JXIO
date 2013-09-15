@@ -1,9 +1,9 @@
-import com.mellanox.*;
+import com.mellanox.jxio.*;
 
 
 
 public class ServerControlPathSimpleTest {
-private static JXIOLog logger = JXIOLog.getLog(ServerControlPathSimpleTest.class.getCanonicalName());
+private static Log logger = Log.getLog(ServerControlPathSimpleTest.class.getCanonicalName());
 
 	
 	public static void main(String[] args) {
@@ -12,9 +12,9 @@ private static JXIOLog logger = JXIOLog.getLog(ServerControlPathSimpleTest.class
 		String port = args[1];
 		String combined_url = "rdma://"+url+":"+port;
 		MySesClient ses;
-		JXIOEventQueueHandler eventQHndl = new JXIOEventQueueHandler();
+		EventQueueHandler eventQHndl = new EventQueueHandler();
 
-		JXIOServerManager man = new MySesManager(eventQHndl, url);
+		ServerManager man = new MySesManager(eventQHndl, url);
 		
 		eventQHndl.run(); 
 	}		

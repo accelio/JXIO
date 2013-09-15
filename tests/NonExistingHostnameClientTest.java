@@ -1,6 +1,6 @@
 //package clientTests;
 
-import com.mellanox.*;
+import com.mellanox.jxio.*;
 
 public class NonExistingHostnameClientTest implements Runnable {
 
@@ -11,14 +11,14 @@ public class NonExistingHostnameClientTest implements Runnable {
 		
 		// Setup parameters
 		String url;
-		JXIOEventQueueHandler eqh;
+		EventQueueHandler eqh;
 		MySesClient sClient;
 		
 		// Get url
 		url = "rdma://" + "1.0.0.0" + ":" + TestClient.port;
 		
 		// Setting up a Event Queue Hanler
-		eqh = new JXIOEventQueueHandler();
+		eqh = new EventQueueHandler();
 		
 		// Setting up a session client
 		TestClient.print("----- Setting up a session client...");

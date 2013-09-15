@@ -14,7 +14,7 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox;
+package com.mellanox.jxio;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -22,12 +22,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
-import com.mellanox.JXIOEvent.*;
-import com.mellanox.JXIOBridge;
+import com.mellanox.jxio.Bridge;
+import com.mellanox.jxio.Event.*;
 
 
 
-public class JXIOEventQueueHandler implements Runnable {
+public class EventQueueHandler implements Runnable {
 
 	private int eventQueueSize = 5000; //size of byteBuffer
 
@@ -36,25 +36,25 @@ public class JXIOEventQueueHandler implements Runnable {
 	// Direct buffer to the registered memory
 	ByteBuffer eventQueue = null;
 	//this will be map in the future
-//	private JXIOEventable eventable = null;
+//	private Eventable eventable = null;
 
 //	Map eventables = new HashMap();
 
 	private ElapsedTimeMeasurement elapsedTime = null; 
 
-	Map <Long,JXIOEventable> eventables = new HashMap<Long,JXIOEventable>();
+	Map <Long,Eventable> eventables = new HashMap<Long,Eventable>();
 	//	int offset = 0;
 	public boolean stopLoop = false;
 
-	private static JXIOLog logger = JXIOLog.getLog(JXIOEventQueueHandler.class.getCanonicalName());
+	private static Log logger = Log.getLog(EventQueueHandler.class.getCanonicalName());
 
 
 
 	//c-tor
-	public JXIOEventQueueHandler() {
+	public EventQueueHandler() {
 
 		DataFromC dataFromC = new DataFromC();
-		boolean statusError = JXIOBridge.createCtx(eventQueueSize, dataFromC);
+		boolean statusError = Bridge.createCtx(eventQueueSize, dataFromC);
 		if (statusError){
 			logger.log(Level.INFO, "there was an error creating ctx on c side!");
 		}
@@ -64,14 +64,14 @@ public class JXIOEventQueueHandler implements Runnable {
 		elapsedTime = new ElapsedTimeMeasurement(); 
 	}
 
-	public void addEventable(JXIOEventable eventable) {
+	public void addEventable(Eventable eventable) {
 		logger.log(Level.INFO, "** adding "+eventable.getId()+" to map ");
 		if (eventable.getId() != 0){
 			eventables.put(eventable.getId(), eventable);
 		}
 	}
 
-	public void removeEventable(JXIOEventable eventable) {
+	public void removeEventable(Eventable eventable) {
 		logger.log(Level.INFO, "** removing "+eventable.getId()+" from map ");
 		eventables.remove(eventable.getId());
 	}
@@ -98,13 +98,13 @@ public class JXIOEventQueueHandler implements Runnable {
 
 			if (eventsWaitingInQ <= 0) { // the event queue is empty now, get more events from libxio
 				eventQueue.rewind();
-				eventsWaitingInQ = JXIOBridge.runEventLoop(id, timeOutMicroSec);
+				eventsWaitingInQ = Bridge.runEventLoop(id, timeOutMicroSec);
 			}
 
 			// process in eventQueue pending events
 			if (eventsWaitingInQ > 0) { // there are still events to be read, but they exceed maxEvents
-				JXIOEvent event = parseEvent(eventQueue);
-				JXIOEventable eventable = eventables.get(event.getId());
+				Event event = parseEvent(eventQueue);
+				Eventable eventable = eventables.get(event.getId());
 
 				eventable.onEvent(event);
 
@@ -121,9 +121,9 @@ public class JXIOEventQueueHandler implements Runnable {
 	
 	public void close () {
 		while (!this.eventables.isEmpty()) {
-			for (Map.Entry<Long,JXIOEventable> entry : eventables.entrySet())
+			for (Map.Entry<Long,Eventable> entry : eventables.entrySet())
 			{
-				JXIOEventable ev = entry.getValue();
+				Eventable ev = entry.getValue();
 				if (!ev.isClosing()){
 					logger.log(Level.INFO, "closing eventable with id "+entry.getKey()); 
 					ev.close();
@@ -134,7 +134,7 @@ public class JXIOEventQueueHandler implements Runnable {
 //			runEventLoop (1,0);
 		}
 		logger.log(Level.INFO, "no more objects listening");
-		JXIOBridge.closeCtx(id);
+		Bridge.closeCtx(id);
 		this.stopLoop = true;
 	}
 
@@ -142,10 +142,10 @@ public class JXIOEventQueueHandler implements Runnable {
 
 	public void stopEventLoop() {
 		this.stopLoop = true;
-		JXIOBridge.stopEventLoop(id);
+		Bridge.stopEventLoop(id);
 	}
 
-	public JXIOEvent parseEvent(ByteBuffer eventQueue) {
+	public Event parseEvent(ByteBuffer eventQueue) {
 
 		int eventType = eventQueue.getInt();
 		long id = eventQueue.getLong();
@@ -156,20 +156,20 @@ public class JXIOEventQueueHandler implements Runnable {
 		{
 			int errorType = eventQueue.getInt();
 			int reason = eventQueue.getInt();
-			String s = JXIOBridge.getError(reason);
-			JXIOEventSession evSes = new JXIOEventSession(eventType, id, errorType, s);
+			String s = Bridge.getError(reason);
+			EventSession evSes = new EventSession(eventType, id, errorType, s);
 			return evSes;
 		}	
 		case 1: //msg error
-			JXIOEventMsgError evMsgErr = new JXIOEventMsgError(eventType, id);
+			EventMsgError evMsgErr = new EventMsgError(eventType, id);
 			return evMsgErr;
 
 		case 2: //session established
-			JXIOEventSessionEstablished evSesEstab = new JXIOEventSessionEstablished(eventType, id);
+			EventSessionEstablished evSesEstab = new EventSessionEstablished(eventType, id);
 			return evSesEstab;
 
 		case 3: //on reply
-			JXIOEventNewMsg evMsg = new JXIOEventNewMsg(eventType, id);
+			EventNewMsg evMsg = new EventNewMsg(eventType, id);
 			return evMsg;
 
 		case 4: //on new session
@@ -177,7 +177,7 @@ public class JXIOEventQueueHandler implements Runnable {
 			String uri = readString(eventQueue);		
 			String srcIP = readString(eventQueue);			
 
-			JXIOEventNewSession evNewSes = new JXIOEventNewSession(eventType, id, ptrSes, uri, srcIP);
+			EventNewSession evNewSes = new EventNewSession(eventType, id, ptrSes, uri, srcIP);
 			return evNewSes;
 
 		default:

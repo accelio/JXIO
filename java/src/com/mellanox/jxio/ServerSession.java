@@ -14,36 +14,36 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox;
+package com.mellanox.jxio;
 
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
 
 
-public abstract class JXIOServerSession implements JXIOEventable {
+public abstract class ServerSession implements Eventable {
 	
 	private long id = 0; //represents pointer to server struct
 //	private long ptrEventQueue = 0;
 	private int port;
 	protected String url;
-	private JXIOEventQueueHandler eventQHandler  =null;
+	private EventQueueHandler eventQHandler  =null;
 	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
 	
 	abstract public void onRequest();
 	abstract public void onSessionError(int session_event, String reason );
 	abstract public void onMsgError();
 	
-	private static JXIOLog logger = JXIOLog.getLog(JXIOServerSession.class.getCanonicalName());
+	private static Log logger = Log.getLog(ServerSession.class.getCanonicalName());
 
-	protected JXIOServerSession(JXIOEventQueueHandler eventQHandler, String url) {
+	protected ServerSession(EventQueueHandler eventQHandler, String url) {
 		this.eventQHandler = eventQHandler;
 		this.url = url;
-		logger.log(Level.INFO, "uri inside JXIOServerSession is "+url);
-		long [] ar = JXIOBridge.startServer(url, eventQHandler.getID());
+		logger.log(Level.INFO, "uri inside ServerSession is "+url);
+		long [] ar = Bridge.startServer(url, eventQHandler.getID());
 		this.id = ar [0];
 		this.port = (int) ar[1];
 		if (this.id == 0){
-			logger.log(Level.SEVERE, "there was an error creating JXIOServerSession");
+			logger.log(Level.SEVERE, "there was an error creating ServerSession");
 		}
 		//modify url to include the new port number
 		int index = url.lastIndexOf(":"); 
@@ -56,13 +56,13 @@ public abstract class JXIOServerSession implements JXIOEventable {
 	
 
 	
-	public void onEvent(JXIOEvent ev) {
+	public void onEvent(Event ev) {
 		switch (ev.getEventType()) {
 		case 0: //session error event
 			logger.log(Level.INFO, "received session error event");
-			if (ev  instanceof JXIOEventSession){
-				int errorType = ((JXIOEventSession) ev).errorType;
-				String reason = ((JXIOEventSession) ev).reason;
+			if (ev  instanceof EventSession){
+				int errorType = ((EventSession) ev).errorType;
+				String reason = ((EventSession) ev).reason;
 				this.onSessionError(errorType, reason);
 				if (errorType == 1) {//event = "SESSION_TEARDOWN";
 					eventQHandler.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
@@ -93,10 +93,10 @@ public abstract class JXIOServerSession implements JXIOEventable {
 	public boolean close() {
 //		eventQHandler.removeEventable (this); //TODO: fix this
 		if (id == 0){
-			logger.log(Level.SEVERE, "closing JXIOServerSession with empty id");
+			logger.log(Level.SEVERE, "closing ServerSession with empty id");
 			return false;
 		}
-		JXIOBridge.stopServer(id);
+		Bridge.stopServer(id);
 		isClosing = true;
 		return true;
 	}

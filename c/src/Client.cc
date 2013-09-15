@@ -122,3 +122,15 @@ bool Client::onSessionEvent(int eventType)
 		return true;
 	}
 }
+
+bool Client::send_msg (Msg *msg)
+{
+	//set_xio_msg????
+	int ret_val = xio_send_request(this->con,
+		    msg->get_xio_msg());
+	if (ret_val){
+		log(lsERROR, "Got error %d while sending xio_msg\n", ret_val);
+		return false;
+	}
+	return true;
+}

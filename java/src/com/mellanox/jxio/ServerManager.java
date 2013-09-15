@@ -14,12 +14,12 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox;
+package com.mellanox.jxio;
 
 import java.util.logging.Level;
 
-public abstract class JXIOServerManager implements JXIOEventable {
-	private JXIOEventQueueHandler eventQHndl = null;
+public abstract class ServerManager implements Eventable {
+	private EventQueueHandler eventQHndl = null;
 	private long id = 0;
 	private int port;
 	private String url;
@@ -27,16 +27,16 @@ public abstract class JXIOServerManager implements JXIOEventable {
 	static protected int sizeEventQ = 10000;
 	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
 	
-	private static JXIOLog logger = JXIOLog.getLog(JXIOServerManager.class.getCanonicalName());
+	private static Log logger = Log.getLog(ServerManager.class.getCanonicalName());
 	
 	public abstract void onSession(long ptrSes, String uri, String srcIP);
 	public abstract void onSessionError(int errorType, String reason);
 	
-	public JXIOServerManager(JXIOEventQueueHandler eventQHandler,String url) {
+	public ServerManager(EventQueueHandler eventQHandler,String url) {
 	    	this.url = url;
 		eventQHndl = eventQHandler;
 		
-		long [] ar = JXIOBridge.startServer(url, eventQHandler.getID());
+		long [] ar = Bridge.startServer(url, eventQHandler.getID());
 		this.id = ar [0];
 		this.port = (int) ar[1];
 		
@@ -61,32 +61,32 @@ public abstract class JXIOServerManager implements JXIOEventable {
 	public boolean close() {
 		eventQHndl.removeEventable (this); //TODO: fix this
 		if (id == 0){
-			logger.log(Level.SEVERE, "closing JXIOServerManager with empty id");
+			logger.log(Level.SEVERE, "closing ServerManager with empty id");
 			return false;
 		}
-		JXIOBridge.stopServer(id);
+		Bridge.stopServer(id);
 		isClosing = true;
 		return true;
 	}
 	
-	public void forward(JXIOServerSession ses, long ptrSes){
+	public void forward(ServerSession ses, long ptrSes){
 	    logger.log(Level.INFO, "****** new url inside forward  is "+ses.url);
 	    
-		JXIOBridge.forwardSession(ses.url, ptrSes, ses.getId());
+		Bridge.forwardSession(ses.url, ptrSes, ses.getId());
 	}
 	
 	public long getId(){ return id;} 
 	public boolean isClosing() {return isClosing;}
 	
 	
-	public void onEvent(JXIOEvent ev) {
+	public void onEvent(Event ev) {
 		switch (ev.getEventType()) {
 		
 		case 0: //session error event
 			logger.log(Level.INFO, "received session error event");
-			if (ev  instanceof JXIOEventSession){
-				int errorType = ((JXIOEventSession) ev).errorType;
-				String reason = ((JXIOEventSession) ev).reason;
+			if (ev  instanceof EventSession){
+				int errorType = ((EventSession) ev).errorType;
+				String reason = ((EventSession) ev).reason;
 				this.onSessionError(errorType, reason);
 				if (errorType == 1) {//event = "SESSION_TEARDOWN";
 					eventQHndl.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
@@ -96,10 +96,10 @@ public abstract class JXIOServerManager implements JXIOEventable {
 			
 		case 4: //on new session
 			logger.log(Level.INFO, "received session error event");
-			if (ev  instanceof JXIOEventNewSession){
-				long ptrSes = ((JXIOEventNewSession) ev).ptrSes;
-				String uri = ((JXIOEventNewSession) ev).uri;		
-				String srcIP = ((JXIOEventNewSession) ev).srcIP;
+			if (ev  instanceof EventNewSession){
+				long ptrSes = ((EventNewSession) ev).ptrSes;
+				String uri = ((EventNewSession) ev).uri;		
+				String srcIP = ((EventNewSession) ev).srcIP;
 				this.onSession(ptrSes, uri, srcIP);
 			}
 			break;

@@ -14,10 +14,22 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox;
+package com.mellanox.jxio;
 
-public class JXIOEventMsgError extends JXIOEvent {
-	JXIOEventMsgError(int eventType, long id) {
-		super(eventType, id);
+
+public interface Eventable {
+	public void onEvent(Event ev);
+/*
+	enum eventType {
+		sessionError, msgError, sessionEstablished, msgRecieved,
+	    newSession 
 	}
+*/
+	public boolean close();
+	
+	public long getId();
+	
+	public boolean isClosing();
+	
+
 }

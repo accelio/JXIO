@@ -28,7 +28,7 @@ Events::Events()
 
 }
 
-int Events::writeOnSessionErrorEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
+int Events::writeOnSessionErrorEvent(char *buf, void *ptrForJava, struct xio_session *session,
 			struct xio_session_event_data *event_data,
 			void *cb_prv_data)
 {
@@ -43,7 +43,7 @@ int Events::writeOnSessionErrorEvent(char *buf, Contexable *ptrForJava, struct x
 	return this->size;
 }
 
-int Events::writeOnSessionEstablishedEvent (char *buf, Contexable *ptrForJava, struct xio_session *session,
+int Events::writeOnSessionEstablishedEvent (char *buf, void *ptrForJava, struct xio_session *session,
 			struct xio_new_session_rsp *rsp,
 			void *cb_prv_data)
 {
@@ -54,7 +54,7 @@ int Events::writeOnSessionEstablishedEvent (char *buf, Contexable *ptrForJava, s
 	return this->size;
 }
 
-int Events::writeOnNewSessionEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
+int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, struct xio_session *session,
 			struct xio_new_session_req *req,
 			void *cb_prv_data)
 {
@@ -116,7 +116,7 @@ int Events::writeOnNewSessionEvent(char *buf, Contexable *ptrForJava, struct xio
 	return this->size;
 }
 
-int Events::writeOnMsgSendCompleteEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
+int Events::writeOnMsgSendCompleteEvent(char *buf, void *ptrForJava, struct xio_session *session,
 			struct xio_msg *msg,
 			void *cb_prv_data)
 {
@@ -127,7 +127,7 @@ int Events::writeOnMsgSendCompleteEvent(char *buf, Contexable *ptrForJava, struc
 	return this->size;
 }
 
-int Events::writeOnMsgErrorEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
+int Events::writeOnMsgErrorEvent(char *buf, void *ptrForJava, struct xio_session *session,
             enum xio_status error,
             struct xio_msg  *msg,
             void *conn_user_context)
@@ -140,7 +140,7 @@ int Events::writeOnMsgErrorEvent(char *buf, Contexable *ptrForJava, struct xio_s
 }
 
 
-int Events::writeOnMsgReceivedEvent(char *buf, Contexable *ptrForJava, struct xio_session *session,
+int Events::writeOnMsgReceivedEvent(char *buf, void *ptrForJava, struct xio_session *session,
 		struct xio_msg *msg,
 		int more_in_batch,
 		void *cb_prv_data)

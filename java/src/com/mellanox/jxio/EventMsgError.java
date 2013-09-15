@@ -14,25 +14,10 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox;
+package com.mellanox.jxio;
 
-public class JXIOEvent {
-	
-	int eventType;
-	long id;
-	JXIOEvent(int eventType, long id) {
-		this.eventType = eventType;
-		this.id = id;
+public class EventMsgError extends Event {
+	EventMsgError(int eventType, long id) {
+		super(eventType, id);
 	}
-	
-	int getEventType() {return eventType;}
-	long getId() {return id;}
 }
-	
-	
-
-	
-	
-	
-	
-	
