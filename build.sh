@@ -8,7 +8,7 @@ echo -e "\nThe JXIO Test directory is $DIR\n"
 # Configuring Parameters
 TARGET=jx.jar
 JX_SO=libjx.so
-FILES=java/src/com/mellanox/*.java
+FILES=java/src/com/mellanox/jxio/*.java
 
 # Clean
 rm -f tests/jx.jar
