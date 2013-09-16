@@ -19,6 +19,7 @@ rm -f tests/libxio.so
 
 ## Build Accellio
 echo "Build Accellio....(libxio c code)"
+cd $DIR
 git submodule update --init
 cd accellio/ && ./autogen.sh && ./configure --disable-raio-build && make && cd ..
 if [[ $? != 0 ]] ; then
@@ -27,12 +28,14 @@ fi
 
 ## Build JX
 echo "Build JXIO... (c code)"
+cd $DIR
 cd c/ && ./autogen.sh && ./configure && make && cd ..
 if [[ $? != 0 ]] ; then
     exit 1
 fi
 
 echo "Build JXIO... (java code)"
+cd $DIR
 mkdir -p java/bin
 javac -d java/bin/ $FILES
 cd java/bin ;jar -cvf $TARGET com ; cd ../..
