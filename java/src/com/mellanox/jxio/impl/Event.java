@@ -14,10 +14,26 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox.jxio;
+package com.mellanox.jxio.impl;
 
-public class EventMsgSendComplete extends Event {
-	EventMsgSendComplete(int eventType, long id) {
-		super(eventType, id);
+public class Event {
+	
+	private int eventType;
+	private long id;
+
+	Event(int eventType, long id) {
+		this.eventType = eventType;
+		this.id = id;
 	}
+	
+	public int getEventType() {return eventType;}
+	public long getId() {return id;}
 }
+	
+	
+
+	
+	
+	
+	
+	

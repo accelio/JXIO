@@ -14,10 +14,10 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox.jxio;
+package com.mellanox.jxio.impl;
 
-public class EventMsgError extends Event {
-	EventMsgError(int eventType, long id) {
+public class EventSessionEstablished extends Event{
+	public EventSessionEstablished(int eventType, long id) {
 		super(eventType, id);
 	}
 }

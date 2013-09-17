@@ -19,6 +19,10 @@ package com.mellanox.jxio;
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
 
+import com.mellanox.jxio.impl.Bridge;
+import com.mellanox.jxio.impl.Event;
+import com.mellanox.jxio.impl.EventSession;
+import com.mellanox.jxio.impl.Eventable;
 
 public abstract class ServerSession implements Eventable {
 	
@@ -61,8 +65,8 @@ public abstract class ServerSession implements Eventable {
 		case 0: //session error event
 			logger.log(Level.INFO, "received session error event");
 			if (ev  instanceof EventSession){
-				int errorType = ((EventSession) ev).errorType;
-				String reason = ((EventSession) ev).reason;
+				int errorType = ((EventSession) ev).getErrorType();
+				String reason = ((EventSession) ev).getReason();
 				this.onSessionError(errorType, reason);
 				if (errorType == 1) {//event = "SESSION_TEARDOWN";
 					eventQHandler.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH

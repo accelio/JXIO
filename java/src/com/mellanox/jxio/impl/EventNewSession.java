@@ -14,24 +14,29 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox.jxio;
+package com.mellanox.jxio.impl;
 
-import com.mellanox.jxio.Bridge;
-import com.mellanox.jxio.EventQueueHandler;
-import com.mellanox.jxio.Event.*;
+public class EventNewSession extends Event {
+	private long ptrSes;
+	private String uri;
+	private String srcIP;
 
-
-
-public abstract class EventQueueHandlerEx extends EventQueueHandler {
-
-	// Callback function to deliver the ready FD events
-	public abstract void onFdReady(long fd, int events, long priv_data);
-
-	public int addEventLoopFd(long fd, int events, long priv_data) {
-		return Bridge.addEventLoopFd(getID(), fd, events, priv_data);
+	public EventNewSession(int eventType, long id, long ptr, String uri, String ip) {
+		super(eventType, id); 
+		this.ptrSes = ptr;
+		this.uri = uri;
+		this.srcIP = ip;
 	}
-	
-	public int delEventLoopFd(long fd) {
-		return Bridge.delEventLoopFd(getID(), fd);
+
+	public long getPtrSes() {
+		return ptrSes;
+	}
+
+	public String getUri() {
+		return uri;
+	}
+
+	public String getSrcIP() {
+		return srcIP;
 	}
 }

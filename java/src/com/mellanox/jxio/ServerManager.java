@@ -18,6 +18,12 @@ package com.mellanox.jxio;
 
 import java.util.logging.Level;
 
+import com.mellanox.jxio.impl.Bridge;
+import com.mellanox.jxio.impl.Event;
+import com.mellanox.jxio.impl.EventNewSession;
+import com.mellanox.jxio.impl.EventSession;
+import com.mellanox.jxio.impl.Eventable;
+
 public abstract class ServerManager implements Eventable {
 	private EventQueueHandler eventQHndl = null;
 	private long id = 0;
@@ -85,8 +91,8 @@ public abstract class ServerManager implements Eventable {
 		case 0: //session error event
 			logger.log(Level.INFO, "received session error event");
 			if (ev  instanceof EventSession){
-				int errorType = ((EventSession) ev).errorType;
-				String reason = ((EventSession) ev).reason;
+				int errorType = ((EventSession) ev).getErrorType();
+				String reason = ((EventSession) ev).getReason();
 				this.onSessionError(errorType, reason);
 				if (errorType == 1) {//event = "SESSION_TEARDOWN";
 					eventQHndl.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
@@ -97,9 +103,9 @@ public abstract class ServerManager implements Eventable {
 		case 4: //on new session
 			logger.log(Level.INFO, "received session error event");
 			if (ev  instanceof EventNewSession){
-				long ptrSes = ((EventNewSession) ev).ptrSes;
-				String uri = ((EventNewSession) ev).uri;		
-				String srcIP = ((EventNewSession) ev).srcIP;
+				long ptrSes = ((EventNewSession) ev).getPtrSes();
+				String uri = ((EventNewSession) ev).getUri();		
+				String srcIP = ((EventNewSession) ev).getSrcIP();
 				this.onSession(ptrSes, uri, srcIP);
 			}
 			break;

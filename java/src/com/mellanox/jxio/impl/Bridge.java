@@ -14,13 +14,12 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox.jxio;
+package com.mellanox.jxio.impl;
 
 import java.util.logging.Level;
-
+import com.mellanox.jxio.Log;
 
 public class Bridge {
-
 
     static {  
 		String s1=Bridge.class.getProtectionDomain().getCodeSource().getLocation().getPath(); 
@@ -33,7 +32,7 @@ public class Bridge {
     
 	
 	private static native boolean createCtxNative(int eventQueueSize, Object dataFromC);
-	static boolean createCtx(int eventQueueSize, Object dataFromC) {
+	public static boolean createCtx(int eventQueueSize, Object dataFromC) {
 		logger.log(Level.INFO, "invoking createCtxNative");
 		boolean ret = createCtxNative(eventQueueSize, dataFromC);
 		logger.log(Level.INFO, "finished createCtxNative");
@@ -41,65 +40,63 @@ public class Bridge {
 		
 	}
 	private static native void closeCtxNative(long ptr);
-		static void closeCtx(long ptr) {
+	public static void closeCtx(long ptr) {
 		logger.log(Level.INFO, "invoking closeCtxNative");
 		closeCtxNative(ptr);
 		logger.log(Level.INFO, "finished closeCtxNative" );
 			
 	}
 	private static native int runEventLoopNative(long ptr, long timeOutMicroSec);
-	static int runEventLoop(long ptr, long timeOutMicroSec) {
+	public static int runEventLoop(long ptr, long timeOutMicroSec) {
 	    logger.log(Level.INFO, "invoking Bridge.runEventLoopNative");
 	    int ret = runEventLoopNative(ptr, timeOutMicroSec);
 	    logger.log(Level.INFO, "finished Bridge.runEventLoopNative=" + ret);
 	    return ret;
 	}	
 	private static native void stopEventLoopNative(long ptr);
-	static void stopEventLoop(long ptr) {
+	public static void stopEventLoop(long ptr) {
 	    logger.log(Level.INFO, "invoking stopEventLoopNative");
 	    stopEventLoopNative(ptr);
 	    logger.log(Level.INFO, "finished stopEventLoopNative");
 	}
 	private static native int addEventLoopFdNative(long ptr, long fd, int events, long priv_data);
-	static int addEventLoopFd(long ptr, long fd, int events, long priv_data) {
+	public static int addEventLoopFd(long ptr, long fd, int events, long priv_data) {
 	    logger.log(Level.INFO, "invoking addEventLoopFdNative");
 	    int ret = addEventLoopFdNative(ptr, fd, events, priv_data);
 	    logger.log(Level.INFO, "finished addEventLoopFdNative");
 	    return ret;
 	}
 	private static native int delEventLoopFdNative(long ptr, long fd);
-	static int delEventLoopFd(long ptr, long fd) {
+	public static int delEventLoopFd(long ptr, long fd) {
 	    logger.log(Level.INFO, "invoking delEventLoopFdNative");
 	    int ret = delEventLoopFdNative(ptr, fd);
 	    logger.log(Level.INFO, "finished delEventLoopFdNative");
 	    return ret;
 	}
 
-
 	private static native long startSessionClientNative(String url, long ptrCtx);
-	static long startSessionClient(String url, long ptrCtx) {
+	public static long startSessionClient(String url, long ptrCtx) {
 		logger.log(Level.INFO, "invoking startSessionNative");
 		long p = startSessionClientNative(url, ptrCtx);		
 		logger.log(Level.INFO, "finished startSessionNative ");
 		return p;
 	}	
 	private static native void closeSessionClientNative(long sesPtr);
-	static void closeSessionClient(long sesPtr) {
+	public static void closeSessionClient(long sesPtr) {
 		logger.log(Level.INFO, "invoking Bridge.closeSessionClient");
 		closeSessionClientNative(sesPtr);
 		logger.log(Level.INFO, "finished Bridge.closeSessionClient");
 	}
 
-	
 	private static native long [] startServerNative(String url, long ptrCtx);
-	static long [] startServer(String url, long ptrCtx) {
+	public static long [] startServer(String url, long ptrCtx) {
 		logger.log(Level.INFO, "invoking startServerNative");
 		long ptr [] = startServerNative(url, ptrCtx);
 		logger.log(Level.INFO, "finished startServerNative");
 		return ptr;
 	}
 	private static native boolean stopServerNative(long ptr);
-	static boolean stopServer(long ptr) {
+	public static boolean stopServer(long ptr) {
 		logger.log(Level.INFO, "invoking stopServerNative");
 		boolean ret = stopServerNative(ptr);
 		logger.log(Level.INFO, "finished stopServerNative ret=" + ret);
@@ -107,7 +104,7 @@ public class Bridge {
 	}
 
 	private static native long forwardSessionNative(String url, long ptrSes, long ptrServer);
-	static long  forwardSession(String url, long ptrSes, long ptrServer) {
+	public static long forwardSession(String url, long ptrSes, long ptrServer) {
 		logger.log(Level.INFO, "invoking forwardSessionNative");
 		long ptr = forwardSessionNative(url, ptrSes, ptrServer);
 		logger.log(Level.INFO, "finished forwardSessionNative");
@@ -115,23 +112,15 @@ public class Bridge {
 	}
 	
 	private static native long createMsgPoolNative(int count, int inSize, int outSize);
-	static long  createMsgPool(int count, int inSize, int outSize) {
+	public static long createMsgPool(int count, int inSize, int outSize) {
 		logger.log(Level.INFO, "invoking forwardSessionNative");
 		long ptr = createMsgPoolNative(count, inSize, outSize);
 		logger.log(Level.INFO, "finished forwardSessionNative");
 		return ptr;
 	}
-	/*
-	private static native int getNumEventsQNative(long ptr);
-	static int getNumEventsQ(long ptr) {
-		logger.log(Level.INFO, "invoking getNumEventsQNative");
-		int ret = getNumEventsQNative(ptr);
-		logger.log(Level.INFO, "finished getNumEventsQNative");
-		return ret;
-	}
-*/
+
 	private static native String getErrorNative(int errorReason);
-	static String getError(int errorReason) {
+	public static String getError(int errorReason) {
 //		logger.log(Level.FINE, "invoking getErrorNative");
 		String s = getErrorNative(errorReason);
 //		logger.log(Level.FINE, "finished getErrorNative. error was "+s);

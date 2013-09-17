@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+import com.mellanox.jxio.impl.Bridge;
+
 public class MsgPool {
 	
     private static Log logger = Log.getLog(MsgPool.class.getCanonicalName());

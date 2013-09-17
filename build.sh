@@ -8,7 +8,7 @@ echo -e "\nThe JXIO Test directory is $DIR\n"
 # Configuring Parameters
 TARGET=jx.jar
 JX_SO=libjx.so
-FILES=java/src/com/mellanox/jxio/*.java
+JAVA_FILES="java/src/com/mellanox/jxio/*.java java/src/com/mellanox/jxio/impl/*.java"
 
 # Clean
 rm -f tests/jx.jar
@@ -37,7 +37,7 @@ fi
 echo "Build JXIO... (java code)"
 cd $DIR
 mkdir -p java/bin
-javac -d java/bin/ $FILES
+javac -d java/bin/ $JAVA_FILES
 cd java/bin ;jar -cvf $TARGET com ; cd ../..
 
 cp -f java/bin/$TARGET tests/

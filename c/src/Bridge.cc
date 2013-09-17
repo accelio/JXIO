@@ -46,41 +46,41 @@ static jfieldID fidError;
 // JNI inner functions implementations
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 {
-	printf("in cJXBridge - JNI_OnLoad\n");
+	printf("in in JXIO/c/Bridge - JNI_OnLoad\n");
 
 	cached_jvm = jvm;
 	JNIEnv *env;
-	if ( jvm->GetEnv((void **)&env, JNI_VERSION_1_4)) { //direct buffer requires java 1.4
+	if (jvm->GetEnv((void **)&env, JNI_VERSION_1_4)) { //direct buffer requires java 1.4
 		return JNI_ERR; /* JNI version not supported */
 	}
 
-	cls = env->FindClass("com/mellanox/jxio/Bridge");
+	cls = env->FindClass("com/mellanox/jxio/impl/Bridge");
 	if (cls == NULL) {
-		fprintf(stderr, "in cJXBridge - java class was NOT found\n");
+		fprintf(stderr, "in JXIO/c/Bridge - java class was NOT found\n");
 		return JNI_ERR;
 	}
 
 	cls_data = env->FindClass("com/mellanox/jxio/EventQueueHandler$DataFromC");
 	if (cls_data == NULL) {
-			fprintf(stderr, "in cJXBridge - java class was NOT found\n");
-			return JNI_ERR;
-		}
+		fprintf(stderr, "in JXIO/c/Bridge - java class was NOT found\n");
+		return JNI_ERR;
+	}
 
 	if (fidPtr == NULL) {
 	fidPtr = env->GetFieldID(cls_data, "ptrCtx", "J");
 	if (fidPtr == NULL) {
-		fprintf(stderr, "could not get field  ptrCtx\n");
+		fprintf(stderr, "in JXIO/c/Bridge - could not get field ptrCtx\n");
 		}
 	}
 
 	if (fidBuf == NULL) {
 	fidBuf = env->GetFieldID(cls_data, "eventQueue","Ljava/nio/ByteBuffer;");
 	if (fidBuf == NULL) {
-		fprintf(stderr, "could not get field  fidBuf\n");
+		fprintf(stderr, "in JXIO/c/Bridge - could not get field fidBuf\n");
 		}
 	}
 
-	printf("in cJXBridge -  java callback methods were found and cached\n");
+	printf("in JXIO/c/Bridge - java callback methods were found and cached\n");
 
 	return JNI_VERSION_1_4;  //direct buffer requires java 1.4
 }
@@ -91,7 +91,7 @@ extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *jvm, void* reserved)
 	return;
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_Bridge_createCtxNative(JNIEnv *env, jclass cls, jint eventQueueSize, jobject dataToC)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_createCtxNative(JNIEnv *env, jclass cls, jint eventQueueSize, jobject dataToC)
 {
 	int size = eventQueueSize;
 	Context *ctx = new Context (size);
@@ -113,38 +113,38 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_Bridge_createCtxNat
 	return ctx->error_creating;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_Bridge_closeCtxNative(JNIEnv *env, jclass cls, jlong ptrCtx)
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeCtxNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
 	Context *ctx = (Context *)ptrCtx;
 	delete (ctx);
 	log(lsDEBUG, "end of closeCTX\n");
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_Bridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx, jlong timeOutMicroSec)
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx, jlong timeOutMicroSec)
 {
 	Context *ctx = (Context *)ptrCtx;
 	return ctx->run_event_loop((long)timeOutMicroSec);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_Bridge_stopEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_stopEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
 	Context *ctx = (Context *)ptrCtx;
 	ctx->stop_event_loop();
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_Bridge_addEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd, jint events, jlong priv_data)
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_addEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd, jint events, jlong priv_data)
 {
 	Context *ctx = (Context *)ptrCtx;
 	return ctx->add_event_loop_fd(fd, events, (void*)priv_data);
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_Bridge_delEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd)
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_delEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd)
 {
 	Context *ctx = (Context *)ptrCtx;
 	return ctx->del_event_loop_fd(fd);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_Bridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
+extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
 {
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	Client * ses = new Client(url, ptrCtx);
@@ -161,13 +161,13 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_Bridge_startSessionCli
 	return (jlong)(intptr_t) ses;
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_Bridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
 {
 	Client *ses = (Client*)ptrSes;
 	return ses->close_connection();
 }
 
-extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_jxio_Bridge_startServerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
+extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_jxio_impl_Bridge_startServerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
 {
 	jlong temp[2];
 
@@ -190,7 +190,7 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_jxio_Bridge_startServe
 		temp[1]=0;
 		delete(server);
 	} else {
-		temp [0] = (jlong)(intptr_t) server;
+		temp[0] = (jlong)(intptr_t) server;
 		temp[1] = (jlong)server->port;
 	}
 
@@ -198,13 +198,13 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_jxio_Bridge_startServe
 	return dataToJava;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_Bridge_stopServerNative(JNIEnv *env, jclass cls, jlong ptrServer)
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_stopServerNative(JNIEnv *env, jclass cls, jlong ptrServer)
 {
 	Server *server = (Server *)ptrServer;
 	server->close();
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_server)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_server)
 {
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	struct xio_session *session = (struct xio_session *)ptr_session;
@@ -216,7 +216,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_Bridge_forwardSessi
 }
 
 
-extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_Bridge_createMsgPoolNative(JNIEnv *env, jclass cls, jint msg_num, jint in_size, jint out_size)
+extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMsgPoolNative(JNIEnv *env, jclass cls, jint msg_num, jint in_size, jint out_size)
 {
 	MsgPool *pool = new MsgPool (msg_num, in_size, out_size);
 	if (pool == NULL) {
@@ -233,7 +233,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_Bridge_createMsgPool
 }
 
 
-extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_jxio_Bridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason)
+extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_jxio_impl_Bridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason)
 {
 	struct xio_session *session;
 	const char * error;
@@ -259,11 +259,4 @@ JNIEnv *JX_attachNativeThread()
 	printf("completed successfully env=%p", env);
 	return env; // note: this handler is valid for all functions in this thread
 }
-
-
-
-
-
-
-
 

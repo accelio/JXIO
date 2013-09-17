@@ -14,25 +14,23 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox.jxio;
+package com.mellanox.jxio.impl;
 
-public class Event {
+public class EventSession extends Event {
+	private int errorType;
+	private String reason;
 	
-	int eventType;
-	long id;
-	Event(int eventType, long id) {
-		this.eventType = eventType;
-		this.id = id;
+	public EventSession(int eventType, long id, int error, String s){
+		super(eventType, id); 
+		this.errorType = error;
+		this.reason = s;
 	}
 	
-	int getEventType() {return eventType;}
-	long getId() {return id;}
+	public int getErrorType() {
+		return errorType;
+	}
+	
+	public String getReason() {
+		return reason;
+	}
 }
-	
-	
-
-	
-	
-	
-	
-	

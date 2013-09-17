@@ -16,13 +16,8 @@
 */
 package com.mellanox.jxio;
 
-public class EventSession extends Event {
-	int errorType;
-	String reason;
-	
-	EventSession(int eventType, long id, int error, String s){
-		super(eventType, id); 
-		this.errorType = error;
-		this.reason = s;
-	}
+public interface EventQueueHandlerCallbacks {
+
+	// Callback function to deliver the ready FD events
+	public abstract void onFdReady(long fd, int events, long priv_data);
 }

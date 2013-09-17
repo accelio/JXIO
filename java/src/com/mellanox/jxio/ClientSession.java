@@ -18,11 +18,15 @@ package com.mellanox.jxio;
 
 import java.util.logging.Level;
 
+import com.mellanox.jxio.impl.Bridge;
+import com.mellanox.jxio.impl.Event;
+import com.mellanox.jxio.impl.EventSession;
+import com.mellanox.jxio.impl.Eventable;
 
-public abstract class ClientSession implements Eventable{
+public abstract class ClientSession implements Eventable {
 	
 	private long id = 0;
-	protected EventQueueHandler eventQHandler  =null;
+	protected EventQueueHandler eventQHandler = null;
 	protected String url;
 //	protected int port;
 	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
@@ -55,8 +59,8 @@ public abstract class ClientSession implements Eventable{
 		case 0: //session error event
 			logger.log(Level.INFO, "received session event");
 			if (ev  instanceof EventSession){
-				int errorType = ((EventSession) ev).errorType;
-				String reason = ((EventSession) ev).reason;
+				int errorType = ((EventSession) ev).getErrorType();
+				String reason = ((EventSession) ev).getReason();
 				this.onSessionError(errorType, reason);
 				if (errorType == 1) {//event = "SESSION_TEARDOWN";
 					eventQHandler.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH

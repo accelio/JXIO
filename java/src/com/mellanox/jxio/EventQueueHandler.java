@@ -22,10 +22,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
-import com.mellanox.jxio.Bridge;
-import com.mellanox.jxio.Event.*;
-
-
+import com.mellanox.jxio.impl.Bridge;
+import com.mellanox.jxio.impl.ElapsedTimeMeasurement;
+import com.mellanox.jxio.impl.Event;
+import com.mellanox.jxio.impl.EventMsgError;
+import com.mellanox.jxio.impl.EventNewMsg;
+import com.mellanox.jxio.impl.EventNewSession;
+import com.mellanox.jxio.impl.EventSession;
+import com.mellanox.jxio.impl.EventSessionEstablished;
+import com.mellanox.jxio.impl.Eventable;
 
 public class EventQueueHandler implements Runnable {
 
@@ -42,13 +47,20 @@ public class EventQueueHandler implements Runnable {
 
 	private ElapsedTimeMeasurement elapsedTime = null; 
 
-	Map <Long,Eventable> eventables = new HashMap<Long,Eventable>();
+	private Map <Long,Eventable> eventables = new HashMap<Long,Eventable>();
+	
+	private EventQueueHandlerCallbacks callbacks = null;
+	
 	//	int offset = 0;
 	public boolean stopLoop = false;
 
 	private static Log logger = Log.getLog(EventQueueHandler.class.getCanonicalName());
 
 
+	public EventQueueHandler(EventQueueHandlerCallbacks callbacks) {
+		this();
+		this.callbacks = callbacks;
+	}
 
 	//c-tor
 	public EventQueueHandler() {
@@ -62,6 +74,14 @@ public class EventQueueHandler implements Runnable {
 		this.id = dataFromC.ptrCtx;
 
 		elapsedTime = new ElapsedTimeMeasurement(); 
+	}
+
+	public int addEventLoopFd(long fd, int events, long priv_data) {
+		return Bridge.addEventLoopFd(getID(), fd, events, priv_data);
+	}
+	
+	public int delEventLoopFd(long fd) {
+		return Bridge.delEventLoopFd(getID(), fd);
 	}
 
 	public void addEventable(Eventable eventable) {

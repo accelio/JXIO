@@ -14,22 +14,10 @@
 ** governing permissions and  limitations under the License.
 **
 */
-package com.mellanox.jxio;
+package com.mellanox.jxio.impl;
 
-
-public interface Eventable {
-	public void onEvent(Event ev);
-/*
-	enum eventType {
-		sessionError, msgError, sessionEstablished, msgRecieved,
-	    newSession 
+public class EventMsgError extends Event {
+	public EventMsgError(int eventType, long id) {
+		super(eventType, id);
 	}
-*/
-	public boolean close();
-	
-	public long getId();
-	
-	public boolean isClosing();
-	
-
 }
