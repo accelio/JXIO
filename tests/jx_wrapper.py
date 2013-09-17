@@ -8,7 +8,7 @@ from reg2_wrapper.test_wrapper.client_server_wrapper import ClientServerWrapper
 class JxWrapper(ClientServerWrapper):
 
     def get_server_prog_path(self):
-        return "../libxio/tests/usr/hello_test/run_server.sh"
+        return "../accellio/tests/usr/hello_test/run_server.sh"
 
     def get_client_prog_path(self):
         return "../tests/runClientTest.sh"
