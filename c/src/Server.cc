@@ -126,3 +126,13 @@ bool Server::onSessionEvent(int eventType)
 	}
 }
 
+bool Server::send_reply (Msg *msg)
+{
+	//set_xio_msg????
+	int ret_val = xio_send_response(msg->get_xio_msg());
+	if (ret_val){
+		log(lsERROR, "Got error %d while sending xio_msg\n", ret_val);
+		return false;
+	}
+	return true;
+}

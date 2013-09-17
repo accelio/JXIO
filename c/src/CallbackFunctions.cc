@@ -85,7 +85,11 @@ int on_msg_callback(struct xio_session *session,
 	int sizeWritten = ctx->events->writeOnMsgReceivedEvent(buf, msg->user_context, session, msg, more_in_batch, cb_prv_data);
 	done_event_creating(ctx, sizeWritten);
 
-	xio_release_response (msg);
+	if (msg->type == XIO_MSG_TYPE_REQ){ //it's a request so it is server side
+
+	}else{//it's response so it is client side
+		xio_release_response (msg);
+	}
 
 	return 0;
 }

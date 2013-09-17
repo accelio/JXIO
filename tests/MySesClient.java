@@ -2,13 +2,36 @@ import java.util.logging.Level;
 
 import com.mellanox.jxio.*;
 
-	public class MySesClient extends ClientSession{
+	public class MySesClient {
 		
 		private static Log logger = Log.getLog(MySesClient.class.getCanonicalName());
 		
+	    EventQueueHandler eqh = null;
+	    ClientSession client;
+	    ClientSessionCallbacks callbacks;
+		
+		
+		
 		public MySesClient(EventQueueHandler eqh, String uri){
-			super (eqh, uri);	
+		this.callbacks = new MySesClientCallbacks();
+		this.client = new ClientSession (eqh, uri, callbacks);
+		this.eqh = eqh;	
+	    }	    
+	    
+	    
+	    public boolean close(){
+		if (this.client.close()){
+		    logger.log(Level.INFO, "[SUCCESS] Session client successfully closed!" );
+		    return true;
+		} else {
+		    logger.log(Level.INFO, "[ERROR] Session client failed to close!");
+		    return false;
 		}
+	    }
+		
+	    
+	    
+	    class MySesClientCallbacks implements ClientSessionCallbacks {
 		
 		public void onMsgError(){	
 			logger.log(Level.INFO, "onMsgErrorCallback");
@@ -50,18 +73,10 @@ import com.mellanox.jxio.*;
 			
 		}
 	
-		public void onReply(){	
+		public void onReply(Msg msg){	
 			logger.log(Level.INFO, "[SUCCESS] Got a message! Bring the champagne!");
 		}
 
-		public boolean close(){
-			if (super.close()){
-				logger.log(Level.INFO, "[SUCCESS] Session client successfully closed!" );
-				return true;
-			} else {
-				logger.log(Level.INFO, "[ERROR] Session client failed to close!");
-				return false;
-			}
-		}
+		
 	}
-
+	}

@@ -14,7 +14,7 @@ private static Log logger = Log.getLog(ServerControlPathSimpleTest.class.getCano
 		MySesClient ses;
 		EventQueueHandler eventQHndl = new EventQueueHandler();
 
-		ServerManager man = new MySesManager(eventQHndl, url);
+		MySesManager man = new MySesManager(eventQHndl, url);
 		
 		eventQHndl.run(); 
 	}		

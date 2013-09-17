@@ -23,25 +23,24 @@ import com.mellanox.jxio.impl.Event;
 import com.mellanox.jxio.impl.EventSession;
 import com.mellanox.jxio.impl.Eventable;
 
-public abstract class ClientSession implements Eventable {
+
+public class ClientSession implements Eventable{
+
 	
 	private long id = 0;
 	protected EventQueueHandler eventQHandler = null;
 	protected String url;
-//	protected int port;
 	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
+	private ClientSessionCallbacks callbacks;
 	
-	abstract public void onReply();
-	abstract public void onSessionEstablished();
-	abstract public void onSessionError(int session_event, String reason );
-	abstract public void onMsgError();
 
 	
 	private static Log logger = Log.getLog(ClientSession.class.getCanonicalName());
 	
-	public ClientSession(EventQueueHandler eventQHandler, String url) {
+	public ClientSession(EventQueueHandler eventQHandler, String url, ClientSessionCallbacks callbacks) {
 		this.eventQHandler = eventQHandler;
 		this.url = url;
+		this.callbacks = callbacks;
 		
 		this.id = Bridge.startSessionClient(url, eventQHandler.getID());
 		if (this.id == 0){
@@ -59,9 +58,11 @@ public abstract class ClientSession implements Eventable {
 		case 0: //session error event
 			logger.log(Level.INFO, "received session event");
 			if (ev  instanceof EventSession){
+
 				int errorType = ((EventSession) ev).getErrorType();
 				String reason = ((EventSession) ev).getReason();
-				this.onSessionError(errorType, reason);
+				callbacks.onSessionError(errorType, reason);
+
 				if (errorType == 1) {//event = "SESSION_TEARDOWN";
 					eventQHandler.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
 				}
@@ -70,17 +71,20 @@ public abstract class ClientSession implements Eventable {
 			
 		case 1: //msg error
 			logger.log(Level.INFO, "received msg error event");
-			this.onMsgError();
+			callbacks.onMsgError();
 			break;
 
 		case 2: //session established
 			logger.log(Level.INFO, "received session established event");
-			this.onSessionEstablished();
+			callbacks.onSessionEstablished();
 			break;
 			
 		case 3: //on reply
 			logger.log(Level.INFO, "received msg event");
-			this.onReply();
+			Msg msg = null;
+			callbacks.onReply(msg);//this is obviuosly temporary implementation
+
+
 			break;
 			
 		default:
@@ -88,13 +92,21 @@ public abstract class ClientSession implements Eventable {
 		}
 	}
 	
-//	public boolean closeSession(){
-//		return Bridge.closeSessionClient(id);
-//	}
 	
 	public long getId(){ return id;}
 	
 	public boolean isClosing() {return isClosing;}
+	
+	public boolean sendMessage (Msg msg){
+	    msg.setClientSession(this);
+	    eventQHandler.addMsgInUse(msg);
+	    boolean ret = Bridge.sendMsg(this.getId(), 0, msg.getId());
+	    if (!ret){
+		logger.log(Level.SEVERE, "there was an error sending the message");
+	    }
+	    return ret;
+
+	}
 	
 	
 	public boolean close (){

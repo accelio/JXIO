@@ -34,15 +34,16 @@ public:
 	~Server();
 
 	bool forward(struct xio_session *, const char * url);
+	bool send_reply (Msg *msg);
+	bool onSessionEvent(int eventType);
+	bool close();
 
 	struct xio_server	*server;
 	struct xio_session *session;
 
 	bool error_creating;
 	uint16_t port; //indicates the actual port on which the server listens
-	bool onSessionEvent(int eventType);
 	bool closingInProcess;
-	bool close();
 //	cJXCtx* ctx;
 
 };

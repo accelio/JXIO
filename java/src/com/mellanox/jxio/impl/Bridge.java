@@ -112,13 +112,35 @@ public class Bridge {
 	}
 	
 	private static native long createMsgPoolNative(int count, int inSize, int outSize);
-	public static long createMsgPool(int count, int inSize, int outSize) {
-		logger.log(Level.INFO, "invoking forwardSessionNative");
-		long ptr = createMsgPoolNative(count, inSize, outSize);
-		logger.log(Level.INFO, "finished forwardSessionNative");
-		return ptr;
-	}
 
+	public static long  createMsgPool(int count, int inSize, int outSize) {
+		logger.log(Level.INFO, "invoking createMsgPoolNative");
+
+		long ptr = createMsgPoolNative(count, inSize, outSize);
+		logger.log(Level.INFO, "finished createMsgPoolNative");
+		return ptr;
+
+	}
+	
+	private static native boolean sendMsgNative(long ptrSession, int sessionType, long ptrMsg);
+	static boolean  sendMsg(long ptrSession, int sessionType, long ptrMsg) {
+		logger.log(Level.INFO, "invoking sendMsgNative");
+		boolean ret = sendMsgNative(ptrSession, sessionType, ptrMsg);
+		logger.log(Level.INFO, "finished sendMsgNative ret= "+ ret);
+		return ret;
+	}
+	
+	
+	
+	/*
+	private static native int getNumEventsQNative(long ptr);
+	static int getNumEventsQ(long ptr) {
+		logger.log(Level.INFO, "invoking getNumEventsQNative");
+		int ret = getNumEventsQNative(ptr);
+		logger.log(Level.INFO, "finished getNumEventsQNative");
+		return ret;
+	}
+*/
 	private static native String getErrorNative(int errorReason);
 	public static String getError(int errorReason) {
 //		logger.log(Level.FINE, "invoking getErrorNative");

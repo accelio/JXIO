@@ -22,10 +22,23 @@ public class Msg {
 	
     private static Log logger = Log.getLog(Msg.class.getCanonicalName());
     private long id;
+    private ClientSession clientSession;
     
     public Msg(ByteBuffer buffer, int inSize, int outSize, long id){
 	
 	
+    }
+
+    public void setClientSession(ClientSession clientSession) {
+	this.clientSession = clientSession;
+    }
+
+    public ClientSession getClientSession() {
+	return clientSession;
+    }
+
+    public long getId() {
+	return id;
     }
 }
 	

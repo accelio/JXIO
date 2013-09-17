@@ -233,6 +233,19 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMs
 }
 
 
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_Bridge_sendMsgNative(JNIEnv *env, jclass cls, jlong ptr_session, jint session_type, jlong ptr_msg)
+{
+	Msg * msg = (Msg*) ptr_msg;
+
+	if (session_type == 0){//it's server
+		Server * server = (Server *) ptr_session;
+		return server->send_reply(msg);
+	}else{ //it's client
+		Client * client = (Client *) ptr_session;
+		return client->send_msg(msg);
+	}
+}
+
 extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_jxio_impl_Bridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason)
 {
 	struct xio_session *session;

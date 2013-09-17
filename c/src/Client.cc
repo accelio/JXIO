@@ -125,7 +125,7 @@ bool Client::onSessionEvent(int eventType)
 
 bool Client::send_msg (Msg *msg)
 {
-	//set_xio_msg????
+	msg->set_xio_msg();
 	int ret_val = xio_send_request(this->con,
 		    msg->get_xio_msg());
 	if (ret_val){

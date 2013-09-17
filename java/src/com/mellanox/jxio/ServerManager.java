@@ -24,7 +24,7 @@ import com.mellanox.jxio.impl.EventNewSession;
 import com.mellanox.jxio.impl.EventSession;
 import com.mellanox.jxio.impl.Eventable;
 
-public abstract class ServerManager implements Eventable {
+public class ServerManager implements Eventable {
 	private EventQueueHandler eventQHndl = null;
 	private long id = 0;
 	private int port;
@@ -32,15 +32,16 @@ public abstract class ServerManager implements Eventable {
 	private String urlPort0;
 	static protected int sizeEventQ = 10000;
 	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
+	private ServerManagerCallbacks callbacks;
 	
 	private static Log logger = Log.getLog(ServerManager.class.getCanonicalName());
 	
-	public abstract void onSession(long ptrSes, String uri, String srcIP);
-	public abstract void onSessionError(int errorType, String reason);
 	
-	public ServerManager(EventQueueHandler eventQHandler,String url) {
+	
+	public ServerManager(EventQueueHandler eventQHandler,String url, ServerManagerCallbacks callbacks) {
 	    	this.url = url;
 		eventQHndl = eventQHandler;
+		this.callbacks = callbacks;
 		
 		long [] ar = Bridge.startServer(url, eventQHandler.getID());
 		this.id = ar [0];
@@ -93,7 +94,8 @@ public abstract class ServerManager implements Eventable {
 			if (ev  instanceof EventSession){
 				int errorType = ((EventSession) ev).getErrorType();
 				String reason = ((EventSession) ev).getReason();
-				this.onSessionError(errorType, reason);
+				callbacks.onSessionError(errorType, reason);
+
 				if (errorType == 1) {//event = "SESSION_TEARDOWN";
 					eventQHndl.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
 				}
@@ -106,7 +108,8 @@ public abstract class ServerManager implements Eventable {
 				long ptrSes = ((EventNewSession) ev).getPtrSes();
 				String uri = ((EventNewSession) ev).getUri();		
 				String srcIP = ((EventNewSession) ev).getSrcIP();
-				this.onSession(ptrSes, uri, srcIP);
+				callbacks.onSession(ptrSes, uri, srcIP);
+
 			}
 			break;
 		

@@ -47,10 +47,12 @@ public class EventQueueHandler implements Runnable {
 
 	private ElapsedTimeMeasurement elapsedTime = null; 
 
+
 	private Map <Long,Eventable> eventables = new HashMap<Long,Eventable>();
-	
+	Map <Long,Msg> msgsInUse = new HashMap<Long,Msg>();
 	private EventQueueHandlerCallbacks callbacks = null;
 	
+
 	//	int offset = 0;
 	public boolean stopLoop = false;
 
@@ -95,6 +97,18 @@ public class EventQueueHandler implements Runnable {
 		logger.log(Level.INFO, "** removing "+eventable.getId()+" from map ");
 		eventables.remove(eventable.getId());
 	}
+	
+	public void addMsgInUse(Msg msg) {
+		if (msg.getId() != 0){
+		    msgsInUse.put(msg.getId(), msg);
+		}
+	}
+	
+	public Msg getAndremoveMsgInUse(long id) {
+	    Msg msg = msgsInUse.get(id);
+	    msgsInUse.remove(id);
+	    return msg;
+	}
 
 
 	public void run() {
@@ -124,8 +138,12 @@ public class EventQueueHandler implements Runnable {
 			// process in eventQueue pending events
 			if (eventsWaitingInQ > 0) { // there are still events to be read, but they exceed maxEvents
 				Event event = parseEvent(eventQueue);
-				Eventable eventable = eventables.get(event.getId());
-
+				Eventable eventable;
+				if (event instanceof EventNewMsg){
+				    eventable = getAndremoveMsgInUse(event.getId()).getClientSession();
+				}else{
+				    eventable = eventables.get(event.getId());
+				}
 				eventable.onEvent(event);
 
 				eventsHandled++;

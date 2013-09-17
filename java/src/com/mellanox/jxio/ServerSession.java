@@ -24,7 +24,7 @@ import com.mellanox.jxio.impl.Event;
 import com.mellanox.jxio.impl.EventSession;
 import com.mellanox.jxio.impl.Eventable;
 
-public abstract class ServerSession implements Eventable {
+public class ServerSession implements Eventable {
 	
 	private long id = 0; //represents pointer to server struct
 //	private long ptrEventQueue = 0;
@@ -32,16 +32,16 @@ public abstract class ServerSession implements Eventable {
 	protected String url;
 	private EventQueueHandler eventQHandler  =null;
 	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
+	private ServerSessionCallbacks callbacks;
 	
-	abstract public void onRequest();
-	abstract public void onSessionError(int session_event, String reason );
-	abstract public void onMsgError();
+
 	
 	private static Log logger = Log.getLog(ServerSession.class.getCanonicalName());
 
-	protected ServerSession(EventQueueHandler eventQHandler, String url) {
+	public ServerSession(EventQueueHandler eventQHandler, String url, ServerSessionCallbacks callbacks) {
 		this.eventQHandler = eventQHandler;
 		this.url = url;
+		this.callbacks = callbacks;
 		logger.log(Level.INFO, "uri inside ServerSession is "+url);
 		long [] ar = Bridge.startServer(url, eventQHandler.getID());
 		this.id = ar [0];
@@ -65,9 +65,11 @@ public abstract class ServerSession implements Eventable {
 		case 0: //session error event
 			logger.log(Level.INFO, "received session error event");
 			if (ev  instanceof EventSession){
+
 				int errorType = ((EventSession) ev).getErrorType();
 				String reason = ((EventSession) ev).getReason();
-				this.onSessionError(errorType, reason);
+				callbacks.onSessionError(errorType, reason);
+
 				if (errorType == 1) {//event = "SESSION_TEARDOWN";
 					eventQHandler.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
 				}
@@ -76,12 +78,13 @@ public abstract class ServerSession implements Eventable {
 			
 		case 1: //msg error
 			logger.log(Level.INFO, "received msg error event");
-			this.onMsgError();
+			callbacks.onMsgError();
 			break;
 
 		case 3: //on request
 			logger.log(Level.INFO, "received msg event");
-			this.onRequest();
+			Msg msg = null; //obviously this is temporary implementation
+			callbacks.onRequest(msg);
 			break;
 		
 		case 5: //msg sent complete
@@ -108,4 +111,8 @@ public abstract class ServerSession implements Eventable {
 	public long getId() { return id; }
 	
 	public boolean isClosing() { return isClosing; }
+	
+	public boolean sendResponce (Msg msg){//obviously this is temporary implementation
+	    return true;
+	}
 }
