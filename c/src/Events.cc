@@ -14,25 +14,34 @@
 ** governing permissions and  limitations under the License.
 **
 */
+
 #include <string.h>
 #include <map>
 
-
 #include "Events.h"
 
+
+typedef enum {
+	EVENT_SESSION_ERROR       = 0,
+	EVENT_MSG_ERROR           = 1,
+	EVENT_SESSION_ESTABLISHED = 2,
+	EVENT_MSG_RECEIVED        = 3,
+	EVENT_SESSION_NEW         = 4,
+	EVENT_MSG_SEND_COMPLETE   = 5,
+	EVENT_FD_READY            = 6,
+	EVENT_LAST
+} event_type_t;
 
 
 Events::Events()
 {
 	this->size = 0;
-
 }
 
 int Events::writeOnSessionErrorEvent(char *buf, void *ptrForJava, struct xio_session *session,
-			struct xio_session_event_data *event_data,
-			void *cb_prv_data)
+			struct xio_session_event_data *event_data)
 {
-	this->event.type = htonl (0);
+	this->event.type = htonl(EVENT_SESSION_ERROR);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
 	this->event.event_specific.session_error.error_type = htonl(event_data->event);
 	this->event.event_specific.session_error.error_reason = htonl (event_data->reason);
@@ -44,26 +53,24 @@ int Events::writeOnSessionErrorEvent(char *buf, void *ptrForJava, struct xio_ses
 }
 
 int Events::writeOnSessionEstablishedEvent (char *buf, void *ptrForJava, struct xio_session *session,
-			struct xio_new_session_rsp *rsp,
-			void *cb_prv_data)
+			struct xio_new_session_rsp *rsp)
 {
-	event.type = htonl (2);
-	event.ptr = htobe64(intptr_t(ptrForJava));
+	this->event.type = htonl(EVENT_SESSION_ESTABLISHED);
+	this->event.ptr = htobe64(intptr_t(ptrForJava));
 	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 	memcpy(buf, &this->event, this->size);
 	return this->size;
 }
 
 int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, struct xio_session *session,
-			struct xio_new_session_req *req,
-			void *cb_prv_data)
+			struct xio_new_session_req *req)
 {
 	void* p1 =  session;
 
-	event.type = htonl (4);
+	this->event.type = htonl(EVENT_SESSION_NEW);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
-	event.event_specific.new_session.ptr_session = htobe64(intptr_t(p1));
-	event.event_specific.new_session.uri_len = htonl(req->uri_len);
+	this->event.event_specific.new_session.ptr_session = htobe64(intptr_t(p1));
+	this->event.event_specific.new_session.uri_len = htonl(req->uri_len);
 
 	//copy data so far
 	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr +
@@ -93,34 +100,32 @@ int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, struct xio_sessi
 							 addr, INET_ADDRSTRLEN);
 				len = strlen(ip);
 
-	}else if (ipStruct->sa_family == AF_INET6) {
+	} else if (ipStruct->sa_family == AF_INET6) {
 			static char addr[INET6_ADDRSTRLEN];
 			struct sockaddr_in6 *v6 = (struct sockaddr_in6 *)ipStruct;
 			ip = (char *)inet_ntop(AF_INET6, &(v6->sin6_addr),
 						 addr, INET6_ADDRSTRLEN);
 			len = INET6_ADDRSTRLEN;
-	}else{
+	} else {
 			log(lsERROR, "can not get src ip\n");
 			len = strlen(ip);
 
 	}
 
-	event.event_specific.new_session.ip_len = htonl (len);
+	this->event.event_specific.new_session.ip_len = htonl (len);
 	memcpy(buf + this->size, &event.event_specific.new_session.ip_len, sizeof(int32_t));
 
 	this->size += sizeof((struct event_new_session *)0)->ip_len;
 	strcpy(buf + this->size,ip);
 
 	this->size += len ;
-
 	return this->size;
 }
 
 int Events::writeOnMsgSendCompleteEvent(char *buf, void *ptrForJava, struct xio_session *session,
-			struct xio_msg *msg,
-			void *cb_prv_data)
+			struct xio_msg *msg)
 {
-	event.type = htonl (5);
+	this->event.type = htonl(EVENT_MSG_SEND_COMPLETE);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
 	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 	memcpy(buf, &this->event, this->size);
@@ -128,11 +133,9 @@ int Events::writeOnMsgSendCompleteEvent(char *buf, void *ptrForJava, struct xio_
 }
 
 int Events::writeOnMsgErrorEvent(char *buf, void *ptrForJava, struct xio_session *session,
-            enum xio_status error,
-            struct xio_msg  *msg,
-            void *conn_user_context)
+            enum xio_status error, struct xio_msg *msg)
 {
-	event.type = htonl (1);
+	this->event.type = htonl(EVENT_MSG_ERROR);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
 	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 	memcpy(buf, &this->event, this->size);
@@ -141,24 +144,22 @@ int Events::writeOnMsgErrorEvent(char *buf, void *ptrForJava, struct xio_session
 
 
 int Events::writeOnMsgReceivedEvent(char *buf, void *ptrForJava, struct xio_session *session,
-		struct xio_msg *msg,
-		int more_in_batch,
-		void *cb_prv_data)
+		struct xio_msg *msg, int more_in_batch)
 {
-	event.type = htonl (3);
+	this->event.type = htonl(EVENT_MSG_RECEIVED);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
 	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 	memcpy(buf, &this->event, this->size);
 	return this->size;
 }
 
-
-
-
-
-
-
-
-
-
-
+int Events::writeOnFdReadyEvent(char *buf, int fd, int epoll_event)
+{
+	this->event.type = htonl(EVENT_FD_READY);
+	this->event.ptr = NULL; //  The java object receiving this event will be the EQH which handles this event_queue
+	this->event.event_specific.fd_ready.fd = htonl(fd);
+	this->event.event_specific.fd_ready.epoll_event = htonl(epoll_event);
+	this->size = sizeof(struct event_fd_ready) + sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+	memcpy(buf, &this->event, this->size);
+	return this->size;
+}

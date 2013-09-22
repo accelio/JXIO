@@ -218,6 +218,12 @@ public class EventQueueHandler implements Runnable {
 			EventNewSession evNewSes = new EventNewSession(eventType, id, ptrSes, uri, srcIP);
 			return evNewSes;
 
+		case 6: //on fd ready
+			int fd = eventQueue.getInt();		
+			int events = eventQueue.getInt();			
+			this.callbacks.onFdReady(fd, events, 0);
+			return null;
+			
 		default:
 			logger.log(Level.SEVERE, "received an unknown event "+ eventType);
 			return null;

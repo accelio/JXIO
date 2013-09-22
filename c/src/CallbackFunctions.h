@@ -59,9 +59,9 @@ int on_msg_callback(struct xio_session *session,
 int on_msg_error_callback(struct xio_session *session,
             enum xio_status error,
             struct xio_msg  *msg,
-            void *conn_user_context);
+            void *cb_prv_data);
 /*
- * this callback is called by xio library once a client recieves notice that a session is established
+ * this callback is called by xio library once a client receives notice that a session is established
  * with the server.
  * @cb_prv_data: represents class implementing Contexable interface. For example: cJXServer, cJXSession.
  * Contexable holds pointer to cJXCtx class. Through it we can access buffer which is shared with Java.
@@ -78,8 +78,10 @@ int on_session_event_callback(struct xio_session *session,
 		struct xio_session_event_data *event_data,
 		void *cb_prv_data);
 
-void done_event_creating(Context *ctx, int sizeWritten);
-
+/*
+ * this callback is called by jxio C library once an external fd has a ready read or write event.
+ */
+void on_fd_ready_event_callback(Context *ctx, int fd, int events);
 
 
 #endif // ! CallbackFunctions__H___

@@ -21,8 +21,7 @@
 
 class Context;
 
-class Contexable{
-
+class Contexable {
 
 public:
 	Context* get_ctx_class(){return ctx_class;}
@@ -31,10 +30,8 @@ public:
 	//returns true in case this event should be written to eventQueue and false if not
 	virtual bool onSessionEvent(int eventType) = 0;
 
-
 private:
 	Context* ctx_class;
-
 };
 
 

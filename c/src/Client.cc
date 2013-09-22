@@ -19,7 +19,7 @@
 
 #define K_DEBUG 1
 
-Client::Client(const char*	url, long ptrCtx)
+Client::Client(const char* url, long ptrCtx)
 {
 	struct xio_session_ops ses_ops;
 	struct xio_session_attr attr;
@@ -123,7 +123,7 @@ bool Client::onSessionEvent(int eventType)
 	}
 }
 
-bool Client::send_msg (Msg *msg)
+bool Client::send_msg(Msg *msg)
 {
 	msg->set_xio_msg();
 	int ret_val = xio_send_request(this->con,

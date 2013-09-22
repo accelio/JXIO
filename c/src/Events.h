@@ -40,8 +40,8 @@ struct __attribute__ ((packed)) event_session_established {
 
 struct __attribute__ ((packed)) event_session_error {
 
-	int32_t error_type;
-	int32_t error_reason;
+	int32_t 	error_type;
+	int32_t 	error_reason;
 };
 
 struct __attribute__ ((packed)) event_msg_complete {
@@ -55,6 +55,11 @@ struct __attribute__ ((packed)) event_msg_received {
 	//use the ptr inside event_struct for passing the pointer to msg class in java
 };
 
+struct __attribute__ ((packed)) event_fd_ready {
+	int32_t 	fd;
+	int32_t 	epoll_event;
+};
+
 struct  event_struct {
 	int32_t type;
 	int64_t ptr;//this will indicate on which session the event arrived
@@ -65,6 +70,7 @@ struct  event_struct {
 		struct event_msg_complete msg_complete;
 		struct event_msg_error msg_error;
 		struct event_msg_received msg_received;
+		struct event_fd_ready fd_ready;
 	} event_specific;
 } __attribute__ ((packed));
 
@@ -78,25 +84,18 @@ public:
 	Events();
 
 	int writeOnSessionErrorEvent(char *buf, void *ptrForJava, struct xio_session *session,
-			struct xio_session_event_data *event_data,
-			void *cb_prv_data);
+			struct xio_session_event_data *event_data);
 	int writeOnSessionEstablishedEvent (char *buf, void *ptrForJava, struct xio_session *session,
-			struct xio_new_session_rsp *rsp,
-			void *cb_prv_data);
+			struct xio_new_session_rsp *rsp);
 	int writeOnNewSessionEvent(char *buf, void *ptrForJava, struct xio_session *session,
-			struct xio_new_session_req *req,
-			void *cb_prv_data);
+			struct xio_new_session_req *req);
 	int writeOnMsgSendCompleteEvent(char *buf, void *ptrForJava, struct xio_session *session,
-			struct xio_msg *msg,
-			void *cb_prv_data);
+			struct xio_msg *msg);
 	int writeOnMsgErrorEvent(char *buf, void *ptrForJava, struct xio_session *session,
-            enum xio_status error,
-            struct xio_msg  *msg,
-            void *conn_user_context);
+			enum xio_status error, struct xio_msg  *msg);
 	int writeOnMsgReceivedEvent(char *buf, void *ptrForJava, struct xio_session *session,
-			struct xio_msg *msg,
-			int more_in_batch,
-			void *cb_prv_data);
+			struct xio_msg *msg, int more_in_batch);
+	int writeOnFdReadyEvent(char *buf, int fd, int event);
 };
 
 #endif // ! Events__H___

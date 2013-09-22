@@ -18,6 +18,7 @@
 #include <sys/timerfd.h>
 
 #include "Context.h"
+#include "CallbackFunctions.h"
 
 Context::Context(int eventQSize)
 {
@@ -112,7 +113,6 @@ void Context::stop_event_loop()
 {
 	xio_ev_loop_stop(this->ev_loop);
 }
-
 int Context::add_event_loop_fd(int fd, int events, void *priv_data)
 {
 	return xio_ev_loop_add(this->ev_loop, fd, events, Context::on_event_loop_handler, priv_data);
@@ -132,6 +132,7 @@ void Context::on_event_loop_handler(int fd, int events, void *data)
 		ctx->stop_event_loop();
 	}
 	else {
-		// Pass an 'FD wakeup' event to Java
+		// Pass an 'FD Ready' event to Java
+		on_fd_ready_event_callback(ctx, fd, events);
 	}
 }

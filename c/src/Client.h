@@ -33,7 +33,7 @@ public:
 	Client(const char	*url, long ptrCtx);
 	~Client();
 	bool close_connection();
-	bool send_msg (Msg* m);
+	bool send_msg(Msg* m);
 
 	struct xio_session	*session;
 	struct xio_connection * con;

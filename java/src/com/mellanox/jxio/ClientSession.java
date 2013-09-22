@@ -92,12 +92,11 @@ public class ClientSession implements Eventable{
 		}
 	}
 	
-	
-	public long getId(){ return id;}
+	public long getId() {return id;}
 	
 	public boolean isClosing() {return isClosing;}
 	
-	public boolean sendMessage (Msg msg){
+	public boolean sendMessage(Msg msg) {
 	    msg.setClientSession(this);
 	    eventQHandler.addMsgInUse(msg);
 	    boolean ret = Bridge.sendMsg(this.getId(), 0, msg.getId());
@@ -105,11 +104,9 @@ public class ClientSession implements Eventable{
 		logger.log(Level.SEVERE, "there was an error sending the message");
 	    }
 	    return ret;
-
 	}
 	
-	
-	public boolean close (){
+	public boolean close () {
 
 		if (id == 0){
 			logger.log(Level.SEVERE, "closing Session with empty id");

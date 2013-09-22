@@ -27,7 +27,7 @@
 
 class Context;
 
-class Server:public Contexable{
+class Server : public Contexable {
 public:
 	//to move some to private?
 	Server(const char	*url, long ptrCtx);
@@ -44,11 +44,6 @@ public:
 	bool error_creating;
 	uint16_t port; //indicates the actual port on which the server listens
 	bool closingInProcess;
-//	cJXCtx* ctx;
-
 };
-
-
-
 
 #endif // ! cJXServer__H___

@@ -43,8 +43,7 @@ int on_new_session_callback(struct xio_session *session,
 	Contexable *cntxbl = (Contexable*)cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
 	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnNewSessionEvent(buf, cntxbl, session, req, cb_prv_data);
-
+	int sizeWritten = ctx->events->writeOnNewSessionEvent(buf, cntxbl, session, req);
 	done_event_creating(ctx, sizeWritten);
 
 	log (lsDEBUG, "the end of new session callback\n");
@@ -62,8 +61,7 @@ int on_msg_send_complete_callback(struct xio_session *session,
 	Context *ctx = cntxbl->get_ctx_class();
 
 	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnMsgSendCompleteEvent(buf, cntxbl, session, msg, cb_prv_data);
-
+	int sizeWritten = ctx->events->writeOnMsgSendCompleteEvent(buf, cntxbl, session, msg);
 	done_event_creating(ctx, sizeWritten);
 		
 	log (lsDEBUG, "finished on_msg_send_complete_callback\n");
@@ -81,13 +79,13 @@ int on_msg_callback(struct xio_session *session,
 	Context *ctx = cntxbl->get_ctx_class();
 
 	char* buf = ctx->event_queue->get_buffer();
-//	int sizeWritten = ctx->events->writeOnMsgReceivedEvent(buf, cntxbl, session, msg, more_in_batch, cb_prv_data);
-	int sizeWritten = ctx->events->writeOnMsgReceivedEvent(buf, msg->user_context, session, msg, more_in_batch, cb_prv_data);
+//	int sizeWritten = ctx->events->writeOnMsgReceivedEvent(buf, cntxbl, session, msg, more_in_batch);
+	int sizeWritten = ctx->events->writeOnMsgReceivedEvent(buf, msg->user_context, session, msg, more_in_batch);
 	done_event_creating(ctx, sizeWritten);
 
-	if (msg->type == XIO_MSG_TYPE_REQ){ //it's a request so it is server side
+	if (msg->type == XIO_MSG_TYPE_REQ) { //it's a request so it is server side
 
-	}else{//it's response so it is client side
+	} else {//it's response so it is client side
 		xio_release_response (msg);
 	}
 
@@ -97,15 +95,15 @@ int on_msg_callback(struct xio_session *session,
 int on_msg_error_callback(struct xio_session *session,
             enum xio_status error,
             struct xio_msg  *msg,
-            void *conn_user_context)
+            void *cb_prv_data)
 {
 	log (lsDEBUG, "got on_msg_error_callback\n");
-	Contexable *cntxbl = (Contexable*)conn_user_context;
+	Contexable *cntxbl = (Contexable*)cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
 
 	char* buf = ctx->event_queue->get_buffer();
-//	int sizeWritten = ctx->events->writeOnMsgErrorEvent(buf, cntxbl, session, error, msg, conn_user_context);
-	int sizeWritten = ctx->events->writeOnMsgErrorEvent(buf, msg->user_context, session, error, msg, conn_user_context);
+//	int sizeWritten = ctx->events->writeOnMsgErrorEvent(buf, cntxbl, session, error, msg);
+	int sizeWritten = ctx->events->writeOnMsgErrorEvent(buf, msg->user_context, session, error, msg);
 	done_event_creating(ctx, sizeWritten);
 
 	return 0;
@@ -121,7 +119,7 @@ int on_session_established_callback(struct xio_session *session,
 	Context *ctx = cntxbl->get_ctx_class();
 
 	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnSessionEstablishedEvent(buf, cntxbl, session, rsp, cb_prv_data);
+	int sizeWritten = ctx->events->writeOnSessionEstablishedEvent(buf, cntxbl, session, rsp);
 	done_event_creating(ctx, sizeWritten);
 
 	return 0;
@@ -139,22 +137,18 @@ int on_session_event_callback(struct xio_session *session,
 
 	if (cntxbl->onSessionEvent(event_data->event)){
 		char* buf = ctx->event_queue->get_buffer();
-		int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, cntxbl, session, event_data, cb_prv_data);
+		int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, cntxbl, session, event_data);
 		done_event_creating(ctx, sizeWritten);
 	}
 	return 0;
 }
 
+void on_fd_ready_event_callback(Context *ctx, int fd, int events)
+{
+	log (lsDEBUG, "got on_fd_ready_event_callback\n");
 
-
-
-
-
-
-
-
-
-
-
-
-
+	char* buf = ctx->event_queue->get_buffer();
+	int sizeWritten = ctx->events->writeOnFdReadyEvent(buf, fd, events);
+	done_event_creating(ctx, sizeWritten);
+	return;
+}
