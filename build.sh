@@ -17,11 +17,11 @@ rm -f tests/libjx.so
 rm -f java/bin/libxio.so
 rm -f tests/libxio.so
 
-## Build Accellio
-echo "Build Accellio....(libxio c code)"
+## Build Accelio
+echo "Build Accelio....(libxio c code)"
 cd $DIR
 git submodule update --init
-cd accellio/ && ./autogen.sh && ./configure --disable-raio-build && make && cd ..
+cd accelio/ && ./autogen.sh && ./configure --disable-raio-build && make && cd ..
 if [[ $? != 0 ]] ; then
     exit 1
 fi
@@ -43,8 +43,8 @@ cd java/bin ;jar -cvf $TARGET com ; cd ../..
 cp -f java/bin/$TARGET tests/
 cp -f c/src/libjx.so java/bin
 cp -f c/src/libjx.so tests/
-cp -f accellio/src/usr/libxio.so java/bin
-cp -f accellio/src/usr/libxio.so tests/
+cp -f accelio/src/usr/libxio.so java/bin
+cp -f accelio/src/usr/libxio.so tests/
 
 
 

@@ -23,12 +23,15 @@ Server::Server(const char *url, long ptrCtx)
 
 	error_creating = false;
 
-	struct xio_server_ops server_ops;
-	server_ops.on_session_event     =  on_session_event_callback;
-	server_ops.on_msg               =  on_msg_callback; //TODO: to separate into 2 different classes
-	server_ops.on_msg_error         =  NULL;
-	server_ops.on_new_session       =  on_new_session_callback;
-	server_ops.on_msg_send_complete =  NULL;
+	struct xio_session_ops server_ops;
+	server_ops.on_session_event       = on_session_event_callback;
+	server_ops.on_new_session         = on_new_session_callback;
+        server_ops.on_session_established = NULL;
+	server_ops.on_msg_send_complete   = NULL;
+	server_ops.on_msg                 = on_msg_callback; //TODO: to separate into 2 different classes
+        server_ops.on_msg_delivered       = NULL;
+	server_ops.on_msg_error           = NULL;
+        server_ops.assign_data_in_buf     = NULL;
 
 	this->session = NULL;
 

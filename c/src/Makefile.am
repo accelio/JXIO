@@ -6,10 +6,10 @@ topdir=../../
 # additi-onal include paths necessary to compile the C library
 AM_CPPFLAGS = -fPIC -DPIC  				\
 		-I$(JDK)/include -I$(JDK)/include/linux \
-		-I$(topdir)/accellio/include  
+		-I$(topdir)/accelio/include
 	    @AM_CFLAGS@
 AM_LDFLAGS = -lxio -lrdmacm -libverbs -lrt -ldl \
-			 -L$(topdir)accellio/src 
+			 -L$(topdir)accelio/src
 
 ###############################################################################
 # THE LIBRARIES TO BUILD
@@ -23,7 +23,7 @@ libjx_so_SOURCES = Utils.cc Event_queue.cc Events.cc CallbackFunctions.cc Server
 	
 				
 libjx_so_LDFLAGS = -shared -rdynamic 		\
-				     -L$(topdir)accellio/src/usr/ -lxio -lrdmacm -libverbs -lrt -ldl
+				     -L$(topdir)accelio/src/usr/ -lxio -lrdmacm -libverbs -lrt -ldl
 
 libjx_so_LDADD = $(AM_LDFLAGS)
 
