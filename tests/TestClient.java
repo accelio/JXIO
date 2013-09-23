@@ -14,7 +14,7 @@ public class TestClient {
 	public static int eqhSize = 1000;
 	// General Parameters
 	private static int requestedTest;
-	public static int numberOfTests = 5;
+	public static int numberOfTests = 6;
 	private static Runnable[] tests = new Runnable[numberOfTests + 1];
 	private static boolean[] successIndicators = new boolean[numberOfTests];
 	// Log
@@ -59,6 +59,7 @@ public class TestClient {
 		tests[3] = new MutipleClientsOnSameEQHTest();
 		tests[4] = new OpenRunEventLoopCloseClientTest();
 		tests[5] = new MutipleThreadsClient();
+		tests[6] = new ClientMsgTest();
 	}
 	
 	private static boolean argsCheck(String[] args){
