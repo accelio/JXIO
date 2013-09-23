@@ -8,7 +8,7 @@ JAVA_FILES=java/src/com/mellanox/jxio/*.java java/src/com/mellanox/jxio/impl/*.j
 all: $(TARGET)
 
 $(TARGET):$(JAVA_FILES)
-	(cd accellio/; make)
+	(cd accelio/; make)
 	(cd c; make)
 	rm -rf java/bin/*
 	javac -d java/bin/ $(JAVA_FILES)
@@ -16,8 +16,8 @@ $(TARGET):$(JAVA_FILES)
 	cp java/bin/$(TARGET) tests/
 	cp c/src/libjx.so java/bin
 	cp c/src/libjx.so tests/
-	cp  accellio/src/usr/libxio.so java/bin
-	cp  accellio/src/usr/libxio.so tests/ 
+	cp  accelio/src/usr/libxio.so java/bin
+	cp  accelio/src/usr/libxio.so tests/ 
 clean:
 	(cd c; make distclean)
 	rm -rf java/bin/*
