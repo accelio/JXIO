@@ -51,8 +51,6 @@ public:
 	struct xio_context *ctx;
 	int events_num;
 
-	int timer_fd; // fd for managing timer with fd wakeup for epoll inside the xio_event_loop
-
 	//this map is needed since in case of event Disconnected action needs to be done
 	//on a session without going back to java
 	std::map<void*,Contexable*>* map_session;

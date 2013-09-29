@@ -15,8 +15,6 @@
 **
 */
 
-#include <sys/timerfd.h>
-
 #include "Context.h"
 #include "CallbackFunctions.h"
 
@@ -48,9 +46,6 @@ Context::Context(int eventQSize)
 	}
 	this->events = new Events();
 
-	this->timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
-	add_event_loop_fd(this->timer_fd, XIO_POLLIN, this);
-
 	return;
 
 cleanupCtx:
@@ -66,11 +61,6 @@ Context::~Context()
 {
 	if (error_creating) {
 		return;
-	}
-
-	if (timer_fd) {
-		del_event_loop_fd(this->timer_fd);
-		close(this->timer_fd);
 	}
 
 	if (this->map_session != NULL) {
@@ -89,21 +79,8 @@ int Context::run_event_loop(long timeout_micro_sec)
 	this->event_queue->reset();
 	this->events_num = 0;
 
-	// Set the timeout if
-	if (timeout_micro_sec < 0) {
-		timeout_micro_sec = 0;	// Infinite timeout on timerfd
-	}
-	else if (timeout_micro_sec == 0) {
-		timeout_micro_sec = 1;	// Minimal timeout  on timerfd (use 1 micro sec instead on zero which is infinite)
-	}
-
-	struct itimerspec timeout;
-	timeout.it_value.tv_sec = timeout_micro_sec/1000000;
-	timeout.it_value.tv_nsec = (timeout_micro_sec - timeout.it_value.tv_sec*1000000) * 1000;
-	timerfd_settime(this->timer_fd, 0, &timeout, NULL);
-
 	log (lsDEBUG, "[%p] before ev_loop_run. requested timeout is %d usec\n", this, timeout_micro_sec);
-	xio_ev_loop_run(this->ev_loop);
+	xio_ev_loop_run_timeout(this->ev_loop, timeout_micro_sec);
 	log (lsDEBUG, "[%p] after ev_loop_run. there are %d events\n", this, this->events_num);
 
 	return this->events_num;
@@ -126,13 +103,7 @@ int Context::del_event_loop_fd(int fd)
 void Context::on_event_loop_handler(int fd, int events, void *data)
 {
 	Context *ctx = (Context *)data;
-	if (fd == ctx->timer_fd) {
-		// Timer callback - stop event loop
-		log (lsDEBUG, "[%p] timeout in ev_loop_run\n", ctx);
-		ctx->stop_event_loop();
-	}
-	else {
-		// Pass an 'FD Ready' event to Java
-		on_fd_ready_event_callback(ctx, fd, events);
-	}
+
+	// Pass an 'FD Ready' event to Java
+	on_fd_ready_event_callback(ctx, fd, events);
 }
