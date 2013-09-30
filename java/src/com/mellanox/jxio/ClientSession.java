@@ -24,20 +24,25 @@ import com.mellanox.jxio.impl.EventSession;
 import com.mellanox.jxio.impl.Eventable;
 
 
-public class ClientSession implements Eventable{
-
+public class ClientSession implements Eventable {
 	
 	private long id = 0;
 	protected EventQueueHandler eventQHandler = null;
 	protected String url;
 	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
-	private ClientSessionCallbacks callbacks;
-	
-
+	private Callbacks callbacks;
 	
 	private static Log logger = Log.getLog(ClientSession.class.getCanonicalName());
 	
-	public ClientSession(EventQueueHandler eventQHandler, String url, ClientSessionCallbacks callbacks) {
+	public static interface Callbacks {
+		public void onReply(Msg msg);
+		public void onSessionEstablished();
+		public void onSessionError(int session_event, String reason);
+		public void onMsgError();
+
+	}
+
+	public ClientSession(EventQueueHandler eventQHandler, String url, Callbacks callbacks) {
 		this.eventQHandler = eventQHandler;
 		this.url = url;
 		this.callbacks = callbacks;

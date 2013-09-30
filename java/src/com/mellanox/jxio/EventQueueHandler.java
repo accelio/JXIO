@@ -50,7 +50,7 @@ public class EventQueueHandler implements Runnable {
 
 	private Map <Long,Eventable> eventables = new HashMap<Long,Eventable>();
 	Map <Long,Msg> msgsInUse = new HashMap<Long,Msg>();
-	private EventQueueHandlerCallbacks callbacks = null;
+	private Callbacks callbacks = null;
 	
 
 	//	int offset = 0;
@@ -59,7 +59,11 @@ public class EventQueueHandler implements Runnable {
 	private static Log logger = Log.getLog(EventQueueHandler.class.getCanonicalName());
 
 
-	public EventQueueHandler(EventQueueHandlerCallbacks callbacks) {
+	public interface Callbacks {
+		public abstract void onFdReady(long fd, int events, long priv_data);
+	}
+
+	public EventQueueHandler(Callbacks callbacks) {
 		this();
 		this.callbacks = callbacks;
 	}

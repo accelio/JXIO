@@ -4,12 +4,12 @@ import java.util.logging.Level;
 
 import com.mellanox.jxio.Log;
 import com.mellanox.jxio.Msg;
-import com.mellanox.jxio.ServerSessionCallbacks;
+import com.mellanox.jxio.ServerSession;
 
-class MySesServerCallbacks implements ServerSessionCallbacks {
-	
-    	private static Log logger = Log.getLog(MySesServerCallbacks.class.getCanonicalName());
-//	
+class MySesServerCallbacks implements ServerSession.Callbacks {
+
+	private static Log logger = Log.getLog(MySesServerCallbacks.class.getCanonicalName());
+
 	public void onRequest(Msg msg) {
 		logger.log(Level.INFO, "got a request! Bring the champagne!!!!!");
 	}
@@ -38,10 +38,9 @@ class MySesServerCallbacks implements ServerSessionCallbacks {
 		}
 		logger.log(Level.SEVERE, "GOT EVENT " + event + "because of " + reason);
 	}
-		
+
 	public void onMsgError() {
 		logger.log(Level.INFO, "onMsgErrorCallback");
-		
-	}
 
-    	}
+	}
+}

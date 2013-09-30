@@ -1,22 +1,32 @@
+/*
+** Copyright (C) 2013 Mellanox Technologies
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at:
+**
+** http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+** either express or implied. See the License for the specific language
+** governing permissions and  limitations under the License.
+**
+*/
+
 import java.util.logging.Level;
 
 import com.mellanox.jxio.*;
 
-
 public class MySesServer {
+	
 	private static Log logger = Log.getLog(MySesServer.class.getCanonicalName());
 	EventQueueHandler eqh = null;
-    	ServerSession server;
-    	ServerSessionCallbacks callbacks;
-	public MySesServer(EventQueueHandler eqh, String uri){
-    	    	this.callbacks = new MySesServerCallbacks();
-		this.server = new ServerSession (eqh, uri, callbacks);
+	ServerSession server;
+
+	public MySesServer(EventQueueHandler eqh, String uri) {
 		this.eqh = eqh;
+		this.server = new ServerSession (eqh, uri, new MySesServerCallbacks());
 	}
-
-	
-	
-
-	
-
 }

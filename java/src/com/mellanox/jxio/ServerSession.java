@@ -27,24 +27,27 @@ import com.mellanox.jxio.impl.Eventable;
 public class ServerSession implements Eventable {
 	
 	private long id = 0; //represents pointer to server struct
-//	private long ptrEventQueue = 0;
+	private EventQueueHandler eventQHandler = null;
 	private int port;
 	protected String url;
-	private EventQueueHandler eventQHandler  =null;
 	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
-	private ServerSessionCallbacks callbacks;
-	
-
+	private Callbacks callbacks;
 	
 	private static Log logger = Log.getLog(ServerSession.class.getCanonicalName());
 
-	public ServerSession(EventQueueHandler eventQHandler, String url, ServerSessionCallbacks callbacks) {
+	public static interface Callbacks {
+	    public void onRequest(Msg msg);
+	    public void onSessionError(int session_event, String reason );
+	    public void onMsgError();
+	}
+
+	public ServerSession(EventQueueHandler eventQHandler, String url, Callbacks callbacks) {
 		this.eventQHandler = eventQHandler;
 		this.url = url;
 		this.callbacks = callbacks;
 		logger.log(Level.INFO, "uri inside ServerSession is "+url);
-		long [] ar = Bridge.startServer(url, eventQHandler.getID());
-		this.id = ar [0];
+		long[] ar = Bridge.startServer(url, eventQHandler.getID());
+		this.id = ar[0];
 		this.port = (int) ar[1];
 		if (this.id == 0){
 			logger.log(Level.SEVERE, "there was an error creating ServerSession");
@@ -57,8 +60,6 @@ public class ServerSession implements Eventable {
 		logger.log(Level.INFO, "****** new url is "+this.url);
 		this.eventQHandler.addEventable (this);
 	}
-	
-
 	
 	public void onEvent(Event ev) {
 		switch (ev.getEventType()) {

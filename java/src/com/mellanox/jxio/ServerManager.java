@@ -25,54 +25,58 @@ import com.mellanox.jxio.impl.EventSession;
 import com.mellanox.jxio.impl.Eventable;
 
 public class ServerManager implements Eventable {
-	private EventQueueHandler eventQHndl = null;
+	
 	private long id = 0;
+	private EventQueueHandler eventQHndl = null;
 	private int port;
 	private String url;
 	private String urlPort0;
 	static protected int sizeEventQ = 10000;
 	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
-	private ServerManagerCallbacks callbacks;
+	private Callbacks callbacks;
 	
 	private static Log logger = Log.getLog(ServerManager.class.getCanonicalName());
 	
+	public static interface Callbacks {
+	    public void onSession(long ptrSes, String uri, String srcIP);
+	    public void onSessionError(int errorType, String reason);
+	}
 	
-	
-	public ServerManager(EventQueueHandler eventQHandler,String url, ServerManagerCallbacks callbacks) {
-	    	this.url = url;
-		eventQHndl = eventQHandler;
+	public ServerManager(EventQueueHandler eventQHandler, String url, Callbacks callbacks) {
+		this.url = url;
+		this.eventQHndl = eventQHandler;
 		this.callbacks = callbacks;
 		
 		long [] ar = Bridge.startServer(url, eventQHandler.getID());
-		this.id = ar [0];
+		this.id = ar[0];
 		this.port = (int) ar[1];
 		
-		if (this.id == 0){
+		if (this.id == 0) {
 			logger.log(Level.SEVERE, "there was an error creating SessionManager");
 		}
 		createUrlForServerSession();
 		logger.log(Level.INFO, "urlForServerSession is "+urlPort0);
 		
-		eventQHndl.addEventable (this); 
-		eventQHndl.runEventLoop(1000, -1 /* Infinite */);
+		this.eventQHndl.addEventable (this); 
+		this.eventQHndl.runEventLoop(1000, -1 /* Infinite */);
 	}
 	
 	private void createUrlForServerSession() {
 	    //parse url so it would replace port number on which the server listens with 0
 	    int index = url.lastIndexOf(":"); 
-	    urlPort0 = url.substring(0, index+1)+"0";
+	    this.urlPort0 = url.substring(0, index+1)+"0";
 	}
 	
 	public String getUrlForServer() {return urlPort0;}
 	
 	public boolean close() {
-		eventQHndl.removeEventable (this); //TODO: fix this
+		this.eventQHndl.removeEventable (this); //TODO: fix this
 		if (id == 0){
 			logger.log(Level.SEVERE, "closing ServerManager with empty id");
 			return false;
 		}
 		Bridge.stopServer(id);
-		isClosing = true;
+		this.isClosing = true;
 		return true;
 	}
 	
@@ -94,10 +98,10 @@ public class ServerManager implements Eventable {
 			if (ev  instanceof EventSession){
 				int errorType = ((EventSession) ev).getErrorType();
 				String reason = ((EventSession) ev).getReason();
-				callbacks.onSessionError(errorType, reason);
+				this.callbacks.onSessionError(errorType, reason);
 
 				if (errorType == 1) {//event = "SESSION_TEARDOWN";
-					eventQHndl.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
+					this.eventQHndl.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
 				}
 			}
 			break;
@@ -108,7 +112,7 @@ public class ServerManager implements Eventable {
 				long ptrSes = ((EventNewSession) ev).getPtrSes();
 				String uri = ((EventNewSession) ev).getUri();		
 				String srcIP = ((EventNewSession) ev).getSrcIP();
-				callbacks.onSession(ptrSes, uri, srcIP);
+				this.callbacks.onSession(ptrSes, uri, srcIP);
 
 			}
 			break;
