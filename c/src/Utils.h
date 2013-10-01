@@ -41,7 +41,6 @@ enum log_severity_t {
 };
 
 static bool log_to_unique_file = true;
-static FILE *log_file = NULL;
 
 void log_func(const char * func, const char * file, int line, log_severity_t severity, const char *fmt, ...); // should not be called directly
 
