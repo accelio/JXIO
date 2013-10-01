@@ -23,6 +23,10 @@ public class OpenCloseManagerTest implements Runnable {
 		// Setting up a session client
 		TestManager.print("----- Setting up a session manager...");
 		sManager = new MySesManager(eqh, url);
+
+		// Run EQH
+		TestClient.print("----- Run Event Loop...");
+		eqh.runEventLoop(1, -1 /* Infinite */);
 		
 		// Closing the session client
 		TestManager.print("------ Closing the session manager...");

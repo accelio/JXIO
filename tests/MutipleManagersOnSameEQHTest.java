@@ -35,6 +35,10 @@ public class MutipleManagersOnSameEQHTest implements Runnable {
 			// Setup Manager
 			sManagerArray[i] = new MySesManager(eqh, url);
 		}
+
+		// Run EQH
+		TestClient.print("----- Run Event Loop...");
+		eqh.runEventLoop(numOfSessionManagers, -1 /* Infinite */);
 		
 		// Closing the session managers
 		TestManager.print("------ Closing the session manager...");

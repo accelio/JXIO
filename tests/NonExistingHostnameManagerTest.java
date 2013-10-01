@@ -23,6 +23,10 @@ public class NonExistingHostnameManagerTest implements Runnable {
 		// Setting up a session manager
 		TestManager.print("----- Setting up a session manager...");
 		sManager = new MySesManager(eqh, url);
+
+		// Run EQH
+		TestClient.print("----- Run Event Loop...");
+		eqh.runEventLoop(1, -1 /* Infinite */);
 		
 		// Closing the session manager
 		TestManager.print("------ Closing the session manager...");

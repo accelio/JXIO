@@ -23,8 +23,8 @@ public class OpenRunEventLoopCloseClientTest implements Runnable {
 		// Setting up a session client
 		TestClient.print("----- Setting up a session client...");
 		sClient = new MySesClient(eqh, url);
-		
-		// Run EQh
+
+		// Run EQH
 		TestClient.print("----- Run Event Loop...");
 		eqh.runEventLoop(1000, -1 /* Infinite */);
 		

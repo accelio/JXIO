@@ -47,7 +47,7 @@ public class ServerManager implements Eventable {
 		this.eventQHndl = eventQHandler;
 		this.callbacks = callbacks;
 		
-		long [] ar = Bridge.startServer(url, eventQHandler.getID());
+		long []ar = Bridge.startServer(url, eventQHandler.getID());
 		this.id = ar[0];
 		this.port = (int) ar[1];
 		
@@ -57,8 +57,7 @@ public class ServerManager implements Eventable {
 		createUrlForServerSession();
 		logger.log(Level.INFO, "urlForServerSession is "+urlPort0);
 		
-		this.eventQHndl.addEventable (this); 
-		this.eventQHndl.runEventLoop(1000, -1 /* Infinite */);
+		this.eventQHndl.addEventable(this); 
 	}
 	
 	private void createUrlForServerSession() {
@@ -81,14 +80,13 @@ public class ServerManager implements Eventable {
 	}
 	
 	public void forward(ServerSession ses, long ptrSes){
-	    logger.log(Level.INFO, "****** new url inside forward  is "+ses.url);
-	    
+	    logger.log(Level.INFO, "****** new url inside forward  is " + ses.url);
 		Bridge.forwardSession(ses.url, ptrSes, ses.getId());
 	}
 	
 	public long getId(){ return id;} 
-	public boolean isClosing() {return isClosing;}
 	
+	public boolean isClosing() {return isClosing;}
 	
 	public void onEvent(Event ev) {
 		switch (ev.getEventType()) {
