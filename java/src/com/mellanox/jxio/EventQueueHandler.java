@@ -1,19 +1,19 @@
 /*
-** Copyright (C) 2013 Mellanox Technologies
-**
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at:
-**
-** http://www.apache.org/licenses/LICENSE-2.0
-**
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
-** either express or implied. See the License for the specific language
-** governing permissions and  limitations under the License.
-**
-*/
+ ** Copyright (C) 2013 Mellanox Technologies
+ **
+ ** Licensed under the Apache License, Version 2.0 (the "License");
+ ** you may not use this file except in compliance with the License.
+ ** You may obtain a copy of the License at:
+ **
+ ** http://www.apache.org/licenses/LICENSE-2.0
+ **
+ ** Unless required by applicable law or agreed to in writing, software
+ ** distributed under the License is distributed on an "AS IS" BASIS,
+ ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ ** either express or implied. See the License for the specific language
+ ** governing permissions and  limitations under the License.
+ **
+ */
 package com.mellanox.jxio;
 
 import java.nio.ByteBuffer;
@@ -34,43 +34,29 @@ import com.mellanox.jxio.impl.Eventable;
 
 public class EventQueueHandler implements Runnable {
 
-	private int eventQueueSize = 5000; //size of byteBuffer
-
-	private long id = 0;
+	private final long id;
+	private final Callbacks callbacks;
+	private final int eventQueueSize = 5000; //size of byteBuffer
 	private int eventsWaitingInQ = 0;
-	// Direct buffer to the registered memory
-	ByteBuffer eventQueue = null;
-	//this will be map in the future
-//	private Eventable eventable = null;
-
-//	Map eventables = new HashMap();
-
 	private ElapsedTimeMeasurement elapsedTime = null; 
-
-
-	private Map <Long,Eventable> eventables = new HashMap<Long,Eventable>();
-	Map <Long,Msg> msgsInUse = new HashMap<Long,Msg>();
-	private Callbacks callbacks = null;
-	
-
-	//	int offset = 0;
-	public boolean stopLoop = false;
-
+	private ByteBuffer eventQueue = null;
+	private Map<Long,Eventable> eventables = new HashMap<Long,Eventable>();
+	private Map<Long,Msg> msgsInUse = new HashMap<Long,Msg>();
+	private boolean stopLoop = false;
 	private static Log logger = Log.getLog(EventQueueHandler.class.getCanonicalName());
-
 
 	public interface Callbacks {
 		public abstract void onFdReady(long fd, int events, long priv_data);
 	}
 
-	public EventQueueHandler(Callbacks callbacks) {
-		this();
-		this.callbacks = callbacks;
+	//c-tor without callbacks
+	public EventQueueHandler() {
+		this(null); // no callbacks defined
 	}
 
-	//c-tor
-	public EventQueueHandler() {
-
+	//c-tor with callbacks
+	public EventQueueHandler(Callbacks callbacks) {
+		this.callbacks = callbacks;
 		DataFromC dataFromC = new DataFromC();
 		boolean statusError = Bridge.createCtx(eventQueueSize, dataFromC);
 		if (statusError){
@@ -78,42 +64,16 @@ public class EventQueueHandler implements Runnable {
 		}
 		this.eventQueue = dataFromC.eventQueue;
 		this.id = dataFromC.ptrCtx;
-
-		elapsedTime = new ElapsedTimeMeasurement(); 
+		this.elapsedTime = new ElapsedTimeMeasurement(); 
 	}
 
 	public int addEventLoopFd(long fd, int events, long priv_data) {
-		return Bridge.addEventLoopFd(getID(), fd, events, priv_data);
+		return Bridge.addEventLoopFd(getId(), fd, events, priv_data);
 	}
-	
+
 	public int delEventLoopFd(long fd) {
-		return Bridge.delEventLoopFd(getID(), fd);
+		return Bridge.delEventLoopFd(getId(), fd);
 	}
-
-	public void addEventable(Eventable eventable) {
-		logger.log(Level.INFO, "** adding "+eventable.getId()+" to map ");
-		if (eventable.getId() != 0){
-			eventables.put(eventable.getId(), eventable);
-		}
-	}
-
-	public void removeEventable(Eventable eventable) {
-		logger.log(Level.INFO, "** removing "+eventable.getId()+" from map ");
-		eventables.remove(eventable.getId());
-	}
-	
-	public void addMsgInUse(Msg msg) {
-		if (msg.getId() != 0){
-		    msgsInUse.put(msg.getId(), msg);
-		}
-	}
-	
-	public Msg getAndremoveMsgInUse(long id) {
-	    Msg msg = msgsInUse.get(id);
-	    msgsInUse.remove(id);
-	    return msg;
-	}
-
 
 	public void run() {
 		while (!this.stopLoop) {
@@ -121,7 +81,7 @@ public class EventQueueHandler implements Runnable {
 		}    
 	}
 
-	public int runEventLoop (int maxEvents, long timeOutMicroSec) {
+	public int runEventLoop(int maxEvents, long timeOutMicroSec) {
 
 		boolean is_forever = (timeOutMicroSec == -1) ? true : false;
 		if (is_forever)
@@ -144,9 +104,9 @@ public class EventQueueHandler implements Runnable {
 				Event event = parseEvent(eventQueue);
 				Eventable eventable;
 				if (event instanceof EventNewMsg){
-				    eventable = getAndremoveMsgInUse(event.getId()).getClientSession();
+					eventable = getAndremoveMsgInUse(event.getId()).getClientSession();
 				}else{
-				    eventable = eventables.get(event.getId());
+					eventable = eventables.get(event.getId());
 				}
 				eventable.onEvent(event);
 
@@ -160,8 +120,8 @@ public class EventQueueHandler implements Runnable {
 		logger.log(Level.INFO, "["+id+"] returning with "+eventsWaitingInQ+" events in Q. handled "+eventsHandled+" events, elapsed time is "+ elapsedTime.getElapsedTimeMicro()+" usec.");
 		return eventsHandled;
 	}
-	
-	public void close () {
+
+	public void close() {
 		while (!this.eventables.isEmpty()) {
 			for (Map.Entry<Long,Eventable> entry : eventables.entrySet())
 			{
@@ -173,22 +133,45 @@ public class EventQueueHandler implements Runnable {
 			}
 			runEventLoop(1,-1);
 			logger.log(Level.WARNING, "attempting to close EQH while objects "+this.eventables.keySet()+" are still listening. aborting");
-//			runEventLoop (1,0);
+			//			runEventLoop (1,0);
 		}
 		logger.log(Level.INFO, "no more objects listening");
 		Bridge.closeCtx(id);
 		this.stopLoop = true;
 	}
 
-	public long getID() { return id; }
-
 	public void stopEventLoop() {
 		this.stopLoop = true;
 		Bridge.stopEventLoop(id);
 	}
 
-	public Event parseEvent(ByteBuffer eventQueue) {
+	protected long getId() { return id; }
 
+	protected void addEventable(Eventable eventable) {
+		logger.log(Level.INFO, "** adding "+eventable.getId()+" to map ");
+		if (eventable.getId() != 0){
+			eventables.put(eventable.getId(), eventable);
+		}
+	}
+
+	protected void removeEventable(Eventable eventable) {
+		logger.log(Level.INFO, "** removing "+eventable.getId()+" from map ");
+		eventables.remove(eventable.getId());
+	}
+
+	protected void addMsgInUse(Msg msg) {
+		if (msg.getId() != 0){
+			msgsInUse.put(msg.getId(), msg);
+		}
+	}
+
+	protected Msg getAndremoveMsgInUse(long id) {
+		Msg msg = msgsInUse.get(id);
+		msgsInUse.remove(id);
+		return msg;
+	}
+
+	private Event parseEvent(ByteBuffer eventQueue) {
 		int eventType = eventQueue.getInt();
 		long id = eventQueue.getLong();
 
@@ -227,14 +210,14 @@ public class EventQueueHandler implements Runnable {
 			int events = eventQueue.getInt();			
 			this.callbacks.onFdReady(fd, events, 0);
 			return null;
-			
+
 		default:
 			logger.log(Level.SEVERE, "received an unknown event "+ eventType);
 			return null;
 		}
 	}
 
-	private String readString (ByteBuffer buf) {
+	private String readString(ByteBuffer buf) {
 		int len = buf.getInt();
 		byte b[] = new byte[len+1];
 
@@ -244,11 +227,11 @@ public class EventQueueHandler implements Runnable {
 		return s1;
 	}
 
-	public class DataFromC {
+	private class DataFromC {
 		long ptrCtx;
 		ByteBuffer eventQueue;
 
-		DataFromC(){
+		DataFromC() {
 			ptrCtx = 0;
 			eventQueue = null;
 		}

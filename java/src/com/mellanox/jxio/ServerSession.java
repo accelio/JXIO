@@ -26,13 +26,13 @@ import com.mellanox.jxio.impl.Eventable;
 
 public class ServerSession implements Eventable {
 	
-	private long id = 0; //represents pointer to server struct
-	private EventQueueHandler eventQHandler = null;
-	private int port;
-	protected String url;
-	boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
-	private Callbacks callbacks;
-	
+	private final long id;
+	private final Callbacks callbacks;
+	private final EventQueueHandler eventQHandler;
+	private final int port;
+	private String url;
+
+	private boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
 	private static Log logger = Log.getLog(ServerSession.class.getCanonicalName());
 
 	public static interface Callbacks {
@@ -46,7 +46,7 @@ public class ServerSession implements Eventable {
 		this.url = url;
 		this.callbacks = callbacks;
 		logger.log(Level.INFO, "uri inside ServerSession is "+url);
-		long[] ar = Bridge.startServer(url, eventQHandler.getID());
+		long[] ar = Bridge.startServer(url, eventQHandler.getId());
 		this.id = ar[0];
 		this.port = (int) ar[1];
 		if (this.id == 0){
@@ -55,17 +55,35 @@ public class ServerSession implements Eventable {
 		//modify url to include the new port number
 		int index = url.lastIndexOf(":"); 
 
-
 		this.url = url.substring(0, index+1)+Integer.toString(port);
 		logger.log(Level.INFO, "****** new url is "+this.url);
-		this.eventQHandler.addEventable (this);
+		this.eventQHandler.addEventable(this);
 	}
 	
+	public boolean close() {
+//		eventQHandler.removeEventable (this); //TODO: fix this
+		if (id == 0){
+			logger.log(Level.SEVERE, "closing ServerSession with empty id");
+			return false;
+		}
+		Bridge.stopServer(id);
+		isClosing = true;
+		return true;
+	}
+	
+	public boolean isClosing() { return isClosing; }
+	
+	public boolean sendResponce(Msg msg) {//obviously this is temporary implementation
+	    return true;
+	}
+
+	public long getId() { return id; }
+
 	public void onEvent(Event ev) {
 		switch (ev.getEventType()) {
 		case 0: //session error event
 			logger.log(Level.INFO, "received session error event");
-			if (ev  instanceof EventSession){
+			if (ev  instanceof EventSession) {
 
 				int errorType = ((EventSession) ev).getErrorType();
 				String reason = ((EventSession) ev).getReason();
@@ -97,23 +115,8 @@ public class ServerSession implements Eventable {
 		}
 		
 	}
-	
-	public boolean close() {
-//		eventQHandler.removeEventable (this); //TODO: fix this
-		if (id == 0){
-			logger.log(Level.SEVERE, "closing ServerSession with empty id");
-			return false;
-		}
-		Bridge.stopServer(id);
-		isClosing = true;
-		return true;
-	}
-	
-	public long getId() { return id; }
-	
-	public boolean isClosing() { return isClosing; }
-	
-	public boolean sendResponce (Msg msg){//obviously this is temporary implementation
-	    return true;
+
+	protected final String getUrl() {
+		return url;
 	}
 }
