@@ -30,7 +30,6 @@ import com.mellanox.jxio.impl.EventNewMsg;
 import com.mellanox.jxio.impl.EventNewSession;
 import com.mellanox.jxio.impl.EventSession;
 import com.mellanox.jxio.impl.EventSessionEstablished;
-import com.mellanox.jxio.impl.Eventable;
 
 public class EventQueueHandler implements Runnable {
 
@@ -106,7 +105,7 @@ public class EventQueueHandler implements Runnable {
 				if (event instanceof EventNewMsg){
 					eventable = getAndremoveMsgInUse(event.getId()).getClientSession();
 				}else{
-					eventable = eventables.get(event.getId());
+					eventable = this.eventables.get(event.getId());
 				}
 				eventable.onEvent(event);
 
@@ -123,16 +122,16 @@ public class EventQueueHandler implements Runnable {
 
 	public void close() {
 		while (!this.eventables.isEmpty()) {
-			for (Map.Entry<Long,Eventable> entry : eventables.entrySet())
+			for (Map.Entry<Long,Eventable> entry : this.eventables.entrySet())
 			{
 				Eventable ev = entry.getValue();
-				if (!ev.isClosing()){
+				if (!ev.getIsClosing()){
 					logger.log(Level.INFO, "closing eventable with id "+entry.getKey()); 
 					ev.close();
 				}
 			}
 			runEventLoop(1,-1);
-			logger.log(Level.WARNING, "attempting to close EQH while objects "+this.eventables.keySet()+" are still listening. aborting");
+			logger.log(Level.WARNING, "attempting to close EQH while objects " + this.eventables.keySet() + " are still listening. aborting");
 			//			runEventLoop (1,0);
 		}
 		logger.log(Level.INFO, "no more objects listening");
@@ -145,27 +144,61 @@ public class EventQueueHandler implements Runnable {
 		Bridge.stopEventLoop(id);
 	}
 
-	protected long getId() { return id; }
+	static abstract class Eventable {
 
-	protected void addEventable(Eventable eventable) {
+		private long id = 0;
+		private boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
+
+		/*
+		enum eventType {
+			sessionError, msgError, sessionEstablished, msgRecieved,
+		    newSession 
+		} */
+
+		final long getId() { 
+			return id; 
+		} 
+
+		void setId(final long id) {
+			if (this.id == 0)
+				this.id = id;
+			// TODO: 'else throw' exception instead of final member 'id'
+		} 
+
+		public abstract boolean close();
+
+		boolean getIsClosing() { 
+			return isClosing; 
+		}
+
+		void setIsClosing(boolean isClosing) {
+			this.isClosing = isClosing; 
+		}
+
+		abstract void onEvent(Event ev);
+	}
+
+	long getId() { return id; }
+
+	void addEventable(Eventable eventable) {
 		logger.log(Level.INFO, "** adding "+eventable.getId()+" to map ");
 		if (eventable.getId() != 0){
 			eventables.put(eventable.getId(), eventable);
 		}
 	}
 
-	protected void removeEventable(Eventable eventable) {
+	void removeEventable(Eventable eventable) {
 		logger.log(Level.INFO, "** removing "+eventable.getId()+" from map ");
 		eventables.remove(eventable.getId());
 	}
 
-	protected void addMsgInUse(Msg msg) {
+	void addMsgInUse(Msg msg) {
 		if (msg.getId() != 0){
 			msgsInUse.put(msg.getId(), msg);
 		}
 	}
 
-	protected Msg getAndremoveMsgInUse(long id) {
+	Msg getAndremoveMsgInUse(long id) {
 		Msg msg = msgsInUse.get(id);
 		msgsInUse.remove(id);
 		return msg;

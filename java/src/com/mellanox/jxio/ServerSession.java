@@ -22,17 +22,14 @@ import java.util.logging.Level;
 import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
 import com.mellanox.jxio.impl.EventSession;
-import com.mellanox.jxio.impl.Eventable;
 
-public class ServerSession implements Eventable {
+public class ServerSession extends EventQueueHandler.Eventable {
 	
-	private final long id;
 	private final Callbacks callbacks;
 	private final EventQueueHandler eventQHandler;
 	private final int port;
 	private String url;
 
-	private boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
 	private static Log logger = Log.getLog(ServerSession.class.getCanonicalName());
 
 	public static interface Callbacks {
@@ -47,39 +44,38 @@ public class ServerSession implements Eventable {
 		this.callbacks = callbacks;
 		logger.log(Level.INFO, "uri inside ServerSession is "+url);
 		long[] ar = Bridge.startServer(url, eventQHandler.getId());
-		this.id = ar[0];
+		final long id = ar[0];
 		this.port = (int) ar[1];
-		if (this.id == 0){
+		if (id == 0){
 			logger.log(Level.SEVERE, "there was an error creating ServerSession");
 		}
+		logger.log(Level.INFO, "id is " + id);
+		this.setId(id);
+
 		//modify url to include the new port number
 		int index = url.lastIndexOf(":"); 
 
 		this.url = url.substring(0, index+1)+Integer.toString(port);
-		logger.log(Level.INFO, "****** new url is "+this.url);
+		logger.log(Level.INFO, "****** new url is " + this.url);
 		this.eventQHandler.addEventable(this);
 	}
 	
 	public boolean close() {
 //		eventQHandler.removeEventable (this); //TODO: fix this
-		if (id == 0){
+		if (getId() == 0){
 			logger.log(Level.SEVERE, "closing ServerSession with empty id");
 			return false;
 		}
-		Bridge.stopServer(id);
-		isClosing = true;
+		Bridge.stopServer(getId());
+		setIsClosing(true);
 		return true;
 	}
-	
-	public boolean isClosing() { return isClosing; }
 	
 	public boolean sendResponce(Msg msg) {//obviously this is temporary implementation
 	    return true;
 	}
 
-	public long getId() { return id; }
-
-	public void onEvent(Event ev) {
+	void onEvent(Event ev) {
 		switch (ev.getEventType()) {
 		case 0: //session error event
 			logger.log(Level.INFO, "received session error event");

@@ -21,16 +21,13 @@ import java.util.logging.Level;
 import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
 import com.mellanox.jxio.impl.EventSession;
-import com.mellanox.jxio.impl.Eventable;
 
-public class ClientSession implements Eventable {
+public class ClientSession extends EventQueueHandler.Eventable {
 
-	private final long id;
 	private final Callbacks callbacks;
 	private final EventQueueHandler eventQHandler;
 	private final String url;
 	private final Log logger = Log.getLog(ClientSession.class.getCanonicalName());
-	private boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
 
 	public static interface Callbacks {
 		public void onReply(Msg msg);
@@ -43,16 +40,15 @@ public class ClientSession implements Eventable {
 		this.eventQHandler = eventQHandler;
 		this.url = url;
 		this.callbacks = callbacks;
-		this.id = Bridge.startSessionClient(url, eventQHandler.getId());
-		if (this.id == 0) {
+		final long id = Bridge.startSessionClient(url, eventQHandler.getId());
+		if (id == 0) {
 			logger.log(Level.SEVERE, "there was an error creating session");
 		}
-		logger.log(Level.INFO, "id is "+id);
+		logger.log(Level.INFO, "id is " + id);
+		this.setId(id);
 
 		this.eventQHandler.addEventable(this); 
 	}
-
-	public boolean isClosing() { return isClosing; }
 
 	public boolean sendMessage(Msg msg) {
 		msg.setClientSession(this);
@@ -65,20 +61,18 @@ public class ClientSession implements Eventable {
 	}
 
 	public boolean close() {
-		if (id == 0) {
+		if (getId() == 0) {
 			logger.log(Level.SEVERE, "closing Session with empty id");
 			return false;
 		}
-		Bridge.closeSessionClient(id);	
+		Bridge.closeSessionClient(getId());	
 
 		logger.log(Level.INFO, "in the end of SessionClientClose");
-		isClosing = true;
+		setIsClosing(true);
 		return true;
 	}
 
-	public long getId() { return id; }
-
-	public void onEvent(Event ev) {
+	void onEvent(Event ev) {
 		switch (ev.getEventType()) {
 
 		case 0: //session error event

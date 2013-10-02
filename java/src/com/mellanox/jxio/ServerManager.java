@@ -22,18 +22,15 @@ import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
 import com.mellanox.jxio.impl.EventNewSession;
 import com.mellanox.jxio.impl.EventSession;
-import com.mellanox.jxio.impl.Eventable;
 
-public class ServerManager implements Eventable {
+public class ServerManager extends EventQueueHandler.Eventable {
 
-	private final long id;
 	private final Callbacks callbacks;
 	private final EventQueueHandler eventQHndl;
 	private final int port;
 	private final String url;
 	private String urlPort0;
 	private static final int sizeEventQ = 10000;
-	private boolean isClosing = false; //indicates that this class is in the process of releasing it's resources
 	private static Log logger = Log.getLog(ServerManager.class.getCanonicalName());
 
 	public static interface Callbacks {
@@ -47,10 +44,10 @@ public class ServerManager implements Eventable {
 		this.callbacks = callbacks;
 
 		long []ar = Bridge.startServer(url, eventQHandler.getId());
-		this.id = ar[0];
-		this.port = (int) ar[1];
+		setId(ar[0]);
+		this.port = (int)ar[1];
 
-		if (this.id == 0) {
+		if (getId() == 0) {
 			logger.log(Level.SEVERE, "there was an error creating SessionManager");
 		}
 		createUrlForServerSession();
@@ -63,12 +60,12 @@ public class ServerManager implements Eventable {
 
 	public boolean close() {
 		this.eventQHndl.removeEventable (this); //TODO: fix this
-		if (id == 0){
+		if (getId() == 0){
 			logger.log(Level.SEVERE, "closing ServerManager with empty id");
 			return false;
 		}
-		Bridge.stopServer(id);
-		this.isClosing = true;
+		Bridge.stopServer(getId());
+		setIsClosing(true);
 		return true;
 	}
 
@@ -77,17 +74,7 @@ public class ServerManager implements Eventable {
 		Bridge.forwardSession(ses.getUrl(), ptrSes, ses.getId());
 	}
 
-	public boolean isClosing() { return isClosing; }
-
-	private void createUrlForServerSession() {
-		//parse url so it would replace port number on which the server listens with 0
-		int index = url.lastIndexOf(":"); 
-		this.urlPort0 = url.substring(0, index+1)+"0";
-	}
-
-	public long getId() { return id; } 
-
-	public void onEvent(Event ev) {
+	void onEvent(Event ev) {
 		switch (ev.getEventType()) {
 
 		case 0: //session error event
@@ -117,5 +104,11 @@ public class ServerManager implements Eventable {
 		default:
 			logger.log(Level.SEVERE, "received an unknown event "+ ev.getEventType());
 		}
+	}
+
+	private void createUrlForServerSession() {
+		//parse url so it would replace port number on which the server listens with 0
+		int index = url.lastIndexOf(":"); 
+		this.urlPort0 = url.substring(0, index+1)+"0";
 	}
 }
