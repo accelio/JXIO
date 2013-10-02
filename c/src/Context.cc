@@ -79,8 +79,17 @@ int Context::run_event_loop(long timeout_micro_sec)
 	this->event_queue->reset();
 	this->events_num = 0;
 
-	log (lsDEBUG, "[%p] before ev_loop_run. requested timeout is %d usec\n", this, timeout_micro_sec);
-	xio_ev_loop_run_timeout(this->ev_loop, timeout_micro_sec);
+	int timeout_msec = -1; // infinite timeout as default
+	if (timeout_micro_sec == -1) {
+		log (lsDEBUG, "[%p] before ev_loop_run. requested infinite timeout\n", this);
+	} else {
+		timeout_msec = timeout_micro_sec/1000;
+		log (lsDEBUG, "[%p] before ev_loop_run. requested timeout is %d msec\n", this, timeout_msec);
+	}
+
+	// enter Accelio's event loop
+	xio_ev_loop_run_timeout(this->ev_loop, timeout_msec);
+
 	log (lsDEBUG, "[%p] after ev_loop_run. there are %d events\n", this, this->events_num);
 
 	return this->events_num;
