@@ -38,8 +38,8 @@ public:
 	bool onSessionEvent(int eventType);
 	bool close();
 
-	struct xio_server	*server;
-	struct xio_session *session;
+	struct xio_server* server;
+	struct xio_session* session;
 
 	bool error_creating;
 	uint16_t port; //indicates the actual port on which the server listens

@@ -35,28 +35,24 @@ Server::Server(const char *url, long ptrCtx)
 
 	this->session = NULL;
 
-	struct xio_context	*ctx;
-
-
+	struct xio_context *ctx;
 	Context *ctxClass = (Context *)ptrCtx;
 	set_ctx_class(ctxClass);
 
-		
 	this->server = xio_bind(ctxClass->ctx, &server_ops, url, &this->port, 0, this);
 
-	if (server == NULL){
+	if (this->server == NULL) {
 		log (lsERROR, "Error in binding server\n");
 		error_creating = true;
 	}
-	if (ctxClass->map_session == NULL){
+	if (ctxClass->map_session == NULL) {
 			ctxClass->map_session = new std::map<void*,Contexable*> ();
-			if(ctxClass->map_session== NULL){
+			if (ctxClass->map_session== NULL) {
 				log (lsERROR, "Error, Could not allocate memory\n");
 				xio_unbind (this->server);
 				error_creating = true;
 			}
 	}
-
 
 	ctxClass->map_session->insert(std::pair<void*, Contexable*>(session, this));
 
@@ -81,7 +77,7 @@ Server::~Server()
 
 bool Server::forward(struct xio_session *session, const char * url)
 {
-	log (lsDEBUG, "***********************url before forward is %s\n", url);
+	log (lsDEBUG, "****** url before forward is %s\n", url);
 
 	int retVal = xio_accept (session, &url, 1, NULL, 0);
 	if (retVal){
@@ -95,9 +91,14 @@ bool Server::forward(struct xio_session *session, const char * url)
 bool Server::close()
 {
 	this->closingInProcess = true;
+
+	// Active connection can be added or removed only if there is an active session
+	if (!this->session)
+		return true;
+
 	xio_connection * con = xio_get_connection(this->session, this->get_ctx_class()->ctx);
 	if (con != NULL) {
-		if (xio_disconnect (con)) {
+		if (xio_disconnect(con)) {
 			log(lsERROR, "xio_disconnect failed");
 			return false;
 		}
@@ -133,7 +134,7 @@ bool Server::send_reply(Msg *msg)
 {
 	//set_xio_msg????
 	int ret_val = xio_send_response(msg->get_xio_msg());
-	if (ret_val){
+	if (ret_val) {
 		log(lsERROR, "Got error %d while sending xio_msg\n", ret_val);
 		return false;
 	}
