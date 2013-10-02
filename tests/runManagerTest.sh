@@ -46,6 +46,9 @@ TEST_NUMBER=$3
 # Compile
 echo -e "\nCompiling JAVA files....\n"
 javac -cp "jx.jar:." ./*.java
+if [[ $? != 0 ]] ; then
+    exit 1
+fi
 
 # Run the tests
 echo -e "\nRunning manager test....\n"
