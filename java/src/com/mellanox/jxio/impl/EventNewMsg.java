@@ -15,9 +15,15 @@
 **
 */
 package com.mellanox.jxio.impl;
+import com.mellanox.jxio.Msg;
 
 public class EventNewMsg extends Event {
-	public EventNewMsg(int eventType, long id) {
+    	private Msg msg;
+	public EventNewMsg(int eventType, long id, Msg msg) {
 		super(eventType, id);
+		this.msg = msg;
+	}
+	public Msg getMsg() {
+	    return msg;
 	}
 }

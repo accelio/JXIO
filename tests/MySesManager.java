@@ -38,6 +38,8 @@ public class MySesManager  {
 
 		public void onSession(long ptrSes, String uriSrc, String srcIP) {		
 			EventQueueHandler eventQHndl = new EventQueueHandler();	
+			MsgPool msgPool = new MsgPool(1, 4, 4);
+			eventQHndl.bindMsgPool (msgPool);
 			ServerSession ses = new ServerSession(eventQHndl, serverManager.getUrlForServer(), new MySesServerCallbacks());
 			serverManager.forward(ses, ptrSes);
 

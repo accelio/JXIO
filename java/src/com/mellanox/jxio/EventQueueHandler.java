@@ -19,6 +19,7 @@ package com.mellanox.jxio;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -33,14 +34,15 @@ import com.mellanox.jxio.impl.EventSessionEstablished;
 
 public class EventQueueHandler implements Runnable {
 
-	private final long id;
+	private final long refToCObject;
 	private final Callbacks callbacks;
 	private final int eventQueueSize = 5000; //size of byteBuffer
 	private int eventsWaitingInQ = 0;
 	private ElapsedTimeMeasurement elapsedTime = null; 
 	private ByteBuffer eventQueue = null;
 	private Map<Long,Eventable> eventables = new HashMap<Long,Eventable>();
-	private Map<Long,Msg> msgsInUse = new HashMap<Long,Msg>();
+	private Map<Long,Msg> msgsPendingReply = new HashMap<Long,Msg>();
+	private Map<Long, Msg> msgsPendingNewRequest = new HashMap<Long, Msg>();
 	private boolean stopLoop = false;
 	private static Log logger = Log.getLog(EventQueueHandler.class.getCanonicalName());
 
@@ -62,7 +64,7 @@ public class EventQueueHandler implements Runnable {
 			logger.log(Level.INFO, "there was an error creating ctx on c side!");
 		}
 		this.eventQueue = dataFromC.eventQueue;
-		this.id = dataFromC.ptrCtx;
+		this.refToCObject = dataFromC.ptrCtx;
 		this.elapsedTime = new ElapsedTimeMeasurement(); 
 	}
 
@@ -84,9 +86,9 @@ public class EventQueueHandler implements Runnable {
 
 		boolean is_forever = (timeOutMicroSec == -1) ? true : false;
 		if (is_forever)
-			logger.log(Level.INFO, "["+id+"] there are "+eventsWaitingInQ+" events in Q. requested to handle "+maxEvents+" max events, for infinite duration");
+			logger.log(Level.INFO, "["+refToCObject+"] there are "+eventsWaitingInQ+" events in Q. requested to handle "+maxEvents+" max events, for infinite duration");
 		else 
-			logger.log(Level.INFO, "["+id+"] there are "+eventsWaitingInQ+" events in Q. requested to handle "+maxEvents+" max events, for a max duration of "+timeOutMicroSec/1000+" msec.");
+			logger.log(Level.INFO, "["+refToCObject+"] there are "+eventsWaitingInQ+" events in Q. requested to handle "+maxEvents+" max events, for a max duration of "+timeOutMicroSec/1000+" msec.");
 
 		elapsedTime.resetStartTime();
 		int eventsHandled = 0;
@@ -95,28 +97,22 @@ public class EventQueueHandler implements Runnable {
 
 			if (eventsWaitingInQ <= 0) { // the event queue is empty now, get more events from libxio
 				eventQueue.rewind();
-				eventsWaitingInQ = Bridge.runEventLoop(id, timeOutMicroSec);
+				eventsWaitingInQ = Bridge.runEventLoop(refToCObject, timeOutMicroSec);
 			}
 
 			// process in eventQueue pending events
-			if (eventsWaitingInQ > 0) { // there are still events to be read, but they exceed maxEvents
-				Event event = parseEvent(eventQueue);
-				Eventable eventable;
-				if (event instanceof EventNewMsg){
-					eventable = getAndremoveMsgInUse(event.getId()).getClientSession();
-				}else{
-					eventable = this.eventables.get(event.getId());
-				}
-				eventable.onEvent(event);
 
+			if (eventsWaitingInQ > 0) { // there are still events to be read, but they exceed maxEvents
+				handleEvent(eventQueue);
 				eventsHandled++;
 				eventsWaitingInQ--;
+
 			}
 
-			logger.log(Level.INFO, "["+id+"] there are "+eventsWaitingInQ+" events in Q. handled "+eventsHandled+" events, elapsed time is "+ elapsedTime.getElapsedTimeMicro()+" usec.");
+			logger.log(Level.INFO, "["+refToCObject+"] there are "+eventsWaitingInQ+" events in Q. handled "+eventsHandled+" events, elapsed time is "+ elapsedTime.getElapsedTimeMicro()+" usec.");
 		}
 
-		logger.log(Level.INFO, "["+id+"] returning with "+eventsWaitingInQ+" events in Q. handled "+eventsHandled+" events, elapsed time is "+ elapsedTime.getElapsedTimeMicro()+" usec.");
+		logger.log(Level.INFO, "["+refToCObject+"] returning with "+eventsWaitingInQ+" events in Q. handled "+eventsHandled+" events, elapsed time is "+ elapsedTime.getElapsedTimeMicro()+" usec.");
 		return eventsHandled;
 	}
 
@@ -126,7 +122,7 @@ public class EventQueueHandler implements Runnable {
 			{
 				Eventable ev = entry.getValue();
 				if (!ev.getIsClosing()){
-					logger.log(Level.INFO, "closing eventable with id "+entry.getKey()); 
+					logger.log(Level.INFO, "closing eventable with refToCObject "+entry.getKey()); 
 					ev.close();
 				}
 			}
@@ -135,13 +131,13 @@ public class EventQueueHandler implements Runnable {
 			//			runEventLoop (1,0);
 		}
 		logger.log(Level.INFO, "no more objects listening");
-		Bridge.closeCtx(id);
+		Bridge.closeCtx(refToCObject);
 		this.stopLoop = true;
 	}
 
 	public void stopEventLoop() {
 		this.stopLoop = true;
-		Bridge.stopEventLoop(id);
+		Bridge.stopEventLoop(refToCObject);
 	}
 
 	static abstract class Eventable {
@@ -162,7 +158,7 @@ public class EventQueueHandler implements Runnable {
 		void setId(final long id) {
 			if (this.id == 0)
 				this.id = id;
-			// TODO: 'else throw' exception instead of final member 'id'
+			// TODO: 'else throw' exception instead of final member 'refToCObject'
 		} 
 
 		public abstract boolean close();
@@ -178,7 +174,7 @@ public class EventQueueHandler implements Runnable {
 		abstract void onEvent(Event ev);
 	}
 
-	long getId() { return id; }
+	long getId() { return refToCObject; }
 
 	void addEventable(Eventable eventable) {
 		logger.log(Level.INFO, "** adding "+eventable.getId()+" to map ");
@@ -194,20 +190,21 @@ public class EventQueueHandler implements Runnable {
 
 	void addMsgInUse(Msg msg) {
 		if (msg.getId() != 0){
-			msgsInUse.put(msg.getId(), msg);
+			msgsPendingReply.put(msg.getId(), msg);
 		}
 	}
 
 	Msg getAndremoveMsgInUse(long id) {
-		Msg msg = msgsInUse.get(id);
-		msgsInUse.remove(id);
+		Msg msg = msgsPendingReply.get(id);
+		msgsPendingReply.remove(id);
 		return msg;
 	}
 
-	private Event parseEvent(ByteBuffer eventQueue) {
+	private void handleEvent(ByteBuffer eventQueue) {
+
+	    Eventable eventable;
 		int eventType = eventQueue.getInt();
 		long id = eventQueue.getLong();
-
 		switch (eventType) {
 
 		case 0: //session error event
@@ -216,38 +213,65 @@ public class EventQueueHandler implements Runnable {
 			int reason = eventQueue.getInt();
 			String s = Bridge.getError(reason);
 			EventSession evSes = new EventSession(eventType, id, errorType, s);
-			return evSes;
+			eventable = eventables.get(id);
+			eventable.onEvent(evSes);
 		}	
 		case 1: //msg error
+		{
 			EventMsgError evMsgErr = new EventMsgError(eventType, id);
-			return evMsgErr;
+			eventable = eventables.get(id);
+			eventable.onEvent(evMsgErr);
+		}
 
 		case 2: //session established
+		{
 			EventSessionEstablished evSesEstab = new EventSessionEstablished(eventType, id);
-			return evSesEstab;
+			eventable = eventables.get(id);
+			eventable.onEvent(evSesEstab);
+		}
+		case 3: //on request
+		{
+		    	Msg msg = this.msgsPendingNewRequest.get(id);
+		    	long session_id = eventQueue.getLong();
+		    	logger.log(Level.INFO, "session refToCObject" +  session_id);
+		    	eventable = eventables.get(session_id);
+		    	EventNewMsg evMsg = new EventNewMsg(eventType, id, msg);
+		    	eventable.onEvent(evMsg);
+		}
+		    	
+		case 4: //on reply
+		{
+		    	Msg msg = msgsPendingReply.remove(id);
+		    	logger.log(Level.INFO, "msg is "+ msg);
+		    	EventNewMsg evMsg = new EventNewMsg(eventType, id, msg);		
+			eventable = msg.getClientSession();
+			logger.log(Level.INFO, "eventable is "+ eventable);
+			eventable.onEvent(evMsg);
+		}
 
-		case 3: //on reply
-			EventNewMsg evMsg = new EventNewMsg(eventType, id);
-			return evMsg;
-
-		case 4: //on new session
+		case 5: //on new session
+		{
 			long ptrSes = eventQueue.getLong();
 			String uri = readString(eventQueue);		
 			String srcIP = readString(eventQueue);			
 
+			eventable = eventables.get(id);
 			EventNewSession evNewSes = new EventNewSession(eventType, id, ptrSes, uri, srcIP);
-			return evNewSes;
+			eventable.onEvent(evNewSes);
+		}
 
-		case 6: //on fd ready
+		case 7: //on fd ready
+		{
 			int fd = eventQueue.getInt();		
 			int events = eventQueue.getInt();			
 			this.callbacks.onFdReady(fd, events, 0);
-			return null;
+		}
 
 		default:
 			logger.log(Level.SEVERE, "received an unknown event "+ eventType);
-			return null;
+			//TODO: throw exception
 		}
+		
 	}
 
 	private String readString(ByteBuffer buf) {
@@ -268,5 +292,25 @@ public class EventQueueHandler implements Runnable {
 			ptrCtx = 0;
 			eventQueue = null;
 		}
+	}
+
+	public boolean bindMsgPool(MsgPool msgPool) {
+	    //the messages inside the pool must be added to hashmap, so that the appropraite msg can be tracked 
+	    //once a request arrives
+	    List<Msg> msgArray = msgPool.getAllMsg();
+	    for (Msg msg : msgArray) {
+		msgsPendingNewRequest.put(msg.getId(), msg);
+	    }
+	    return Bridge.bindMsgPool(msgPool.getId(), this.getId());
+	    
+	}
+
+	void releaseMsgBackToPool(Msg msg) {
+	    this.msgsPendingNewRequest.put(msg.getId(), msg);
+	    
+	}
+	
+	public void releaseMsgPool(MsgPool msgPool){
+	    //TODO implement!
 	}
 }

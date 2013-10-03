@@ -90,8 +90,8 @@ public class ServerManager extends EventQueueHandler.Eventable {
 			}
 			break;
 
-		case 4: //on new session
-			logger.log(Level.INFO, "received session error event");
+		case 5: //on new session
+			logger.log(Level.INFO, "received new session event");
 			if (ev  instanceof EventNewSession){
 				long ptrSes = ((EventNewSession) ev).getPtrSes();
 				String uri = ((EventNewSession) ev).getUri();		

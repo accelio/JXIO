@@ -22,11 +22,11 @@
 #include <stdio.h>
 #include "Event_queue.h"
 #include "Events.h"
-//#include "cJXSession.h"
 #include "Utils.h"
 #include <map>
 
 class Client;
+class MsgPool;
 
 class Context {
 public:
@@ -40,6 +40,8 @@ public:
 	int 	add_event_loop_fd(int fd, int events, void *priv_data);
 	int 	del_event_loop_fd(int fd);
 
+	void 	add_msg_pool (MsgPool* msg_pool);
+
 	static void on_event_loop_handler(int fd, int events, void *priv_data);
 
 	Event_queue *event_queue;
@@ -50,6 +52,7 @@ public:
 	void *ev_loop;
 	struct xio_context *ctx;
 	int events_num;
+	MsgPool * msg_pool;
 
 	//this map is needed since in case of event Disconnected action needs to be done
 	//on a session without going back to java

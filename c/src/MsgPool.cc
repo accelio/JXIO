@@ -15,7 +15,6 @@
 **
 */
 
-#include <sys/timerfd.h>
 
 #include "MsgPool.h"
 
@@ -30,27 +29,56 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 	this->buf_size = msg_num*(in_size+out_size);
 
 	this->x_buf = xio_alloc(buf_size);
+	log (lsDEBUG, "got here!!!!\n");
 	if (x_buf == NULL){
-		error_creating = true;
+		goto mark_error;
 	}
 	this->buf = x_buf->addr;
 	this->xio_mr = x_buf->mr;
 
-	msg_list = new std::list<Msg*>;
-	//Katya: to check if fails!!!!!
-	for (int i=0; i<msg_num; i++){
-		Msg *m = new Msg (buf+i*(in_size+out_size), xio_mr,  in_size, out_size);
-		msg_list->push_front (m);
+	msg_ptrs = (Msg**)malloc(sizeof(Msg*)*msg_num);
+	if (msg_ptrs == NULL){
+		goto cleanup_buffer;
 	}
+
+	msg_list = new std::list<Msg*>;
+	if (msg_list == NULL){
+		goto cleanup_array;
+	}
+
+	for (int i=0; i<msg_num; i++){
+		Msg *m = new Msg (buf+i*(in_size+out_size), xio_mr,  in_size, out_size, this);
+		if (m == NULL){
+			goto cleanup_list;
+		}
+		msg_list->push_front (m);
+		msg_ptrs[i] = m;
+	}
+	return;
+
+cleanup_list:
+	while (!msg_list->empty())
+		{
+			Msg * msg = msg_list->front();
+			msg_list->pop_front();
+			delete msg;
+		}
+	delete (msg_list);
+cleanup_array:
+	free (msg_ptrs);
+cleanup_buffer:
+	if (xio_free(&this->x_buf)){
+		log (lsERROR, "Error xio_dereg_mr failed\n");
+	}
+	free (this->buf);
+mark_error:
+	error_creating = true;
 }
 
 MsgPool::~MsgPool()
 {
 	if (error_creating) {
 		return;
-	}
-	if (xio_free(&this->x_buf)){
-		log (lsERROR, "Error xio_free failed\n");
 	}
 
 	while (!msg_list->empty())
@@ -61,9 +89,13 @@ MsgPool::~MsgPool()
 	}
 
 	delete (msg_list);
+	if (xio_free(&this->x_buf)){
+		log (lsERROR, "Error xio_free failed\n");
+	}
+
 }
 
-Msg * MsgPool::getMsgFromPool ()
+Msg * MsgPool::get_msg_from_pool ()
 {
 	if (msg_list->empty()){
 		log (lsERROR, "msg list is empty\n");
@@ -75,7 +107,7 @@ Msg * MsgPool::getMsgFromPool ()
 	return msg;
 }
 
-void MsgPool::addMsgToPool(Msg * msg)
+void MsgPool::add_msg_to_pool(Msg * msg)
 {
 	msg_list->push_front (msg);
 }

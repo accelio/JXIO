@@ -22,14 +22,23 @@
 #include <stdio.h>
 #include <libxio.h>
 
+#include "Utils.h"
 
+class MsgPool;
 
 class Msg {
 public:
-	Msg(void * buf, struct xio_mr 	*xio_mr,  int in_buf_size, int out_buf_size);
+	Msg(void * buf, struct xio_mr 	*xio_mr,  int in_buf_size, int out_buf_size, MsgPool* pool);
 	~Msg();
-	void set_xio_msg();
-	struct xio_msg 	* get_xio_msg(){return xio_msg;}
+	void set_xio_msg_client_fields();//this method is used by client side
+	void set_xio_msg_req(struct xio_msg *m );//this method is used by server side
+	void set_xio_msg_server_fields();
+	void set_xio_msg_fields_for_assign(struct xio_msg *msg);//used when assign_buffer callback is called
+	void * get_buf() { return buf;}
+	struct xio_msg 	* get_xio_msg();
+	void release_to_pool();
+	void dump(); //func for debugging only
+	void dump(struct xio_msg *m);//func for debugging only
 
 private:
 	void * 			buf;
@@ -37,9 +46,11 @@ private:
 	int 			out_size;
 	struct xio_mr 	*xio_mr;
 	struct xio_msg 	*xio_msg;
+	struct xio_msg 	*req;
 	int				serial_number;
 	int 			in_buf_size;
 	int 			out_buf_size;
+	MsgPool*		pool;
 };
 
 #endif // ! Msg__H___

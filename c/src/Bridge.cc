@@ -216,8 +216,9 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_forward
 }
 
 
-extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMsgPoolNative(JNIEnv *env, jclass cls, jint msg_num, jint in_size, jint out_size)
+extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMsgPoolNative(JNIEnv *env, jclass cls, jint msg_num, jint in_size, jint out_size, jlongArray ptr)
 {
+	jlong temp[msg_num+1];
 	MsgPool *pool = new MsgPool (msg_num, in_size, out_size);
 	if (pool == NULL) {
 		log(lsERROR, "memory allocation failed\n");
@@ -229,11 +230,18 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMs
 	}
 	jobject jbuf = env->NewDirectByteBuffer(pool->buf, pool->buf_size);
 
+	//TODO: go over the actual data structure and not msg_ptrs
+	temp [0] = (jlong)(intptr_t) pool; //the first element in array represents ptr to MsgPool
+	for (int i=1; i<=msg_num; i++){
+		temp[i] = (jlong)(intptr_t) pool->msg_ptrs[i-1];
+	}
+
+	env->SetLongArrayRegion(ptr,0, msg_num+1, temp);
 	return jbuf;
 }
 
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_Bridge_sendMsgNative(JNIEnv *env, jclass cls, jlong ptr_session, jint session_type, jlong ptr_msg)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_sendMsgNative(JNIEnv *env, jclass cls, jlong ptr_session, jint session_type, jlong ptr_msg)
 {
 	Msg * msg = (Msg*) ptr_msg;
 
@@ -244,6 +252,14 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_Bridge_sendMsgNativ
 		Client * client = (Client *) ptr_session;
 		return client->send_msg(msg);
 	}
+}
+
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_bindMsgPoolNative(JNIEnv *env, jclass cls, jlong ptr_msg_pool, jlong ptr_ctx)
+{
+	Context * ctx = (Context*) ptr_ctx;
+	MsgPool * pool = (MsgPool*) ptr_msg_pool;
+	ctx->add_msg_pool(pool);
+	return true;
 }
 
 extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_jxio_impl_Bridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason)

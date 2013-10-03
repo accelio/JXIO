@@ -24,14 +24,12 @@ Server::Server(const char *url, long ptrCtx)
 	error_creating = false;
 
 	struct xio_session_ops server_ops;
-	server_ops.on_session_event       = on_session_event_callback;
-	server_ops.on_new_session         = on_new_session_callback;
-        server_ops.on_session_established = NULL;
-	server_ops.on_msg_send_complete   = NULL;
-	server_ops.on_msg                 = on_msg_callback; //TODO: to separate into 2 different classes
-        server_ops.on_msg_delivered       = NULL;
-	server_ops.on_msg_error           = NULL;
-        server_ops.assign_data_in_buf     = NULL;
+	memset (&server_ops, 0, sizeof(server_ops));
+	server_ops.on_session_event     =  on_session_event_callback;
+	server_ops.on_msg               =  on_msg_callback; //TODO: to separate into 2 different classes
+	server_ops.on_new_session       =  on_new_session_callback;
+	server_ops.on_msg_send_complete =  on_msg_send_complete_callback;
+	server_ops.assign_data_in_buf   =  on_buffer_request_callback;
 
 	this->session = NULL;
 
@@ -132,9 +130,13 @@ bool Server::onSessionEvent(int eventType)
 
 bool Server::send_reply(Msg *msg)
 {
+	log(lsDEBUG, "inside Server::send_reply xio_msg is %p. msg is %p\n", msg->get_xio_msg(), msg);
 	//set_xio_msg????
+	//TODO : make sure that this function is not called in the fast path
+	msg->set_xio_msg_server_fields();
+	msg->dump();
 	int ret_val = xio_send_response(msg->get_xio_msg());
-	if (ret_val) {
+	if (ret_val){
 		log(lsERROR, "Got error %d while sending xio_msg\n", ret_val);
 		return false;
 	}

@@ -16,11 +16,14 @@
  */
 package com.mellanox.jxio;
 
+import java.nio.ByteBuffer;
 import java.util.logging.Level;
 
 import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
+import com.mellanox.jxio.impl.EventNewMsg;
 import com.mellanox.jxio.impl.EventSession;
+
 
 public class ClientSession extends EventQueueHandler.Eventable {
 
@@ -99,10 +102,11 @@ public class ClientSession extends EventQueueHandler.Eventable {
 			callbacks.onSessionEstablished();
 			break;
 
-		case 3: //on reply
+		case 4: //on reply
+
 			logger.log(Level.INFO, "received msg event");
-			Msg msg = null;
-			callbacks.onReply(msg);//this is obviuosly temporary implementation
+			Msg msg = ((EventNewMsg) ev).getMsg();
+			callbacks.onReply(msg);
 
 
 			break;

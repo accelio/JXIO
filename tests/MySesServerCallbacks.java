@@ -9,9 +9,14 @@ import com.mellanox.jxio.ServerSession;
 class MySesServerCallbacks implements ServerSession.Callbacks {
 
 	private static Log logger = Log.getLog(MySesServerCallbacks.class.getCanonicalName());
-
+	private ServerSession serverSession;
 	public void onRequest(Msg msg) {
 		logger.log(Level.INFO, "got a request! Bring the champagne!!!!!");
+		logger.log(Level.INFO, "msg is "+msg);
+		int num = msg.getIn().getInt();
+		logger.log(Level.INFO, "got "+num);
+		msg.getOut().putInt(num);
+		serverSession.sendResponce(msg);
 	}
 
 	public void onSessionError(int session_event, String reason) {

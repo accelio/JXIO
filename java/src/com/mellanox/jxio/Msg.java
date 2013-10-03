@@ -17,28 +17,65 @@
 package com.mellanox.jxio;
 
 import java.nio.ByteBuffer;
+import java.util.logging.Level;
 
 public class Msg {
 	
+   
     private static Log logger = Log.getLog(Msg.class.getCanonicalName());
-    private long id;
+    private long refToCObject;
     private ClientSession clientSession;
+    private MsgPool msgPool; //reference to MsgPool holding this buffer
+    private ByteBuffer in, out;
     
-    public Msg(ByteBuffer buffer, int inSize, int outSize, long id){
+    Msg(ByteBuffer buffer, int inSize, int outSize, long id, MsgPool msgPool){
+	createSubBuffer(0, inSize, in, buffer);
+	in.position(0);
+	createSubBuffer(inSize, buffer.capacity(), out, buffer);
+	
+	this.msgPool = msgPool;
+	this.refToCObject = id;
 	
 	
+	logger.log(Level.INFO, "IN: capacity is " + in.capacity() + " limit " + in.limit()+ " position "+ in.position()+ " remaining is "+ in.remaining());
+	logger.log(Level.INFO, "OUT: capacity is " + out.capacity() + " limit " + out.limit()+ " position "+ out.position()+ " remaining is "+ out.remaining());
+
+    }
+    
+   
+
+    public ByteBuffer getIn() {
+        return in;
+    }
+    
+    MsgPool getParentPool(){
+	return msgPool;
     }
 
-    public void setClientSession(ClientSession clientSession) {
+    public ByteBuffer getOut() {
+        return out;
+    }
+
+    void setClientSession(ClientSession clientSession) {
 	this.clientSession = clientSession;
     }
 
-    public ClientSession getClientSession() {
+    ClientSession getClientSession() {
 	return clientSession;
     }
 
     public long getId() {
-	return id;
+	return refToCObject;
+    }
+    
+    public void releaseMsg(){
+	msgPool.releaseMsg(this);
+    }
+    
+    private void createSubBuffer(int position, int limit, ByteBuffer sub, ByteBuffer buf){
+	buf.position(position);
+	buf.limit(limit);
+	sub = buf.slice();
     }
 }
 	

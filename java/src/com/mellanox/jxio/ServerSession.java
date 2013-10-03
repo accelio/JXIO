@@ -21,6 +21,7 @@ import java.util.logging.Level;
 
 import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
+import com.mellanox.jxio.impl.EventNewMsg;
 import com.mellanox.jxio.impl.EventSession;
 
 public class ServerSession extends EventQueueHandler.Eventable {
@@ -98,11 +99,11 @@ public class ServerSession extends EventQueueHandler.Eventable {
 
 		case 3: //on request
 			logger.log(Level.INFO, "received msg event");
-			Msg msg = null; //obviously this is temporary implementation
+			Msg msg = ((EventNewMsg) ev).getMsg();
 			callbacks.onRequest(msg);
 			break;
 		
-		case 5: //msg sent complete
+		case 6: //msg sent complete
 			logger.log(Level.INFO, "received msg sent complete event");
 			break;
 			

@@ -23,6 +23,7 @@
 #include "Context.h"
 #include "Utils.h"
 #include "Client.h"
+#include "MsgPool.h"
 
 
 /*
@@ -77,6 +78,12 @@ int on_session_established_callback(struct xio_session *session,
 int on_session_event_callback(struct xio_session *session,
 		struct xio_session_event_data *event_data,
 		void *cb_prv_data);
+
+/* this callback is called by server side when a request is received from client side and
+ * it needs to be supplied with buffer
+ */
+int on_buffer_request_callback (struct xio_msg *msg,
+			void *cb_user_context);
 
 /*
  * this callback is called by jxio C library once an external fd has a ready read or write event.

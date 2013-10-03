@@ -51,7 +51,7 @@ struct __attribute__ ((packed)) event_msg_error {
 };
 
 struct __attribute__ ((packed)) event_msg_received {
-//	int64_t		ptr_msg;
+	int64_t		ptr_session;
 	//use the ptr inside event_struct for passing the pointer to msg class in java
 };
 
@@ -93,8 +93,8 @@ public:
 			struct xio_msg *msg);
 	int writeOnMsgErrorEvent(char *buf, void *ptrForJava, struct xio_session *session,
 			enum xio_status error, struct xio_msg  *msg);
-	int writeOnMsgReceivedEvent(char *buf, void *ptrForJava, struct xio_session *session,
-			struct xio_msg *msg, int more_in_batch);
+	int writeOnMsgReceivedEvent(char *buf, void *ptrForJavaMsg, void *ptrForJavaSession,
+			struct xio_msg *msg, int type);
 	int writeOnFdReadyEvent(char *buf, int fd, int event);
 };
 

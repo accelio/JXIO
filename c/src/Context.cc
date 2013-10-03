@@ -116,3 +116,11 @@ void Context::on_event_loop_handler(int fd, int events, void *data)
 	// Pass an 'FD Ready' event to Java
 	on_fd_ready_event_callback(ctx, fd, events);
 }
+
+void Context::add_msg_pool (MsgPool* msg_pool)
+{
+	this->msg_pool = msg_pool;
+}
+
+
+

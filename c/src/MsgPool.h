@@ -32,12 +32,13 @@ public:
 	MsgPool (int msg_num, int in_size, int out_size);
 	~MsgPool();
 
-	Msg * getMsgFromPool ();
-	void addMsgToPool(Msg * msg);
+	Msg * get_msg_from_pool ();
+	void add_msg_to_pool(Msg * msg);
 
 	bool error_creating;
 	void   			*buf;
 	int 			buf_size;
+	Msg** 			msg_ptrs;
 
 private:
 	struct xio_mr	*xio_mr;

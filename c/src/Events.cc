@@ -22,13 +22,14 @@
 
 
 typedef enum {
-	EVENT_SESSION_ERROR       = 0,
-	EVENT_MSG_ERROR           = 1,
+	EVENT_SESSION_ERROR = 0,
+	EVENT_MSG_ERROR = 1,
 	EVENT_SESSION_ESTABLISHED = 2,
-	EVENT_MSG_RECEIVED        = 3,
-	EVENT_SESSION_NEW         = 4,
-	EVENT_MSG_SEND_COMPLETE   = 5,
-	EVENT_FD_READY            = 6,
+	EVENT_REQUEST_RECEIVED = 3,
+	EVENT_REPLY_RECEIVED = 4,
+	EVENT_SESSION_NEW = 5,
+	EVENT_MSG_SEND_COMPLETE = 6,
+	EVENT_FD_READY = 7,
 	EVENT_LAST
 } event_type_t;
 
@@ -143,12 +144,17 @@ int Events::writeOnMsgErrorEvent(char *buf, void *ptrForJava, struct xio_session
 }
 
 
-int Events::writeOnMsgReceivedEvent(char *buf, void *ptrForJava, struct xio_session *session,
-		struct xio_msg *msg, int more_in_batch)
+int Events::writeOnMsgReceivedEvent(char *buf, void *ptrForJavaMsg, void *ptrForJavaSession,
+		struct xio_msg *msg, int type)
 {
-	this->event.type = htonl(EVENT_MSG_RECEIVED);
-	this->event.ptr = htobe64(intptr_t(ptrForJava));
-	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+	if (type == XIO_MSG_TYPE_REQ){//it's request
+		this->event.type = htonl(EVENT_REQUEST_RECEIVED);
+	}else{ //it's response
+		this->event.type = htonl(EVENT_REPLY_RECEIVED);
+	}
+	this->event.ptr = htobe64(intptr_t(ptrForJavaMsg));
+	this->event.event_specific.msg_received.ptr_session = htobe64(intptr_t(ptrForJavaSession));
+	this->size = sizeof(struct event_msg_received) +  sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 	memcpy(buf, &this->event, this->size);
 	return this->size;
 }

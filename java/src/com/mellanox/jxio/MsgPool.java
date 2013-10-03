@@ -25,37 +25,54 @@ import com.mellanox.jxio.impl.Bridge;
 
 public class MsgPool {
 	
+  
     private static Log logger = Log.getLog(MsgPool.class.getCanonicalName());
     ByteBuffer buffer;
+    private long refToCObject;
     List<Msg> listMsg = new ArrayList<Msg>();
     
     public MsgPool(int count, int inSize, int outSize){
-	Bridge.createMsgPool(count, inSize, outSize);
-	int ptrMsg [] = new int [count]; //TODO : to recieve from c properly
+	long refToCObjects [] = new long [count + 1]; //the first element represents the id of MsgPool
+	buffer = Bridge.createMsgPool(count, inSize, outSize, refToCObjects);
+	refToCObject = refToCObjects[0];	
 	int msgBufferSize = inSize + outSize;
-	
+	logger.log(Level.FINE, "capacity is " + buffer.capacity() + " limit " + buffer.limit()+ " position "+ buffer.position()+ " remaining is "+ buffer.remaining());
 	for (int i=0; i<count; i++){
+	    buffer.position(msgBufferSize * i);
 	    ByteBuffer partialBuffer = buffer.slice();
-	    partialBuffer.limit(msgBufferSize * (i+1));
-	    partialBuffer.position(msgBufferSize * i);
-	    Msg m = new Msg(partialBuffer, inSize, outSize, ptrMsg[i]);
+	    partialBuffer.limit(msgBufferSize);
+	    logger.log(Level.FINE, "capacity is " + partialBuffer.capacity() + " limit " + partialBuffer.limit()+ " position "+ partialBuffer.position()+ " remaining is "+ partialBuffer.remaining());
+	    Msg m = new Msg(partialBuffer, inSize, outSize, refToCObjects[i+1], this);
 	    listMsg.add(m);
+	    logger.log(Level.FINEST, "ptr is "+ refToCObjects[i+1]);
+
 	}
     }
     
     public Msg getMsg(){
-	if (!listMsg.isEmpty()){
+	if (listMsg.isEmpty()){
 	    logger.log(Level.SEVERE, "there are no more messages in pool");
 	    return null;
-	    
 	}
-	Msg msg = listMsg.get(0);
-	listMsg.remove(0);
+	Msg msg = listMsg.remove(0); //1 is for debugging. should be 0
 	return msg;
     }
     
-    public void releaseMsgToPool(Msg msg){
-	listMsg.add(msg);
+    public void releaseMsg(Msg msg){
+	if (msg.getParentPool() == this){
+	    listMsg.add(msg);
+	}
+	else{
+	    logger.log(Level.SEVERE, "parent pool and actual msg pool do not match!");
+	}
+    }
+    
+    public long getId(){
+	return refToCObject;
+    }
+    
+    List<Msg> getAllMsg(){
+	return listMsg;
     }
 }
 	

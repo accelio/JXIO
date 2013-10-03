@@ -17,7 +17,6 @@
 
 #include "Client.h"
 
-#define K_DEBUG 1
 
 Client::Client(const char* url, long ptrCtx)
 {
@@ -61,16 +60,6 @@ Client::Client(const char* url, long ptrCtx)
 
 	log (lsDEBUG, "startClientSession done with \n");
 
-#ifdef K_DEBUG
-	req = (struct xio_msg *) malloc(sizeof(struct xio_msg));
-
-	// create "hello world" message
-	memset(req, 0, sizeof(req));
-	req->out.header.iov_base = strdup("hello world header request");
-	req->out.header.iov_len = strlen("hello world header request");
-	// send first message
-	xio_send_request(con, req);
-#endif
 	return;
 
 //cleanupCon:
@@ -125,7 +114,7 @@ bool Client::onSessionEvent(int eventType)
 
 bool Client::send_msg(Msg *msg)
 {
-	msg->set_xio_msg();
+//	log(lsDEBUG, "##################### sending msg\n");
 	int ret_val = xio_send_request(this->con,
 		    msg->get_xio_msg());
 	if (ret_val){
