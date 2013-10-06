@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class MutipleManagersOnSameEQHTest implements Runnable {
 
-	public void run(){
+	public void run() {
 		///////////////////// Test 3 /////////////////////
 		// Multiple session manager on the same EQH
 		TestManager.print("*** Test 3: Multiple session client on the same EQH *** ");
@@ -18,34 +18,34 @@ public class MutipleManagersOnSameEQHTest implements Runnable {
 		MySesManager[] sManagerArray;
 		int numOfSessionManagers = 3;
 		
-		// Setting up a Event Queue Hanler
+		TestManager.print("----- Setting up a event queue handler...");
 		eqh = new EventQueueHandler();
 		
-		// Setting up a multiple session managers
-		TestManager.print("----- Setting up a multiple session managers...");
+		TestManager.print("----- Setting up a multiple (" + numOfSessionManagers + ") session managers...");
 		Random portGenerator = new Random();
 		sManagerArray = new MySesManager[numOfSessionManagers];
-		for (int i = 0; i < numOfSessionManagers; i++){
+		for (int i = 0; i < numOfSessionManagers; i++) {
 			// Randomize Port
-			int port = portGenerator.nextInt(TestManager.portRange) + 1;
+			int port = TestManager.portRangeLow + portGenerator.nextInt(TestManager.portRangeHigh - TestManager.portRangeLow);
 			
 			// Get url
 			url = "rdma://" + TestManager.hostname + ":" + port;		
 			
-			// Setup Manager
+			TestManager.print("----- Setting up a session manager " + i + "(url=" + url + ")...");
 			sManagerArray[i] = new MySesManager(eqh, url);
 		}
 
-		// Run EQH
-		TestClient.print("----- Run Event Loop...");
-		eqh.runEventLoop(numOfSessionManagers, -1 /* Infinite */);
+		TestManager.print("----- Run Event Loop......for " + numOfSessionManagers + " events or 1 sec");
+		eqh.runEventLoop(numOfSessionManagers, 1000000 /*1sec*/);
 		
-		// Closing the session managers
 		TestManager.print("------ Closing the session manager...");
 		for (int i = 0; i < numOfSessionManagers; i++){
 			sManagerArray[i].close();
 		}
 		
+		TestManager.print("----- Closing the event queue handler...");
+		eqh.close();
+
 		TestManager.setSuccess(3);
 		TestManager.print("*** Test 3 Passed! *** ");
 	}

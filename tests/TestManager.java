@@ -9,7 +9,8 @@ public class TestManager {
 	// Manager Parameters
 	public static String hostname;
 	public static int port;
-	public static int portRange = 1233;
+	public final static int portRangeLow = 1024;
+	public final static int portRangeHigh = 65536;
 
 	// General Parameters
 	private static int requestedTest;
@@ -22,44 +23,46 @@ public class TestManager {
 	public static void main(String[] args) {
 		
 		// Check arguments
-		if (! argsCheck(args)) {
+		if (! argsCheck(args))
 			return;
+
+		argsRead(args);
+
+		configure();
+		
+		print("*** Starting a Session Manager Test ***");
+		// Run Tests
+		if (requestedTest > numberOfTests){
+			print("[TEST ERROR] Unknow test number.");
+			return;
+		}
+		if (requestedTest == 0){
+			for (int i = 1; i <= numberOfTests; i++) {
+				tests[i].run();
+			}
+			report();
 		} else {
-			//Configure Tests
-			configure();
-			
-			// Get Hostname and Port
-			hostname = args[0];
-			port = Integer.parseInt(args[1]);
-			// Get requested tests
-			requestedTest = Integer.parseInt(args[2]);
-			
-			print("*** Starting a Session Manager Test ***");
-			// Run Tests
-			if (requestedTest > numberOfTests){
-				print("[TEST ERROR] Unknow test number.");
-				return;
-			}
-			if (requestedTest == 0){
-				for (int i = 1; i <= numberOfTests; i++) {
-					tests[i].run();
-				}
-				report();
-			} else {
-				tests[requestedTest].run();
-				report();
-			}
+			tests[requestedTest].run();
+			report();
 		}
 	}
 	
 	private static void configure() {
-		tests[1] = new OpenCloseManagerTest();
-		tests[2] = new NonExistingHostnameManagerTest();
+		tests[1] = new OpenCloseManagerTest(TestManager.port);
+		tests[2] = new NonExistingHostnameManagerTest(TestManager.port);
 		tests[3] = new MutipleManagersOnSameEQHTest();
 		tests[4] = new OpenRunEventLoopCloseClientTest();
-		tests[5] = new MutipleThreadsManager();
+		tests[5] = new MutipleThreadsManager(TestManager.port);
 	}
-		
+
+	private static void argsRead(String[] args) {
+		// Get Hostname and Port
+		hostname = args[0];
+		port = Integer.parseInt(args[1]);
+		// Get requested tests
+		requestedTest = Integer.parseInt(args[2]);
+	}
+
 	private static boolean argsCheck(String[] args) {
 		if (args.length <= 0){
 			print("[TEST ERROR] Missing arguments.");

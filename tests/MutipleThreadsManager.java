@@ -2,18 +2,24 @@
 
 public class MutipleThreadsManager implements Runnable{
 
-	public void run(){
+	public final int port;
+	
+	public MutipleThreadsManager(int port) {
+		this.port = port;
+	}
+	
+	public void run() {
 		///////////////////// Test 5 /////////////////////
-		// Multiple threads on the same EQH
-		TestManager.print("*** Test 4: Multipule threads on the same EQH*** ");
+		// Multiple session manager on seperate EQH thread
+		TestManager.print("*** Test 5: Multiple session manager on seperate EQH thread *** ");
 
 		// Setup tests
-		Runnable ct1 = new OpenRunEventLoopCloseManagerTest();
-		Runnable ct2 = new OpenRunEventLoopCloseManagerTest();
-		Runnable ct3 = new OpenRunEventLoopCloseManagerTest();
-		Runnable ct4 = new OpenRunEventLoopCloseManagerTest();
-		Runnable ct5 = new OpenRunEventLoopCloseManagerTest();
-		Runnable ct6 = new OpenRunEventLoopCloseManagerTest();
+		Runnable ct1 = new OpenRunEventLoopCloseManagerTest(this.port + 1);
+		Runnable ct2 = new OpenRunEventLoopCloseManagerTest(this.port + 2);
+		Runnable ct3 = new OpenRunEventLoopCloseManagerTest(this.port + 3);
+		Runnable ct4 = new OpenRunEventLoopCloseManagerTest(this.port + 4);
+		Runnable ct5 = new OpenRunEventLoopCloseManagerTest(this.port + 5);
+		Runnable ct6 = new OpenRunEventLoopCloseManagerTest(this.port + 6);
 		
 		Thread t1 = new Thread(ct1);
 		Thread t2 = new Thread(ct2);

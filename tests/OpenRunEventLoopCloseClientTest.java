@@ -17,20 +17,20 @@ public class OpenRunEventLoopCloseClientTest implements Runnable {
 		// Get url
 		url = "rdma://" + TestClient.hostname + ":" + TestClient.port;
 		
-		// Setting up a Event Queue Hanler
+		TestClient.print("----- Setting up a event queue handler...");
 		eqh = new EventQueueHandler();
 		
-		// Setting up a session client
 		TestClient.print("----- Setting up a session client...");
 		sClient = new MySesClient(eqh, url);
 
-		// Run EQH
-		TestClient.print("----- Run Event Loop...");
-		eqh.runEventLoop(1000, -1 /* Infinite */);
+		TestClient.print("----- Run Event Loop...for 1 event or 1 sec");
+		eqh.runEventLoop(1, 1000000 /*1sec*/);
 		
-		// Closing the session client
 		TestClient.print("------ Closing the session client...");
 		sClient.close();
+
+		TestClient.print("----- Closing the event queue handler...");
+		eqh.close();
 
 		TestClient.setSuccess(4);
 		TestClient.print("*** Test 4 Passed! *** ");

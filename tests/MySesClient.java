@@ -34,13 +34,9 @@ public class MySesClient {
 
 
 	public boolean close() {
-		if (this.client.close()) {
-			logger.log(Level.INFO, "[SUCCESS] Session client successfully closed!" );
-			return true;
-		} else {
-			logger.log(Level.INFO, "[ERROR] Session client failed to close!");
-			return false;
-		}
+		this.client.close();
+		logger.log(Level.INFO, "[SUCCESS] Session client successfully closed!" );
+		return true;
 	}
 
 

@@ -4,10 +4,16 @@ import com.mellanox.jxio.*;
 
 public class OpenRunEventLoopCloseManagerTest implements Runnable {
 
+	public final int port;
+	
+	public OpenRunEventLoopCloseManagerTest(int port) {
+		this.port = port;
+	}
+	
 	public void run(){
-		///////////////////// Test 4 /////////////////////
-		// Open a client, run event loop and close the client
-		TestManager.print("*** Test 5: Open a client, run event loop and close the client *** ");
+		///////////////////// Test 5 Helper //////////////
+		// Multiple session manager on seperate EQH thread
+		TestManager.print("*** Test 5 Helper: Multiple session manager on seperate EQH thread *** ");
 		
 		// Setup parameters
 		String url;
@@ -15,24 +21,25 @@ public class OpenRunEventLoopCloseManagerTest implements Runnable {
 		MySesManager sManager;
 		
 		// Get url
-		url = "rdma://" + TestManager.hostname + ":" + TestManager.port;
+		url = "rdma://" + TestManager.hostname + ":" + this.port;
 		
-		// Setting up a Event Queue Hanler
+		TestManager.print("----- Setting up a event queue handler...");
 		eqh = new EventQueueHandler();
 		
-		// Setting up a session manager
 		TestManager.print("----- Setting up a session manager...");
 		sManager = new MySesManager(eqh, url);
 		
-		// Run EQh
-		TestManager.print("----- Run Event Loop...");
-		eqh.runEventLoop(1000, -1 /* Infinite */);
+		TestManager.print("----- Run Event Loop...for 1 event or 1 sec");
+		eqh.runEventLoop(1, 1000000 /*1sec*/);
 		
-		// Closing the session manager
 		TestManager.print("------ Closing the session manager...");
 		sManager.close();
 
-		TestManager.setSuccess(4);
-		TestManager.print("*** Test 4 Passed! *** ");
+		TestManager.print("----- Closing the event queue handler...");
+		eqh.close();
+
+// Parant test will set as OK
+//		TestManager.setSuccess(5);
+		TestManager.print("*** Test 5 Helper Passed! *** ");
 	}
 }

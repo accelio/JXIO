@@ -4,7 +4,13 @@ import com.mellanox.jxio.*;
 
 public class OpenCloseManagerTest implements Runnable {
 
-	public void run(){
+	public final int port;
+	
+	public OpenCloseManagerTest(int port) {
+		this.port = port;
+	}
+	
+	public void run() {
 		///////////////////// Test 1 /////////////////////
 		// Open and close a client 
 		TestManager.print("*** Test 1: Open and close a manager *** ");
@@ -15,22 +21,22 @@ public class OpenCloseManagerTest implements Runnable {
 		MySesManager sManager;
 		
 		// Get url
-		url = "rdma://" + TestManager.hostname + ":" + TestManager.port;
+		url = "rdma://" + TestManager.hostname + ":" + this.port;
 		
-		// Setting up a Event Queue Hanler
+		TestManager.print("----- Setting up a event queue handler...");
 		eqh = new EventQueueHandler();
 		
-		// Setting up a session client
-		TestManager.print("----- Setting up a session manager...");
+		TestManager.print("----- Setting up a session manager (url=" + url + ")...");
 		sManager = new MySesManager(eqh, url);
 
-		// Run EQH
-		TestClient.print("----- Run Event Loop...");
-		eqh.runEventLoop(1, -1 /* Infinite */);
+		TestManager.print("----- Run Event Loop...for 1 event or 1 sec");
+		eqh.runEventLoop(1, 1000000 /*1sec*/);
 		
-		// Closing the session client
 		TestManager.print("------ Closing the session manager...");
 		sManager.close();
+
+		TestManager.print("----- Closing the event queue handler...");
+		eqh.close();
 
 		TestManager.setSuccess(1);
 		TestManager.print("*** Test 1 Passed! *** ");
