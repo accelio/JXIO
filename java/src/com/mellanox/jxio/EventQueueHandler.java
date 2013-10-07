@@ -45,6 +45,7 @@ public class EventQueueHandler implements Runnable {
 	private Map<Long,Eventable> eventables = new HashMap<Long,Eventable>();
 	private Map<Long,Msg> msgsPendingReply = new HashMap<Long,Msg>();
 	private Map<Long, Msg> msgsPendingNewRequest = new HashMap<Long, Msg>();
+	private volatile boolean breakLoop = false;
 	private volatile boolean stopLoop = false;
 	private static final Log logger = Log.getLog(EventQueueHandler.class.getCanonicalName());
 
@@ -87,16 +88,16 @@ public class EventQueueHandler implements Runnable {
 	 */
 	public int runEventLoop(int maxEvents, long timeOutMicroSec) {
 
+		this.breakLoop = false;
 		boolean is_forever = (timeOutMicroSec == -1) ? true : false;
-		if (is_forever)
-			logger.log(Level.INFO, "[" + getId() + "] there are " + eventsWaitingInQ + " events in Q. requested to handle " + maxEvents + " max events, for infinite duration");
-		else 
-			logger.log(Level.INFO, "[" + getId() + "] there are " + eventsWaitingInQ + " events in Q. requested to handle " + maxEvents + " max events, for a max duration of " + timeOutMicroSec/1000 + " msec.");
 
 		elapsedTime.resetStartTime();
 		int eventsHandled = 0;
 
-		while ((maxEvents > eventsHandled) && ((is_forever) || (!elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
+		while (!this.breakLoop && (maxEvents > eventsHandled) && ((is_forever) || (!elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
+
+			logger.log(Level.INFO, "[" + getId() + "] there are " + eventsWaitingInQ + " events in Q. handled " + eventsHandled + " events, " + 
+								"elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec (blocking for " + ((is_forever) ? "infinite duration)" : "a max duration of " + timeOutMicroSec/1000 + " msec.)"));
 
 			if (eventsWaitingInQ <= 0) { // the event queue is empty now, get more events from libxio
 				eventQueue.rewind();
@@ -111,11 +112,9 @@ public class EventQueueHandler implements Runnable {
 				eventsWaitingInQ--;
 
 			}
-
-			logger.log(Level.INFO, "[" + getId() + "] there are "+eventsWaitingInQ+" events in Q. handled " + eventsHandled+" events, elapsed time is "+ elapsedTime.getElapsedTimeMicro() + " usec.");
 		}
 
-		logger.log(Level.INFO, "[" + getId() + "] returning with "+eventsWaitingInQ+" events in Q. handled " + eventsHandled+" events, elapsed time is "+ elapsedTime.getElapsedTimeMicro() + " usec.");
+		logger.log(Level.INFO, "[" + getId() + "] returning with " + eventsWaitingInQ + " events in Q. handled " + eventsHandled + " events, elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec.");
 		return eventsHandled;
 	}
 
@@ -127,7 +126,10 @@ public class EventQueueHandler implements Runnable {
 	 * This function can be called from any thread context
 	 */
 	public void breakEventLoop() {
-		Bridge.breakEventLoop(getId());		
+		if (this.breakLoop == false) {
+			this.breakLoop = true;
+			Bridge.breakEventLoop(getId());	
+		}
 	}
 
 	/**

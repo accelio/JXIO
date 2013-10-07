@@ -14,7 +14,7 @@ public class TestManager {
 
 	// General Parameters
 	private static int requestedTest;
-	public static int numberOfTests = 5;
+	public static int numberOfTests = 6;
 	private static Runnable[] tests = new Runnable[numberOfTests + 1];
 	private static boolean[] successIndicators = new boolean[numberOfTests];
 	// Log
@@ -53,6 +53,7 @@ public class TestManager {
 		tests[3] = new MutipleManagersOnSameEQHTest();
 		tests[4] = new OpenRunEventLoopCloseClientTest();
 		tests[5] = new MutipleThreadsManager(TestManager.port);
+		tests[6] = new BreakEventLoopTests();
 	}
 
 	private static void argsRead(String[] args) {

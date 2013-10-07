@@ -54,11 +54,11 @@ public class Bridge {
 	    logger.log(Level.FINEST, "finished Bridge.runEventLoopNative=" + ret);
 	    return ret;
 	}	
-	private static native void stopEventLoopNative(long ptr);
+	private static native void breakEventLoopNative(long ptr);
 	public static void breakEventLoop(long ptr) {
-	    logger.log(Level.FINEST, "invoking stopEventLoopNative");
-	    stopEventLoopNative(ptr);
-	    logger.log(Level.FINEST, "finished stopEventLoopNative");
+	    logger.log(Level.FINEST, "invoking breakEventLoopNative");
+	    breakEventLoopNative(ptr);
+	    logger.log(Level.FINEST, "finished breakEventLoopNative");
 	}
 	private static native int addEventLoopFdNative(long ptr, long fd, int events, long priv_data);
 	public static int addEventLoopFd(long ptr, long fd, int events, long priv_data) {
