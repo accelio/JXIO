@@ -1,13 +1,13 @@
-//package clientTests;
+package com.mellanox.jxio.tests;
 
 import com.mellanox.jxio.*;
 
-public class NonExistingHostnameClientTest implements Runnable {
+public class OpenCloseClientTest implements Runnable {
 
-	public void run() {
-		///////////////////// Test 2 /////////////////////
-		// A non existing IP address
-		TestClient.print("*** Test 2: A non existing IP address *** ");
+	public void run(){
+		///////////////////// Test 1 /////////////////////
+		// Open and close a client 
+		TestClient.print("*** Test 1: Open and close a client *** ");
 		
 		// Setup parameters
 		String url;
@@ -15,7 +15,7 @@ public class NonExistingHostnameClientTest implements Runnable {
 		MySesClient sClient;
 		
 		// Get url
-		url = "rdma://" + "1.0.0.0" + ":" + TestClient.port;
+		url = "rdma://" + TestClient.hostname + ":" + TestClient.port;
 		
 		// Setting up a Event Queue Hanler
 		eqh = new EventQueueHandler();
@@ -28,7 +28,7 @@ public class NonExistingHostnameClientTest implements Runnable {
 		TestClient.print("------ Closing the session client...");
 		sClient.close();
 
-		TestClient.setSuccess(2);
-		TestClient.print("*** Test 2 Passed! *** ");
+		TestClient.setSuccess(1);
+		TestClient.print("*** Test 1 Passed! *** ");
 	}
 }

@@ -1,6 +1,7 @@
+package com.mellanox.jxio.tests;
+
+
 import com.mellanox.jxio.*;
-
-
 
 public class ServerControlPathSimpleTest {
 private static Log logger = Log.getLog(ServerControlPathSimpleTest.class.getCanonicalName());

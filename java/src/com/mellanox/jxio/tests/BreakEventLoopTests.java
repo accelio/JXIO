@@ -1,4 +1,4 @@
-//package tests;
+package com.mellanox.jxio.tests;
 
 import com.mellanox.jxio.EventQueueHandler;
 

@@ -1,4 +1,5 @@
-//package clientTests;
+package com.mellanox.jxio.tests;
+
 
 public class MutipleThreadsClient implements Runnable{
 

@@ -1,5 +1,6 @@
-import java.nio.ByteBuffer;
+package com.mellanox.jxio.tests;
 
+import java.nio.ByteBuffer;
 import com.mellanox.jxio.*;
 
 public class ClientControlPathMT {

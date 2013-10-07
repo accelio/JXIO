@@ -1,4 +1,5 @@
-//package clientTests;
+package com.mellanox.jxio.tests;
+
 
 import com.mellanox.jxio.*;
 

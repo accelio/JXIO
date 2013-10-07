@@ -1,4 +1,5 @@
-//package managerTests;
+package com.mellanox.jxio.tests;
+
 
 public class MutipleThreadsManager implements Runnable{
 

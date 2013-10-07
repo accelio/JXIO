@@ -1,11 +1,11 @@
 #!/bin/bash
 
-## ============================
-## JXIO Verification Manager Test
-## ============================
-## This script compiles and runs the JXIO verification test of the session manager.
+## ===========================
+## JXIO Verification Client Test
+## ===========================
+## This script compiles and runs the JXIO verification test of the session client.
 
-echo -e "\n******************* JXIO Verification Manager Test *******************"
+echo -e "\n******************* JXIO Verification Client Test *******************"
 
 # Get Running Directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -51,5 +51,5 @@ if [[ $? != 0 ]] ; then
 fi
 
 # Run the tests
-echo -e "\nRunning manager test....\n"
-java -classpath jx.jar:. TestManager $IP $PORT $TEST_NUMBER
+echo -e "\nRunning client test....\n"
+java -classpath jx.jar:. com.mellanox.jxio.tests.TestClient $IP $PORT $TEST_NUMBER

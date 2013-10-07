@@ -15,6 +15,9 @@
 **
 */
 
+package com.mellanox.jxio.tests;
+
+
 import java.util.logging.Level;
 
 import com.mellanox.jxio.*;
