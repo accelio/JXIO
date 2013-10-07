@@ -231,19 +231,24 @@ public class EventQueueHandler implements Runnable {
 			eventable = eventables.get(id);
 			eventable.onEvent(evSes);
 		}	
+		break;
+		
 		case 1: //msg error
 		{
 			EventMsgError evMsgErr = new EventMsgError(eventType, id);
 			eventable = eventables.get(id);
 			eventable.onEvent(evMsgErr);
 		}
-
+		break;
+		
 		case 2: //session established
 		{
 			EventSessionEstablished evSesEstab = new EventSessionEstablished(eventType, id);
 			eventable = eventables.get(id);
 			eventable.onEvent(evSesEstab);
 		}
+		break;
+		
 		case 3: //on request
 		{
 			Msg msg = this.msgsPendingNewRequest.get(id);
@@ -253,7 +258,8 @@ public class EventQueueHandler implements Runnable {
 			EventNewMsg evMsg = new EventNewMsg(eventType, id, msg);
 			eventable.onEvent(evMsg);
 		}
-
+		break;
+		
 		case 4: //on reply
 		{
 			Msg msg = msgsPendingReply.remove(id);
@@ -263,6 +269,7 @@ public class EventQueueHandler implements Runnable {
 			logger.log(Level.INFO, "eventable is "+ eventable);
 			eventable.onEvent(evMsg);
 		}
+		break;
 
 		case 5: //on new session
 		{
@@ -274,6 +281,7 @@ public class EventQueueHandler implements Runnable {
 			EventNewSession evNewSes = new EventNewSession(eventType, id, ptrSes, uri, srcIP);
 			eventable.onEvent(evNewSes);
 		}
+		break;
 
 		case 7: //on fd ready
 		{
@@ -281,6 +289,7 @@ public class EventQueueHandler implements Runnable {
 			int events = eventQueue.getInt();			
 			logger.log(Level.SEVERE, "received FD Ready event - not handled");
 		}
+		break;
 
 		default:
 			logger.log(Level.SEVERE, "received an unknown event "+ eventType);
