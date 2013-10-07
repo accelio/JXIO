@@ -53,7 +53,7 @@ private static Log logger = Log.getLog(ClientControlPathSimpleTest.class.getCano
 		ses.close();
 		System.out.println("***********************here");
 		try {
-		    eventQHndl.stopEventLoop();
+		    eventQHndl.stop();
 		    t.join();
 		    System.out.println("***********************after join");
 		} catch (InterruptedException e) {

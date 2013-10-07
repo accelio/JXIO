@@ -55,7 +55,7 @@ public class Bridge {
 	    return ret;
 	}	
 	private static native void stopEventLoopNative(long ptr);
-	public static void stopEventLoop(long ptr) {
+	public static void breakEventLoop(long ptr) {
 	    logger.log(Level.FINEST, "invoking stopEventLoopNative");
 	    stopEventLoopNative(ptr);
 	    logger.log(Level.FINEST, "finished stopEventLoopNative");
