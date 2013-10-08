@@ -32,6 +32,7 @@ libtool
 # Project/Eclipse
 .cproject
 .project
+.classpath
 
 # Java class
 *.class

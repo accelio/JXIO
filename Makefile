@@ -1,24 +1,27 @@
 
-
-TARGET=jx.jar
-JX_SO=libjx.so
-JAVA_FILES=java/src/com/mellanox/jxio/*.java java/src/com/mellanox/jxio/impl/*.java tests/com/mellanox/jxio/tests/*.java
+# Configuring Running Directory
+TOP_DIR=.
 
 
+# Configuring Parameters
+TARGET=jxio.jar
+BIN_FOLDER=$(TOP_DIR)/bin
+SRC_JAVA_FOLDER=$(TOP_DIR)/java/src
+SRC_JAVA_FILES=$(SRC_JAVA_FOLDER)/com/mellanox/jxio/*.java $(SRC_JAVA_FOLDER)/com/mellanox/jxio/impl/*.java
+
+NATIVE_LIBS=libjxio.so libxio.so
+ 
 all: $(TARGET)
 
-$(TARGET):$(JAVA_FILES)
+$(TARGET):$(SRC_JAVA_FILES)
+	rm -rf $(BIN_FOLDER)/*
 	(cd accelio/; make)
+	cp accelio/src/usr/.libs/libxio.so $(BIN_FOLDER)
 	(cd c; make)
-	rm -rf java/bin/*
-	javac -cp lib/commons-logging.jar -d java/bin/ $(JAVA_FILES)
-	(cd java/bin ;jar -cvf $(TARGET) com)
-	cp java/bin/$(TARGET) tests/com/mellanox/jxio/tests/
-	cp c/src/libjx.so java/bin
-	cp c/src/libjx.so tests/com/mellanox/jxio/tests/
-	cp  accelio/src/usr/.libs/libxio.so java/bin
-	cp  accelio/src/usr/.libs/libxio.so tests/com/mellanox/jxio/tests/ 
+	cp c/src/libjxio.so $(BIN_FOLDER)
+	javac -cp lib/commons-logging.jar -d $(BIN_FOLDER) $(SRC_JAVA_FILES)
+	(cd $(BIN_FOLDER) ;jar -cvf $(TARGET) com $(NATIVE_LIBS))
+
 clean:
-	(cd c; make distclean)
-	rm -rf java/bin/*
-	rm -rf tests/com/mellanox/jxio/tests/$(TARGET)
+	(cd c; make clean)
+	rm -rf $(BIN_FOLDER)/*

@@ -17,43 +17,48 @@
 package com.mellanox.jxio.impl;
 
 import java.nio.ByteBuffer;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class Bridge {
 
-    static {  
-		String s1=Bridge.class.getProtectionDomain().getCodeSource().getLocation().getPath(); 
-		String s2=s1.substring(0, s1.lastIndexOf("/")+1);
-		Runtime.getRuntime().load(s2 + "libjx.so");
-    }
-    private static final Log LOG = LogFactory.getLog(Bridge.class.getCanonicalName());
+	static {
+		LoadLibrary.loadLibrary("libxio.so"); // Accelio library
+		LoadLibrary.loadLibrary("libjxio.so"); // JXIO native library
+	}
 
-	// Native methods and their wrappers start here	
+	private static final Log LOG = LogFactory.getLog(Bridge.class.getCanonicalName());
+
+	// Native methods and their wrappers start here
+
 	private static native boolean createCtxNative(int eventQueueSize, Object dataFromC);
 	public static boolean createCtx(int eventQueueSize, Object dataFromC) {
 		boolean ret = createCtxNative(eventQueueSize, dataFromC);
 		return ret;
 	}
+
 	private static native void closeCtxNative(long ptr);
 	public static void closeCtx(long ptr) {
 		closeCtxNative(ptr);
 	}
+
 	private static native int runEventLoopNative(long ptr, long timeOutMicroSec);
 	public static int runEventLoop(long ptr, long timeOutMicroSec) {
 	    int ret = runEventLoopNative(ptr, timeOutMicroSec);
 	    return ret;
 	}	
+	
 	private static native void breakEventLoopNative(long ptr);
 	public static void breakEventLoop(long ptr) {
 	    breakEventLoopNative(ptr);
 	}
+
 	private static native int addEventLoopFdNative(long ptr, long fd, int events, long priv_data);
 	public static int addEventLoopFd(long ptr, long fd, int events, long priv_data) {
 	    int ret = addEventLoopFdNative(ptr, fd, events, priv_data);
 	    return ret;
 	}
+
 	private static native int delEventLoopFdNative(long ptr, long fd);
 	public static int delEventLoopFd(long ptr, long fd) {
 	    int ret = delEventLoopFdNative(ptr, fd);
@@ -64,7 +69,8 @@ public class Bridge {
 	public static long startSessionClient(String url, long ptrCtx) {
 		long p = startSessionClientNative(url, ptrCtx);		
 		return p;
-	}	
+	}
+
 	private static native void closeSessionClientNative(long sesPtr);
 	public static void closeSessionClient(long sesPtr) {
 		closeSessionClientNative(sesPtr);
@@ -109,7 +115,8 @@ public class Bridge {
 		boolean ret = sendMsgNative(ptrSession, sessionType, ptrMsg);
 		return ret;
 	}
-private static native boolean bindMsgPoolNative(long ptrMsgPool, long ptrEQH);
+
+	private static native boolean bindMsgPoolNative(long ptrMsgPool, long ptrEQH);
 	public static boolean bindMsgPool(long ptrMsgPool, long ptrEQH) {
 		boolean ret = bindMsgPoolNative(ptrMsgPool, ptrEQH);
 		return ret;

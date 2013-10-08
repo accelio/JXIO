@@ -1,11 +1,11 @@
 #!/bin/bash
 
-## ============================
-## JXIO Verification Manager Test
-## ============================
-## This script compiles and runs the JXIO verification test of the session manager.
+## ===========================
+## JXIO Verification Client Test
+## ===========================
+## This script compiles and runs the JXIO verification test of the session client.
 
-echo -e "\n******************* JXIO Verification Manager Test *******************"
+echo -e "\n******************* JXIO Verification Client Test *******************"
 
 # Get Running Directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -21,9 +21,7 @@ if [ ! -e ${JAVA_HOME} ]; then
         exit 1
 fi
 
-# Remove temporary files and cores
-rm -f bla
-rm -f JXIOLog.txt*
+# Remove cores
 rm -rf /.autodirect/mtrswgwork/UDA/core_files_TEMP/*
 
 # Check arguments
@@ -45,12 +43,12 @@ TEST_NUMBER=$3
 
 # Compile
 echo -e "\nCompiling JAVA files....\n"
-javac -cp "jx.jar:../../../../../lib/commons-logging.jar" ./*.java
+javac -cp "../bin/jxio.jar:../lib/commons-logging.jar" ./com/mellanox/jxio/tests/*.java
 if [[ $? != 0 ]] ; then
     exit 1
 fi
 
 # Run the tests
 export LD_LIBRARY_PATH=$DIR
-echo -e "\nRunning manager test....\n"
-java -Dlog4j.configuration=log4j.properties.jxiotest -cp "jx.jar:../../../../../lib/commons-logging.jar:../../../../../../lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.TestManager $IP $PORT $TEST_NUMBER
+echo -e "\nRunning client test....\n"
+java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "../bin/jxio.jar:../lib/commons-logging.jar:../lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.TestClient $IP $PORT $TEST_NUMBER
