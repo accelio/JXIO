@@ -95,10 +95,11 @@ int Context::run_event_loop(long timeout_micro_sec)
 	return this->events_num;
 }
 
-void Context::stop_event_loop()
+void Context::break_event_loop()
 {
 	xio_ev_loop_stop(this->ev_loop);
 }
+
 int Context::add_event_loop_fd(int fd, int events, void *priv_data)
 {
 	return xio_ev_loop_add(this->ev_loop, fd, events, Context::on_event_loop_handler, priv_data);

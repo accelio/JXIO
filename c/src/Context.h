@@ -35,7 +35,7 @@ public:
 	~Context();
 
 	int 	run_event_loop(long timeout_micro_sec);
-	void 	stop_event_loop();
+	void 	break_event_loop();
 
 	int 	add_event_loop_fd(int fd, int events, void *priv_data);
 	int 	del_event_loop_fd(int fd);

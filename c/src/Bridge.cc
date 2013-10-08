@@ -126,10 +126,10 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_runEventLoo
 	return ctx->run_event_loop((long)timeOutMicroSec);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_stopEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_breakEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
 	Context *ctx = (Context *)ptrCtx;
-	ctx->stop_event_loop();
+	ctx->break_event_loop();
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_addEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd, jint events, jlong priv_data)
