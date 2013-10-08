@@ -40,7 +40,7 @@ public class MsgPool {
 	    return;
 	    //TODO: throw exception
 	}
-	refToCObject = refToCObjects[0];	
+	refToCObject = refToCObjects[0];
 	int msgBufferSize = inSize + outSize;
 	LOG.debug("capacity is " + buffer.capacity() + " limit " + buffer.limit()+ " position "+ buffer.position()+ " remaining is "+ buffer.remaining());
 	for (int i=0; i<count; i++){

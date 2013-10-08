@@ -85,19 +85,35 @@ public class Bridge {
 		closeSessionClientNative(sesPtr);
 		LOG.trace("finished Bridge.closeSessionClient");
 	}
-
-	private static native long [] startServerNative(String url, long ptrCtx);
-	public static long [] startServer(String url, long ptrCtx) {
+	
+	private static native long  startServerManagerNative(String url, long ptrCtx);
+	public static long  startServerManager(String url, long ptrCtx) {
 		LOG.trace( "invoking startServerNative");
-		long ptr [] = startServerNative(url, ptrCtx);
-		LOG.trace("finished startServerNative");
+		long ptr  = startServerManagerNative(url, ptrCtx);
+		LOG.trace( "finished startServerNative");
 		return ptr;
 	}
-	private static native boolean stopServerNative(long ptr);
-	public static boolean stopServer(long ptr) {
-		LOG.trace("invoking stopServerNative");
-		boolean ret = stopServerNative(ptr);
-		LOG.trace("finished stopServerNative ret=" + ret);
+	private static native boolean stopServerManagerNative(long ptr);
+	public static boolean stopServerManager(long ptr) {
+		LOG.trace( "invoking stopServerNative");
+		boolean ret = stopServerManagerNative(ptr);
+		LOG.trace( "finished stopServerNative ret=" + ret);
+		return ret;
+	}
+	
+
+	private static native long [] startServerSessionNative(String url, long ptrCtx);
+	public static long [] startServerSession(String url, long ptrCtx) {
+		LOG.trace( "invoking startServerNative");
+		long ptr [] = startServerSessionNative(url, ptrCtx);
+		LOG.trace( "finished startServerNative");
+		return ptr;
+	}
+	private static native boolean stopServerSessionNative(long ptr);
+	public static boolean stopServerSession(long ptr) {
+		LOG.trace( "invoking stopServerNative");
+		boolean ret = stopServerSessionNative(ptr);
+		LOG.trace( "finished stopServerNative ret=" + ret);
 		return ret;
 	}
 

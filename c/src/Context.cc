@@ -21,8 +21,6 @@
 Context::Context(int eventQSize)
 {
 	error_creating = false;
-	this->map_session = NULL;
-
 
 	this->events_num = 0;
 	ev_loop = xio_ev_loop_init();
@@ -30,7 +28,6 @@ Context::Context(int eventQSize)
 		log (lsERROR, "Error, xio_ev_loop_init failed\n");
 		error_creating = true;
 		return;
-
 	}
 
 	ctx = xio_ctx_open(NULL, ev_loop, 0);
@@ -63,9 +60,6 @@ Context::~Context()
 		return;
 	}
 
-	if (this->map_session != NULL) {
-		delete (this->map_session);
-	}
 	delete (this->event_queue);
 	delete (this->events);
 	xio_ctx_close(ctx);

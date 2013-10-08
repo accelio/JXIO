@@ -15,9 +15,10 @@
 **
 */
 
-#include "Server.h"
 
-Server::Server(const char *url, long ptrCtx)
+#include "ServerSession.h"
+
+ServerSession::ServerSession(const char *url, long ptrCtx)
 {
 	log (lsDEBUG, "inside startServerNative method\n");
 
@@ -27,7 +28,6 @@ Server::Server(const char *url, long ptrCtx)
 	memset (&server_ops, 0, sizeof(server_ops));
 	server_ops.on_session_event     =  on_session_event_callback;
 	server_ops.on_msg               =  on_msg_callback; //TODO: to separate into 2 different classes
-	server_ops.on_new_session       =  on_new_session_callback;
 	server_ops.on_msg_send_complete =  on_msg_send_complete_callback;
 	server_ops.assign_data_in_buf   =  on_buffer_request_callback;
 
@@ -43,23 +43,12 @@ Server::Server(const char *url, long ptrCtx)
 		log (lsERROR, "Error in binding server\n");
 		error_creating = true;
 	}
-	if (ctxClass->map_session == NULL) {
-			ctxClass->map_session = new std::map<void*,Contexable*> ();
-			if (ctxClass->map_session== NULL) {
-				log (lsERROR, "Error, Could not allocate memory\n");
-				xio_unbind (this->server);
-				error_creating = true;
-			}
-	}
-
-	ctxClass->map_session->insert(std::pair<void*, Contexable*>(session, this));
-
 	log (lsDEBUG, "****** port number is %d\n",this->port);
 
 	this->closingInProcess = false;
 }
 
-Server::~Server()
+ServerSession::~ServerSession()
 {
 	if (!error_creating) {
 		if (session) {
@@ -73,7 +62,7 @@ Server::~Server()
 	}
 }
 
-bool Server::forward(struct xio_session *session, const char * url)
+bool ServerSession::accept(struct xio_session *session, const char * url)
 {
 	log (lsDEBUG, "****** url before forward is %s\n", url);
 
@@ -86,7 +75,7 @@ bool Server::forward(struct xio_session *session, const char * url)
 	return true;
 }
 
-bool Server::close()
+bool ServerSession::close()
 {
 	this->closingInProcess = true;
 
@@ -104,7 +93,7 @@ bool Server::close()
 	return true;
 }
 
-bool Server::onSessionEvent(int eventType)
+bool ServerSession::onSessionEvent(int eventType)
 {
 	switch (eventType) {
 	case (XIO_SESSION_CONNECTION_CLOSED_EVENT):
@@ -128,7 +117,7 @@ bool Server::onSessionEvent(int eventType)
 	}
 }
 
-bool Server::send_reply(Msg *msg)
+bool ServerSession::send_reply(Msg *msg)
 {
 	log(lsDEBUG, "inside Server::send_reply xio_msg is %p. msg is %p\n", msg->get_xio_msg(), msg);
 	//set_xio_msg????

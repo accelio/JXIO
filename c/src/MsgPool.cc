@@ -30,6 +30,7 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 
 	this->x_buf = xio_alloc(buf_size);
 	if (x_buf == NULL){
+		log (lsERROR, "there was an error while allocating&registering memory\n");
 		goto mark_error;
 	}
 	this->buf = x_buf->addr;

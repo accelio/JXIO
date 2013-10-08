@@ -15,8 +15,8 @@
 **
 */
 
-#ifndef Server__H___
-#define Server__H___
+#ifndef ServerManager__H___
+#define ServerManager__H___
 
 #include <errno.h>
 #include <stdlib.h>
@@ -27,23 +27,17 @@
 
 class Context;
 
-class Server : public Contexable {
+class ServerManager : public Contexable {
 public:
 	//to move some to private?
-	Server(const char	*url, long ptrCtx);
-	~Server();
+	ServerManager(const char	*url, long ptrCtx);
+	~ServerManager();
 
-	bool forward(struct xio_session *, const char * url);
-	bool send_reply (Msg *msg);
 	bool onSessionEvent(int eventType);
-	bool close();
 
 	struct xio_server* server;
-	struct xio_session* session;
-
 	bool error_creating;
 	uint16_t port; //indicates the actual port on which the server listens
-	bool closingInProcess;
 };
 
-#endif // ! cJXServer__H___
+#endif // ! ServerManager

@@ -28,7 +28,6 @@ public class ServerManager extends EventQueueHandler.Eventable {
 
 	private final Callbacks callbacks;
 	private final EventQueueHandler eventQHndl;
-	private final int port;
 	private final String url;
 	private String urlPort0;
 	private static final int sizeEventQ = 10000;
@@ -44,9 +43,7 @@ public class ServerManager extends EventQueueHandler.Eventable {
 		this.eventQHndl = eventQHandler;
 		this.callbacks = callbacks;
 
-		long []ar = Bridge.startServer(url, eventQHandler.getId());
-		setId(ar[0]);
-		this.port = (int)ar[1];
+		setId(Bridge.startServerManager(url, eventQHandler.getId()));
 
 		if (getId() == 0) {
 			LOG.fatal("there was an error creating SessionManager");
@@ -65,7 +62,7 @@ public class ServerManager extends EventQueueHandler.Eventable {
 			LOG.error("closing ServerManager with empty id");
 			return false;
 		}
-		Bridge.stopServer(getId());
+		Bridge.stopServerManager(getId());
 		setIsClosing(true);
 		return true;
 	}

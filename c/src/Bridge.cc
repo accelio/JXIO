@@ -25,8 +25,8 @@
 
 #include "CallbackFunctions.h"
 #include "Client.h"
-#include "Server.h"
-
+#include "ServerManager.h"
+#include "ServerSession.h"
 #include "Context.h"
 #include "Utils.h"
 #include "MsgPool.h"
@@ -167,7 +167,31 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSe
 	return ses->close_connection();
 }
 
-extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_jxio_impl_Bridge_startServerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
+extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_startServerManagerNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
+{
+	const char *url = env->GetStringUTFChars(jurl, NULL);
+
+	ServerManager *server = new ServerManager(url, ptrCtx);
+	env->ReleaseStringUTFChars(jurl, url);
+
+	if (server == NULL) {
+		log(lsERROR, "memory allocation failed\n");
+		return 10;
+	}
+	if (server->error_creating) {
+		delete(server);
+		return 0;
+	}
+	return (jlong)(intptr_t) server;
+}
+
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_stopServerManagerNative(JNIEnv *env, jclass cls, jlong ptrServer)
+{
+	ServerManager *server = (ServerManager *)ptrServer;
+	delete (server);
+}
+
+extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_jxio_impl_Bridge_startServerSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
 {
 	jlong temp[2];
 
@@ -178,7 +202,7 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_jxio_impl_Bridge_start
 
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 
-	Server *server = new Server(url, ptrCtx);
+	ServerSession *server = new ServerSession(url, ptrCtx);
 	env->ReleaseStringUTFChars(jurl, url);
 
 	if (server == NULL) {
@@ -200,7 +224,7 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_jxio_impl_Bridge_start
 
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_stopServerNative(JNIEnv *env, jclass cls, jlong ptrServer)
 {
-	Server *server = (Server *)ptrServer;
+	ServerSession *server = (ServerSession *)ptrServer;
 	server->close();
 }
 
@@ -208,8 +232,8 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_forward
 {
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	struct xio_session *session = (struct xio_session *)ptr_session;
-	Server * server = (Server *) ptr_server;
-	bool retVal = server->forward(session, url);
+	ServerSession * server = (ServerSession *) ptr_server;
+	bool retVal = server->accept(session, url);
 	env->ReleaseStringUTFChars(jurl, url);
 
 	return retVal;
@@ -247,7 +271,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_sendMsg
 	Msg * msg = (Msg*) ptr_msg;
 
 	if (session_type == 0){//it's server
-		Server * server = (Server *) ptr_session;
+		ServerSession * server = (ServerSession *) ptr_session;
 		return server->send_reply(msg);
 	}else{ //it's client
 		Client * client = (Client *) ptr_session;

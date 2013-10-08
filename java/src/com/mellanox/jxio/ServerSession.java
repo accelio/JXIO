@@ -44,7 +44,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		this.url = url;
 		this.callbacks = callbacks;
 		LOG.debug("uri inside ServerSession is "+url);
-		long[] ar = Bridge.startServer(url, eventQHandler.getId());
+		long[] ar = Bridge.startServerSession(url, eventQHandler.getId());
 		final long id = ar[0];
 		this.port = (int) ar[1];
 		if (id == 0){
@@ -67,7 +67,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 			LOG.error("closing ServerSession with empty id");
 			return false;
 		}
-		Bridge.stopServer(getId());
+		Bridge.stopServerSession(getId());
 		setIsClosing(true);
 		return true;
 	}
