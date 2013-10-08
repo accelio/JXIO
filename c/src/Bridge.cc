@@ -225,6 +225,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMs
 		return NULL;
 	}
 	if (pool->error_creating) {
+		log(lsERROR, "there was an error creating MsgPool\n");
 		delete (pool);
 		return NULL;
 	}

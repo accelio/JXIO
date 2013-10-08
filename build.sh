@@ -43,8 +43,8 @@ cd java/bin ;jar -cvf $TARGET com ; cd ../..
 cp -f java/bin/$TARGET java/src/com/mellanox/jxio/tests/
 cp -f c/src/libjx.so java/bin
 cp -f c/src/libjx.so java/src/com/mellanox/jxio/tests/
-cp -f accelio/src/usr/libxio.so java/bin
-cp -f accelio/src/usr/libxio.so java/src/com/mellanox/jxio/tests/
+cp -f accelio/src/usr/.libs/libxio.so java/bin
+cp -f accelio/src/usr/.libs/libxio.so java/src/com/mellanox/jxio/tests/
 
 
 

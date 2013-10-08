@@ -34,6 +34,11 @@ public class MsgPool {
     public MsgPool(int count, int inSize, int outSize){
 	long refToCObjects [] = new long [count + 1]; //the first element represents the id of MsgPool
 	buffer = Bridge.createMsgPool(count, inSize, outSize, refToCObjects);
+	if (buffer == null){
+	    logger.log(Level.SEVERE, "there was an error creating the MsgPool");
+	    return;
+	    //TODO: throw exception
+	}
 	refToCObject = refToCObjects[0];	
 	int msgBufferSize = inSize + outSize;
 	logger.log(Level.FINE, "capacity is " + buffer.capacity() + " limit " + buffer.limit()+ " position "+ buffer.position()+ " remaining is "+ buffer.remaining());

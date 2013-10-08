@@ -16,8 +16,8 @@ $(TARGET):$(JAVA_FILES)
 	cp java/bin/$(TARGET) java/src/com/mellanox/jxio/tests/
 	cp c/src/libjx.so java/bin
 	cp c/src/libjx.so java/src/com/mellanox/jxio/tests/
-	cp  accelio/src/usr/libxio.so java/bin
-	cp  accelio/src/usr/libxio.so java/src/com/mellanox/jxio/tests/ 
+	cp  accelio/src/usr/.libs/libxio.so java/bin
+	cp  accelio/src/usr/.libs/libxio.so java/src/com/mellanox/jxio/tests/ 
 clean:
 	(cd c; make distclean)
 	rm -rf java/bin/*

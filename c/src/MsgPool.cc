@@ -29,7 +29,6 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 	this->buf_size = msg_num*(in_size+out_size);
 
 	this->x_buf = xio_alloc(buf_size);
-	log (lsDEBUG, "got here!!!!\n");
 	if (x_buf == NULL){
 		goto mark_error;
 	}
