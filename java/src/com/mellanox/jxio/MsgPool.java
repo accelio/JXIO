@@ -19,14 +19,15 @@ package com.mellanox.jxio;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 import com.mellanox.jxio.impl.Bridge;
 
 public class MsgPool {
-	
-  
-    private static Log logger = Log.getLog(MsgPool.class.getCanonicalName());
+	private static final Log LOG = LogFactory.getLog(MsgPool.class.getCanonicalName());
     ByteBuffer buffer;
     private long refToCObject;
     List<Msg> listMsg = new ArrayList<Msg>();
@@ -35,28 +36,27 @@ public class MsgPool {
 	long refToCObjects [] = new long [count + 1]; //the first element represents the id of MsgPool
 	buffer = Bridge.createMsgPool(count, inSize, outSize, refToCObjects);
 	if (buffer == null){
-	    logger.log(Level.SEVERE, "there was an error creating the MsgPool");
+	    LOG.fatal("there was an error creating the MsgPool");
 	    return;
 	    //TODO: throw exception
 	}
 	refToCObject = refToCObjects[0];	
 	int msgBufferSize = inSize + outSize;
-	logger.log(Level.FINE, "capacity is " + buffer.capacity() + " limit " + buffer.limit()+ " position "+ buffer.position()+ " remaining is "+ buffer.remaining());
+	LOG.debug("capacity is " + buffer.capacity() + " limit " + buffer.limit()+ " position "+ buffer.position()+ " remaining is "+ buffer.remaining());
 	for (int i=0; i<count; i++){
 	    buffer.position(msgBufferSize * i);
 	    ByteBuffer partialBuffer = buffer.slice();
 	    partialBuffer.limit(msgBufferSize);
-	    logger.log(Level.FINE, "capacity is " + partialBuffer.capacity() + " limit " + partialBuffer.limit()+ " position "+ partialBuffer.position()+ " remaining is "+ partialBuffer.remaining());
+	    LOG.debug("capacity is " + partialBuffer.capacity() + " limit " + partialBuffer.limit()+ " position "+ partialBuffer.position()+ " remaining is "+ partialBuffer.remaining());
 	    Msg m = new Msg(partialBuffer, inSize, outSize, refToCObjects[i+1], this);
 	    listMsg.add(m);
-	    logger.log(Level.FINEST, "ptr is "+ refToCObjects[i+1]);
-
+	    LOG.debug("ptr is "+ refToCObjects[i+1]);
 	}
     }
     
     public Msg getMsg(){
 	if (listMsg.isEmpty()){
-	    logger.log(Level.SEVERE, "there are no more messages in pool");
+	    LOG.error("there are no more messages in pool");
 	    return null;
 	}
 	Msg msg = listMsg.remove(0); //1 is for debugging. should be 0
@@ -68,7 +68,7 @@ public class MsgPool {
 	    listMsg.add(msg);
 	}
 	else{
-	    logger.log(Level.SEVERE, "parent pool and actual msg pool do not match!");
+	    LOG.error("parent pool and actual msg pool do not match!");
 	}
     }
     

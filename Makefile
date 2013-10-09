@@ -11,7 +11,7 @@ $(TARGET):$(JAVA_FILES)
 	(cd accelio/; make)
 	(cd c; make)
 	rm -rf java/bin/*
-	javac -d java/bin/ $(JAVA_FILES)
+	javac -cp lib/commons-logging.jar -d java/bin/ $(JAVA_FILES)
 	(cd java/bin ;jar -cvf $(TARGET) com)
 	cp java/bin/$(TARGET) java/src/com/mellanox/jxio/tests/
 	cp c/src/libjx.so java/bin

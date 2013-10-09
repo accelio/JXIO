@@ -37,7 +37,7 @@ fi
 echo "Build JXIO... (java code)"
 cd $DIR
 mkdir -p java/bin
-javac -d java/bin/ $JAVA_FILES
+javac -cp lib/commons-logging.jar -d java/bin/ $JAVA_FILES
 cd java/bin ;jar -cvf $TARGET com ; cd ../..
 
 cp -f java/bin/$TARGET java/src/com/mellanox/jxio/tests/

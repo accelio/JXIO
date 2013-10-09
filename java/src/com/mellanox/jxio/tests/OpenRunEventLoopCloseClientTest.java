@@ -25,9 +25,11 @@ public class OpenRunEventLoopCloseClientTest implements Runnable {
 		sClient = new MySesClient(eqh, url);
 
 		TestClient.print("----- Run Event Loop...for 1 event or 1 sec");
-		eqh.runEventLoop(1, 1000000 /*1sec*/);
+		eqh.runEventLoop(1, -1 /*1sec*/);
 		
 		TestClient.print("------ Closing the session client...");
+		//
+		
 		sClient.close();
 
 		TestClient.print("----- Closing the event queue handler...");

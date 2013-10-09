@@ -17,13 +17,14 @@
 
 package com.mellanox.jxio.tests;
 
-import java.util.logging.Level;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.*;
 
 public class MySesClient {
 
-    private static Log logger = Log.getLog(MySesClient.class.getCanonicalName());
+	private final static Log LOG = LogFactory.getLog(MySesClient.class.getCanonicalName());
 
     EventQueueHandler eqh = null;
     ClientSession client;
@@ -37,7 +38,7 @@ public class MySesClient {
 
 	public boolean close() {
 		this.client.close();
-		logger.log(Level.INFO, "[SUCCESS] Session client successfully closed!" );
+		LOG.info("[SUCCESS] Session client successfully closed!" );
 		return true;
 	}
 
@@ -50,11 +51,11 @@ public class MySesClient {
     class MySesClientCallbacks implements ClientSession.Callbacks {
 
 	public void onMsgError(){	
-	    logger.log(Level.INFO, "onMsgErrorCallback");
+		LOG.info("onMsgErrorCallback");
 	}
 
 	public void onSessionEstablished(){
-	    logger.log(Level.INFO, "[SUCCESS] Session Established! Bring the champagne!");
+		LOG.info("[SUCCESS] Session Established! Bring the champagne!");
 	}
 
 	public void onSessionError(int session_event, String reason ){
@@ -85,13 +86,13 @@ public class MySesClient {
 		break;
 	    }
 
-	    logger.log(Level.SEVERE, "[EVENT] GOT EVENT " + event + " because of " + reason);
+	    LOG.error("[EVENT] GOT EVENT " + event + " because of " + reason);
 
 	}
 
 	public void onReply(Msg msg){	
-	    logger.log(Level.INFO, "[SUCCESS] Got a message! Bring the champagne!");
-	    logger.log(Level.INFO, "num is " + msg.getIn().getInt());
+		LOG.info("[SUCCESS] Got a message! Bring the champagne!");
+		LOG.info("num is " + msg.getIn().getInt());
 	}
 
 

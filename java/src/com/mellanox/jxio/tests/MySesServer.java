@@ -17,13 +17,13 @@
 
 package com.mellanox.jxio.tests;
 
-import java.util.logging.Level;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.*;
 
 public class MySesServer {
 	
-	private static Log logger = Log.getLog(MySesServer.class.getCanonicalName());
 	EventQueueHandler eqh = null;
 	ServerSession server;
 

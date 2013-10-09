@@ -17,14 +17,14 @@
 
 package com.mellanox.jxio.tests;
 
-
-import java.util.logging.Level;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.*;
 
 public class MySesManager  {
 
-	private static Log logger = Log.getLog(MySesManager.class.getCanonicalName());
+	private final static Log LOG = LogFactory.getLog(MySesManager.class.getCanonicalName());
 	EventQueueHandler eqh = null;
 	ServerManager serverManager;
 
@@ -78,7 +78,7 @@ public class MySesManager  {
 				serverManager.close(); // Added
 				break;
 			}
-			logger.log(Level.SEVERE, "GOT EVENT " + event + "because of " + reason);
+			LOG.error("GOT EVENT " + event + "because of " + reason);
 		}
 	}
 }

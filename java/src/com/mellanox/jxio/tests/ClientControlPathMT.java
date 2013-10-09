@@ -1,14 +1,17 @@
 package com.mellanox.jxio.tests;
 
+
 import java.nio.ByteBuffer;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import com.mellanox.jxio.*;
 
 public class ClientControlPathMT {
-private static Log logger = Log.getLog(ClientControlPathSimpleTest.class.getCanonicalName());
+private final static Log LOG = LogFactory.getLog(ClientControlPathMT.class.getCanonicalName());
 
 	
 	public static void main(String[] args) {
-		
+		System.out.println(LOG.getClass().toString());
 		String url = args[0];
 		String port = args[1];
 		String combined_url = "rdma://"+url+":"+port;

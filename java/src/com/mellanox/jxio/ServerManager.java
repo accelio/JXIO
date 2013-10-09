@@ -16,7 +16,8 @@
  */
 package com.mellanox.jxio;
 
-import java.util.logging.Level;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
@@ -31,7 +32,7 @@ public class ServerManager extends EventQueueHandler.Eventable {
 	private final String url;
 	private String urlPort0;
 	private static final int sizeEventQ = 10000;
-	private static Log logger = Log.getLog(ServerManager.class.getCanonicalName());
+	private static final Log LOG = LogFactory.getLog(ServerManager.class.getCanonicalName());
 
 	public static interface Callbacks {
 		public void onSession(long ptrSes, String uri, String srcIP);
@@ -48,10 +49,10 @@ public class ServerManager extends EventQueueHandler.Eventable {
 		this.port = (int)ar[1];
 
 		if (getId() == 0) {
-			logger.log(Level.SEVERE, "there was an error creating SessionManager");
+			LOG.fatal("there was an error creating SessionManager");
 		}
 		createUrlForServerSession();
-		logger.log(Level.INFO, "urlForServerSession is "+urlPort0);
+		LOG.debug("urlForServerSession is "+urlPort0);
 
 		this.eventQHndl.addEventable(this); 
 	}
@@ -61,7 +62,7 @@ public class ServerManager extends EventQueueHandler.Eventable {
 	public boolean close() {
 		this.eventQHndl.removeEventable (this); //TODO: fix this
 		if (getId() == 0){
-			logger.log(Level.SEVERE, "closing ServerManager with empty id");
+			LOG.error("closing ServerManager with empty id");
 			return false;
 		}
 		Bridge.stopServer(getId());
@@ -70,7 +71,7 @@ public class ServerManager extends EventQueueHandler.Eventable {
 	}
 
 	public void forward(ServerSession ses, long ptrSes) {
-		logger.log(Level.INFO, "****** new url inside forward  is " + ses.getUrl());
+		LOG.debug("****** new url inside forward  is " + ses.getUrl());
 		Bridge.forwardSession(ses.getUrl(), ptrSes, ses.getId());
 	}
 
@@ -78,7 +79,7 @@ public class ServerManager extends EventQueueHandler.Eventable {
 		switch (ev.getEventType()) {
 
 		case 0: //session error event
-			logger.log(Level.INFO, "received session error event");
+			LOG.error("received session error event");
 			if (ev  instanceof EventSession){
 				int errorType = ((EventSession) ev).getErrorType();
 				String reason = ((EventSession) ev).getReason();
@@ -91,18 +92,17 @@ public class ServerManager extends EventQueueHandler.Eventable {
 			break;
 
 		case 5: //on new session
-			logger.log(Level.INFO, "received new session event");
+			LOG.debug("received new session event");
 			if (ev  instanceof EventNewSession){
 				long ptrSes = ((EventNewSession) ev).getPtrSes();
 				String uri = ((EventNewSession) ev).getUri();		
 				String srcIP = ((EventNewSession) ev).getSrcIP();
 				this.callbacks.onSession(ptrSes, uri, srcIP);
-
 			}
 			break;
 
 		default:
-			logger.log(Level.SEVERE, "received an unknown event "+ ev.getEventType());
+			LOG.error("received an unknown event "+ ev.getEventType());
 		}
 	}
 

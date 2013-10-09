@@ -1,7 +1,7 @@
 package com.mellanox.jxio.tests;
 
-
-import java.util.logging.Level;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.*;
 
@@ -19,7 +19,7 @@ public class TestClient {
 	private static Runnable[] tests = new Runnable[numberOfTests + 1];
 	private static boolean[] successIndicators = new boolean[numberOfTests];
 	// Log
-	private static Log testLog = Log.getLog(TestClient.class.getCanonicalName());
+	private final static Log LOG = LogFactory.getLog(TestClient.class.getCanonicalName());
 	
 	public static void main(String[] args) {
 		
@@ -81,7 +81,7 @@ public class TestClient {
 	
 	public static void print(String str){
 		//System.out.println("\n" + str + "\n");
-		testLog.log(Level.INFO, str);
+		LOG.info(str);
 	}
 	
 	public static void setSuccess(int test){

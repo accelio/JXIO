@@ -16,8 +16,8 @@
 */
 package com.mellanox.jxio;
 
-import java.nio.ByteBuffer;
-import java.util.logging.Level;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
@@ -31,7 +31,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	private final int port;
 	private String url;
 
-	private static Log logger = Log.getLog(ServerSession.class.getCanonicalName());
+	private static final Log LOG = LogFactory.getLog(ServerSession.class.getCanonicalName());
 
 	public static interface Callbacks {
 	    public void onRequest(Msg msg);
@@ -43,28 +43,28 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		this.eventQHandler = eventQHandler;
 		this.url = url;
 		this.callbacks = callbacks;
-		logger.log(Level.INFO, "uri inside ServerSession is "+url);
+		LOG.debug("uri inside ServerSession is "+url);
 		long[] ar = Bridge.startServer(url, eventQHandler.getId());
 		final long id = ar[0];
 		this.port = (int) ar[1];
 		if (id == 0){
-			logger.log(Level.SEVERE, "there was an error creating ServerSession");
+			LOG.fatal("there was an error creating ServerSession");
 		}
-		logger.log(Level.INFO, "id is " + id);
+		LOG.debug("id is " + id);
 		this.setId(id);
 
 		//modify url to include the new port number
 		int index = url.lastIndexOf(":"); 
 
 		this.url = url.substring(0, index+1)+Integer.toString(port);
-		logger.log(Level.INFO, "****** new url is " + this.url);
+		LOG.debug("****** new url is " + this.url);
 		this.eventQHandler.addEventable(this);
 	}
 	
 	public boolean close() {
 //		eventQHandler.removeEventable (this); //TODO: fix this
 		if (getId() == 0){
-			logger.log(Level.SEVERE, "closing ServerSession with empty id");
+			LOG.error("closing ServerSession with empty id");
 			return false;
 		}
 		Bridge.stopServer(getId());
@@ -79,9 +79,8 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	void onEvent(Event ev) {
 		switch (ev.getEventType()) {
 		case 0: //session error event
-			logger.log(Level.INFO, "received session error event");
+			LOG.error("received session error event");
 			if (ev  instanceof EventSession) {
-
 				int errorType = ((EventSession) ev).getErrorType();
 				String reason = ((EventSession) ev).getReason();
 				callbacks.onSessionError(errorType, reason);
@@ -93,24 +92,23 @@ public class ServerSession extends EventQueueHandler.Eventable {
 			break;
 			
 		case 1: //msg error
-			logger.log(Level.INFO, "received msg error event");
+			LOG.error("received msg error event");
 			callbacks.onMsgError();
 			break;
 
 		case 3: //on request
-			logger.log(Level.INFO, "received msg event");
+			LOG.trace("received msg event");
 			Msg msg = ((EventNewMsg) ev).getMsg();
 			callbacks.onRequest(msg);
 			break;
 		
 		case 6: //msg sent complete
-			logger.log(Level.INFO, "received msg sent complete event");
+			LOG.trace("received msg sent complete event");
 			break;
 			
 		default:
-			logger.log(Level.SEVERE, "received an unknown event "+ ev.getEventType());	
+			LOG.error("received an unknown event "+ ev.getEventType());	
 		}
-		
 	}
 
 	protected final String getUrl() {

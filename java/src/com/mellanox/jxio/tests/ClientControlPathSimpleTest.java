@@ -4,14 +4,13 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.mellanox.jxio.*;
 
 
 public class ClientControlPathSimpleTest {
-	
-	private static Log logger = Log.getLog(ClientControlPathSimpleTest.class.getCanonicalName());
-
-	
 	public static void main(String[] args) {
 		
 		String url = args[0];

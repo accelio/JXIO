@@ -16,8 +16,8 @@
  */
 package com.mellanox.jxio;
 
-import java.nio.ByteBuffer;
-import java.util.logging.Level;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
@@ -30,7 +30,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	private final Callbacks callbacks;
 	private final EventQueueHandler eventQHandler;
 	private final String url;
-	private final Log logger = Log.getLog(ClientSession.class.getCanonicalName());
+	private static final Log LOG =  LogFactory.getLog(ClientSession.class.getCanonicalName());
 
 	public static interface Callbacks {
 		public void onReply(Msg msg);
@@ -45,9 +45,9 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		this.callbacks = callbacks;
 		final long id = Bridge.startSessionClient(url, eventQHandler.getId());
 		if (id == 0) {
-			logger.log(Level.SEVERE, "there was an error creating session");
+			LOG.error("there was an error creating session");
 		}
-		logger.log(Level.INFO, "id is " + id);
+		LOG.debug("id is " + id);
 		this.setId(id);
 
 		this.eventQHandler.addEventable(this); 
@@ -58,19 +58,19 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		eventQHandler.addMsgInUse(msg);
 		boolean ret = Bridge.sendMsg(this.getId(), 0, msg.getId());
 		if (!ret){
-			logger.log(Level.SEVERE, "there was an error sending the message");
+			LOG.error("there was an error sending the message");
 		}
 		return ret;
 	}
 
 	public boolean close() {
 		if (getId() == 0) {
-			logger.log(Level.SEVERE, "closing Session with empty id");
+			LOG.error("closing Session with empty id");
 			return false;
 		}
 		Bridge.closeSessionClient(getId());	
 
-		logger.log(Level.INFO, "in the end of SessionClientClose");
+		LOG.debug("at the end of SessionClientClose");
 		setIsClosing(true);
 		return true;
 	}
@@ -79,7 +79,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		switch (ev.getEventType()) {
 
 		case 0: //session error event
-			logger.log(Level.INFO, "received session event");
+			LOG.debug("received session event");
 			if (ev  instanceof EventSession){
 
 				int errorType = ((EventSession) ev).getErrorType();
@@ -93,26 +93,23 @@ public class ClientSession extends EventQueueHandler.Eventable {
 			break;
 
 		case 1: //msg error
-			logger.log(Level.INFO, "received msg error event");
+			LOG.error("received msg error event");
 			callbacks.onMsgError();
 			break;
 
 		case 2: //session established
-			logger.log(Level.INFO, "received session established event");
+			LOG.debug("received session established event");
 			callbacks.onSessionEstablished();
 			break;
 
 		case 4: //on reply
-
-			logger.log(Level.INFO, "received msg event");
+			LOG.trace("received msg event");
 			Msg msg = ((EventNewMsg) ev).getMsg();
 			callbacks.onReply(msg);
-
-
 			break;
 
 		default:
-			logger.log(Level.SEVERE, "received an unknown event "+ ev.getEventType());
+			LOG.error("received an unknown event "+ ev.getEventType());
 		}
 	}
 }

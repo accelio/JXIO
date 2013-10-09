@@ -17,12 +17,13 @@
 package com.mellanox.jxio;
 
 import java.nio.ByteBuffer;
-import java.util.logging.Level;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class Msg {
 
-
-	private static Log logger = Log.getLog(Msg.class.getCanonicalName());
+	private static final Log LOG= LogFactory.getLog(Msg.class.getCanonicalName());
 	private long refToCObject;
 	private ClientSession clientSession;
 	private MsgPool msgPool; //reference to MsgPool holding this buffer
@@ -31,16 +32,11 @@ public class Msg {
 	Msg(ByteBuffer buffer, int inSize, int outSize, long id, MsgPool msgPool){
 		in = createSubBuffer(0, inSize, buffer);
 		out = createSubBuffer(inSize, buffer.capacity(), buffer);
-
 		this.msgPool = msgPool;
 		this.refToCObject = id;
-
-
-		logger.log(Level.INFO, "IN: capacity is " + in.capacity() + " limit " + in.limit()+ " position "+ in.position()+ " remaining is "+ in.remaining());
-		logger.log(Level.INFO, "OUT: capacity is " + out.capacity() + " limit " + out.limit()+ " position "+ out.position()+ " remaining is "+ out.remaining());
-
+		LOG.debug("IN: capacity is " + in.capacity() + " limit " + in.limit()+ " position "+ in.position()+ " remaining is "+ in.remaining());
+		LOG.debug("OUT: capacity is " + out.capacity() + " limit " + out.limit()+ " position "+ out.position()+ " remaining is "+ out.remaining());
 	}
-
 	public void returnToParentPool() {
 		msgPool.releaseMsg(this);
 	}
@@ -78,10 +74,3 @@ public class Msg {
 		return sub;
 	}
 }
-
-
-
-
-
-
-
