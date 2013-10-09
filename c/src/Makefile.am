@@ -23,7 +23,7 @@ libjx_so_SOURCES = Utils.cc Event_queue.cc Events.cc CallbackFunctions.cc Server
 	
 				
 libjx_so_LDFLAGS = -shared -rdynamic 		\
-				     -L$(topdir)accelio/src/usr/ -lxio -lrdmacm -libverbs -lrt -ldl
+				     -L$(topdir)accelio/src/usr/.libs -lxio -lrdmacm -libverbs -lrt -ldl
 
 libjx_so_LDADD = $(AM_LDFLAGS)
 
