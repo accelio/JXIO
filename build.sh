@@ -8,14 +8,14 @@ echo -e "\nThe JXIO Test directory is $DIR\n"
 # Configuring Parameters
 TARGET=jx.jar
 JX_SO=libjx.so
-JAVA_FILES="java/src/com/mellanox/jxio/*.java java/src/com/mellanox/jxio/impl/*.java java/src/com/mellanox/jxio/tests/*.java" 
+JAVA_FILES="java/src/com/mellanox/jxio/*.java java/src/com/mellanox/jxio/impl/*.java tests/com/mellanox/jxio/tests/*.java" 
 
 # Clean
-rm -f java/src/com/mellanox/jxio/tests/jx.jar
+rm -f tests/com/mellanox/jxio/tests/jx.jar
 rm -f java/bin/libjx.so
-rm -f java/src/com/mellanox/jxio/tests/libjx.so
+rm -f tests/com/mellanox/jxio/tests/libjx.so
 rm -f java/bin/libxio.so
-rm -f java/src/com/mellanox/jxio/tests/libxio.so
+rm -f tests/com/mellanox/jxio/tests/libxio.so
 
 ## Build Accelio
 echo "Build Accelio....(libxio c code)"
@@ -40,11 +40,11 @@ mkdir -p java/bin
 javac -cp lib/commons-logging.jar -d java/bin/ $JAVA_FILES
 cd java/bin ;jar -cvf $TARGET com ; cd ../..
 
-cp -f java/bin/$TARGET java/src/com/mellanox/jxio/tests/
+cp -f java/bin/$TARGET tests/com/mellanox/jxio/tests/
 cp -f c/src/libjx.so java/bin
-cp -f c/src/libjx.so java/src/com/mellanox/jxio/tests/
+cp -f c/src/libjx.so tests/com/mellanox/jxio/tests/
 cp -f accelio/src/usr/.libs/libxio.so java/bin
-cp -f accelio/src/usr/.libs/libxio.so java/src/com/mellanox/jxio/tests/
+cp -f accelio/src/usr/.libs/libxio.so tests/com/mellanox/jxio/tests/
 
 
 
