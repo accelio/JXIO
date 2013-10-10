@@ -92,11 +92,12 @@ public class EventQueueHandler implements Runnable {
 
 		this.breakLoop = false;
 		boolean is_forever = (timeOutMicroSec == -1) ? true : false;
-
+		boolean is_infinite_events = (maxEvents == -1) ? true : false;
+		
 		elapsedTime.resetStartTime();
 		int eventsHandled = 0;
 
-		while (!this.breakLoop && (maxEvents > eventsHandled) && ((is_forever) || (!elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
+		while (!this.breakLoop && ((is_infinite_events) || (maxEvents > eventsHandled)) && ((is_forever) || (!elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
 
 			LOG.debug("[" + getId() + "] there are " + eventsWaitingInQ + " events in Q. handled " + eventsHandled + " events, " + 
 								"elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec (blocking for " + ((is_forever) ? "infinite duration)" : "a max duration of " + timeOutMicroSec/1000 + " msec.)"));
