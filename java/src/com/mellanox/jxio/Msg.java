@@ -28,7 +28,8 @@ public class Msg {
 	private ClientSession clientSession;
 	private MsgPool msgPool; //reference to MsgPool holding this buffer
 	private ByteBuffer in, out;
-
+	private Object userContext; //variable for usage by the user
+	
 	Msg(ByteBuffer buffer, int inSize, int outSize, long id, MsgPool msgPool){
 		in = createSubBuffer(0, inSize, buffer);
 		out = createSubBuffer(inSize, buffer.capacity(), buffer);
@@ -49,6 +50,14 @@ public class Msg {
 		return out;
 	}
 
+	public Object getUserContext() {
+		return userContext;
+	}
+	public void setUserContext(Object userContext) {
+		this.userContext = userContext;
+	}
+	
+	
 	MsgPool getParentPool() {
 		return msgPool;
 	}
