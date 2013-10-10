@@ -45,7 +45,7 @@ TEST_NUMBER=$3
 
 # Compile
 echo -e "\nCompiling JAVA files....\n"
-javac -cp "jx.jar:../../../../../../lib/commons-logging.jar" ./*.java
+javac -cp "jx.jar:../../../../../lib/commons-logging.jar" ./*.java
 if [[ $? != 0 ]] ; then
     exit 1
 fi
@@ -53,4 +53,4 @@ fi
 # Run the tests
 export LD_LIBRARY_PATH=$DIR
 echo -e "\nRunning manager test....\n"
-java -Dlog4j.configuration=log4j.properties.jxiotest -cp "jx.jar:../../../../../../lib/commons-logging.jar:../../../../../../lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.TestManager $IP $PORT $TEST_NUMBER
+java -Dlog4j.configuration=log4j.properties.jxiotest -cp "jx.jar:../../../../../lib/commons-logging.jar:../../../../../../lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.TestManager $IP $PORT $TEST_NUMBER
