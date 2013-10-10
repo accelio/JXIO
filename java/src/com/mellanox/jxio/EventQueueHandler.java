@@ -68,7 +68,7 @@ public class EventQueueHandler implements Runnable {
 	 */
 	public void run() {
 		while (!this.stopLoop) {
-			runEventLoop(1000, -1 /* Infinite */);
+			runEventLoop(-1 /* Infinite events */, -1 /* Infinite duration */);
 		}    
 	}
 
@@ -84,8 +84,10 @@ public class EventQueueHandler implements Runnable {
 	 * Main progress engine thread entry point. 
 	 * This function will cause all depending objects callbacks to be activated respectfully on new event occur.
 	 * the calling thread will block for 'maxEvents' or a total duration of 'timeOutMicroSec.
-	 * @param maxEvents: function will block until processing max events (callbacks) before returning (or the timeout reached) 
-	 * @param timeOutMicroSec: function will block until max duration of timeOut measured in micro-sec (or maxEvents reached)
+	 * @param maxEvents: function will block until processing max events (callbacks) before returning or the timeout reached 
+	 *                         use '-1' for infinite number of events
+	 * @param timeOutMicroSec: function will block until max duration of timeOut (measured in micro-sec) or maxEvents reached
+	 *                         use '-1' for infinite duration
 	 * @return number of events processes or zero if timeout
 	 */
 	public int runEventLoop(int maxEvents, long timeOutMicroSec) {
@@ -94,13 +96,15 @@ public class EventQueueHandler implements Runnable {
 		boolean is_forever = (timeOutMicroSec == -1) ? true : false;
 		boolean is_infinite_events = (maxEvents == -1) ? true : false;
 		
-		elapsedTime.resetStartTime();
+		this.elapsedTime.resetStartTime();
 		int eventsHandled = 0;
 
-		while (!this.breakLoop && ((is_infinite_events) || (maxEvents > eventsHandled)) && ((is_forever) || (!elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
+		while (!this.breakLoop && 
+				((is_infinite_events) || (maxEvents > eventsHandled)) && 
+				((is_forever) || (!this.elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
 
 			LOG.debug("[" + getId() + "] there are " + eventsWaitingInQ + " events in Q. handled " + eventsHandled + " events, " + 
-								"elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec (blocking for " + ((is_forever) ? "infinite duration)" : "a max duration of " + timeOutMicroSec/1000 + " msec.)"));
+								"elapsed time is " + this.elapsedTime.getElapsedTimeMicro() + " usec (blocking for " + ((is_forever) ? "infinite duration)" : "a max duration of " + timeOutMicroSec/1000 + " msec.)"));
 
 			if (eventsWaitingInQ <= 0) { // the event queue is empty now, get more events from libxio
 				eventQueue.rewind();
