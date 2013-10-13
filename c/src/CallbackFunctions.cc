@@ -58,13 +58,6 @@ int on_msg_send_complete_callback(struct xio_session *session,
 {
 	log (lsDEBUG, "got on_msg_send_complete_callback\n");
 
-	Contexable *cntxbl = (Contexable*)cb_prv_data;
-	Context *ctx = cntxbl->get_ctx_class();
-
-	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnMsgSendCompleteEvent(buf, cntxbl, session, msg);
-	done_event_creating(ctx, sizeWritten);
-
 	//must release the message
 	Msg *msg_from_pool = (Msg*)msg->user_context;
 	msg_from_pool->release_to_pool();
