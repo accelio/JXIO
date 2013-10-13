@@ -10,7 +10,7 @@ import com.mellanox.jxio.ServerSession;
 class MySesServerCallbacks implements ServerSession.Callbacks {
 
 	private final static Log LOG = LogFactory.getLog(MySesServerCallbacks.class.getCanonicalName());
-	private ServerSession serverSession;
+	ServerSession serverSession;
 	public void onRequest(Msg msg) {
 		LOG.info("got a request! Bring the champagne!!!!!");
 		LOG.info("msg is "+msg);

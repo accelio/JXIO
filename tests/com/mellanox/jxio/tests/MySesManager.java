@@ -43,7 +43,9 @@ public class MySesManager  {
 			EventQueueHandler eventQHndl = new EventQueueHandler();	
 			MsgPool msgPool = new MsgPool(1, 4, 4);
 			eventQHndl.bindMsgPool (msgPool);
-			ServerSession ses = new ServerSession(eventQHndl, serverManager.getUrlForServer(), new MySesServerCallbacks());
+			MySesServerCallbacks c = new MySesServerCallbacks();
+			ServerSession ses = new ServerSession(eventQHndl, serverManager.getUrlForServer(), c);
+			c.serverSession = ses;
 			serverManager.forward(ses, ptrSes);
 
 			Thread t = new Thread (eventQHndl);

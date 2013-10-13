@@ -110,9 +110,15 @@ public class Bridge {
 		return b;
 	}
 
-	private static native boolean sendMsgNative(long ptrSession, int sessionType, long ptrMsg);
-	public static boolean  sendMsg(long ptrSession, int sessionType, long ptrMsg) {
-		boolean ret = sendMsgNative(ptrSession, sessionType, ptrMsg);
+	private static native boolean clientSendReqNative(long ptrSession, long ptrMsg);
+	public static boolean  clientSendReq(long ptrSession, long ptrMsg) {
+		boolean ret = clientSendReqNative(ptrSession, ptrMsg);
+		return ret;
+	}
+	
+	private static native boolean serverSendReplyNative(long ptrSession, long ptrMsg);
+	public static boolean  serverSendReply(long ptrSession, long ptrMsg) {
+		boolean ret = serverSendReplyNative(ptrSession, ptrMsg);
 		return ret;
 	}
 

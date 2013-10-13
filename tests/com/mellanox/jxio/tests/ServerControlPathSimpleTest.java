@@ -13,7 +13,7 @@ public class ServerControlPathSimpleTest {
 		MySesClient ses;
 		EventQueueHandler eventQHndl = new EventQueueHandler();
 
-		MySesManager man = new MySesManager(eventQHndl, url);
+		MySesManager man = new MySesManager(eventQHndl, combined_url);
 		
 		eventQHndl.run(); 
 	}		

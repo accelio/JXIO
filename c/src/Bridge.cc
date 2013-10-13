@@ -265,18 +265,18 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMs
 	return jbuf;
 }
 
-
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_sendMsgNative(JNIEnv *env, jclass cls, jlong ptr_session, jint session_type, jlong ptr_msg)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_serverSendReplyNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_msg)
 {
 	Msg * msg = (Msg*) ptr_msg;
+	ServerSession * server = (ServerSession *) ptr_session;
+	return server->send_reply(msg);
+}
 
-	if (session_type == 0){//it's server
-		ServerSession * server = (ServerSession *) ptr_session;
-		return server->send_reply(msg);
-	}else{ //it's client
-		Client * client = (Client *) ptr_session;
-		return client->send_msg(msg);
-	}
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_clientSendReqNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_msg)
+{
+	Msg * msg = (Msg*) ptr_msg;
+	Client * client = (Client *) ptr_session;
+	return client->send_msg(msg);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_bindMsgPoolNative(JNIEnv *env, jclass cls, jlong ptr_msg_pool, jlong ptr_ctx)

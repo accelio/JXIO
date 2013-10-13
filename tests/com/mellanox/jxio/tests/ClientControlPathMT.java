@@ -25,12 +25,11 @@ private final static Log LOG = LogFactory.getLog(ClientControlPathMT.class.getCa
 		System.out.println("^^^^^ msg is ");
 		Msg msg = pool.getMsg();
 		ByteBuffer o = msg.getOut();
-		System.exit (1);
 		o.putInt(7);
 		//		
 		System.out.println("^^^^^ msg is " + o.getInt(0));
 
-		ses = new MySesClient(eventQHndl, url);
+		ses = new MySesClient(eventQHndl, combined_url);
 		ses.sendMsg(msg);
 
 		Thread t = new Thread (eventQHndl);

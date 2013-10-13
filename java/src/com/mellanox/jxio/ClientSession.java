@@ -56,7 +56,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	public boolean sendMessage(Msg msg) {
 		msg.setClientSession(this);
 		eventQHandler.addMsgInUse(msg);
-		boolean ret = Bridge.sendMsg(this.getId(), 0, msg.getId());
+		boolean ret = Bridge.clientSendReq(this.getId(), msg.getId());
 		if (!ret){
 			LOG.error("there was an error sending the message");
 		}
