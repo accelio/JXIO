@@ -6,7 +6,7 @@
 			<owner>AlonGr</owner>
 		</Test>
 		<Case>
-			<wrapper>../java/src/com/mellanox/jxio/tests/jx_wrapper.py</wrapper>
+			<wrapper>./jx_wrapper.py</wrapper>
 			<tout>1500</tout>
 		</Case>
 	</global>

@@ -8,10 +8,10 @@ from reg2_wrapper.test_wrapper.client_server_wrapper import ClientServerWrapper
 class JxWrapper(ClientServerWrapper):
 
     def get_server_prog_path(self):
-        return "../../../../../../accelio/tests/usr/hello_test/run_server.sh"
+        return "../accelio/tests/usr/hello_test/run_server.sh"
 
     def get_client_prog_path(self):
-        return "./runClientTest.sh"
+        return "../tests/runClientTest.sh"
 
     def configure_parser(self):
         super(JxWrapper, self).configure_parser()
