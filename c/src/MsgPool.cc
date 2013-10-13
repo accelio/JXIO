@@ -30,11 +30,24 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 
 	this->x_buf = xio_alloc(buf_size);
 	if (x_buf == NULL){
-		log (lsERROR, "there was an error while allocating&registering memory\n");
-		goto mark_error;
+		log (lsERROR, "there was an error while allocating&registering memory via huge pages. \n");
+		log (lsERROR, "You should work with Mellanox Ofed 2.0\n");
+		log (lsERROR, "attempting to allocate&registering memory. THIS COULD HURT PERFORMANCE!!!!!\n");
+		this->buf = malloc (this->buf_size);
+		if (this->buf == NULL){
+			log (lsERROR, "allocating memory failed. aborting\n");
+			goto mark_error;
+		}
+		this->xio_mr = xio_reg_mr (this->buf, this->buf_size);
+		if (this->xio_mr == NULL){
+			free (this->buf);
+			log (lsERROR, "registering memory failed. aborting\n");
+			goto mark_error;
+		}
+	} else {
+		this->buf = x_buf->addr;
+		this->xio_mr = x_buf->mr;
 	}
-	this->buf = x_buf->addr;
-	this->xio_mr = x_buf->mr;
 
 	msg_ptrs = (Msg**)malloc(sizeof(Msg*)*msg_num);
 	if (msg_ptrs == NULL){
@@ -67,10 +80,16 @@ cleanup_list:
 cleanup_array:
 	free (msg_ptrs);
 cleanup_buffer:
-	if (xio_free(&this->x_buf)){
-		log (lsERROR, "Error xio_dereg_mr failed\n");
+	if (this->x_buf){ //memory was allocated using xio_alloc
+		if (xio_free(&this->x_buf)){
+			log (lsERROR, "Error xio_free failed\n");
+		}
+	}else {//memory was allocated using malloc and xio_reg_mr
+		if (xio_dereg_mr(&this->xio_mr)){
+			log (lsERROR, "Error xio_dereg_mr failed\n");
+		}
+		free (this->buf);
 	}
-	free (this->buf);
 mark_error:
 	error_creating = true;
 }
@@ -89,10 +108,17 @@ MsgPool::~MsgPool()
 	}
 
 	delete (msg_list);
-	if (xio_free(&this->x_buf)){
-		log (lsERROR, "Error xio_free failed\n");
-	}
 
+	if (this->x_buf){ //memory was allocated using xio_alloc
+		if (xio_free(&this->x_buf)){
+			log (lsERROR, "Error xio_free failed\n");
+		}
+	}else {//memory was allocated using malloc and xio_reg_mr
+		if (xio_dereg_mr(&this->xio_mr)){
+			log (lsERROR, "Error xio_dereg_mr failed\n");
+		}
+		free (this->buf);
+	}
 }
 
 Msg * MsgPool::get_msg_from_pool ()
