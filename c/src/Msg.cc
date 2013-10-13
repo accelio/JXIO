@@ -87,6 +87,7 @@ void Msg::set_xio_msg_fields_for_assign(struct xio_msg *msg)
 	msg->in.data_iov[0].iov_len = in_size;
 	msg->in.data_iov[0].mr = xio_mr;
 	msg->user_context = this;
+	this->set_xio_msg_req(msg);
 }
 
 

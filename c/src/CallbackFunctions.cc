@@ -89,15 +89,7 @@ int on_msg_callback(struct xio_session *session,
 		msg->user_context = msg_from_pool;
 		msg_from_pool->set_xio_msg_req(msg);
 		log (lsDEBUG, "!!!!!!!!!!!!!! xio_msg is %p\n", msg);
-	}else if (msg->type == XIO_MSG_TYPE_RSP && msg->in.data_iov[0].iov_len < 7500){ //TODO:have the exact size
-		Msg* msg_from_pool = (Msg*)msg->user_context;
-#ifdef K_DEBUG
-		msg_from_pool->dump(msg);
-#endif
-		memcpy(msg_from_pool->get_buf(), msg->in.data_iov[0].iov_base, msg->in.data_iov[0].iov_len);
-		log (lsDEBUG, "xio_msg is %p, msg is %p \n", msg, msg_from_pool);
 	}
-
 
 	char* buf = ctx->event_queue->get_buffer();
 	int sizeWritten = ctx->events->writeOnMsgReceivedEvent(buf, msg->user_context, cntxbl, msg, msg->type);
