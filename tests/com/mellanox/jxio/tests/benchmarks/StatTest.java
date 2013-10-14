@@ -45,13 +45,4 @@ public class StatTest implements Runnable {
 		System.out.println(" It took " + sec + " seconds for " + num_sessions + " sessions");
 		eqh.close();
 	}
-	
-	public static void main(String[] args) {
-		if (args.length < 3) {
-			System.out.println("java -classpath jx.jar:. StatTestMain $IP $PORT $NUM_SESSIONS");
-			return;
-		}
-		Runnable test = new StatTest(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]));
-		test.run();
-	}
 }
