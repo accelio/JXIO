@@ -31,25 +31,26 @@
 #include <unistd.h>
 #include <execinfo.h>  // for backtrace
 
-
 enum log_severity_t {
+	lsNONE,
 	lsFATAL,
 	lsERROR,
 	lsWARN,
 	lsINFO,
 	lsDEBUG,
+	lsTRACE,
 };
 
-static bool log_to_unique_file = true;
+extern log_severity_t g_log_threshold;
+const log_severity_t DEFAULT_LOG_THRESHOLD = lsINFO;
 
-void log_func(const char * func, const char * file, int line, log_severity_t severity, const char *fmt, ...); // should not be called directly
+void log_set_threshold(log_severity_t _threshold);
 
+void log_func(const char * func, int line, log_severity_t severity, const char *fmt, ...); // should not be called directly
 
+// THE log macro that should be used everywhere...
+#define log(severity, ...) do { if (severity <= g_log_threshold)  log_func(__FUNCTION__, __LINE__, severity, __VA_ARGS__);} while(0)
 
-
-
-
-#define log(severity, ...) log_func(__func__, __FILE__, __LINE__, severity, __VA_ARGS__)
 // log backtrace at the desired severity + 'return' value is the backtrace
 // TIP: use severity=lsNONE to skip log and only get ret value
 //std::string print_backtrace(const char *label = NULL, log_severity_t severity = lsTRACE);

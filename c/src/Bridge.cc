@@ -30,18 +30,18 @@
 #include "Context.h"
 #include "Utils.h"
 #include "MsgPool.h"
-
+#include "Bridge.h"
 
 static jclass cls;
 static JavaVM *cached_jvm;
 
-
 static jclass cls_data;
-
+static jweak  jweakBridge; // use weak global ref for allowing GC to unload & re-load the class and handles
+static jclass jclassBridge; // just casted ref to above jweakBridge. Hence, has same life time
 static jfieldID fidPtr;
 static jfieldID fidBuf;
 static jfieldID fidError;
-
+static jmethodID jmethodID_logToJava; // handle to java cb method
 
 // JNI inner functions implementations
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
@@ -60,6 +60,15 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 		return JNI_ERR;
 	}
 
+	// keeps the handle valid after function exits, but still, use weak global ref
+	// for allowing GC to unload & re-load the class and handles
+	jweakBridge = env->NewWeakGlobalRef(cls);
+	if (jweakBridge == NULL) {
+		printf("-->> In C++ weak global ref to java class was NOT found\n");
+		return JNI_ERR;
+	}
+	jclassBridge = (jclass)jweakBridge;
+
 	cls_data = env->FindClass("com/mellanox/jxio/EventQueueHandler$DataFromC");
 	if (cls_data == NULL) {
 		fprintf(stderr, "in JXIO/c/Bridge - java class was NOT found\n");
@@ -67,17 +76,24 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 	}
 
 	if (fidPtr == NULL) {
-	fidPtr = env->GetFieldID(cls_data, "ptrCtx", "J");
-	if (fidPtr == NULL) {
-		fprintf(stderr, "in JXIO/c/Bridge - could not get field ptrCtx\n");
+		fidPtr = env->GetFieldID(cls_data, "ptrCtx", "J");
+		if (fidPtr == NULL) {
+			fprintf(stderr, "in JXIO/c/Bridge - could not get field ptrCtx\n");
 		}
 	}
 
 	if (fidBuf == NULL) {
-	fidBuf = env->GetFieldID(cls_data, "eventQueue","Ljava/nio/ByteBuffer;");
-	if (fidBuf == NULL) {
-		fprintf(stderr, "in JXIO/c/Bridge - could not get field fidBuf\n");
+		fidBuf = env->GetFieldID(cls_data, "eventQueue","Ljava/nio/ByteBuffer;");
+		if (fidBuf == NULL) {
+			fprintf(stderr, "in JXIO/c/Bridge - could not get field fidBuf\n");
 		}
+	}
+
+	//logToJava callback
+	jmethodID_logToJava = env->GetStaticMethodID(jclassBridge, "logToJava", "(Ljava/lang/String;I)V");
+	if (jmethodID_logToJava == NULL) {
+		printf("-->> In C++ java Bridge.logToJava() callback method was NOT found\n");
+		return JNI_ERR;
 	}
 
 	printf("in JXIO/c/Bridge - java callback methods were found and cached\n");
@@ -88,7 +104,39 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *jvm, void* reserved)
 {
 	// NOTE: We never reached this place
+	static bool alreadyCalled = false;
+	if (alreadyCalled) return;
+	alreadyCalled = true;
+
+	JNIEnv *env;
+	if (cached_jvm->GetEnv((void **)&env, JNI_VERSION_1_4)) {
+		return;
+	}
+
+	if (jweakBridge != NULL) {
+		env->DeleteWeakGlobalRef(jweakBridge);
+		jweakBridge = NULL;
+		log(lsDEBUG, "after env->DeleteWeakGlobalRef(jweaBridge)");
+	}
 	return;
+}
+
+void Bridge_invoke_logToJava_callback(const char* log_message, int severity)
+{
+	JNIEnv *env;
+	if (cached_jvm->GetEnv((void **)&env, JNI_VERSION_1_4)) {
+		printf("-->> Error getting JNIEnv In C++ JNI_logToJava when trying to log message - %s\n", log_message);
+		return;
+	}
+
+	jstring j_message = env->NewStringUTF(log_message);
+	env->CallStaticVoidMethod(jclassBridge, jmethodID_logToJava, j_message, severity);
+	env->DeleteLocalRef(j_message);
+}
+
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_setLogLevelNative(JNIEnv *env, jclass cls, jint logLevel)
+{
+	log_set_threshold((log_severity_t)logLevel);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_createCtxNative(JNIEnv *env, jclass cls, jint eventQueueSize, jobject dataToC)

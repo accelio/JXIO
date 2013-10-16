@@ -15,42 +15,40 @@
 **
 */
 #include "Utils.h"
+#include "Bridge.h"
 
+log_severity_t g_log_threshold = DEFAULT_LOG_THRESHOLD;
 
-void log_func(const char * func, const char * file, int line, log_severity_t severity, const char *fmt, ...)
+void log_set_threshold(log_severity_t _threshold)
 {
-    const int SIZE = 1024;
-    char s1[SIZE];
-    va_list ap;
-    va_start(ap, fmt);
-    int n = vsnprintf(s1, SIZE, fmt, ap);
-    va_end(ap);
-
-    if (n < 0) return; //error
-
-        s1[SIZE-1] = '\0';
-    	time_t _time = time(0);
-    	struct tm _tm;
-    	localtime_r(&_time, &_tm);
-
-    	// log to uda's files
-        static const char *severity_string[] = {
-    		"FATAL",
-    		"ERROR",
-    		"WARN",
-    		"INFO",
-    		"DEBUG"
-        };
-	fprintf(stdout, "%02d:%02d:%02d %-5s [thr=%x %s() %s:%d] %s",
-				  _tm.tm_hour, _tm.tm_min, _tm.tm_sec,
-				  severity_string[severity],
-				  (int)pthread_self(), func, file, line, s1);
-
+	g_log_threshold = (lsNONE <= _threshold && _threshold <= lsTRACE) ? _threshold : DEFAULT_LOG_THRESHOLD;
 }
 
+void log_func(const char * func, int line, log_severity_t severity, const char *fmt, ...)
+{
+	const int SIZE = 2048;
+	char s1[SIZE];
 
+	int n = snprintf(s1, SIZE, "%d:%s() ",line, func);
+	if (n < 0) {
+		return; //error
+	}
 
+	if (n < SIZE) {
+		va_list ap;
+		va_start(ap, fmt);
+		int m = vsnprintf(s1+n, SIZE-n, fmt, ap);
+		va_end(ap);
 
+		if (m < 0) {
+			return; //error
+		}
+	}
+
+	s1[SIZE-1] = '\0';
+
+	Bridge_invoke_logToJava_callback(s1, severity);
+}
 
 
 
