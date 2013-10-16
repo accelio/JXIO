@@ -29,7 +29,6 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 	private final Callbacks callbacks;
 	private final EventQueueHandler eventQHandler;
-	private final String url;
 	private static final Log LOG =  LogFactory.getLog(ClientSession.class.getCanonicalName());
 
 	public static interface Callbacks {
@@ -41,7 +40,6 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 	public ClientSession(EventQueueHandler eventQHandler, String url, Callbacks callbacks) {
 		this.eventQHandler = eventQHandler;
-		this.url = url;
 		this.callbacks = callbacks;
 		final long id = Bridge.startSessionClient(url, eventQHandler.getId());
 		if (id == 0) {

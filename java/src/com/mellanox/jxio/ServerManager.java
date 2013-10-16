@@ -30,7 +30,6 @@ public class ServerManager extends EventQueueHandler.Eventable {
 	private final EventQueueHandler eventQHndl;
 	private final String url;
 	private String urlPort0;
-	private static final int sizeEventQ = 10000;
 	private static final Log LOG = LogFactory.getLog(ServerManager.class.getCanonicalName());
 
 	public static interface Callbacks {
