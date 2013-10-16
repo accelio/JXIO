@@ -1,19 +1,19 @@
 /*
-** Copyright (C) 2013 Mellanox Technologies
-**
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at:
-**
-** http://www.apache.org/licenses/LICENSE-2.0
-**
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
-** either express or implied. See the License for the specific language
-** governing permissions and  limitations under the License.
-**
-*/
+ ** Copyright (C) 2013 Mellanox Technologies
+ **
+ ** Licensed under the Apache License, Version 2.0 (the "License");
+ ** you may not use this file except in compliance with the License.
+ ** You may obtain a copy of the License at:
+ **
+ ** http://www.apache.org/licenses/LICENSE-2.0
+ **
+ ** Unless required by applicable law or agreed to in writing, software
+ ** distributed under the License is distributed on an "AS IS" BASIS,
+ ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ ** either express or implied. See the License for the specific language
+ ** governing permissions and  limitations under the License.
+ **
+ */
 
 #include <errno.h>
 #include <stdlib.h>
@@ -46,7 +46,7 @@ static jmethodID jmethodID_logToJava; // handle to java cb method
 // JNI inner functions implementations
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 {
-	printf("in in JXIO/c/Bridge - JNI_OnLoad\n");
+	printf("in JXIO/c/Bridge - JNI_OnLoad\n");
 
 	cached_jvm = jvm;
 	JNIEnv *env;
@@ -94,6 +94,13 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 	if (jmethodID_logToJava == NULL) {
 		printf("-->> In C++ java Bridge.logToJava() callback method was NOT found\n");
 		return JNI_ERR;
+	}
+
+	// Disable Accelio's internal mem pool
+	// JXIO requiers Java user application to allocate our memory pool
+	int optlen = 0;
+	if (xio_set_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_ENABLE_MEM_POOL, &optlen, sizeof(optlen))) {
+		fprintf(stderr, "in JXIO/c/Bridge - failed to disable AccelIO's internal memory pool buffers\n");
 	}
 
 	printf("in JXIO/c/Bridge - java callback methods were found and cached\n");
