@@ -28,7 +28,7 @@ class MsgPool;
 
 class Msg {
 public:
-	Msg(void * buf, struct xio_mr 	*xio_mr,  int in_buf_size, int out_buf_size, MsgPool* pool);
+	Msg(char * buf, struct xio_mr 	*xio_mr,  int in_buf_size, int out_buf_size, MsgPool* pool);
 	~Msg();
 	void set_xio_msg_client_fields();//this method is used by client side
 	void set_xio_msg_req(struct xio_msg *m );//this method is used by server side
@@ -41,7 +41,8 @@ public:
 	void dump(struct xio_msg *m);//func for debugging only
 
 private:
-	void * 			buf;
+	char * 			buf;
+	char * 			buf_out;
 	int 			in_size;
 	int 			out_size;
 	struct xio_mr 	*xio_mr;

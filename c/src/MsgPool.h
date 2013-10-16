@@ -36,7 +36,7 @@ public:
 	void add_msg_to_pool(Msg * msg);
 
 	bool error_creating;
-	void   			*buf;
+	char   			*buf;
 	int 			buf_size;
 	Msg** 			msg_ptrs;
 

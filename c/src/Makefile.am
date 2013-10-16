@@ -4,7 +4,7 @@ JDK = $(JAVA_HOME)
 topdir=../../
 
 # additi-onal include paths necessary to compile the C library
-AM_CPPFLAGS = -fPIC -DPIC  				\
+AM_CPPFLAGS = -fPIC -DPIC -Werror 				\
 		-I$(JDK)/include -I$(JDK)/include/linux \
 		-I$(topdir)/accelio/include
 	    @AM_CFLAGS@

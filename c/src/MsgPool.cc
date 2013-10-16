@@ -33,7 +33,7 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 		log (lsERROR, "there was an error while allocating&registering memory via huge pages. \n");
 		log (lsERROR, "You should work with Mellanox Ofed 2.0\n");
 		log (lsERROR, "attempting to allocate&registering memory. THIS COULD HURT PERFORMANCE!!!!!\n");
-		this->buf = malloc (this->buf_size);
+		this->buf = (char*)malloc (this->buf_size);
 		if (this->buf == NULL){
 			log (lsERROR, "allocating memory failed. aborting\n");
 			goto mark_error;
@@ -45,7 +45,7 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 			goto mark_error;
 		}
 	} else {
-		this->buf = x_buf->addr;
+		this->buf = (char*)x_buf->addr;
 		this->xio_mr = x_buf->mr;
 	}
 
@@ -60,7 +60,7 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 	}
 
 	for (int i=0; i<msg_num; i++){
-		Msg *m = new Msg (buf+i*(in_size+out_size), xio_mr,  in_size, out_size, this);
+		Msg *m = new Msg ((char*)buf+i*(in_size+out_size), xio_mr,  in_size, out_size, this);
 		if (m == NULL){
 			goto cleanup_list;
 		}

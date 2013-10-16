@@ -20,8 +20,7 @@
 #include "Msg.h"
 #include "MsgPool.h"
 
-//Msg::Msg(void * buf, struct xio_mr 	*xio_mr, int in_buf_size, int out_buf_size)
-Msg::Msg(void * buf, struct xio_mr 	*xio_mr, int in_buf_size, int out_buf_size, MsgPool* pool)
+Msg::Msg(char * buf, struct xio_mr 	*xio_mr, int in_buf_size, int out_buf_size, MsgPool* pool)
 {
 	this->buf = buf;
 	this->xio_mr = xio_mr;
@@ -29,6 +28,7 @@ Msg::Msg(void * buf, struct xio_mr 	*xio_mr, int in_buf_size, int out_buf_size, 
 	this->out_buf_size = out_buf_size;
 	this->xio_msg = (struct xio_msg *) calloc(1, sizeof(struct xio_msg));
 	this->pool = pool;
+	this->buf_out = this->buf + in_buf_size;
 
 	log (lsDEBUG, "****** buf inside msg out size is %d\n", this->out_buf_size);
 
@@ -52,7 +52,7 @@ void Msg::set_xio_msg_client_fields()
 	this->xio_msg->out.header.iov_base = NULL;
 	this->xio_msg->out.header.iov_len = 0;
 	this->xio_msg->out.data_iovlen = 1;
-	this->xio_msg->out.data_iov[0].iov_base = this->buf + in_buf_size;
+	this->xio_msg->out.data_iov[0].iov_base = this->buf_out;
 	this->xio_msg->out.data_iov[0].iov_len = this->out_buf_size;
 	this->xio_msg->out.data_iov[0].mr = this->xio_mr;
 
@@ -69,7 +69,7 @@ void Msg::set_xio_msg_client_fields()
 void Msg::set_xio_msg_server_fields()
 {
 	this->xio_msg->out.data_iovlen = 1;
-	this->xio_msg->out.data_iov[0].iov_base = this->buf + in_buf_size;
+	this->xio_msg->out.data_iov[0].iov_base = this->buf_out;
 	this->xio_msg->out.data_iov[0].iov_len = this->out_buf_size;
 	this->xio_msg->out.data_iov[0].mr = this->xio_mr;
 
