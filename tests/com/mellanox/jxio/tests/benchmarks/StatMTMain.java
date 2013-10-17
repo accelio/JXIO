@@ -21,7 +21,7 @@ public class StatMTMain {
 		StatTest[] mt_arr = new StatTest[num_threads];
 		
 		for (int i=0; i<num_threads; i++) {
-			mt_arr[i] = new StatTest(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+			mt_arr[i] = new StatTest(IP, port, (num_sessions/num_threads));
 			t_arr[i] = new Thread(mt_arr[i]);
 			t_arr[i].start();
         }
