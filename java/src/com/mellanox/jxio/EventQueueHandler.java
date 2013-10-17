@@ -40,7 +40,7 @@ import com.mellanox.jxio.impl.EventSessionEstablished;
 public class EventQueueHandler implements Runnable {
 
 	private final long refToCObject;
-	private final int eventQueueSize = 5000; //size of byteBuffer
+	private final int eventQueueSize = 10000; //size of byteBuffer
 	private int eventsWaitingInQ = 0;
 	private ByteBuffer eventQueue = null;
 	private ElapsedTimeMeasurement elapsedTime = null; 
