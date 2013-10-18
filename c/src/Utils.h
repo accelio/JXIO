@@ -46,13 +46,9 @@ const log_severity_t DEFAULT_LOG_THRESHOLD = lsINFO;
 
 void log_set_threshold(log_severity_t _threshold);
 
-void log_func(const char * func, int line, log_severity_t severity, const char *fmt, ...); // should not be called directly
+void log_func(const char* file, const int line, const char* func, log_severity_t severity, const char *fmt, ...); // should not be called directly
 
-// THE log macro that should be used everywhere...
-#define log(severity, ...) do { if (severity <= g_log_threshold)  log_func(__FUNCTION__, __LINE__, severity, __VA_ARGS__);} while(0)
+// THE 'log()' macro that should be used everywhere...
+#define log(severity, ...) do { if (severity <= g_log_threshold)  log_func(__FILE__, __LINE__, __FUNCTION__, severity, __VA_ARGS__);} while(0)
 
-// log backtrace at the desired severity + 'return' value is the backtrace
-// TIP: use severity=lsNONE to skip log and only get ret value
-//std::string print_backtrace(const char *label = NULL, log_severity_t severity = lsTRACE);
-//#define log(severity, ...) printf ("")
 #endif // ! Utils__H___

@@ -17,29 +17,30 @@
 package com.mellanox.jxio.impl;
 
 import java.nio.ByteBuffer;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class Bridge {
 
-	private static final Log LOG = LogFactory.getLog(Bridge.class.getCanonicalName());
+	private static final Log LogFromNative = LogFactory.getLog("LogFromNative");
 
 	static {
 		LoadLibrary.loadLibrary("libxio.so"); // Accelio library
 		LoadLibrary.loadLibrary("libjxio.so"); // JXIO native library
-		setCLogLevel(getLogLevel());
+		setNativeLogLevel(getLogLevel());
 	}
 
 	private static int getLogLevel() {
-		return ((LOG.isFatalEnabled() ? 1 : 0) + (LOG.isErrorEnabled() ? 1 : 0) + (LOG.isWarnEnabled() ? 1 : 0)
-		        + (LOG.isInfoEnabled() ? 1 : 0) + (LOG.isDebugEnabled() ? 1 : 0) + (LOG.isTraceEnabled() ? 1 : 0));
+		return ((LogFromNative.isFatalEnabled() ? 1 : 0) + (LogFromNative.isErrorEnabled() ? 1 : 0) + (LogFromNative.isWarnEnabled() ? 1 : 0)
+		        + (LogFromNative.isInfoEnabled() ? 1 : 0) + (LogFromNative.isDebugEnabled() ? 1 : 0) + (LogFromNative.isTraceEnabled() ? 1 : 0));
 	}
 
 	// Native methods and their wrappers start here
 
 	private static native void setLogLevelNative(int logLevel);
 
-	private static void setCLogLevel(int logLevel) {
+	private static void setNativeLogLevel(int logLevel) {
 		setLogLevelNative(logLevel);
 	}
 
@@ -170,33 +171,13 @@ public class Bridge {
 	static public void logToJava(String log_message, int severity) {
 
 		switch (severity) {
-			case 6:
-				LOG.trace(log_message);
-				break;
-
-			case 5:
-				LOG.debug(log_message);
-				break;
-
-			case 4:
-				LOG.info(log_message);
-				break;
-
-			case 3:
-				LOG.warn(log_message);
-				break;
-
-			case 2:
-				LOG.error(log_message);
-				break;
-
-			case 1:
-				LOG.fatal(log_message);
-				break;
-
-			default:
-				LOG.info(log_message);
-				break;
+			case 6:	LogFromNative.trace(log_message); 	break;
+			case 5:	LogFromNative.debug(log_message);	break;
+			case 4:	LogFromNative.info(log_message);	break;
+			case 3:	LogFromNative.warn(log_message);	break;
+			case 2:	LogFromNative.error(log_message);	break;
+			case 1:	LogFromNative.fatal(log_message);	break;
+			default:LogFromNative.info(log_message);	break;
 		}
 	}
 }

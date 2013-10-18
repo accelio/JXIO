@@ -24,12 +24,12 @@ void log_set_threshold(log_severity_t _threshold)
 	g_log_threshold = (lsNONE <= _threshold && _threshold <= lsTRACE) ? _threshold : DEFAULT_LOG_THRESHOLD;
 }
 
-void log_func(const char * func, int line, log_severity_t severity, const char *fmt, ...)
+void log_func(const char* file, const int line, const char* func, log_severity_t severity, const char *fmt, ...)
 {
 	const int SIZE = 2048;
-	char s1[SIZE];
+	char str[SIZE];
 
-	int n = snprintf(s1, SIZE, "%d:%s() ",line, func);
+	int n = snprintf(str, SIZE, "%s:%d:%s() ", file, line, func);
 	if (n < 0) {
 		return; //error
 	}
@@ -37,7 +37,7 @@ void log_func(const char * func, int line, log_severity_t severity, const char *
 	if (n < SIZE) {
 		va_list ap;
 		va_start(ap, fmt);
-		int m = vsnprintf(s1+n, SIZE-n, fmt, ap);
+		int m = vsnprintf(str+n, SIZE-n, fmt, ap);
 		va_end(ap);
 
 		if (m < 0) {
@@ -45,11 +45,7 @@ void log_func(const char * func, int line, log_severity_t severity, const char *
 		}
 	}
 
-	s1[SIZE-1] = '\0';
+	str[SIZE-1] = '\0';
 
-	Bridge_invoke_logToJava_callback(s1, severity);
+	Bridge_invoke_logToJava_callback(str, severity);
 }
-
-
-
-

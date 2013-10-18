@@ -128,7 +128,7 @@ extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *jvm, void* reserved)
 	return;
 }
 
-void Bridge_invoke_logToJava_callback(const char* log_message, int severity)
+void Bridge_invoke_logToJava_callback(const char* log_message, const int severity)
 {
 	JNIEnv *env;
 	if (cached_jvm->GetEnv((void **)&env, JNI_VERSION_1_4)) {
