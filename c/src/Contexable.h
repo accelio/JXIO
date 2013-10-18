@@ -28,13 +28,10 @@ public:
 	void set_ctx_class(Context* c){this->ctx_class = c;}
 
 	//returns true in case this event should be written to eventQueue and false if not
-	virtual bool onSessionEvent(int eventType) = 0;
+	virtual bool onSessionEvent(xio_session_event eventType) = 0;
 
 private:
 	Context* ctx_class;
 };
-
-
-
 
 #endif // ! Contexable__H___

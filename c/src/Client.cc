@@ -17,12 +17,10 @@
 
 #include "Client.h"
 
-
 Client::Client(const char* url, long ptrCtx)
 {
 	struct xio_session_ops ses_ops;
 	struct xio_session_attr attr;
-//	char			url[256];
 	error_creating = false;
 
 	struct xio_msg *req;
@@ -89,25 +87,29 @@ bool Client::close_connection()
 	return true;
 }
 
-bool Client::onSessionEvent(int eventType)
+bool Client::onSessionEvent(xio_session_event eventType)
 {
-	switch (eventType){
-	case (XIO_SESSION_CONNECTION_CLOSED_EVENT):
-		log (lsINFO, "got XIO_SESSION_CONNECTION_CLOSED_EVENT. must close the session\n");
-		return false;
-
-	case(XIO_SESSION_CONNECTION_ERROR_EVENT):
-		log (lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
-		close_connection();
-		return false;
-
-	case(XIO_SESSION_TEARDOWN_EVENT):
-		log(lsINFO, "got XIO_SESSION_TEARDOWN_EVENT. must delete session class\n");
+	switch (eventType) {
+	case XIO_SESSION_TEARDOWN_EVENT:
+		log(lsDEBUG, "got XIO_SESSION_TEARDOWN_EVENT (%d). must delete session class\n", eventType);
 		delete (this);
 		//the event should also be written to buffer to let user know that the session was closed
 		return true;
+
+	case XIO_SESSION_CONNECTION_CLOSED_EVENT:
+		log(lsDEBUG, "got XIO_SESSION_CONNECTION_CLOSED_EVENT (%d). must close the session\n", eventType);
+		return false;
+
+	case XIO_SESSION_CONNECTION_ERROR_EVENT:
+		log(lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT (%d)\n", eventType);
+		close_connection();
+		return false;
+
+	case XIO_SESSION_REJECT_EVENT:
+	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT:
+	case XIO_SESSION_ERROR_EVENT:
 	default:
-		log(lsINFO, "got event %d. \n", eventType);
+		log(lsWARN, "UNHANDLED event: got '%s' event (%d). \n", xio_session_event_str(eventType), eventType);
 		return true;
 	}
 }

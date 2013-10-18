@@ -27,24 +27,19 @@
 #include "Msg.h"
 
 
-class Client:public Contexable{
+class Client : public Contexable {
 public:
 	//to move some to private?
-	Client(const char	*url, long ptrCtx);
+	Client(const char* url, long ptrCtx);
 	~Client();
 	bool close_connection();
 	bool send_msg(Msg* m);
 
-	struct xio_session	*session;
-	struct xio_connection * con;
+	struct xio_session* session;
+	struct xio_connection* con;
 
 	bool error_creating;
-	bool onSessionEvent(int eventType);
-//	cJXCtx* ctx;
-
+	bool onSessionEvent(xio_session_event eventType);
 };
-
-
-
 
 #endif // ! Client__H___

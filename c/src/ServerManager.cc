@@ -49,12 +49,11 @@ ServerManager::~ServerManager() {
 	if (xio_unbind(this->server)) {
 		log(lsERROR, "Error xio_unbind failed\n");
 	}
-
 }
 
-bool ServerManager::onSessionEvent(int eventType)
+bool ServerManager::onSessionEvent(xio_session_event eventType)
 {
 	//dummy implementation: will not be called
+	log(lsWARN, "UNHANDLED event: got '%s' event (%d). \n", xio_session_event_str(eventType), eventType);
 	return true;
 }
-

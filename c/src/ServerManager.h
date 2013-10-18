@@ -30,10 +30,10 @@ class Context;
 class ServerManager : public Contexable {
 public:
 	//to move some to private?
-	ServerManager(const char	*url, long ptrCtx);
+	ServerManager(const char* url, long ptrCtx);
 	~ServerManager();
 
-	bool onSessionEvent(int eventType);
+	bool onSessionEvent(xio_session_event eventType);
 
 	struct xio_server* server;
 	bool error_creating;

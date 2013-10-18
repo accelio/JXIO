@@ -93,26 +93,30 @@ bool ServerSession::close()
 	return true;
 }
 
-bool ServerSession::onSessionEvent(int eventType)
+bool ServerSession::onSessionEvent(xio_session_event eventType)
 {
 	switch (eventType) {
-	case (XIO_SESSION_CONNECTION_CLOSED_EVENT):
-		log (lsINFO, "got XIO_SESSION_CONNECTION_CLOSED_EVENT\n");
+	case XIO_SESSION_TEARDOWN_EVENT:
+		log(lsDEBUG, "got XIO_SESSION_TEARDOWN_EVENT (%d). must delete session class\n", eventType);
+		delete (this);
+		return true;
+
+	case XIO_SESSION_CONNECTION_CLOSED_EVENT:
+		log(lsDEBUG, "got XIO_SESSION_CONNECTION_CLOSED_EVENT (%d)\n", eventType);
 		if (closingInProcess) {
 			close();
 		}
 		return false;
 
-	case(XIO_SESSION_CONNECTION_ERROR_EVENT):
-		log (lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
+	case XIO_SESSION_CONNECTION_ERROR_EVENT:
+		log(lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT (%d)\n", eventType);
 		return true;
 
-	case(XIO_SESSION_TEARDOWN_EVENT):
-		log(lsINFO, "got XIO_SESSION_TEARDOWN_EVENT. must delete session class\n");
-		delete (this);
-		return true;
+	case XIO_SESSION_REJECT_EVENT:
+	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT:
+	case XIO_SESSION_ERROR_EVENT:
 	default:
-		log(lsINFO, "got event %d. \n", eventType);
+		log(lsWARN, "UNHANDLED event: got '%s' event (%d). \n", xio_session_event_str(eventType), eventType);
 		return true;
 	}
 }

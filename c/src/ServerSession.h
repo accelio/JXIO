@@ -30,12 +30,12 @@ class Context;
 class ServerSession : public Contexable {
 public:
 	//to move some to private?
-	ServerSession(const char	*url, long ptrCtx);
+	ServerSession(const char* url, long ptrCtx);
 	~ServerSession();
 
 	bool accept(struct xio_session *, const char * url);
 	bool send_reply (Msg *msg);
-	bool onSessionEvent(int eventType);
+	bool onSessionEvent(xio_session_event eventType);
 	bool close();
 
 	struct xio_server* server;
