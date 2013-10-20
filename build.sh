@@ -27,7 +27,7 @@ fi
 ## Build JX
 echo "Build JXIO... (c code)"
 cd $TOP_DIR
-cd c/ && ./autogen.sh && ./configure && make && cp -f src/libjxio.so $BIN_FOLDER
+cd c/ && ./autogen.sh && ./configure && make clean && make && cp -f src/libjxio.so $BIN_FOLDER
 if [[ $? != 0 ]] ; then
     exit 1
 fi

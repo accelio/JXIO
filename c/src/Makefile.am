@@ -26,4 +26,7 @@ libjxio_so_LDFLAGS = -shared -rdynamic -L$(topdir)accelio/src/usr/.libs -lxio -l
 
 libjxio_so_LDADD = $(AM_LDFLAGS)
 
+clean:
+	rm -rf *.o
+
 ###############################################################################
