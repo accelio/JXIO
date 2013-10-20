@@ -144,20 +144,27 @@ int Events::writeOnMsgErrorEvent(char *buf, void *ptrForJava, struct xio_session
 }
 
 
-int Events::writeOnMsgReceivedEvent(char *buf, void *ptrForJavaMsg, void *ptrForJavaSession,
+int Events::writeOnReqReceivedEvent(char *buf, void *ptrForJavaMsg, void *ptrForJavaSession,
 		struct xio_msg *msg, int type)
 {
-	if (type == XIO_MSG_TYPE_REQ){//it's request
-		this->event.type = htonl(EVENT_REQUEST_RECEIVED);
-	}else{ //it's response
-		this->event.type = htonl(EVENT_REPLY_RECEIVED);
-	}
+
+	this->event.type = htonl(EVENT_REQUEST_RECEIVED);
 	this->event.ptr = htobe64(intptr_t(ptrForJavaMsg));
-	this->event.event_specific.msg_received.ptr_session = htobe64(intptr_t(ptrForJavaSession));
-	this->size = sizeof(struct event_msg_received) +  sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+	this->event.event_specific.req_received.ptr_session = htobe64(intptr_t(ptrForJavaSession));
+	this->size = sizeof(struct event_req_received) +  sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 	memcpy(buf, &this->event, this->size);
 	return this->size;
 }
+
+int Events::writeOnReplyReceivedEvent(char *buf, void *ptrForJavaMsg, struct xio_msg *msg, int type)
+{
+	this->event.type = htonl(EVENT_REPLY_RECEIVED);
+	this->event.ptr = htobe64(intptr_t(ptrForJavaMsg));
+	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+	memcpy(buf, &this->event, this->size);
+	return this->size;
+}
+
 
 int Events::writeOnFdReadyEvent(char *buf, int fd, int epoll_event)
 {

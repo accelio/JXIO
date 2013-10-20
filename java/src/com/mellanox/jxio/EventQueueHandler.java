@@ -112,7 +112,7 @@ public class EventQueueHandler implements Runnable {
 			}
 
 			// process in eventQueue pending events
-			if (eventsWaitingInQ > 0) { // there are still events to be read, but they exceed maxEvents
+			if (eventsWaitingInQ > 0) { 
 				handleEvent(eventQueue);
 				eventsHandled++;
 				eventsWaitingInQ--;
