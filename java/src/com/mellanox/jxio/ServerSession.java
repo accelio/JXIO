@@ -43,21 +43,27 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		this.eventQHandler = eventQHandler;
 		this.url = url;
 		this.callbacks = callbacks;
-		LOG.debug("uri inside ServerSession is "+url);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("uri inside ServerSession is "+url);
+		}
 		long[] ar = Bridge.startServerSession(url, eventQHandler.getId());
 		final long id = ar[0];
 		this.port = (int) ar[1];
 		if (id == 0){
 			LOG.fatal("there was an error creating ServerSession");
 		}
-		LOG.debug("id is " + id);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("id is " + id);
+		}
 		this.setId(id);
 
 		//modify url to include the new port number
 		int index = url.lastIndexOf(":"); 
 
 		this.url = url.substring(0, index+1)+Integer.toString(port);
-		LOG.debug("****** new url is " + this.url);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("****** new url is " + this.url);
+		}
 		this.eventQHandler.addEventable(this);
 	}
 
@@ -107,13 +113,17 @@ public class ServerSession extends EventQueueHandler.Eventable {
 				break;
 
 			case 3: //on request
-				LOG.trace("received msg event");
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("received msg event");
+				}
 				Msg msg = ((EventNewMsg) ev).getMsg();
 				callbacks.onRequest(msg);
 				break;
 
 			case 6: //msg sent complete
-				LOG.trace("received msg sent complete event");
+				if(LOG.isTraceEnabled()) {
+					LOG.trace("received msg sent complete event");
+				}
 				break;
 
 			default:

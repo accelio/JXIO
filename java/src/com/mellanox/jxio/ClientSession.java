@@ -45,7 +45,10 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		if (id == 0) {
 			LOG.error("there was an error creating session");
 		}
-		LOG.debug("id is " + id);
+		
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("id is " + id);
+		}
 		this.setId(id);
 
 		this.eventQHandler.addEventable(this); 
@@ -67,8 +70,10 @@ public class ClientSession extends EventQueueHandler.Eventable {
 			return false;
 		}
 		Bridge.closeSessionClient(getId());	
-
-		LOG.debug("at the end of SessionClientClose");
+		
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("at the end of SessionClientClose");
+		}
 		setIsClosing(true);
 		return true;
 	}
@@ -77,7 +82,9 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		switch (ev.getEventType()) {
 
 		case 0: //session error event
-			LOG.debug("received session event");
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("received session event");
+			}
 			if (ev  instanceof EventSession){
 
 				int errorType = ((EventSession) ev).getErrorType();
@@ -96,12 +103,16 @@ public class ClientSession extends EventQueueHandler.Eventable {
 			break;
 
 		case 2: //session established
-			LOG.debug("received session established event");
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("received session established event");
+			}
 			callbacks.onSessionEstablished();
 			break;
 
 		case 4: //on reply
-			LOG.trace("received msg event");
+			if (LOG.isTraceEnabled()) {
+				LOG.trace("received msg event");
+			}
 			Msg msg = ((EventNewMsg) ev).getMsg();
 			callbacks.onReply(msg);
 			break;

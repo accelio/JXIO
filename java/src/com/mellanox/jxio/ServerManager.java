@@ -26,14 +26,15 @@ import com.mellanox.jxio.impl.EventSession;
 
 public class ServerManager extends EventQueueHandler.Eventable {
 
-	private final Callbacks callbacks;
+	private final Callbacks         callbacks;
 	private final EventQueueHandler eventQHndl;
-	private final String url;
-	private String urlPort0;
-	private static final Log LOG = LogFactory.getLog(ServerManager.class.getCanonicalName());
+	private final String            url;
+	private String                  urlPort0;
+	private static final Log        LOG = LogFactory.getLog(ServerManager.class.getCanonicalName());
 
 	public static interface Callbacks {
 		public void onSession(long ptrSes, String uri, String srcIP);
+
 		public void onSessionError(int errorType, String reason);
 	}
 
@@ -48,16 +49,18 @@ public class ServerManager extends EventQueueHandler.Eventable {
 			LOG.fatal("there was an error creating SessionManager");
 		}
 		createUrlForServerSession();
-		LOG.debug("urlForServerSession is "+urlPort0);
+		LOG.debug("urlForServerSession is " + urlPort0);
 
-		this.eventQHndl.addEventable(this); 
+		this.eventQHndl.addEventable(this);
 	}
 
-	public String getUrlForServer() { return urlPort0; }
+	public String getUrlForServer() {
+		return urlPort0;
+	}
 
 	public boolean close() {
-		this.eventQHndl.removeEventable (this); //TODO: fix this
-		if (getId() == 0){
+		this.eventQHndl.removeEventable(this); // TODO: fix this
+		if (getId() == 0) {
 			LOG.error("closing ServerManager with empty id");
 			return false;
 		}
@@ -67,44 +70,49 @@ public class ServerManager extends EventQueueHandler.Eventable {
 	}
 
 	public void forward(ServerSession ses, long ptrSes) {
-		LOG.debug("****** new url inside forward  is " + ses.getUrl());
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("****** new url inside forward  is " + ses.getUrl());
+		}
 		Bridge.forwardSession(ses.getUrl(), ptrSes, ses.getId());
 	}
 
 	void onEvent(Event ev) {
 		switch (ev.getEventType()) {
 
-		case 0: //session error event
-			LOG.error("received session error event");
-			if (ev  instanceof EventSession){
-				int errorType = ((EventSession) ev).getErrorType();
-				String reason = ((EventSession) ev).getReason();
-				this.callbacks.onSessionError(errorType, reason);
+			case 0: // session error event
+				LOG.error("received session error event");
+				if (ev instanceof EventSession) {
+					int errorType = ((EventSession) ev).getErrorType();
+					String reason = ((EventSession) ev).getReason();
+					this.callbacks.onSessionError(errorType, reason);
 
-				if (errorType == 1) {//event = "SESSION_TEARDOWN";
-					this.eventQHndl.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
+					if (errorType == 1) {// event = "SESSION_TEARDOWN";
+						this.eventQHndl.removeEventable(this); // now we are officially done with this session and it
+															   // can be deleted from the EQH
+					}
 				}
-			}
-			break;
+				break;
 
-		case 5: //on new session
-			LOG.debug("received new session event");
-			if (ev  instanceof EventNewSession){
-				long ptrSes = ((EventNewSession) ev).getPtrSes();
-				String uri = ((EventNewSession) ev).getUri();		
-				String srcIP = ((EventNewSession) ev).getSrcIP();
-				this.callbacks.onSession(ptrSes, uri, srcIP);
-			}
-			break;
+			case 5: // on new session
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("received new session event");
+				}
+				if (ev instanceof EventNewSession) {
+					long ptrSes = ((EventNewSession) ev).getPtrSes();
+					String uri = ((EventNewSession) ev).getUri();
+					String srcIP = ((EventNewSession) ev).getSrcIP();
+					this.callbacks.onSession(ptrSes, uri, srcIP);
+				}
+				break;
 
-		default:
-			LOG.error("received an unknown event "+ ev.getEventType());
+			default:
+				LOG.error("received an unknown event " + ev.getEventType());
 		}
 	}
 
 	private void createUrlForServerSession() {
-		//parse url so it would replace port number on which the server listens with 0
-		int index = url.lastIndexOf(":"); 
-		this.urlPort0 = url.substring(0, index+1)+"0";
+		// parse url so it would replace port number on which the server listens with 0
+		int index = url.lastIndexOf(":");
+		this.urlPort0 = url.substring(0, index + 1) + "0";
 	}
 }

@@ -103,8 +103,10 @@ public class EventQueueHandler implements Runnable {
 				((is_infinite_events) || (maxEvents > eventsHandled)) && 
 				((is_forever) || (!this.elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
 
-			LOG.debug("[" + getId() + "] there are " + eventsWaitingInQ + " events in Q. handled " + eventsHandled + " events, " + 
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("[" + getId() + "] there are " + eventsWaitingInQ + " events in Q. handled " + eventsHandled + " events, " + 
 								"elapsed time is " + this.elapsedTime.getElapsedTimeMicro() + " usec (blocking for " + ((is_forever) ? "infinite duration)" : "a max duration of " + timeOutMicroSec/1000 + " msec.)"));
+			}
 
 			if (eventsWaitingInQ <= 0) { // the event queue is empty now, get more events from libxio
 				eventQueue.rewind();
@@ -119,7 +121,9 @@ public class EventQueueHandler implements Runnable {
 			}
 		}
 
-		LOG.debug("[" + getId() + "] returning with " + eventsWaitingInQ + " events in Q. handled " + eventsHandled + " events, elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec.");
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("[" + getId() + "] returning with " + eventsWaitingInQ + " events in Q. handled " + eventsHandled + " events, elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec.");
+		}
 		return eventsHandled;
 	}
 
@@ -149,7 +153,9 @@ public class EventQueueHandler implements Runnable {
 			{
 				Eventable ev = entry.getValue();
 				if (!ev.getIsClosing()){
-					LOG.debug("closing eventable with refToCObject " + entry.getKey()); 
+					if (LOG.isDebugEnabled()) {
+						LOG.debug("closing eventable with refToCObject " + entry.getKey());
+					}
 					ev.close();
 				}
 			}
@@ -157,7 +163,9 @@ public class EventQueueHandler implements Runnable {
 			LOG.warn("attempting to close EQH while objects " + this.eventables.keySet() + " are still listening. aborting");
 			//			runEventLoop (1,0);
 		}
-		LOG.debug("no more objects listening");
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("no more objects listening");
+		}
 		Bridge.closeCtx(getId());
 		this.stopLoop = true;
 	}
@@ -199,14 +207,18 @@ public class EventQueueHandler implements Runnable {
 	long getId() { return refToCObject; }
 
 	void addEventable(Eventable eventable) {
-		LOG.debug("** adding "+eventable.getId()+" to map ");
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("** adding "+eventable.getId()+" to map ");
+		}
 		if (eventable.getId() != 0){
 			eventables.put(eventable.getId(), eventable);
 		}
 	}
 
 	void removeEventable(Eventable eventable) {
-		LOG.debug("** removing "+eventable.getId()+" from map ");
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("** removing "+eventable.getId()+" from map ");
+		}
 		eventables.remove(eventable.getId());
 	}
 
@@ -260,7 +272,9 @@ public class EventQueueHandler implements Runnable {
 		{
 			Msg msg = this.msgsPendingNewRequest.get(id);
 			long session_id = eventQueue.getLong();
-			LOG.trace("session refToCObject" +  session_id);
+			if (LOG.isTraceEnabled()) {
+				LOG.trace("session refToCObject" +  session_id);
+			}
 			eventable = eventables.get(session_id);
 			EventNewMsg evMsg = new EventNewMsg(eventType, id, msg);
 			eventable.onEvent(evMsg);
@@ -270,10 +284,14 @@ public class EventQueueHandler implements Runnable {
 		case 4: //on reply
 		{
 			Msg msg = msgsPendingReply.remove(id);
-			LOG.trace("msg is "+ msg);
+			if (LOG.isTraceEnabled()) {
+				LOG.trace("msg is "+ msg);
+			}
 			EventNewMsg evMsg = new EventNewMsg(eventType, id, msg);		
 			eventable = msg.getClientSession();
-			LOG.trace("eventable is "+ eventable);
+			if (LOG.isTraceEnabled()) {
+				LOG.trace("eventable is "+ eventable);
+			}
 			eventable.onEvent(evMsg);
 		}
 		break;
