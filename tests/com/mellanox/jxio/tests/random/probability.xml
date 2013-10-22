@@ -1,0 +1,58 @@
+<root>
+	<machines>
+		<machine_amount value="2"/>
+		<machine>
+			<name value="A"/>
+			<address value="11.4.3.22"/>
+			<type value="Eth"/>
+			<manag_interface value="192.168.1.242"/>
+		</machine>
+		<machine>
+			<name value="B"/>
+			<address value="11.4.3.23"/>
+			<type value="Eth"/>
+			<manag_interface value="192.168.1.243"/>
+		</machine>
+	</machines>
+
+	<!-- JXIO process parameters -->
+	<processes>
+		<process_amount value="[20]:0, [50]:1-10, [30]:11-100"/>
+		<location value="[50]:A, [50]:B"/>
+		<num_eqhs value="[90]:1 , [10]:10"/>
+		<timeout value="[50]:20 , [50]:30, [0]:default"/>
+	</processes>
+
+	<!-- Server process parameters -->
+	<servers>
+		<server_amount value="[20]:2, [25]:5, [25]:8, [30]:10"/>
+		<process value="random"/>
+		<start_delay value="[100]:0"/>
+		<duration value="[100]:25"/>
+		<max_ss_per_sm value="[100]:100"/>
+		<msg_pools>
+			<msg_pool_amount value="[100]:2-5"/>
+		        <msg_pool_count value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
+        		<msg_pool_size_in value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
+	        	<msg_pool_size_out value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
+        	</msg_pools>
+		<tps value="[30]:100, [25]:100-500, [25]:500-50000, [20]:60000"/>
+		<delay value="[20]:5, [20]:10, [60]:0"/>
+	</servers>
+
+	<!-- Client process parameters -->
+	<clients>
+        	<client_amount value="[20]:2, [25]:5, [25]:8, [30]:10"/>
+	        <process value="random"/>
+		<server value="random"/>
+        	<start_delay value="[100]:12"/>
+	        <duration value="[100]:1"/>
+		<msgs>
+		        <msg_count_factor value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
+        		<msg_size_in_factor value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
+	        	<msg_size_out_factor value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
+        	</msgs>
+		<tps value="[30]:100, [25]:100-500, [25]:500-50000, [20]:max"/>
+		<batch value="[100]:5"/>
+	</clients>
+</root>
