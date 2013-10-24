@@ -14,7 +14,7 @@
  ** governing permissions and  limitations under the License.
  **
  */
-package com.mellanox.jxio.tests.random;
+package com.mellanox.jxio.tests.random.storyteller;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,8 +41,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.mellanox.jxio.tests.random.Character;
-import com.mellanox.jxio.tests.random.Story;
+import com.mellanox.jxio.tests.random.storyteller.Character;
+import com.mellanox.jxio.tests.random.storyteller.Story;
 
 public class StoryTeller {
 

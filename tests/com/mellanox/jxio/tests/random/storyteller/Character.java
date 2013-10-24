@@ -14,7 +14,7 @@
  ** governing permissions and  limitations under the License.
  **
  */
-package com.mellanox.jxio.tests.random;
+package com.mellanox.jxio.tests.random.storyteller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
