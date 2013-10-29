@@ -1,3 +1,20 @@
+/*
+** Copyright (C) 2013 Mellanox Technologies
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at:
+**
+** http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+** either express or implied. See the License for the specific language
+** governing permissions and  limitations under the License.
+**
+*/
+
 package com.mellanox.jxio.tests.benchmarks;
 
 import org.apache.commons.logging.Log;
@@ -9,7 +26,7 @@ import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
 
 
-public class DataPathTest implements Runnable {
+public class DataPathTestClient implements Runnable {
 
 	EventQueueHandler        eqh;
 	ClientSession            cs;
@@ -19,9 +36,9 @@ public class DataPathTest implements Runnable {
 	private long cnt, print_cnt;
 	boolean firstTime;
 	long startTime;
-	private final static Log LOG = LogFactory.getLog(DataPathTest.class.getCanonicalName());
+	private final static Log LOG = LogFactory.getLog(DataPathTestClient.class.getCanonicalName());
 
-	public DataPathTest(String url, int msg_size) {
+	public DataPathTestClient(String url, int msg_size) {
 		msgSize = msg_size;
 		eqh = new EventQueueHandler();
 		cs =  new ClientSession(eqh, url, new DataPathClientCallbacks());
@@ -66,9 +83,10 @@ public class DataPathTest implements Runnable {
 			return;
 		}
 		String url = "rdma://" + args[0] + ":" + Integer.parseInt(args[1]);
-		Runnable test = new DataPathTest(url, Integer.parseInt(args[2]));
+		Runnable test = new DataPathTestClient(url, Integer.parseInt(args[2]));
 		test.run();
 	}
+	
 	class DataPathClientCallbacks implements ClientSession.Callbacks {
 
 		public void onMsgError() {

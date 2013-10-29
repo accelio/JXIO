@@ -10,4 +10,4 @@ java -Dlog4j.configuration=com/mellanox/jxio/tests/benchmarks/log4j.properties.j
 
 #The Below client is for DataPath perfromance test (TPS & BW)
 #$1 is Server IP $2 Server port  $3 Msg size  
-java -Dlog4j.configuration=com/mellanox/jxio/tests/benchmarks/log4j.properties.jxiotest -cp "../bin/jxio.jar:../lib/commons-logging.jar:../lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.benchmarks.DataPathTest $1 $2 $3
+java -Dlog4j.configuration=com/mellanox/jxio/tests/benchmarks/log4j.properties.jxiotest -cp "../bin/jxio.jar:../lib/commons-logging.jar:../lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.benchmarks.DataPathTestClient $1 $2 $3
