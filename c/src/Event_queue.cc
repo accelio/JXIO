@@ -22,6 +22,9 @@
 
 Event_queue::Event_queue(int size)
 {
+	this->offset = 0;
+	this->size = size;
+
 	error_creating = false;
 	this->buf = (char*)malloc(size * sizeof(char));
 	if (this->buf== NULL){
@@ -30,8 +33,6 @@ Event_queue::Event_queue(int size)
 		return;
 	}
 
-	this->offset = 0;
-	this->size = size;
 }
 
 

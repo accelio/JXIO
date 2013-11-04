@@ -37,6 +37,8 @@ typedef enum {
 Events::Events()
 {
 	this->size = 0;
+	this->event.type = 0;
+	this->event.ptr = 0;
 }
 
 int Events::writeOnSessionErrorEvent(char *buf, void *ptrForJava, struct xio_session *session,
@@ -109,8 +111,7 @@ int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, struct xio_sessi
 			len = INET6_ADDRSTRLEN;
 	} else {
 			log(lsERROR, "can not get src ip\n");
-			len = strlen(ip);
-
+			return 0;
 	}
 
 	this->event.event_specific.new_session.ip_len = htonl (len);

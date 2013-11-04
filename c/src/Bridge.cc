@@ -141,7 +141,7 @@ void Bridge_invoke_logToJava_callback(const char* log_message, const int severit
 	env->DeleteLocalRef(j_message);
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_setLogLevelNative(JNIEnv *env, jclass cls, jint logLevel)
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_setLogLevelNative(JNIEnv *env, jclass cls, jint logLevel)
 {
 	log_set_threshold((log_severity_t)logLevel);
 }

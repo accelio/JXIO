@@ -21,8 +21,12 @@
 Context::Context(int eventQSize)
 {
 	error_creating = false;
-
+	this->ctx = NULL;
+	this->event_queue = NULL;
+	this->events = NULL;
+	this->msg_pool = NULL;
 	this->events_num = 0;
+
 	ev_loop = xio_ev_loop_init();
 	if (ev_loop == NULL){
 		log (lsERROR, "Error, xio_ev_loop_init failed\n");

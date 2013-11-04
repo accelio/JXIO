@@ -24,6 +24,9 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 	this->in_size = in_size;
 	this->out_size = out_size;
 	this->msg_num = msg_num;
+	this->msg_list = NULL;
+	this->msg_ptrs = NULL;
+	this->xio_mr = NULL;
 
 	this->buf_size = msg_num * (in_size + out_size);
 
@@ -119,6 +122,8 @@ MsgPool::~MsgPool()
 		}
 		free(this->buf);
 	}
+
+	free (msg_ptrs);
 }
 
 Msg* MsgPool::get_msg_from_pool()
