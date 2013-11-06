@@ -26,28 +26,22 @@ import com.mellanox.jxio.ServerSession;
 
 public class DataPathTestServer {
 	
-	EventQueueHandler eqh = null;
 	ServerSession session;
 
 	private final static Log LOG = LogFactory.getLog(DataPathTestServer.class.getCanonicalName());
 	
-	public DataPathTestServer(EventQueueHandler eqh, String uri) {
-		this.eqh = eqh;
-		this.session = new ServerSession (eqh, uri, new ServerCallbacks());
+	public DataPathTestServer(long key) {
+		this.session = new ServerSession (key, new ServerCallbacks());
 	}
 	
 	public class ServerCallbacks implements ServerSession.Callbacks {
 
 		public void onRequest(Msg msg) {
-			//LOG.info("got a request! Bring the champagne!!!!!");
-			//LOG.info("msg is "+msg);
-			//int num = msg.getIn().getInt();
-			//LOG.info("got "+num);
-			//msg.getOut().putInt(num);
+
 			session.sendResponce(msg);
 		}
 
-		public void onSessionError(int session_event, String reason) {
+		public void onSessionEvent(int session_event, String reason) {
 			String event;
 			switch (session_event){
 			case 0:

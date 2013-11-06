@@ -22,12 +22,11 @@ private final static Log LOG = LogFactory.getLog(ClientControlPathMT.class.getCa
 
 		//MsgPool pool = new MsgPool(2, 20, 10000);
 		MsgPool pool = new MsgPool(1, 4, 4);
-		System.out.println("^^^^^ msg is ");
 		Msg msg = pool.getMsg();
 		ByteBuffer o = msg.getOut();
 		o.putInt(7);
 		//		
-		System.out.println("^^^^^ msg is " + o.getInt(0));
+		System.out.println("^^^^^ msg before send is " + o.getInt(0));
 
 		ses = new MySesClient(eventQHndl, combined_url);
 		ses.sendMsg(msg);

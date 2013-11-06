@@ -24,34 +24,52 @@ import com.mellanox.jxio.impl.Event;
 import com.mellanox.jxio.impl.EventNewSession;
 import com.mellanox.jxio.impl.EventSession;
 
-public class ServerManager extends EventQueueHandler.Eventable {
+public class ServerPortal extends EventQueueHandler.Eventable {
 
 	private final Callbacks         callbacks;
 	private final EventQueueHandler eventQHndl;
-	private final String            url;
+	private String                  url;
 	private String                  urlPort0;
-	private static final Log        LOG = LogFactory.getLog(ServerManager.class.getCanonicalName());
+	private final int               port;
+	private static final Log        LOG = LogFactory.getLog(ServerPortal.class.getCanonicalName());
 
 	public static interface Callbacks {
-		public void onSession(long ptrSes, String uri, String srcIP);
+		public void onSessionNew(long ptrSes, String uri, String srcIP);
 
-		public void onSessionError(int errorType, String reason);
+		public void onSessionEvent(int errorType, String reason);
 	}
 
-	public ServerManager(EventQueueHandler eventQHandler, String url, Callbacks callbacks) {
-		this.url = url;
+	/*
+	 * this c-tor is for the ServerPortal manager. He listens on a well known port and redirects the request for a new
+	 * session to ServerPortal worker
+	 */
+	public ServerPortal(EventQueueHandler eventQHandler, String url, Callbacks callbacks) {
 		this.eventQHndl = eventQHandler;
 		this.callbacks = callbacks;
 
-		setId(Bridge.startServerManager(url, eventQHandler.getId()));
+		long[] ar = Bridge.startServerPortal(url, eventQHandler.getId());
+		this.setId(ar[0]);
+		this.port = (int) ar[1];
 
 		if (getId() == 0) {
-			LOG.fatal("there was an error creating SessionManager");
+			LOG.fatal("there was an error creating ServerPortal");
 		}
-		createUrlForServerSession();
-		LOG.debug("urlForServerSession is " + urlPort0);
 
+		createUrlForServerSession(url);
+		// modify url to include the new port number
+		int index = url.lastIndexOf(":");
+		this.url = url.substring(0, index + 1) + Integer.toString(port);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("****** new url is " + this.url);
+		}
 		this.eventQHndl.addEventable(this);
+	}
+
+	/*
+	 * this c-tor is used for ServerPortal worker. a new session is redirected here by ServerPortal manager
+	 */
+	public ServerPortal(EventQueueHandler eventQHandler, String url) {
+		this(eventQHandler, url, null);
 	}
 
 	public String getUrlForServer() {
@@ -61,34 +79,41 @@ public class ServerManager extends EventQueueHandler.Eventable {
 	public boolean close() {
 		this.eventQHndl.removeEventable(this); // TODO: fix this
 		if (getId() == 0) {
-			LOG.error("closing ServerManager with empty id");
+			LOG.error("closing ServerPortal with empty id");
 			return false;
 		}
-		Bridge.stopServerManager(getId());
+		Bridge.stopServerPortal(getId());
 		setIsClosing(true);
 		return true;
 	}
 
-	public void forward(ServerSession ses, long ptrSes) {
+	public void accept(ServerSession ses) {
+		this.forward(this, ses);
+	}
+
+	public void forward(ServerPortal portal, ServerSession serverSession) {
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("****** new url inside forward  is " + ses.getUrl());
+			LOG.debug("portal " + portal + "ses id is " + serverSession.getId());
 		}
-		Bridge.forwardSession(ses.getUrl(), ptrSes, ses.getId());
+		serverSession.setEventQueueHandler(portal.eventQHndl);
+		Bridge.forwardSession(portal.getUrl(), serverSession.getId(), portal.getId());
 	}
 
 	void onEvent(Event ev) {
 		switch (ev.getEventType()) {
 
 			case 0: // session error event
-				LOG.error("received session error event");
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("received session error event");
+				}
 				if (ev instanceof EventSession) {
 					int errorType = ((EventSession) ev).getErrorType();
 					String reason = ((EventSession) ev).getReason();
-					this.callbacks.onSessionError(errorType, reason);
+					this.callbacks.onSessionEvent(errorType, reason);
 
 					if (errorType == 1) {// event = "SESSION_TEARDOWN";
 						this.eventQHndl.removeEventable(this); // now we are officially done with this session and it
-															   // can be deleted from the EQH
+						                                       // can be deleted from the EQH
 					}
 				}
 				break;
@@ -101,7 +126,7 @@ public class ServerManager extends EventQueueHandler.Eventable {
 					long ptrSes = ((EventNewSession) ev).getPtrSes();
 					String uri = ((EventNewSession) ev).getUri();
 					String srcIP = ((EventNewSession) ev).getSrcIP();
-					this.callbacks.onSession(ptrSes, uri, srcIP);
+					this.callbacks.onSessionNew(ptrSes, uri, srcIP);
 				}
 				break;
 
@@ -110,9 +135,14 @@ public class ServerManager extends EventQueueHandler.Eventable {
 		}
 	}
 
-	private void createUrlForServerSession() {
+	private void createUrlForServerSession(String url) {
 		// parse url so it would replace port number on which the server listens with 0
 		int index = url.lastIndexOf(":");
 		this.urlPort0 = url.substring(0, index + 1) + "0";
+		LOG.debug("urlForServerSession is " + urlPort0);
+	}
+
+	private String getUrl() {
+		return url;
 	}
 }

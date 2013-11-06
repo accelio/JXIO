@@ -15,27 +15,32 @@
  **
  */
 
-#ifndef Contexable__H___
-#define Contexable__H___
+#ifndef ServerPortal__H___
+#define ServerPortal__H___
+
+#include <errno.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "CallbackFunctions.h"
+#include "Contexable.h"
+#include "JXIOExtraFunc.h"
 
 class Context;
 
-class Contexable {
-
+class ServerPortal: public Contexable {
 public:
-	Context* get_ctx_class() {
-		return ctx_class;
-	}
-	void set_ctx_class(Context* c) {
-		this->ctx_class = c;
-	}
+	//to move some to private?
+	ServerPortal(const char *url, long ptrCtx);
+	~ServerPortal();
+	bool accept(struct xio_session *session, const char * url);
 
-	//returns true in case this event should be written to eventQueue and false if not
-	virtual bool onSessionEvent(xio_session_event eventType,
-			struct xio_session *session) = 0;
+	bool onSessionEvent(xio_session_event eventType,
+			struct xio_session *session);
 
-private:
-	Context* ctx_class;
+	struct xio_server* server;
+	bool error_creating;
+	uint16_t port; //indicates the actual port on which the server listens
 };
 
-#endif // ! Contexable__H___
+#endif // ! ServerManager

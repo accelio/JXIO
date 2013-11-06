@@ -25,22 +25,31 @@ import com.mellanox.jxio.*;
 public class DataPathTestMngServer implements Runnable {
 
 	private final static Log LOG = LogFactory.getLog(DataPathTestMngServer.class.getCanonicalName());
-	EventQueueHandler eqh = null;
-	ServerManager serverManager;
+	EventQueueHandler eqh1, eqh2; 
+	ServerPortal man, worker;
 	int msgSize;
 
 	public DataPathTestMngServer(String url, int msgSize) {
-		this.eqh = new EventQueueHandler();	
-		this.serverManager = new ServerManager (eqh, url, new SesManagerCallbacks());
+		
+		eqh1 = new EventQueueHandler(); 
+		SesManagerCallbacks c = new SesManagerCallbacks();
+		this.man = new ServerPortal (eqh1, url, c);
+
+		eqh2 = new EventQueueHandler(); 
+		this.worker = new ServerPortal(eqh2, man.getUrlForServer());
+
 		this.msgSize = msgSize;
 	}
 
 	public void close() {
-		serverManager.close();
+		man.close();
 	}
 
-	public void run() {		
-		eqh.runEventLoop(-1, -1);
+	public void run() {	
+		Thread t = new Thread (eqh1);
+		t.start();	
+		Thread t2 = new Thread (eqh2);
+		t2.start();	
 	}
 	
 	public void print(String str) {
@@ -57,46 +66,38 @@ public class DataPathTestMngServer implements Runnable {
 		test.run();
 	}
 	
-	class SesManagerCallbacks implements ServerManager.Callbacks {
+	class SesManagerCallbacks implements ServerPortal.Callbacks {
 
-		public void onSession(long ptrSes, String uriSrc, String srcIP) {		
-			EventQueueHandler eventQHndl = new EventQueueHandler();	
-			MsgPool msgPool = new MsgPool(2048, msgSize, msgSize);
-			eventQHndl.bindMsgPool(msgPool);
-			DataPathTestServer server = new DataPathTestServer(eventQHndl, serverManager.getUrlForServer());
+		public void onSessionNew(long ptrSes, String uriSrc, String srcIP) {
 			
-			serverManager.forward(server.session, ptrSes);
+			MsgPool msgPool = new MsgPool(2048, msgSize, msgSize);
+			eqh2.bindMsgPool(msgPool);
+			DataPathTestServer server = new DataPathTestServer(ptrSes);
 
-			Thread t = new Thread (eventQHndl);
-			t.start();	
+			man.forward(worker, server.session);
+
 		}
 
-		public void onSessionError(int session_event, String reason) {
+		public void onSessionEvent(int session_event, String reason) {
 			String event;
 			switch (session_event){
 			case 0:
 				event = "SESSION_REJECT";
-				serverManager.close(); // Added
 				break;
 			case 1:
 				event = "SESSION_TEARDOWN";
-				serverManager.close(); // Added
 				break;
 			case 2:
 				event = "CONNECTION_CLOSED";
-				serverManager.close(); // Added
 				break;
 			case 3:
 				event = "CONNECTION_ERROR";
-				serverManager.close(); // Added
 				break;
 			case 4:
 				event = "SESSION_ERROR";
-				serverManager.close(); // Added
 				break;
 			default:
 				event = "UNKNOWN";
-				serverManager.close(); // Added
 				break;
 			}
 			LOG.error("GOT EVENT " + event + "because of " + reason);

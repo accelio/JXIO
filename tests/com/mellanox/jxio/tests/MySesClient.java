@@ -31,8 +31,9 @@ public class MySesClient {
 
 
     public MySesClient(EventQueueHandler eqh, String uri) {
-	this.eqh = eqh;	
-	this.client = new ClientSession (eqh, uri, new MySesClientCallbacks());
+    	this.eqh = eqh;	
+    	this.client = new ClientSession (eqh, uri, new MySesClientCallbacks());
+    	
     }	    
 
 
@@ -43,7 +44,7 @@ public class MySesClient {
 	}
 
     public void sendMsg (Msg m){
-	client.sendMessage(m);
+    	client.sendMessage(m);
     }
 
 

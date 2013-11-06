@@ -27,59 +27,34 @@ import com.mellanox.jxio.impl.EventSession;
 public class ServerSession extends EventQueueHandler.Eventable {
 
 	private final Callbacks callbacks;
-	private final EventQueueHandler eventQHandler;
-	private final int port;
-	private String url;
+	private EventQueueHandler eventQHandler;
 
 	private static final Log LOG = LogFactory.getLog(ServerSession.class.getCanonicalName());
 
 	public static interface Callbacks {
 		public void onRequest(Msg msg);
-		public void onSessionError(int session_event, String reason );
+		public void onSessionEvent(int session_event, String reason );
 		public void onMsgError();
 	}
 
-	public ServerSession(EventQueueHandler eventQHandler, String url, Callbacks callbacks) {
-		this.eventQHandler = eventQHandler;
-		this.url = url;
+	public ServerSession(long sessionKey, Callbacks callbacks) {
 		this.callbacks = callbacks;
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("uri inside ServerSession is "+url);
-		}
-		long[] ar = Bridge.startServerSession(url, eventQHandler.getId());
-		final long id = ar[0];
-		this.port = (int) ar[1];
-		if (id == 0){
-			LOG.fatal("there was an error creating ServerSession");
-		}
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("id is " + id);
-		}
-		this.setId(id);
-
-		//modify url to include the new port number
-		int index = url.lastIndexOf(":"); 
-
-		this.url = url.substring(0, index+1)+Integer.toString(port);
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("****** new url is " + this.url);
-		}
-		this.eventQHandler.addEventable(this);
+		setId(sessionKey);
 	}
 
 	public boolean close() {
-		//		eventQHandler.removeEventable (this); //TODO: fix this
+		eventQHandler.removeEventable(this); //TODO: fix this
 		if (getId() == 0){
 			LOG.error("closing ServerSession with empty id");
 			return false;
 		}
-		Bridge.stopServerSession(getId());
+		Bridge.closeServerSession(getId());
 		setIsClosing(true);
 		return true;
 	}
 
 	public boolean sendResponce(Msg msg) {
-		boolean ret = Bridge.serverSendReply(this.getId(), msg.getId());
+		boolean ret = Bridge.serverSendReply(msg.getId());
 		if (!ret){
 			LOG.error( "there was an error sending the message");
 		}
@@ -92,6 +67,11 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		return ret;
 	}
 
+	void setEventQueueHandler(EventQueueHandler eqh){
+		this.eventQHandler = eqh;
+		this.eventQHandler.addEventable(this);
+	}
+
 	void onEvent(Event ev) {
 		switch (ev.getEventType()) {
 			case 0: //session error event
@@ -99,7 +79,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 				if (ev  instanceof EventSession) {
 					int errorType = ((EventSession) ev).getErrorType();
 					String reason = ((EventSession) ev).getReason();
-					callbacks.onSessionError(errorType, reason);
+					callbacks.onSessionEvent(errorType, reason);
 
 					if (errorType == 1) {//event = "SESSION_TEARDOWN";
 						eventQHandler.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
@@ -131,7 +111,4 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		}
 	}
 
-	protected final String getUrl() {
-		return url;
-	}
 }

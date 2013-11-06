@@ -51,4 +51,6 @@ void log_func(const char* file, const int line, const char* func, log_severity_t
 // THE 'log()' macro that should be used everywhere...
 #define log(severity, ...) do { if (severity <= g_log_threshold)  log_func(__FILE__, __LINE__, __FUNCTION__, severity, __VA_ARGS__);} while(0)
 
+bool close_xio_connection(struct xio_session *session, struct xio_context *ctx);
+
 #endif // ! Utils__H___

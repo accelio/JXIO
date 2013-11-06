@@ -17,6 +17,7 @@
 #ifndef Bridge__H___
 #define Bridge__H___
 
-void Bridge_invoke_logToJava_callback(const char* log_message, const int severity);
+void Bridge_invoke_logToJava_callback(const char* log_message,
+		const int severity);
 
 #endif

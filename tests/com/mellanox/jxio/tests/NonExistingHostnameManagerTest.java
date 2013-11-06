@@ -11,6 +11,7 @@ public class NonExistingHostnameManagerTest implements Runnable {
 	}
 	
 	public void run(){
+		/*
 		///////////////////// Test 2 /////////////////////
 		// A non existing IP address
 		TestManager.print("*** Test 2: A non existing IP address *** ");
@@ -30,7 +31,7 @@ public class NonExistingHostnameManagerTest implements Runnable {
 		sManager = new MySesManager(eqh, url);
 
 		TestManager.print("----- Run Event Loop...for 1 event or 1 sec");
-		eqh.runEventLoop(1, 1000000 /*1sec*/);
+		eqh.runEventLoop(1, 1000000 /*1sec*//*);
 		
 		TestManager.print("------ Closing the session manager...");
 		sManager.close();
@@ -40,6 +41,8 @@ public class NonExistingHostnameManagerTest implements Runnable {
 
 		TestManager.setSuccess(2);
 		TestManager.print("*** Test 2 Passed! *** ");
+		*/
 //TODO ALEXR: need to fix test so it realy catches the failure to create (bind) the MySesManager corerctly.
+
 	}
 }

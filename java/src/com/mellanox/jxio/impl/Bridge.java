@@ -1,18 +1,10 @@
 /*
- ** Copyright (C) 2013 Mellanox Technologies
- **
- ** Licensed under the Apache License, Version 2.0 (the "License");
- ** you may not use this file except in compliance with the License.
- ** You may obtain a copy of the License at:
- **
- ** http://www.apache.org/licenses/LICENSE-2.0
- **
- ** Unless required by applicable law or agreed to in writing, software
- ** distributed under the License is distributed on an "AS IS" BASIS,
- ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
- ** either express or implied. See the License for the specific language
- ** governing permissions and  limitations under the License.
- **
+ * * Copyright (C) 2013 Mellanox Technologies** Licensed under the Apache License, Version 2.0 (the "License");* you may
+ * not use this file except in compliance with the License.* You may obtain a copy of the License at:**
+ * http://www.apache.org/licenses/LICENSE-2.0** Unless required by applicable law or agreed to in writing, software*
+ * distributed under the License is distributed on an "AS IS" BASIS,* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,*
+ * either express or implied. See the License for the specific language* governing permissions and limitations under the
+ * License.*
  */
 package com.mellanox.jxio.impl;
 
@@ -32,8 +24,9 @@ public class Bridge {
 	}
 
 	private static int getLogLevel() {
-		return ((LogFromNative.isFatalEnabled() ? 1 : 0) + (LogFromNative.isErrorEnabled() ? 1 : 0) + (LogFromNative.isWarnEnabled() ? 1 : 0)
-		        + (LogFromNative.isInfoEnabled() ? 1 : 0) + (LogFromNative.isDebugEnabled() ? 1 : 0) + (LogFromNative.isTraceEnabled() ? 1 : 0));
+		return ((LogFromNative.isFatalEnabled() ? 1 : 0) + (LogFromNative.isErrorEnabled() ? 1 : 0)
+		        + (LogFromNative.isWarnEnabled() ? 1 : 0) + (LogFromNative.isInfoEnabled() ? 1 : 0)
+		        + (LogFromNative.isDebugEnabled() ? 1 : 0) + (LogFromNative.isTraceEnabled() ? 1 : 0));
 	}
 
 	// Native methods and their wrappers start here
@@ -97,31 +90,24 @@ public class Bridge {
 		closeSessionClientNative(sesPtr);
 	}
 
-	private static native long startServerManagerNative(String url, long ptrCtx);
+	private static native long[] startServerPortalNative(String url, long ptrCtx);
 
-	public static long startServerManager(String url, long ptrCtx) {
-		long ptr = startServerManagerNative(url, ptrCtx);
+	public static long[] startServerPortal(String url, long ptrCtx) {
+		long ptr[] = startServerPortalNative(url, ptrCtx);
 		return ptr;
 	}
 
-	private static native boolean stopServerManagerNative(long ptr);
+	private static native boolean stopServerPortalNative(long ptr);
 
-	public static boolean stopServerManager(long ptr) {
-		boolean ret = stopServerManagerNative(ptr);
+	public static boolean stopServerPortal(long ptr) {
+		boolean ret = stopServerPortalNative(ptr);
 		return ret;
 	}
 
-	private static native long[] startServerSessionNative(String url, long ptrCtx);
+	private static native boolean closeServerSessionNative(long ptr);
 
-	public static long[] startServerSession(String url, long ptrCtx) {
-		long ptr[] = startServerSessionNative(url, ptrCtx);
-		return ptr;
-	}
-
-	private static native boolean stopServerSessionNative(long ptr);
-
-	public static boolean stopServerSession(long ptr) {
-		boolean ret = stopServerSessionNative(ptr);
+	public static boolean closeServerSession(long ptr) {
+		boolean ret = closeServerSessionNative(ptr);
 		return ret;
 	}
 
@@ -146,10 +132,10 @@ public class Bridge {
 		return ret;
 	}
 
-	private static native boolean serverSendReplyNative(long ptrSession, long ptrMsg);
+	private static native boolean serverSendReplyNative(long ptrMsg);
 
-	public static boolean serverSendReply(long ptrSession, long ptrMsg) {
-		boolean ret = serverSendReplyNative(ptrSession, ptrMsg);
+	public static boolean serverSendReply(long ptrMsg) {
+		boolean ret = serverSendReplyNative(ptrMsg);
 		return ret;
 	}
 
@@ -171,13 +157,27 @@ public class Bridge {
 	static public void logToJava(String log_message, int severity) {
 
 		switch (severity) {
-			case 6:	LogFromNative.trace(log_message); 	break;
-			case 5:	LogFromNative.debug(log_message);	break;
-			case 4:	LogFromNative.info(log_message);	break;
-			case 3:	LogFromNative.warn(log_message);	break;
-			case 2:	LogFromNative.error(log_message);	break;
-			case 1:	LogFromNative.fatal(log_message);	break;
-			default:LogFromNative.info(log_message);	break;
+			case 6:
+				LogFromNative.trace(log_message);
+				break;
+			case 5:
+				LogFromNative.debug(log_message);
+				break;
+			case 4:
+				LogFromNative.info(log_message);
+				break;
+			case 3:
+				LogFromNative.warn(log_message);
+				break;
+			case 2:
+				LogFromNative.error(log_message);
+				break;
+			case 1:
+				LogFromNative.fatal(log_message);
+				break;
+			default:
+				LogFromNative.info(log_message);
+				break;
 		}
 	}
 }

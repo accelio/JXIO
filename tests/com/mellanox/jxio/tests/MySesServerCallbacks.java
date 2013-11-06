@@ -20,7 +20,7 @@ class MySesServerCallbacks implements ServerSession.Callbacks {
 		serverSession.sendResponce(msg);
 	}
 
-	public void onSessionError(int session_event, String reason) {
+	public void onSessionEvent(int session_event, String reason) {
 		String event;
 		switch (session_event){
 		case 0:

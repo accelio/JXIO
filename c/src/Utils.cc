@@ -49,3 +49,19 @@ void log_func(const char* file, const int line, const char* func, log_severity_t
 
 	Bridge_invoke_logToJava_callback(str, severity);
 }
+
+
+bool close_xio_connection(struct xio_session *session, struct xio_context *ctx)
+{
+	xio_connection * con = xio_get_connection(session, ctx);
+	if (con == NULL){
+		log(lsERROR, "no connection found (xio_session=%p, xio_context=%p)", session, ctx);
+		return false;
+	}
+	if (xio_disconnect(con)) {
+		log(lsERROR, "xio_disconnect failed (xio_session=%p, xio_context=%p)", session, ctx");
+		return false;
+	}
+	return true;
+
+}

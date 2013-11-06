@@ -31,10 +31,10 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 	this->buf_size = msg_num * (in_size + out_size);
 
 	this->x_buf = xio_alloc(buf_size);
-	if (x_buf == NULL) {
-		log(lsERROR, "there was an error while allocating&registering memory via huge pages. \n");
-		log(lsERROR, "You should work with Mellanox Ofed 2.0\n");
-		log(lsERROR, "attempting to allocate&registering memory. THIS COULD HURT PERFORMANCE!!!!!\n");
+	if (this->x_buf == NULL) {
+		log(lsWARN, "there was an error while allocating&registering memory via huge pages. \n");
+		log(lsWARN, "You should work with Mellanox Ofed 2.0\n");
+		log(lsWARN, "attempting to allocate&registering memory. THIS COULD HURT PERFORMANCE!!!!!\n");
 		this->buf = (char*) malloc(this->buf_size);
 		if (this->buf == NULL) {
 			log(lsERROR, "allocating memory failed. aborting\n");

@@ -13,6 +13,7 @@ public class OpenRunEventLoopCloseManagerTest implements Runnable {
 	public void run(){
 		///////////////////// Test 5 Helper //////////////
 		// Multiple session manager on seperate EQH thread
+		/*
 		TestManager.print("*** Test 5 Helper: Multiple session manager on seperate EQH thread *** ");
 		
 		// Setup parameters
@@ -30,7 +31,7 @@ public class OpenRunEventLoopCloseManagerTest implements Runnable {
 		sManager = new MySesManager(eqh, url);
 		
 		TestManager.print("----- Run Event Loop...for 1 event or 1 sec");
-		eqh.runEventLoop(1, 1000000 /*1sec*/);
+		eqh.runEventLoop(1, 1000000 /*1sec);
 		
 		TestManager.print("------ Closing the session manager...");
 		sManager.close();
@@ -41,5 +42,6 @@ public class OpenRunEventLoopCloseManagerTest implements Runnable {
 // Parant test will set as OK
 //		TestManager.setSuccess(5);
 		TestManager.print("*** Test 5 Helper Passed! *** ");
+		*/
 	}
 }
