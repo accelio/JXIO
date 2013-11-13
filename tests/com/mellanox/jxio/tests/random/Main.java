@@ -63,7 +63,7 @@ public class Main {
 				File storyFile = new File(xmlFileDir + "\\" + storyFileName);
 				storyRunner.read(storyFile);
 				// Run story
-				//storyRunner.run();
+				storyRunner.run();
 			}
 		}
 	}

@@ -33,14 +33,12 @@ import org.xml.sax.SAXException;
 
 public class JXIOStoryRunner implements StoryRunner {
 
-	private Document                  docRead;
-	//private List<ClientPlayer>        clients;
-	//private List<ServerManagerPlayer> serverManagers;
-	@SuppressWarnings("unused")
-    private List<Machine>             machines;
-	@SuppressWarnings("unused")
-    private List<Process>             processes;
-	private WorkerThreads             workers;
+	private Document      docRead;
+	private List<Machine> machines;
+	private List<Process> processes;
+	private List<Client>  clients;
+	private List<Server>  servers;
+	private WorkerThreads workers;
 
 	/**
 	 * Constructs an new StoryRunner with infinite worker threads.
@@ -87,15 +85,82 @@ public class JXIOStoryRunner implements StoryRunner {
 			// Get Machines
 			machines = getMachines();
 			// Get Processes
-			//processes = getProcesses();
-			
+			processes = getProcesses();
+			// Get Clients
+			clients = getClients();
+			// Get Servers
+			servers = getServers();
+
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			System.out.println("[ERROR] XML Read Expetion occurred.");
 		}
 	}
 
-	@SuppressWarnings("unused")
-    private List<Process> getProcesses() {
+	private List<Server> getServers() {
+		List<Server> servers = new ArrayList<>();
+		// Read given tag
+		NodeList nodeList = docRead.getElementsByTagName("server");
+		// Iterate over all occurrences
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Node node = nodeList.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element element = (Element) node;
+				// Create a new server
+				String id = getTagValue(element, "id");
+				String process = getTagValue(element, "process");
+				String duration = getTagValue(element, "duration");
+				String maxSSPerSM = getTagValue(element, "max_ss_per_sm");
+				String delay = getTagValue(element, "delay");
+				String startDelay = getTagValue(element, "start_delay");
+				String tps = getTagValue(element, "tps");
+				// TODO Add msg_pools
+
+				Server server;
+				if (id != null) {
+					server = new Server(Integer.valueOf(id), Integer.valueOf(process), Integer.valueOf(duration),
+					        Integer.valueOf(maxSSPerSM), Integer.valueOf(delay), Integer.valueOf(startDelay),
+					        Integer.valueOf(tps));
+					// Add process
+					servers.add(server);
+				}
+			}
+		}
+		return servers;
+	}
+
+	private List<Client> getClients() {
+		List<Client> clients = new ArrayList<>();
+		// Read given tag
+		NodeList nodeList = docRead.getElementsByTagName("client");
+		// Iterate over all occurrences
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Node node = nodeList.item(i);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element element = (Element) node;
+				// Create a new client
+				String id = getTagValue(element, "id");
+				;
+				String process = getTagValue(element, "process");
+				String duration = getTagValue(element, "duration");
+				String batch = getTagValue(element, "batch");
+				String server = getTagValue(element, "server");
+				String startDelay = getTagValue(element, "start_delay");
+				String tps = getTagValue(element, "tps");
+
+				Client client;
+				if (id != null) {
+					client = new Client(Integer.valueOf(id), Integer.valueOf(process), Integer.valueOf(duration),
+					        Integer.valueOf(batch), Integer.valueOf(server), Integer.valueOf(startDelay),
+					        Integer.valueOf(tps));
+					// Add process
+					clients.add(client);
+				}
+			}
+		}
+		return clients;
+	}
+
+	private List<Process> getProcesses() {
 		List<Process> processes = new ArrayList<>();
 		// Read given tag
 		NodeList nodeList = docRead.getElementsByTagName("process");
@@ -109,13 +174,17 @@ public class JXIOStoryRunner implements StoryRunner {
 				String location = getTagValue(element, "location");
 				String numEQHs = getTagValue(element, "num_eqhs");
 				String timeout = getTagValue(element, "timeout");
-				Process process = new Process(Integer.valueOf(id), location, Integer.valueOf(numEQHs), Integer.valueOf(timeout));
-				// Add process
-				processes.add(process);
+				Process process;
+				if (id != null) {
+					process = new Process(Integer.valueOf(id), location, Integer.valueOf(numEQHs),
+					        Integer.valueOf(timeout));
+					// Add process
+					processes.add(process);
+				}
 			}
 		}
 		return processes;
-    }
+	}
 
 	private List<Machine> getMachines() {
 		List<Machine> machines = new ArrayList<>();
@@ -127,14 +196,17 @@ public class JXIOStoryRunner implements StoryRunner {
 			if (node.getNodeType() == Node.ELEMENT_NODE) {
 				Element element = (Element) node;
 				// Create a new machine
-				int id = Integer.valueOf(getTagValue(element, "id"));
+				String id = getTagValue(element, "id");
 				String manageInterface = getTagValue(element, "manag_interface");
 				String address = getTagValue(element, "address");
 				String name = getTagValue(element, "name");
 				String type = getTagValue(element, "type");
-				Machine machine = new Machine(id, manageInterface, address, name, type);
-				// Add machine
-				machines.add(machine);
+				Machine machine;
+				if (id != null) {
+					machine = new Machine(Integer.valueOf(id), manageInterface, address, name, type);
+					// Add machine
+					machines.add(machine);
+				}
 			}
 		}
 		return machines;
@@ -149,24 +221,24 @@ public class JXIOStoryRunner implements StoryRunner {
 			if (!item.getNodeName().equals("#text")) {
 				// Get attribute's name
 				String att = item.getNodeName();
-				if (att.equals(tag)){
+				if (att.equals(tag)) {
 					// Get attribute's value
 					Node valueNode = item.getAttributes().getNamedItem("value");
-					
+
 					// If no value found, as it is a title tag, recurse into it's sub-tags
 					if (valueNode != null) {
 						value = valueNode.getNodeValue();
 						return value;
 					}
-//						else {
-//						// Create a supporting character
-//						Character supportingCharacter = new Character();
-//						supportingCharacter.setCharacterType(att);
-//						// Update it's attributes
-//						updateAttributes((Element) item, supportingCharacter);
-//						// Save to main character
-//						mainCharacter.addSupportingCharacter(supportingCharacter);
-//					}
+					// else {
+					// // Create a supporting character
+					// Character supportingCharacter = new Character();
+					// supportingCharacter.setCharacterType(att);
+					// // Update it's attributes
+					// updateAttributes((Element) item, supportingCharacter);
+					// // Save to main character
+					// mainCharacter.addSupportingCharacter(supportingCharacter);
+					// }
 				}
 			}
 		}
@@ -179,7 +251,10 @@ public class JXIOStoryRunner implements StoryRunner {
 	@Override
 	public void run() {
 		System.out.println("Story Running");
+		System.out.println("=============");
+		printSummery();
 
+		// Simple Client-Server:
 		// ServerManagerPlayer sm = new ServerManagerPlayer(new URI("rdma://0:52002/"), 0, 12,
 		// storyRunner.getWorkerThreads());
 		// storyRunner.getWorkerThreads().getWorkerThread().addWorkAction(sm.getAttachAction());
@@ -191,6 +266,28 @@ public class JXIOStoryRunner implements StoryRunner {
 
 		// ClientPlayer c2 = new ClientPlayer(new URI("rdma://0:52002/"), 4, 6, 3);
 		// storyRunner.getWorkerThreads().getWorkerThread().addWorkAction(c2.getAttachAction());
+	}
+
+	private void printSummery() {
+		System.out.print("Machines:");
+		for (Machine machine : machines) {
+			System.out.print(" " + machine.getName());
+		}
+		System.out.println();
+		System.out.print("Processes:");
+		for (Process process : processes) {
+			System.out.print(" " + process.getId());
+		}
+		System.out.println();
+		System.out.print("Clients:");
+		for (Client client : clients) {
+			System.out.print(" " + client.getId());
+		}
+		System.out.println();
+		System.out.print("Servers:");
+		for (Server server : servers) {
+			System.out.print(" " + server.getId());
+		}
 	}
 
 }
