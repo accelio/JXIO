@@ -14,10 +14,14 @@
  ** governing permissions and  limitations under the License.
  **
  */
-package com.mellanox.jxio.tests.random.storyteller;
+package com.mellanox.jxio.tests.random;
 
 import java.io.File;
 import java.util.Random;
+
+import com.mellanox.jxio.tests.random.storyrunner.JXIOStoryRunner;
+import com.mellanox.jxio.tests.random.storyrunner.StoryRunner;
+import com.mellanox.jxio.tests.random.storyteller.StoryTeller;
 
 public class Main {
 
@@ -25,6 +29,7 @@ public class Main {
 	public static String       xmlFileDir;
 	private static String      xmlFileName;
 	private static StoryTeller storyTeller;
+	private static StoryRunner storyRunner;
 	@SuppressWarnings("unused")
     private static long        seed;
 
@@ -46,11 +51,19 @@ public class Main {
 				// Get input seed or randomize one
 				seed = (args.length != 3) ? new Random().nextLong() : Long.valueOf(args[2]);
 				// Create a new StoryTeller Instance
-				File storyFile = new File(xmlFileDir + "\\" + xmlFileName);
-				storyTeller = new StoryTeller(storyFile); //If needed add second argument 'seed'
+				File probabiltyFile = new File(xmlFileDir + "\\" + xmlFileName);
+				storyTeller = new StoryTeller(probabiltyFile); //If needed add second argument 'seed'
 				// Tell Story
 				storyTeller.read();
 				storyTeller.write();
+				// Create a new StoryRunner Instance
+				storyRunner = new JXIOStoryRunner();
+				// Read story
+				String storyFileName = "new_story.xml";
+				File storyFile = new File(xmlFileDir + "\\" + storyFileName);
+				storyRunner.read(storyFile);
+				// Run story
+				//storyRunner.run();
 			}
 		}
 	}

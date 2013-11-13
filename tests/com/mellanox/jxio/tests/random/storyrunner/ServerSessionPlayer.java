@@ -22,7 +22,6 @@ import org.apache.commons.logging.LogFactory;
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
 import com.mellanox.jxio.ServerSession;
-import com.mellanox.jxio.EventQueueHandler;
 
 public class ServerSessionPlayer extends GeneralPlayer {
 

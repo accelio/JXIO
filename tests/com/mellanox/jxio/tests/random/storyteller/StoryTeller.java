@@ -41,6 +41,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.mellanox.jxio.tests.random.Main;
 import com.mellanox.jxio.tests.random.storyteller.Character;
 import com.mellanox.jxio.tests.random.storyteller.Story;
 
@@ -53,26 +54,33 @@ public class StoryTeller {
 	private Story                story;
 	private Map<String, Integer> counters;
 	private List<String>         characterTypes;
-	private long                 seed = -1;
+	private long                 seed   = -1;
+	private Random               random = new Random();
 
 	/**
 	 * Constructs an new StoryTeller.
-	 * @param xmlFile The probability XML file.
+	 * 
+	 * @param xmlFile
+	 *            The probability XML file.
 	 */
 	public StoryTeller(File xmlFile) {
-		story = new Story();
-		counters = new HashMap<>();
+		this.story = new Story();
+		this.counters = new HashMap<>();
 		this.xmlFile = xmlFile;
 	}
-	
+
 	/**
 	 * Constructs an new StoryTeller with a fixed random seed.
-	 * @param xmlFile The probability XML file.
-	 * @param seed A long that represents the initial seed.
+	 * 
+	 * @param xmlFile
+	 *            The probability XML file.
+	 * @param seed
+	 *            A long that represents the initial seed.
 	 */
 	public StoryTeller(File xmlFile, long seed) {
 		this(xmlFile);
 		this.seed = seed;
+		this.random = new Random(seed);
 	}
 
 	/**
@@ -100,6 +108,7 @@ public class StoryTeller {
 
 	/**
 	 * Retrieves all story characters in the probability file.
+	 * 
 	 * @return A list of all the story characters.
 	 */
 	private List<String> getStoryCharacters() {
@@ -127,9 +136,10 @@ public class StoryTeller {
 	}
 
 	/**
-	 * Reads all occurrences of a specific and creates corresponding
-	 * characters in the story.
-	 * @param tag A specific tag to read for the XML file.
+	 * Reads all occurrences of a specific and creates corresponding characters in the story.
+	 * 
+	 * @param tag
+	 *            A specific tag to read for the XML file.
 	 */
 	private void readByTag(String tag) {
 		// Read given tag
@@ -151,10 +161,12 @@ public class StoryTeller {
 	}
 
 	/**
-	 * Reads all sub-tags of a given element and and sets them as attributes
-	 * to the given character.
-	 * @param element The DOM element of the character.
-	 * @param mainCharacter The character to whom the attributes are assigned.
+	 * Reads all sub-tags of a given element and and sets them as attributes to the given character.
+	 * 
+	 * @param element
+	 *            The DOM element of the character.
+	 * @param mainCharacter
+	 *            The character to whom the attributes are assigned.
 	 */
 	private void updateAttributes(Element element, Character mainCharacter) {
 		// Iterate over all sub-tags
@@ -185,10 +197,11 @@ public class StoryTeller {
 	}
 
 	/**
-	 * Randomizes a set of values based on the defined probabilities. 
-	 * @param nodeValue A list of [PROBABILITY]:RANGE pairs, 
-	 * [PROBABILITY]:VALUE pairs, just RANGE (equivalent to [100]:RANGE)
-	 * or just VALUE (equivalent to [100]:VALUE).
+	 * Randomizes a set of values based on the defined probabilities.
+	 * 
+	 * @param nodeValue
+	 *            A list of [PROBABILITY]:RANGE pairs, [PROBABILITY]:VALUE pairs, just RANGE (equivalent to [100]:RANGE)
+	 *            or just VALUE (equivalent to [100]:VALUE).
 	 * @return A String representing a single random number value.
 	 */
 	private String randomizeValueByProbability(String nodeValue) {
@@ -205,7 +218,7 @@ public class StoryTeller {
 				// Add Item to list
 				items.add(new Item<String>(value, probability));
 			}
-			RandomSelector<String> rs = (seed == -1) ? new RandomSelector<>(items) : new RandomSelector<>(items, seed);
+			RandomSelector<String> rs = (seed == -1) ? new RandomSelector<>(items) : new RandomSelector<>(items, random);
 			// Randomize a value by the probabilities given
 			return rs.getRandom().getValue();
 
@@ -216,14 +229,15 @@ public class StoryTeller {
 
 	/**
 	 * Randomizes a number within a range of numbers.
-	 * @param range A String representing a range between two numbers, formated
-	 * as two integers separated by a hyphen. E.g., "3-6".
+	 * 
+	 * @param range
+	 *            A String representing a range between two numbers, formated as two integers separated by a hyphen.
+	 *            E.g., "3-6".
 	 * @return A String representing a single random number value.
 	 */
 	private String randomaizeRange(String range) {
 		// Do only if this is indeed a range
 		if (range.contains("-")) {
-			Random random = (seed == -1) ? new Random() : new Random(seed);
 			String[] edges = range.split("-");
 			int min = Integer.parseInt(edges[0]);
 			int max = Integer.parseInt(edges[1]);
@@ -263,10 +277,10 @@ public class StoryTeller {
 			try {
 				Transformer tr = TransformerFactory.newInstance().newTransformer();
 				tr.setOutputProperty(OutputKeys.INDENT, "yes");
-				tr.setOutputProperty(OutputKeys.METHOD, "xml");
-				tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-				tr.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "roles.dtd");
+				//tr.setOutputProperty(OutputKeys.METHOD, "xml"); NOT NEEDED
+				//tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8"); NOT NEEDED
 				tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+				tr.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes"); // Remove XML Header
 
 				// Send DOM to file
 				tr.transform(new DOMSource(docWrite), new StreamResult(new FileOutputStream(Main.xmlFileDir
@@ -284,7 +298,9 @@ public class StoryTeller {
 
 	/**
 	 * Generates the story tag in the story XML file.
-	 * @param rootEle The root DOM element of the file.
+	 * 
+	 * @param rootEle
+	 *            The root DOM element of the file.
 	 */
 	private void generateStoryTag(Element rootEle) {
 		Element e, sub_e;
@@ -309,10 +325,11 @@ public class StoryTeller {
 	}
 
 	/**
-	 * Converts a word in plural form to it's single form.
-	 * This is used based on the assumption that there exists a field
-	 * under the plural name tag called "single_amount".
-	 * @param plural A string representing a word in plural form.
+	 * Converts a word in plural form to it's single form. This is used based on the assumption that there exists a
+	 * field under the plural name tag called "single_amount".
+	 * 
+	 * @param plural
+	 *            A string representing a word in plural form.
 	 * @return A string representing the given word in single form.
 	 */
 	private String singleFromPlural(String plural) {
@@ -340,8 +357,11 @@ public class StoryTeller {
 
 	/**
 	 * Generates a character's amount tag under the story XML file.
-	 * @param e A DOM element in the file.
-	 * @param tag The character type in single form. 
+	 * 
+	 * @param e
+	 *            A DOM element in the file.
+	 * @param tag
+	 *            The character type in single form.
 	 */
 	private void generateNumberTag(Element e, String tag) {
 		String value = docRead.getElementsByTagName(tag).item(0).getAttributes().getNamedItem("value").getNodeValue();
@@ -356,10 +376,13 @@ public class StoryTeller {
 
 	/**
 	 * Generates a character's tags.
-	 * @param rootEle A DOM element in the file.
-	 * @param mainCharacter The character for whom a tag is created.
-	 * @param numOccurrences The number of repeated occurrences needed to be create for
-	 * the given character.
+	 * 
+	 * @param rootEle
+	 *            A DOM element in the file.
+	 * @param mainCharacter
+	 *            The character for whom a tag is created.
+	 * @param numOccurrences
+	 *            The number of repeated occurrences needed to be create for the given character.
 	 */
 	private void generateTag(Element rootEle, Character mainCharacter, int numOccurrences) {
 

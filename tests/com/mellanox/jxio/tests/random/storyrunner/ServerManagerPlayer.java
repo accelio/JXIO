@@ -29,14 +29,17 @@ public class ServerManagerPlayer extends GeneralPlayer {
 
 	private final URI        uri;
 	private final long       durationSec;
-	private final long       startDelaySec;
+	@SuppressWarnings("unused")
+    private final long       startDelaySec;
 	private WorkerThread     workerThread;
+	private WorkerThreads    workerThreads;
 	private ServerManager    listener;
 
-	public ServerManagerPlayer(URI uri, long startDelaySec, long durationSec) {
+	public ServerManagerPlayer(URI uri, long startDelaySec, long durationSec, WorkerThreads workerThreads) {
 		this.uri = uri;
 		this.durationSec = durationSec;
 		this.startDelaySec = startDelaySec;
+		this.workerThreads = workerThreads;
 		LOG.debug("new " + this.toString() + " done");
 	}
 
@@ -100,9 +103,7 @@ public class ServerManagerPlayer extends GeneralPlayer {
 		public void onSession(long newSessionKey, String uriSrc, String srcIP) {
 			LOG.info("onSessionNew: uri=" + uriSrc + ", srcaddr=" + srcIP);
 			ServerSessionPlayer ss = new ServerSessionPlayer(sm, newSessionKey, srcIP);
-
-			WorkerThreads workers = StoryRunner.story.getWorkerThreads();
-			WorkerThread worker = workers.getWorkerThread();
+			WorkerThread worker = workerThreads.getWorkerThread();
 			worker.addWorkAction(ss.getAttachAction());
 		}
 

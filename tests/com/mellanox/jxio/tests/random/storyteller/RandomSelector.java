@@ -42,9 +42,9 @@ class RandomSelector<T> {
 	 * @param items A list of items to randomize.
 	 * @param seed A long that represents the initial seed.
 	 */
-	public RandomSelector(List<Item<T>> items, long seed) {
+	public RandomSelector(List<Item<T>> items, Random rand) {
 		this(items);
-		this.rand = new Random(seed);
+		this.rand = rand;
 	}
 
 	/**
