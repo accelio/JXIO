@@ -17,6 +17,9 @@
 
 package com.mellanox.jxio.tests.benchmarks;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -29,14 +32,14 @@ public class DataPathTestMngServer implements Runnable {
 	ServerPortal man, worker;
 	int msgSize;
 
-	public DataPathTestMngServer(String url, int msgSize) {
+	public DataPathTestMngServer(URI uri, int msgSize) {
 		
 		eqh1 = new EventQueueHandler(); 
 		SesManagerCallbacks c = new SesManagerCallbacks();
-		this.man = new ServerPortal (eqh1, url, c);
+		this.man = new ServerPortal (eqh1, uri, c);
 
 		eqh2 = new EventQueueHandler(); 
-		this.worker = new ServerPortal(eqh2, man.getUrlForServer());
+		this.worker = new ServerPortal(eqh2, man.getUriForServer());
 
 		this.msgSize = msgSize;
 	}
@@ -61,8 +64,17 @@ public class DataPathTestMngServer implements Runnable {
 			System.out.println("StatMain $IP $PORT $MSG_SIZE");
 			return;
 		}
-		String url = "rdma://" + args[0] + ":" + Integer.parseInt(args[1]);
-		Runnable test = new DataPathTestMngServer(url, Integer.parseInt(args[2]));
+		
+		String uriString = "rdma://" + args[0] + ":" + Integer.parseInt(args[1]);
+		URI uri = null;
+	    try {
+	    	uri = new URI(uriString);
+	    } catch (URISyntaxException e) {
+	    	// TODO Auto-generated catch block
+	    	e.printStackTrace();
+	    }
+		
+		Runnable test = new DataPathTestMngServer(uri, Integer.parseInt(args[2]));
 		test.run();
 	}
 	

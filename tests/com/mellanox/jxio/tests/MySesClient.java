@@ -17,6 +17,9 @@
 
 package com.mellanox.jxio.tests;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -30,8 +33,16 @@ public class MySesClient {
     ClientSession client;
 
 
-    public MySesClient(EventQueueHandler eqh, String uri) {
+    public MySesClient(EventQueueHandler eqh, String uriString) {
     	this.eqh = eqh;	
+    	
+    	URI uri = null;
+	    try {
+	    	uri = new URI(uriString);
+	    } catch (URISyntaxException e) {
+	    	// TODO Auto-generated catch block
+	    	e.printStackTrace();
+	    }
     	this.client = new ClientSession (eqh, uri, new MySesClientCallbacks());
     	
     }	    
@@ -59,7 +70,7 @@ public class MySesClient {
 		LOG.info("[SUCCESS] Session Established! Bring the champagne!");
 	}
 
-	public void onSessionError(int session_event, String reason ){
+	public void onSessionEvent(int session_event, String reason ){
 
 	    String event;
 	    switch (session_event)

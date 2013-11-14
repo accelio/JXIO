@@ -47,7 +47,7 @@ public class ServerSessionPlayer extends GeneralPlayer {
 
 	@Override
 	public void attach(WorkerThread workerThread) {
-		String uri = this.sm.getUrlForServer();
+		String uri = this.sm.getUriForServer();
 		LOG.info(this.toString() + " attaching to WorkerThread (" + workerThread.toString() + ")");
 		this.workerThread = workerThread;
 

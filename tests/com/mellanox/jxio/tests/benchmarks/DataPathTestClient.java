@@ -17,6 +17,9 @@
 
 package com.mellanox.jxio.tests.benchmarks;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -38,10 +41,18 @@ public class DataPathTestClient implements Runnable {
 	long startTime;
 	private final static Log LOG = LogFactory.getLog(DataPathTestClient.class.getCanonicalName());
 
-	public DataPathTestClient(String url, int msg_size) {
+	public DataPathTestClient(String uriString, int msg_size) {
 		msgSize = msg_size;
 		eqh = new EventQueueHandler();
-		cs =  new ClientSession(eqh, url, new DataPathClientCallbacks());
+		
+		URI uri = null;
+	    try {
+	    	uri = new URI(uriString);
+	    } catch (URISyntaxException e) {
+	    	// TODO Auto-generated catch block
+	    	e.printStackTrace();
+	    }
+		cs =  new ClientSession(eqh, uri, new DataPathClientCallbacks());
 		msgPool = new MsgPool(2048, msgSize, msgSize);
 		int msgKSize = msgSize/1024;
 	    if(msgKSize == 0) {
@@ -99,7 +110,7 @@ public class DataPathTestClient implements Runnable {
 			print(" Session Established");
 		}
 
-		public void onSessionError(int session_event, String reason) {
+		public void onSessionEvent(int session_event, String reason) {
 
 			String event;
 			switch (session_event) {

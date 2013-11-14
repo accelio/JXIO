@@ -2,6 +2,8 @@ package com.mellanox.jxio.tests;
 
 import com.mellanox.jxio.*;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Random;
 
 public class MutipleManagersOnSameEQHTest implements Runnable {
@@ -12,7 +14,7 @@ public class MutipleManagersOnSameEQHTest implements Runnable {
 		TestManager.print("*** Test 3: Multiple session client on the same EQH *** ");
 
 		// Setup Multiple Clients Parameters
-		String url;
+		String uriString;
 		EventQueueHandler eqh;
 		MySesPortalManager[] sManagerArray;
 		int numOfSessionManagers = 3;
@@ -28,11 +30,20 @@ public class MutipleManagersOnSameEQHTest implements Runnable {
 			int port = TestManager.portRangeLow
 			        + portGenerator.nextInt(TestManager.portRangeHigh - TestManager.portRangeLow);
 
-			// Get url
-			url = "rdma://" + TestManager.hostname + ":" + port;
+			// Get 
+			uriString = "rdma://" + TestManager.hostname + ":" + port;
 
-			TestManager.print("----- Setting up a session manager " + i + "(url=" + url + ")...");
-			sManagerArray[i] = new MySesPortalManager(eqh, url);
+			TestManager.print("----- Setting up a session manager " + i + "(uri=" + uriString + ")...");
+			
+			URI uri = null;
+		    try {
+		    	uri = new URI(uriString);
+		    } catch (URISyntaxException e) {
+		    	// TODO Auto-generated catch block
+		    	e.printStackTrace();
+		    }
+		    
+			sManagerArray[i] = new MySesPortalManager(eqh, uri);
 		}
 
 		TestManager.print("----- Run Event Loop......for " + numOfSessionManagers + " events or 1 sec");
@@ -54,9 +65,9 @@ public class MutipleManagersOnSameEQHTest implements Runnable {
 		EventQueueHandler eqh;
 		ServerPortal      man;
 
-		MySesPortalManager(EventQueueHandler eqh, String url) {
+		MySesPortalManager(EventQueueHandler eqh, URI uri) {
 			MyPortalManagerCallbacks c = new MyPortalManagerCallbacks();
-			this.man = new ServerPortal(eqh, url, c);
+			this.man = new ServerPortal(eqh, uri, c);
 		}
 
 		public void close() {

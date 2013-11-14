@@ -60,8 +60,8 @@ public class ServerManagerPlayer extends GeneralPlayer {
 		this.workerThread.start(tTerminate);
 	}
 
-	String getUrlForServer() {
-		return this.listener.getUrlForServer();
+	String getUriForServer() {
+		return this.listener.getUriForServer();
 	}
 
 	@Override
@@ -107,7 +107,7 @@ public class ServerManagerPlayer extends GeneralPlayer {
 			worker.addWorkAction(ss.getAttachAction());
 		}
 
-		public void onSessionError(int session_event, String reason) {
+		public void onSessionEvent(int session_event, String reason) {
 			LOG.error("onSessionError: event='" + session_event + "', reason='" + reason + "'");
 			System.exit(1);
 		}

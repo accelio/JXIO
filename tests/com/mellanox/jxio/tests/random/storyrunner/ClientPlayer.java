@@ -130,7 +130,7 @@ public class ClientPlayer extends GeneralPlayer {
 			this.c.sendMsgTimerStart();
 		}
 
-		public void onSessionError(int session_event, String reason) {
+		public void onSessionEvent(int session_event, String reason) {
 			if (this.c.isClosing == true && session_event==1) {
 				LOG.info("onSessionEvent: event='" + session_event + "', reason='" + reason + "'");
 			} else {

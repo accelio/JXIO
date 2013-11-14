@@ -1,4 +1,23 @@
+/*
+ ** Copyright (C) 2013 Mellanox Technologies
+ **
+ ** Licensed under the Apache License, Version 2.0 (the "License");
+ ** you may not use this file except in compliance with the License.
+ ** You may obtain a copy of the License at:
+ **
+ ** http://www.apache.org/licenses/LICENSE-2.0
+ **
+ ** Unless required by applicable law or agreed to in writing, software
+ ** distributed under the License is distributed on an "AS IS" BASIS,
+ ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ ** either express or implied. See the License for the specific language
+ ** governing permissions and  limitations under the License.
+ **
+ */
 package com.mellanox.jxio.tests.benchmarks;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,12 +33,21 @@ public class StatClientSession {
 	int                      clients_count;
 	ClientSession            clients[];
 
-	public StatClientSession(EventQueueHandler eqh, String url, int num_clients) {
+	public StatClientSession(EventQueueHandler eqh, String uriString, int num_clients) {
 		this.clients_count = 0;
 		this.eqh = eqh;
 		this.clients = new ClientSession[num_clients];
+		
+		URI uri = null;
+	    try {
+	    	uri = new URI(uriString);
+	    } catch (URISyntaxException e) {
+	    	// TODO Auto-generated catch block
+	    	e.printStackTrace();
+	    }
+		
 		for (int i = 0; i < num_clients; i++) {
-			this.clients[i] = new ClientSession(eqh, url, new StatSesClientCallbacks(i));
+			this.clients[i] = new ClientSession(eqh, uri, new StatSesClientCallbacks(i));
 		}
 	}
 
@@ -51,7 +79,7 @@ public class StatClientSession {
 			clients[session_num].close();
 		}
 
-		public void onSessionError(int session_event, String reason) {
+		public void onSessionEvent(int session_event, String reason) {
 
 			String event;
 			switch (session_event) {

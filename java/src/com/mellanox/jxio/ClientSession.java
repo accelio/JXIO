@@ -18,47 +18,54 @@ package com.mellanox.jxio;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import java.net.URI;
 
 import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
 import com.mellanox.jxio.impl.EventNewMsg;
 import com.mellanox.jxio.impl.EventSession;
 
-
 public class ClientSession extends EventQueueHandler.Eventable {
 
-	private final Callbacks callbacks;
+	private final Callbacks         callbacks;
 	private final EventQueueHandler eventQHandler;
-	private static final Log LOG =  LogFactory.getLog(ClientSession.class.getCanonicalName());
+	private static final Log        LOG = LogFactory.getLog(ClientSession.class.getCanonicalName());
 
 	public static interface Callbacks {
 		public void onReply(Msg msg);
+
 		public void onSessionEstablished();
-		public void onSessionError(int session_event, String reason);
+
+		public void onSessionEvent(int session_event, String reason);
+
 		public void onMsgError();
 	}
 
-	public ClientSession(EventQueueHandler eventQHandler, String url, Callbacks callbacks) {
+	public ClientSession(EventQueueHandler eventQHandler, URI uri, Callbacks callbacks) {
 		this.eventQHandler = eventQHandler;
 		this.callbacks = callbacks;
-		final long id = Bridge.startSessionClient(url, eventQHandler.getId());
+		if (!uri.getScheme().equals(new String("rdma"))) {
+			LOG.fatal("mal formatted URI: " + uri);
+		}
+
+		final long id = Bridge.startSessionClient(uri.toString(), eventQHandler.getId());
 		if (id == 0) {
 			LOG.error("there was an error creating session");
 		}
-		
+
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("id is " + id);
 		}
 		this.setId(id);
 
-		this.eventQHandler.addEventable(this); 
+		this.eventQHandler.addEventable(this);
 	}
 
 	public boolean sendMessage(Msg msg) {
 		msg.setClientSession(this);
 		eventQHandler.addMsgInUse(msg);
 		boolean ret = Bridge.clientSendReq(this.getId(), msg.getId());
-		if (!ret){
+		if (!ret) {
 			LOG.error("there was an error sending the message");
 		}
 		return ret;
@@ -69,8 +76,8 @@ public class ClientSession extends EventQueueHandler.Eventable {
 			LOG.error("closing Session with empty id");
 			return false;
 		}
-		Bridge.closeSessionClient(getId());	
-		
+		Bridge.closeSessionClient(getId());
+
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("at the end of SessionClientClose");
 		}
@@ -81,44 +88,45 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	void onEvent(Event ev) {
 		switch (ev.getEventType()) {
 
-		case 0: //session error event
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("received session event");
-			}
-			if (ev  instanceof EventSession){
-
-				int errorType = ((EventSession) ev).getErrorType();
-				String reason = ((EventSession) ev).getReason();
-				callbacks.onSessionError(errorType, reason);
-
-				if (errorType == 1) {//event = "SESSION_TEARDOWN";
-					eventQHandler.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
+			case 0: // session error event
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("received session event");
 				}
-			}
-			break;
+				if (ev instanceof EventSession) {
 
-		case 1: //msg error
-			LOG.error("received msg error event");
-			callbacks.onMsgError();
-			break;
+					int errorType = ((EventSession) ev).getErrorType();
+					String reason = ((EventSession) ev).getReason();
+					callbacks.onSessionEvent(errorType, reason);
 
-		case 2: //session established
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("received session established event");
-			}
-			callbacks.onSessionEstablished();
-			break;
+					if (errorType == 1) {// event = "SESSION_TEARDOWN";
+						eventQHandler.removeEventable(this); // now we are officially done with this session and it can
+						                                     // be deleted from the EQH
+					}
+				}
+				break;
 
-		case 4: //on reply
-			if (LOG.isTraceEnabled()) {
-				LOG.trace("received msg event");
-			}
-			Msg msg = ((EventNewMsg) ev).getMsg();
-			callbacks.onReply(msg);
-			break;
+			case 1: // msg error
+				LOG.error("received msg error event");
+				callbacks.onMsgError();
+				break;
 
-		default:
-			LOG.error("received an unknown event "+ ev.getEventType());
+			case 2: // session established
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("received session established event");
+				}
+				callbacks.onSessionEstablished();
+				break;
+
+			case 4: // on reply
+				if (LOG.isTraceEnabled()) {
+					LOG.trace("received msg event");
+				}
+				Msg msg = ((EventNewMsg) ev).getMsg();
+				callbacks.onReply(msg);
+				break;
+
+			default:
+				LOG.error("received an unknown event " + ev.getEventType());
 		}
 	}
 }

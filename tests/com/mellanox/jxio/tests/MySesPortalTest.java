@@ -1,16 +1,25 @@
 /*
- * * Copyright (C) 2013 Mellanox Technologies** Licensed under the Apache License, Version 2.0 (the "License");* you may
- * not use this file except in compliance with the License.* You may obtain a copy of the License at:**
- * http://www.apache.org/licenses/LICENSE-2.0** Unless required by applicable law or agreed to in writing, software*
- * distributed under the License is distributed on an "AS IS" BASIS,* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,*
- * either express or implied. See the License for the specific language* governing permissions and limitations under the
- * License.*
+ ** Copyright (C) 2013 Mellanox Technologies
+ **
+ ** Licensed under the Apache License, Version 2.0 (the "License");
+ ** you may not use this file except in compliance with the License.
+ ** You may obtain a copy of the License at:
+ **
+ ** http://www.apache.org/licenses/LICENSE-2.0
+ **
+ ** Unless required by applicable law or agreed to in writing, software
+ ** distributed under the License is distributed on an "AS IS" BASIS,
+ ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ ** either express or implied. See the License for the specific language
+ ** governing permissions and  limitations under the License.
+ **
  */
 
 package com.mellanox.jxio.tests;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import java.net.*;
 
 import com.mellanox.jxio.*;
 
@@ -20,10 +29,10 @@ public class MySesPortalTest {
 	EventQueueHandler        eqh1, eqh2;
 	ServerPortal             man, worker;
 
-	MySesPortalTest(String url) {
+	MySesPortalTest(URI uri) {
 		eqh1 = new EventQueueHandler();
 		MyPortalManagerCallbacks c = new MyPortalManagerCallbacks();
-		this.man = new ServerPortal(eqh1, url, c);
+		this.man = new ServerPortal(eqh1, uri, c);
 
 		Thread t = new Thread(eqh1);
 		t.start();
@@ -31,17 +40,25 @@ public class MySesPortalTest {
 		eqh2 = new EventQueueHandler();
 		MsgPool msgPool = new MsgPool(1, 4, 4);
 		eqh2.bindMsgPool(msgPool);
-		this.worker = new ServerPortal(eqh2, man.getUrlForServer());
+		this.worker = new ServerPortal(eqh2, man.getUriForServer());
 		Thread t2 = new Thread(eqh2);
 		t2.start();
 	}
 
 	public static void main(String[] args) {
-		String url = args[0];
+		String uriString = args[0];
 		String port = args[1];
-		String combined_url = "rdma://" + url + ":" + port;
+		String combined_uri = "rdma://" + uriString + ":" + port;
 
-		MySesPortalTest spt = new MySesPortalTest(combined_url);
+		URI uri = null;
+	    try {
+	    	uri = new URI(combined_uri);
+	    } catch (URISyntaxException e) {
+	    	// TODO Auto-generated catch block
+	    	e.printStackTrace();
+	    }
+
+		MySesPortalTest spt = new MySesPortalTest(uri);
 	}
 
 	public void close() {

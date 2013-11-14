@@ -24,12 +24,15 @@ import com.mellanox.jxio.impl.Event;
 import com.mellanox.jxio.impl.EventNewSession;
 import com.mellanox.jxio.impl.EventSession;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 public class ServerPortal extends EventQueueHandler.Eventable {
 
 	private final Callbacks         callbacks;
 	private final EventQueueHandler eventQHndl;
-	private String                  url;
-	private String                  urlPort0;
+	private String                  uri;
+	private URI                     uriPort0;
 	private final int               port;
 	private static final Log        LOG = LogFactory.getLog(ServerPortal.class.getCanonicalName());
 
@@ -43,37 +46,36 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	 * this c-tor is for the ServerPortal manager. He listens on a well known port and redirects the request for a new
 	 * session to ServerPortal worker
 	 */
-	public ServerPortal(EventQueueHandler eventQHandler, String url, Callbacks callbacks) {
+	public ServerPortal(EventQueueHandler eventQHandler, URI uri, Callbacks callbacks) {
 		this.eventQHndl = eventQHandler;
 		this.callbacks = callbacks;
 
-		long[] ar = Bridge.startServerPortal(url, eventQHandler.getId());
+		if (!uri.getScheme().equals(new String("rdma"))) {
+			LOG.fatal("mal formatted URI: " + uri);
+		}
+
+		long[] ar = Bridge.startServerPortal(uri.toString(), eventQHandler.getId());
 		this.setId(ar[0]);
 		this.port = (int) ar[1];
 
 		if (getId() == 0) {
 			LOG.fatal("there was an error creating ServerPortal");
 		}
+		this.uriPort0 = replacePortInsideURI(uri, 0);
+		this.uri = replacePortInsideURI(uri, this.port).toString();
 
-		createUrlForServerSession(url);
-		// modify url to include the new port number
-		int index = url.lastIndexOf(":");
-		this.url = url.substring(0, index + 1) + Integer.toString(port);
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("****** new url is " + this.url);
-		}
 		this.eventQHndl.addEventable(this);
 	}
 
 	/*
 	 * this c-tor is used for ServerPortal worker. a new session is redirected here by ServerPortal manager
 	 */
-	public ServerPortal(EventQueueHandler eventQHandler, String url) {
-		this(eventQHandler, url, null);
+	public ServerPortal(EventQueueHandler eventQHandler, URI uri) {
+		this(eventQHandler, uri, null);
 	}
 
-	public String getUrlForServer() {
-		return urlPort0;
+	public URI getUriForServer() {
+		return uriPort0;
 	}
 
 	public boolean close() {
@@ -96,7 +98,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 			LOG.debug("portal " + portal + "ses id is " + serverSession.getId());
 		}
 		serverSession.setEventQueueHandler(portal.eventQHndl);
-		Bridge.forwardSession(portal.getUrl(), serverSession.getId(), portal.getId());
+		Bridge.forwardSession(portal.getUri(), serverSession.getId(), portal.getId());
 	}
 
 	void onEvent(Event ev) {
@@ -135,14 +137,18 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		}
 	}
 
-	private void createUrlForServerSession(String url) {
-		// parse url so it would replace port number on which the server listens with 0
-		int index = url.lastIndexOf(":");
-		this.urlPort0 = url.substring(0, index + 1) + "0";
-		LOG.debug("urlForServerSession is " + urlPort0);
+	private URI replacePortInsideURI(URI uri, int newPort) {
+		URI newUri = null;
+		try {
+			newUri = new URI (uri.getScheme(), uri.getUserInfo(), uri.getHost(), newPort,	uri.getPath(), uri.getQuery(),	uri.getFragment());
+        } catch (URISyntaxException e) {
+        	e.printStackTrace();
+        }
+		LOG.debug("uri with port " + newPort + " is " + newUri.toString());
+		return newUri;
 	}
 
-	private String getUrl() {
-		return url;
+	private String getUri() {
+		return uri;
 	}
 }
