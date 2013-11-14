@@ -16,8 +16,13 @@
  */
 package com.mellanox.jxio.tests.random.storyrunner;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import com.mellanox.jxio.ServerPortal;
 
 public class WorkerThreads {
 
@@ -25,6 +30,7 @@ public class WorkerThreads {
 	private final ExecutorService executor;
 	private final int             num_workers;
 	private int                   next_worker_index = -1;
+	private List<ServerPortalPlayer> listPortalPlayers;
 
 	public WorkerThreads(int num_eqhc) {
 		super();
@@ -36,12 +42,24 @@ public class WorkerThreads {
 		} else {
 			this.workers = null;
 		}
+		this.listPortalPlayers = new ArrayList<ServerPortalPlayer>();
 	}
 
 	public void close() {
 		executor.shutdown();
 		while (!executor.isTerminated()) {
 		}
+	}
+	
+	public void addPortal(ServerPortalPlayer sp){
+		this.listPortalPlayers.add(sp);
+	}
+	
+	public ServerPortalPlayer getPortal(){
+		Random rand = new Random();
+		int index = rand.nextInt(listPortalPlayers.size());
+		return listPortalPlayers.get(index);
+		
 	}
 
 	public WorkerThread getWorkerThread() {

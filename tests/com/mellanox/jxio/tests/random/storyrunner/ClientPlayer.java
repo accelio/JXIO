@@ -64,7 +64,7 @@ public class ClientPlayer extends GeneralPlayer {
         }
 
 		LOG.debug(this.toString() + " connecting,,,");
-		this.client = new ClientSession(this.workerThread.getEQH(), uri.toString(), new JXIOCallbacks(this));
+		this.client = new ClientSession(this.workerThread.getEQH(), uri, new JXIOCallbacks(this));
 
 		// prepare MsgPool
 		this.mp = new MsgPool(10, 64 * 1024, 256);

@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
+import com.mellanox.jxio.ServerPortal;
 import com.mellanox.jxio.ServerSession;
 
 public class ServerSessionPlayer extends GeneralPlayer {
@@ -29,17 +30,19 @@ public class ServerSessionPlayer extends GeneralPlayer {
 
 	private final String              srcIP;
 	private final long                sk;
-	private final ServerManagerPlayer sm;
+	private final ServerPortalPlayer  sp;
 	private WorkerThread              workerThread;
 	private ServerSession             server;
 	private MsgPool                   mp;
 
-	public ServerSessionPlayer(ServerManagerPlayer sm, long newSessionKey, String srcIP) {
-		this.sm = sm;
+	public ServerSessionPlayer(ServerPortalPlayer sp, long newSessionKey, String srcIP) {
+		this.sp = sp;
 		this.sk = newSessionKey;
 		this.srcIP = srcIP;
 		LOG.debug("new " + this.toString() + " done");
 	}
+	
+	public ServerPortalPlayer getServerPortalPlayer(){ return sp;}
 
 	public String toString() {
 		return "ServerSessionPlayer (srcaddr=" + srcIP + ")";
@@ -47,19 +50,18 @@ public class ServerSessionPlayer extends GeneralPlayer {
 
 	@Override
 	public void attach(WorkerThread workerThread) {
-		String uri = this.sm.getUriForServer();
 		LOG.info(this.toString() + " attaching to WorkerThread (" + workerThread.toString() + ")");
 		this.workerThread = workerThread;
 
 		// connect to server
-		this.server = new ServerSession(this.workerThread.getEQH(), uri, new JXIOCallbacks(this));
+		this.server = new ServerSession(sk, new JXIOServerCallbacks(this));
 
 		// prepare MsgPool
 		this.mp = new MsgPool(10, 64 * 1024, 256);
 		this.workerThread.getEQH().bindMsgPool(this.mp);
 
 		// update ServerManager that it can 'accept' this 'newSessionKey'
-		this.sm.notifyReadyforWork(this, this.sk);
+		this.sp.notifyReadyforWork(this, this.sk);
 	}
 
 	@Override
@@ -71,10 +73,10 @@ public class ServerSessionPlayer extends GeneralPlayer {
 		return server;
 	}
 
-	class JXIOCallbacks implements ServerSession.Callbacks {
+	class JXIOServerCallbacks implements ServerSession.Callbacks {
 		private final ServerSessionPlayer ss;
 
-		public JXIOCallbacks(ServerSessionPlayer ss) {
+		public JXIOServerCallbacks(ServerSessionPlayer ss) {
 			this.ss = ss;
 		}
 
@@ -83,7 +85,7 @@ public class ServerSessionPlayer extends GeneralPlayer {
 			ss.server.sendResponce(msg);
 		}
 
-		public void onSessionError(int session_event, String reason) {
+		public void onSessionEvent(int session_event, String reason) {
 			LOG.error("onSessionError: event='" + session_event + "', reason='" + reason + "'");
 			System.exit(1);
 		}

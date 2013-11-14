@@ -21,11 +21,11 @@ import java.net.URI;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.mellanox.jxio.ServerManager;
+import com.mellanox.jxio.ServerPortal;
 
-public class ServerManagerPlayer extends GeneralPlayer {
+public class ServerPortalPlayer extends GeneralPlayer {
 
-	private final static Log LOG = LogFactory.getLog(ServerManagerPlayer.class.getSimpleName());
+	private final static Log LOG = LogFactory.getLog(ServerPortalPlayer.class.getSimpleName());
 
 	private final URI        uri;
 	private final long       durationSec;
@@ -33,14 +33,15 @@ public class ServerManagerPlayer extends GeneralPlayer {
     private final long       startDelaySec;
 	private WorkerThread     workerThread;
 	private WorkerThreads    workerThreads;
-	private ServerManager    listener;
+	private ServerPortal    listener;
 
-	public ServerManagerPlayer(URI uri, long startDelaySec, long durationSec, WorkerThreads workerThreads) {
+	public ServerPortalPlayer(URI uri, long startDelaySec, long durationSec, WorkerThreads workerThreads) {
 		this.uri = uri;
 		this.durationSec = durationSec;
 		this.startDelaySec = startDelaySec;
 		this.workerThreads = workerThreads;
 		LOG.debug("new " + this.toString() + " done");
+		workerThreads.addPortal(this);
 	}
 
 	public String toString() {
@@ -53,14 +54,14 @@ public class ServerManagerPlayer extends GeneralPlayer {
 		this.workerThread = workerThread;
 
 		// connect to server
-		this.listener = new ServerManager(this.workerThread.getEQH(), uri.toString(), new JXIOCallbacks(this));
+		this.listener = new ServerPortal(this.workerThread.getEQH(), uri, new JXIOPortalCallbacks(this));
 
 		// register terminate timer
 		TimerList.Timer tTerminate = new TerminatTimer(this, this.durationSec * 1000000);
 		this.workerThread.start(tTerminate);
 	}
 
-	String getUriForServer() {
+	URI getUriForServer() {
 		return this.listener.getUriForServer();
 	}
 
@@ -78,31 +79,32 @@ public class ServerManagerPlayer extends GeneralPlayer {
 	}
 
 	public class CompleteOnNewSessionForward implements WorkerThread.QueueAction {
-		private final ServerManagerPlayer sm;
+		private final ServerPortalPlayer sm;
 		private final ServerSessionPlayer ss;
 		private final long                newSessionKey;
 
-		public CompleteOnNewSessionForward(ServerManagerPlayer sm, ServerSessionPlayer ss, long newSessionKey) {
+		public CompleteOnNewSessionForward(ServerPortalPlayer sm, ServerSessionPlayer ss, long newSessionKey) {
 			this.sm = sm;
 			this.ss = ss;
 			this.newSessionKey = newSessionKey;
 		}
 
 		public void doAction(WorkerThread workerThread) {
-			this.sm.listener.forward(this.ss.getServerSession(), this.newSessionKey);
+			this.sm.listener.forward(this.ss.getServerPortalPlayer().listener, this.ss.getServerSession());
 		}
 	}
 
-	class JXIOCallbacks implements ServerManager.Callbacks {
-		private final ServerManagerPlayer sm;
+	class JXIOPortalCallbacks implements ServerPortal.Callbacks {
+		private final ServerPortalPlayer sm;
 
-		public JXIOCallbacks(ServerManagerPlayer sm) {
+		public JXIOPortalCallbacks(ServerPortalPlayer sm) {
 			this.sm = sm;
 		}
 
-		public void onSession(long newSessionKey, String uriSrc, String srcIP) {
+		public void onSessionNew(long newSessionKey, String uriSrc, String srcIP) {
 			LOG.info("onSessionNew: uri=" + uriSrc + ", srcaddr=" + srcIP);
-			ServerSessionPlayer ss = new ServerSessionPlayer(sm, newSessionKey, srcIP);
+			ServerPortalPlayer sp = workerThreads.getPortal();
+			ServerSessionPlayer ss = new ServerSessionPlayer(sp, newSessionKey, srcIP);
 			WorkerThread worker = workerThreads.getWorkerThread();
 			worker.addWorkAction(ss.getAttachAction());
 		}
@@ -111,5 +113,6 @@ public class ServerManagerPlayer extends GeneralPlayer {
 			LOG.error("onSessionError: event='" + session_event + "', reason='" + reason + "'");
 			System.exit(1);
 		}
+
 	}
 }

@@ -18,6 +18,8 @@ package com.mellanox.jxio.tests.random.storyrunner;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -252,7 +254,7 @@ public class JXIOStoryRunner implements StoryRunner {
 	public void run() {
 		System.out.println("Story Running");
 		System.out.println("=============");
-		printSummery();
+		printSummary();
 
 		// Simple Client-Server:
 		// ServerManagerPlayer sm = new ServerManagerPlayer(new URI("rdma://0:52002/"), 0, 12,
@@ -261,14 +263,20 @@ public class JXIOStoryRunner implements StoryRunner {
 
 		// Thread.sleep(10);
 
-		// ClientPlayer c1 = new ClientPlayer(new URI("rdma://0:52002/"), 0, 6, 2);
-		// storyRunner.getWorkerThreads().getWorkerThread().addWorkAction(c1.getAttachAction());
+		ClientPlayer c1 = null;
+        try {
+	        c1 = new ClientPlayer(new URI("rdma://0:52002/"), 0, 6, 2);
+        } catch (URISyntaxException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+		getWorkerThreads().getWorkerThread().addWorkAction(c1.getAttachAction());
 
 		// ClientPlayer c2 = new ClientPlayer(new URI("rdma://0:52002/"), 4, 6, 3);
 		// storyRunner.getWorkerThreads().getWorkerThread().addWorkAction(c2.getAttachAction());
 	}
 
-	private void printSummery() {
+	private void printSummary() {
 		System.out.print("Machines:");
 		for (Machine machine : machines) {
 			System.out.print(" " + machine.getName());
