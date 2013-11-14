@@ -123,24 +123,20 @@ extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *jvm, void* reserved)
 		env->DeleteWeakGlobalRef(jweakBridge);
 		jweakBridge = NULL;
 		log(lsDEBUG, "after env->DeleteWeakGlobalRef(jweaBridge)");
-}
-return;
-}
-
-void Bridge_invoke_logToJava_callback(const char* log_message,
-const int severity) {
-JNIEnv *env;
-if (cached_jvm->GetEnv((void **) &env, JNI_VERSION_1_4)) {
-printf(
-		"-->> Error getting JNIEnv In C++ JNI_logToJava when trying to log message - %s\n",
-		log_message);
-return;
+	}
+	return;
 }
 
-jstring j_message = env->NewStringUTF(log_message);
-env->CallStaticVoidMethod(jclassBridge, jmethodID_logToJava, j_message,
-	severity);
-env->DeleteLocalRef(j_message);
+void Bridge_invoke_logToJava_callback(const char* log_message,const int severity) {
+	JNIEnv *env;
+	if (cached_jvm->GetEnv((void **) &env, JNI_VERSION_1_4)) {
+		printf("-->> Error getting JNIEnv In C++ JNI_logToJava when trying to log message - %s\n",log_message);
+		return;
+	}
+
+	jstring j_message = env->NewStringUTF(log_message);
+	env->CallStaticVoidMethod(jclassBridge, jmethodID_logToJava, j_message,severity);
+	env->DeleteLocalRef(j_message);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_setLogLevelNative(JNIEnv *env, jclass cls, jint logLevel)
@@ -154,7 +150,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_createC
 	Context *ctx = new Context (size);
 	if (ctx == NULL) {
 		log(lsERROR, "memory allocation failed\n");
-return false;
+		return false;
 	}
 	if (ctx->error_creating) {
 		delete (ctx);
@@ -209,7 +205,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_startSessi
 
 	if (ses == NULL) {
 		log(lsERROR, "memory allocation failed\n");
-return NULL;
+		return NULL;
 	}
 	if (ses->error_creating) {
 		delete (ses);
@@ -240,7 +236,7 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_jxio_impl_Bridge_start
 
 	if (server == NULL) {
 		log(lsERROR, "memory allocation failed\n");
-return NULL;
+		return NULL;
 	}
 	if (server->error_creating) {
 		temp[0] = 0;
@@ -287,69 +283,76 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMs
 	MsgPool *pool = new MsgPool (msg_num, in_size, out_size);
 	if (pool == NULL) {
 		log(lsERROR, "memory allocation failed\n");
-return NULL;
+		return NULL;
 	}
 	if (pool->error_creating) {
 		log(lsERROR, "there was an error creating MsgPool\n");
-delete (pool);
-return NULL;
-}
-jobject jbuf = env->NewDirectByteBuffer(pool->buf, pool->buf_size);
+		delete (pool);
+		return NULL;
+	}
+	jobject jbuf = env->NewDirectByteBuffer(pool->buf, pool->buf_size);
 
- //TODO: go over the actual data structure and not msg_ptrs
-temp [0] = (jlong)(intptr_t) pool;//the first element in array represents ptr to MsgPool
-for (int i=1; i<=msg_num; i++) {
-temp[i] = (jlong)(intptr_t) pool->msg_ptrs[i-1];
+	 //TODO: go over the actual data structure and not msg_ptrs
+	temp [0] = (jlong)(intptr_t) pool;//the first element in array represents ptr to MsgPool
+	for (int i=1; i<=msg_num; i++) {
+		temp[i] = (jlong)(intptr_t) pool->msg_ptrs[i-1];
+	}
+
+	env->SetLongArrayRegion(ptr,0, msg_num+1, temp);
+	return jbuf;
 }
 
-env->SetLongArrayRegion(ptr,0, msg_num+1, temp);
-return jbuf;
+
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_deleteMsgPoolNative(JNIEnv *env, jclass cls, jlongArray ptr_msg_pool)
+{
+	MsgPool * pool = (MsgPool *) ptr_msg_pool;
+	delete pool;
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_serverSendReplyNative(JNIEnv *env, jclass cls, jlong ptr_msg)
 {
-Msg * msg = (Msg*) ptr_msg;
-return msg->send_reply();
+	Msg * msg = (Msg*) ptr_msg;
+	return msg->send_reply();
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_clientSendReqNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_msg)
 {
-Msg * msg = (Msg*) ptr_msg;
-Client * client = (Client *) ptr_session;
-return client->send_msg(msg);
+	Msg * msg = (Msg*) ptr_msg;
+	Client * client = (Client *) ptr_session;
+	return client->send_msg(msg);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_bindMsgPoolNative(JNIEnv *env, jclass cls, jlong ptr_msg_pool, jlong ptr_ctx)
 {
-Context * ctx = (Context*) ptr_ctx;
-MsgPool * pool = (MsgPool*) ptr_msg_pool;
-ctx->add_msg_pool(pool);
-return true;
+	Context * ctx = (Context*) ptr_ctx;
+	MsgPool * pool = (MsgPool*) ptr_msg_pool;
+	ctx->add_msg_pool(pool);
+	return true;
 }
 
 extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_jxio_impl_Bridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason)
 {
-struct xio_session *session;
-const char * error;
-jstring str;
+	struct xio_session *session;
+	const char * error;
+	jstring str;
 
-error = xio_strerror(errorReason);
-str = env->NewStringUTF(error);
-//	free(error); TODO: to free it????
-return str;
+	error = xio_strerror(errorReason);
+	str = env->NewStringUTF(error);
+	//	free(error); TODO: to free it????
+	return str;
 }
 
 JNIEnv *JX_attachNativeThread() {
-JNIEnv *env;
-if (!cached_jvm) {
-printf("cached_jvm is NULL");
-}
-jint ret = cached_jvm->AttachCurrentThread((void **) &env, NULL);
+	JNIEnv *env;
+	if (!cached_jvm) {
+		printf("cached_jvm is NULL");
+	}
+	jint ret = cached_jvm->AttachCurrentThread((void **) &env, NULL);
 
-if (ret < 0) {
-printf("cached_jvm->AttachCurrentThread failed ret=%d", ret);
-}
-printf("completed successfully env=%p", env);
-return env; // note: this handler is valid for all functions in this thread
+	if (ret < 0) {
+		printf("cached_jvm->AttachCurrentThread failed ret=%d", ret);
+	}
+	printf("completed successfully env=%p", env);
+	return env; // note: this handler is valid for all functions in this thread
 }
 

@@ -82,6 +82,10 @@ public class MsgPool {
 		return refToCObject;
 	}
 
+	public void deleteMsgPool(){
+		Bridge.deleteMsgPool(refToCObject);
+	}
+
 	List<Msg> getAllMsg() {
 		return listMsg;
 	}

@@ -125,6 +125,12 @@ public class Bridge {
 		return b;
 	}
 
+	private static native void deleteMsgPoolNative(long ptrMsgPool);
+
+	public static void deleteMsgPool(long ptrMsgPool) {
+		deleteMsgPoolNative(ptrMsgPool);
+	}
+	
 	private static native boolean clientSendReqNative(long ptrSession, long ptrMsg);
 
 	public static boolean clientSendReq(long ptrSession, long ptrMsg) {

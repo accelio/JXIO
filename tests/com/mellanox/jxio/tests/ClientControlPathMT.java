@@ -53,6 +53,7 @@ private final static Log LOG = LogFactory.getLog(ClientControlPathMT.class.getCa
 		    e1.printStackTrace();
 		}
 		ses.close();
+		pool.deleteMsgPool();
 		System.out.println("***********************here");
 		try {
 		    eventQHndl.stop();
