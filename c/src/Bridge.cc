@@ -30,7 +30,6 @@
 #include "Utils.h"
 #include "MsgPool.h"
 #include "Bridge.h"
-#include "JXIOExtraFunc.h"
 
 static jclass cls;
 static JavaVM *cached_jvm;

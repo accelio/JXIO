@@ -24,7 +24,6 @@
 
 #include "CallbackFunctions.h"
 #include "Contexable.h"
-#include "JXIOExtraFunc.h"
 
 class Context;
 

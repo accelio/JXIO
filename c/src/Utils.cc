@@ -16,6 +16,7 @@
 */
 #include "Utils.h"
 #include "Bridge.h"
+#include <libxio.h>
 
 log_severity_t g_log_threshold = DEFAULT_LOG_THRESHOLD;
 
@@ -59,7 +60,7 @@ bool close_xio_connection(struct xio_session *session, struct xio_context *ctx)
 		return false;
 	}
 	if (xio_disconnect(con)) {
-		log(lsERROR, "xio_disconnect failed (xio_session=%p, xio_context=%p)", session, ctx");
+		log(lsERROR, "xio_disconnect failed (xio_session=%p, xio_context=%p)", session, ctx);
 		return false;
 	}
 	return true;
