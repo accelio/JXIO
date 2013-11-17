@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import java.net.*;
 
 import com.mellanox.jxio.*;
+import com.mellanox.jxio.EventName;
 
 public class MySesPortalTest {
 
@@ -76,35 +77,9 @@ public class MySesPortalTest {
 			man.forward(worker, ses);
 		}
 
-		public void onSessionEvent(int session_event, String reason) {
-			String event;
-			switch (session_event) {
-				case 0:
-					event = "SESSION_REJECT";
-					// ses.close(); // Added
-					break;
-				case 1:
-					event = "SESSION_TEARDOWN";
-					// ses.close(); // Added
-					break;
-				case 2:
-					event = "CONNECTION_CLOSED";
-					// ses.close(); // Added
-					break;
-				case 3:
-					event = "CONNECTION_ERROR";
-					// ses.close(); // Added
-					break;
-				case 4:
-					event = "SESSION_ERROR";
-					// ses.close(); // Added
-					break;
-				default:
-					event = "UNKNOWN";
-					// ses.close(); // Added
-					break;
+        public void onSessionEvent(EventName session_event, String reason) {
+			LOG.error("GOT EVENT " + session_event.toString() + "because of " + reason);
 			}
-			LOG.error("GOT EVENT " + event + "because of " + reason);
-		}
+
 	}
 }

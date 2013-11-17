@@ -27,6 +27,7 @@ import com.mellanox.jxio.ClientSession;
 import com.mellanox.jxio.EventQueueHandler;
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
+import com.mellanox.jxio.EventName;
 
 
 public class DataPathTestClient implements Runnable {
@@ -110,35 +111,8 @@ public class DataPathTestClient implements Runnable {
 			print(" Session Established");
 		}
 
-		public void onSessionEvent(int session_event, String reason) {
-
-			String event;
-			switch (session_event) {
-				case 0:
-					event = "SESSION_REJECT";
-					break;
-				case 1:
-					event = "SESSION_TEARDOWN";
-					print(" Session Teardown");
-					eqh.breakEventLoop();
-					break;
-				case 2:
-					event = "CONNECTION_CLOSED";
-					// This is fine - connection closed by choice
-					// there are two options: close session or reopen it
-					break;
-				case 3:
-					event = "CONNECTION_ERROR";
-					// this.close(); //through the bridge calls connection close
-					break;
-				case 4:
-					event = "SESSION_ERROR";
-					break;
-				default:
-					event = "UNKNOWN_EVENT";
-					break;
-			}
-			print("GOT EVENT " + event + " because of " + reason);
+        public void onSessionEvent(EventName session_event, String reason) {
+			print("GOT EVENT " + session_event.toString() + " because of " + reason);
 		}
 
 		public void onReply(Msg msg) {

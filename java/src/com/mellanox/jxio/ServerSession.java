@@ -28,12 +28,13 @@ public class ServerSession extends EventQueueHandler.Eventable {
 
 	private final Callbacks callbacks;
 	private EventQueueHandler eventQHandler;
-
-	private static final Log LOG = LogFactory.getLog(ServerSession.class.getCanonicalName());
+	private static final Log  LOG    = LogFactory.getLog(ServerSession.class.getCanonicalName());
 
 	public static interface Callbacks {
 		public void onRequest(Msg msg);
-		public void onSessionEvent(int session_event, String reason );
+
+		public void onSessionEvent(EventName session_event, String reason);
+
 		public void onMsgError();
 	}
 
@@ -79,10 +80,11 @@ public class ServerSession extends EventQueueHandler.Eventable {
 				if (ev  instanceof EventSession) {
 					int errorType = ((EventSession) ev).getErrorType();
 					String reason = ((EventSession) ev).getReason();
-					callbacks.onSessionEvent(errorType, reason);
+					callbacks.onSessionEvent(EventName.getEventByIndex(errorType), reason);
 
-					if (errorType == 1) {//event = "SESSION_TEARDOWN";
-						eventQHandler.removeEventable(this); //now we are officially done with this session and it can be deleted from the EQH
+					if (errorType == 1) {// event = "SESSION_TEARDOWN";
+						eventQHandler.removeEventable(this); // now we are officially done with this session and it can
+															 // be deleted from the EQH
 					}
 				}
 				break;

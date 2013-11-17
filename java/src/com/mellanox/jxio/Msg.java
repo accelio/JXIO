@@ -35,10 +35,10 @@ public class Msg {
 		out = createSubBuffer(inSize, buffer.capacity(), buffer);
 		this.msgPool = msgPool;
 		this.refToCObject = id;
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("IN: capacity is " + in.capacity() + " limit " + in.limit()+ " position "+ in.position()+ " remaining is "+ in.remaining());
-			LOG.debug("OUT: capacity is " + out.capacity() + " limit " + out.limit()+ " position "+ out.position()+ " remaining is "+ out.remaining());
-		}
+//		if(LOG.isDebugEnabled()) {
+//			LOG.debug("IN: capacity is " + in.capacity() + " limit " + in.limit()+ " position "+ in.position()+ " remaining is "+ in.remaining());
+//			LOG.debug("OUT: capacity is " + out.capacity() + " limit " + out.limit()+ " position "+ out.position()+ " remaining is "+ out.remaining());
+//		}
 	}
 	public void returnToParentPool() {
 		msgPool.releaseMsg(this);

@@ -6,6 +6,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.ServerSession;
+import com.mellanox.jxio.EventName;
 
 class MySesServerCallbacks implements ServerSession.Callbacks {
 
@@ -20,29 +21,8 @@ class MySesServerCallbacks implements ServerSession.Callbacks {
 		serverSession.sendResponce(msg);
 	}
 
-	public void onSessionEvent(int session_event, String reason) {
-		String event;
-		switch (session_event){
-		case 0:
-			event = "SESSION_REJECT";
-			break;
-		case 1:
-			event = "SESSION_TEARDOWN";
-			break;
-		case 2:
-			event = "CONNECTION_CLOSED";
-			break;
-		case 3:
-			event = "CONNECTION_ERROR";
-			break;
-		case 4:
-			event = "SESSION_ERROR";
-			break;
-		default:
-			event = "UNKNOWN";
-			break;
-		}
-		LOG.error("GOT EVENT " + event + "because of " + reason);
+    public void onSessionEvent(EventName session_event, String reason) {
+		LOG.error("GOT EVENT " + session_event.toString() + "because of " + reason);
 	}
 
 	public void onMsgError() {

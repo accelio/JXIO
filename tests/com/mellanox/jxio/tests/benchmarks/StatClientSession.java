@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import com.mellanox.jxio.ClientSession;
 import com.mellanox.jxio.EventQueueHandler;
 import com.mellanox.jxio.Msg;
+import com.mellanox.jxio.EventName;
 
 public class StatClientSession {
 	private final static Log LOG = LogFactory.getLog(StatTest.class.getCanonicalName());
@@ -79,39 +80,17 @@ public class StatClientSession {
 			clients[session_num].close();
 		}
 
-		public void onSessionEvent(int session_event, String reason) {
-
-			String event;
-			switch (session_event) {
-				case 0:
-					event = "SESSION_REJECT";
-					break;
-				case 1:
-					event = "SESSION_TEARDOWN";
-					print(session_num + " Session Teardown");
-					clients_count++;
-					if (clients_count == clients.length) {
-						print(session_num + " Stopping Event Loop");
-						eqh.breakEventLoop();
-					}
-					break;
-				case 2:
-					event = "CONNECTION_CLOSED";
-					// This is fine - connection closed by choice
-					// there are two options: close session or reopen it
-					break;
-				case 3:
-					event = "CONNECTION_ERROR";
-					// this.close(); //through the bridge calls connection close
-					break;
-				case 4:
-					event = "SESSION_ERROR";
-					break;
-				default:
-					event = "UNKNOWN_EVENT";
-					break;
-			}
-			print(session_num + "GOT EVENT " + event + " because of " + reason);
+        public void onSessionEvent(EventName session_event, String reason) {
+        	
+        	if (session_event == EventName.SESSION_TEARDOWN){
+        		print(session_num + " Session Teardown");
+				clients_count++;
+				if (clients_count == clients.length) {
+					print(session_num + " Stopping Event Loop");
+					eqh.breakEventLoop();
+				}
+        	}
+			print(session_num + "GOT EVENT " + session_event.toString() + " because of " + reason);
 		}
 
 		public void onReply(Msg msg) {

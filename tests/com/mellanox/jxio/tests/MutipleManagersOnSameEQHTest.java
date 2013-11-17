@@ -1,6 +1,7 @@
 package com.mellanox.jxio.tests;
 
 import com.mellanox.jxio.*;
+import com.mellanox.jxio.EventName;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -81,9 +82,9 @@ public class MutipleManagersOnSameEQHTest implements Runnable {
 				TestManager.print("got on new event");
 			}
 
-			public void onSessionEvent(int session_event, String reason) {
+            public void onSessionEvent(EventName session_event, String reason) {
 				// dummy implementation
-				TestManager.print("GOT EVENT " + session_event + "because of " + reason);
+				TestManager.print("GOT EVENT " + session_event.toString() + "because of " + reason);	            
 			}
 		}
 	}

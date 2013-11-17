@@ -34,12 +34,12 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	private String                  uri;
 	private URI                     uriPort0;
 	private final int               port;
-	private static final Log        LOG = LogFactory.getLog(ServerPortal.class.getCanonicalName());
+	private static final Log        LOG    = LogFactory.getLog(ServerPortal.class.getCanonicalName());
 
 	public static interface Callbacks {
 		public void onSessionNew(long ptrSes, String uri, String srcIP);
 
-		public void onSessionEvent(int errorType, String reason);
+		public void onSessionEvent(EventName session_event, String reason);
 	}
 
 	/*
@@ -111,7 +111,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 				if (ev instanceof EventSession) {
 					int errorType = ((EventSession) ev).getErrorType();
 					String reason = ((EventSession) ev).getReason();
-					this.callbacks.onSessionEvent(errorType, reason);
+					this.callbacks.onSessionEvent(EventName.getEventByIndex(errorType), reason);
 
 					if (errorType == 1) {// event = "SESSION_TEARDOWN";
 						this.eventQHndl.removeEventable(this); // now we are officially done with this session and it
@@ -140,7 +140,8 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	private URI replacePortInsideURI(URI uri, int newPort) {
 		URI newUri = null;
 		try {
-			newUri = new URI (uri.getScheme(), uri.getUserInfo(), uri.getHost(), newPort,	uri.getPath(), uri.getQuery(),	uri.getFragment());
+			newUri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), newPort, uri.getPath(), uri.getQuery(),
+			        uri.getFragment());
         } catch (URISyntaxException e) {
         	e.printStackTrace();
         }

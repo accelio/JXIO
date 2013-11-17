@@ -41,23 +41,13 @@ public class MsgPool {
 		}
 		refToCObject = refToCObjects[0];
 		int msgBufferSize = inSize + outSize;
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("capacity is " + buffer.capacity() + " limit " + buffer.limit() + " position "
-			        + buffer.position() + " remaining is " + buffer.remaining());
-		}
+
 		for (int i = 0; i < count; i++) {
 			buffer.position(msgBufferSize * i);
 			ByteBuffer partialBuffer = buffer.slice();
 			partialBuffer.limit(msgBufferSize);
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("capacity is " + partialBuffer.capacity() + " limit " + partialBuffer.limit() + " position "
-				        + partialBuffer.position() + " remaining is " + partialBuffer.remaining());
-			}
 			Msg m = new Msg(partialBuffer, inSize, outSize, refToCObjects[i + 1], this);
 			listMsg.add(m);
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("ptr is " + refToCObjects[i + 1]);
-			}
 		}
 	}
 

@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.ServerPortal;
+import com.mellanox.jxio.EventName;
 
 public class ServerPortalPlayer extends GeneralPlayer {
 
@@ -45,7 +46,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	}
 
 	public String toString() {
-		return "ServerManagerPlayer (uri=" + uri.toString() + ")";
+		return "ServerPortalPlayer (uri=" + uri.toString() + ")";
 	}
 
 	@Override
@@ -109,8 +110,8 @@ public class ServerPortalPlayer extends GeneralPlayer {
 			worker.addWorkAction(ss.getAttachAction());
 		}
 
-		public void onSessionEvent(int session_event, String reason) {
-			LOG.error("onSessionError: event='" + session_event + "', reason='" + reason + "'");
+        public void onSessionEvent(EventName session_event, String reason) {
+			LOG.error("onSessionError: event='" + session_event.toString() + "', reason='" + reason + "'");
 			System.exit(1);
 		}
 

@@ -23,6 +23,7 @@ import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
 import com.mellanox.jxio.ServerPortal;
 import com.mellanox.jxio.ServerSession;
+import com.mellanox.jxio.EventName;
 
 public class ServerSessionPlayer extends GeneralPlayer {
 
@@ -85,8 +86,8 @@ public class ServerSessionPlayer extends GeneralPlayer {
 			ss.server.sendResponce(msg);
 		}
 
-		public void onSessionEvent(int session_event, String reason) {
-			LOG.error("onSessionError: event='" + session_event + "', reason='" + reason + "'");
+        public void onSessionEvent(EventName session_event, String reason) {
+			LOG.error("onSessionError: event='" + session_event.toString() + "', reason='" + reason + "'");
 			System.exit(1);
 		}
 
