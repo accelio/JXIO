@@ -95,8 +95,6 @@ public class JXIOStoryRunner implements StoryRunner {
 
 			// Print Summary
 			System.out.println("Finised reading the story.");
-			System.out.println("Story Summary:");
-			printSummary();
 
 		} catch (ParserConfigurationException e) {
 			System.out.println("[ERROR] XML Read Expetion occurred.");
@@ -169,6 +167,15 @@ public class JXIOStoryRunner implements StoryRunner {
 			}
 		}
 		return clients;
+	}
+	
+	private Server getServerById(List<Server> servers, int id){
+		for (Server server : servers){
+			if (server.getId() == id){
+				return server;
+			}
+		}
+		return null;
 	}
 
 	private List<Process> getProcesses() {
@@ -261,28 +268,53 @@ public class JXIOStoryRunner implements StoryRunner {
      */
 
 	public void run() {
-		System.out.println("Story Running");
+		System.out.println("=============");
+		System.out.println("Story Summary");
 		System.out.println("=============");
 		printSummary();
-
-		// Simple Client-Server:
-		// ServerManagerPlayer sm = new ServerManagerPlayer(new URI("rdma://0:52002/"), 0, 12,
-		// storyRunner.getWorkerThreads());
-		// storyRunner.getWorkerThreads().getWorkerThread().addWorkAction(sm.getAttachAction());
-
-		// Thread.sleep(10);
-
-		ClientPlayer c1 = null;
-		try {
-			c1 = new ClientPlayer(new URI("rdma://0:52002/"), 0, 6, 2);
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		System.out.println("=============");
+		System.out.println("Story Running");
+		System.out.println("=============");
+		
+		// Simple Client-Server
+		// Configure Servers
+		int i = 0;
+		ServerPortalPlayer[] serverPlayers = new ServerPortalPlayer[servers.size()];
+		for (Server server : servers){
+			try {
+				ServerPortalPlayer sp = new ServerPortalPlayer(new URI("rdma://0:" + server.getPort() + "/"), server.getStartDelay(), server.getDuration(), getWorkerThreads());
+				serverPlayers[i] = sp;
+				i++;
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
 		}
-		getWorkerThreads().getWorkerThread().addWorkAction(c1.getAttachAction());
-
-		// ClientPlayer c2 = new ClientPlayer(new URI("rdma://0:52002/"), 4, 6, 3);
-		// storyRunner.getWorkerThreads().getWorkerThread().addWorkAction(c2.getAttachAction());
+		
+		// Thread.sleep(10);
+		
+		// Configure Clients
+		ClientPlayer[] clientPlayers = new ClientPlayer[clients.size()];
+		i = 0;
+		for (Client client : clients){
+			try {
+				ClientPlayer c = new ClientPlayer(new URI("rdma://0:"+ getServerById(servers, client.getServer()).getPort()+"/"), client.getStartDelay(), client.getDuration(), client.getTps());
+				clientPlayers[i] = c;
+				i++;
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+		// Run Server Players
+		for(ServerPortalPlayer spp: serverPlayers){
+			getWorkerThreads().getWorkerThread().addWorkAction(spp.getAttachAction());
+		}
+		
+		// Run Client Players
+		for(ClientPlayer cp: clientPlayers){
+			getWorkerThreads().getWorkerThread().addWorkAction(cp.getAttachAction());
+		}
 	}
 
 	private void printSummary() {
