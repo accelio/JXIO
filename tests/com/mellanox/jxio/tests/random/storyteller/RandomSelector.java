@@ -22,7 +22,7 @@ import java.util.Random;
 
 class RandomSelector<T> {
 
-	List<Item<T>> items    = new ArrayList<>();
+	List<Item<T>> items    = new ArrayList<Item<T>>();
 	Random        rand     = new Random();
 	int           totalSum = 0;
 

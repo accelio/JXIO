@@ -31,13 +31,14 @@ public class Main {
 	private static StoryTeller storyTeller;
 	private static StoryRunner storyRunner;
 	@SuppressWarnings("unused")
-    private static long        seed;
+	private static long        seed;
 
 	/**
-	 * The main program that runs the probability XML file through 
-	 * the StoryTeller in order to produce a story XML file.
-	 * @param args The command line arguments.
-	 */
+     * The main program that runs the probability XML file through the StoryTeller in order to produce a story XML file.
+     * 
+     * @param args
+     *            The command line arguments.
+     */
 	public static void main(String[] args) {
 
 		// Check for valid arguments
@@ -51,28 +52,31 @@ public class Main {
 				// Get input seed or randomize one
 				seed = (args.length != 3) ? new Random().nextLong() : Long.valueOf(args[2]);
 				// Create a new StoryTeller Instance
-				File probabiltyFile = new File(xmlFileDir + "\\" + xmlFileName);
-				storyTeller = new StoryTeller(probabiltyFile); //If needed add second argument 'seed'
+				File probabiltyFile = new File(xmlFileDir + "/" + xmlFileName);
+				storyTeller = new StoryTeller(probabiltyFile); // If needed add second argument 'seed'
 				// Tell Story
 				storyTeller.read();
 				storyTeller.write();
+				System.out.println("Finised reading probability file.");
 				// Create a new StoryRunner Instance
 				storyRunner = new JXIOStoryRunner();
 				// Read story
 				String storyFileName = "new_story.xml";
-				File storyFile = new File(xmlFileDir + "\\" + storyFileName);
+				File storyFile = new File(xmlFileDir + "/" + storyFileName);
 				storyRunner.read(storyFile);
 				// Run story
-				storyRunner.run();
+				// storyRunner.run();
 			}
 		}
 	}
 
 	/**
-	 * Checks to is if the number of arguments passed is valid.
-	 * @param args The command line arguments.
-	 * @return True if number of arguments is valid.
-	 */
+     * Checks to is if the number of arguments passed is valid.
+     * 
+     * @param args
+     *            The command line arguments.
+     * @return True if number of arguments is valid.
+     */
 	private static boolean argsCheck(String[] args) {
 		if (args.length < 2) {
 			print("[ERROR] Missing argument!\nFirst arugment needs to be the directory of the tests XML file.\nSecond arugment needs to be the file name of the tests XML file.\nA third arugment MAY be added as a seed (for random selections).");
@@ -82,9 +86,10 @@ public class Main {
 	}
 
 	/**
-	 * Prints the given message to the screen.
-	 * @param str
-	 */
+     * Prints the given message to the screen.
+     * 
+     * @param str
+     */
 	public static void print(String str) {
 		System.out.println("\n" + str + "\n");
 	}

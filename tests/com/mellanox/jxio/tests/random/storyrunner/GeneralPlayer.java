@@ -30,7 +30,6 @@ public abstract class GeneralPlayer {
 			this.player = player;
 		}
 
-		@Override
 		public void doAction(WorkerThread workerThread) {
 			this.player.attach(workerThread);
 		}

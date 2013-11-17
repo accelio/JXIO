@@ -12,11 +12,11 @@ fi
 
 # Compile
 echo -e "\nCompiling JAVA files....\n"
-javac -cp "../bin/jxio.jar:../lib/commons-logging.jar" ./com/mellanox/jxio/tests/random/storyrunner/*.java
+javac -cp "../bin/jxio.jar:../lib/commons-logging.jar" `find -name "*.java"`
 if [[ $? != 0 ]] ; then
     exit 1
 fi
 
 # Run the tests
-echo -e "\nRunning manager test....\n"
-java -Dlog4j.configuration=com/mellanox/jxio/tests/random/storyrunner/log4j.properties.randomtest -cp "../bin/jxio.jar:../lib/commons-logging.jar:../lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.random.storyrunner.StoryRunner
+echo -e "\nRunning random test....\n"
+java -Dlog4j.configuration=com/mellanox/jxio/tests/random/storyrunner/log4j.properties.randomtest -cp "../bin/jxio.jar:../lib/commons-logging.jar:../lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.random.Main $1 $2

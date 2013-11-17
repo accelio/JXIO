@@ -43,39 +43,39 @@ public class JXIOStoryRunner implements StoryRunner {
 	private WorkerThreads workers;
 
 	/**
-	 * Constructs an new StoryRunner with infinite worker threads.
-	 * 
-	 * @param xmlFile
-	 *            The story XML file.
-	 */
+     * Constructs an new StoryRunner with infinite worker threads.
+     * 
+     * @param xmlFile
+     *            The story XML file.
+     */
 	public JXIOStoryRunner() {
 		this(-1);
 	}
 
 	/**
-	 * Constructs an new StoryRunner.
-	 * 
-	 * @param xmlFile
-	 *            The story XML file.
-	 * @param workerThreads
-	 *            Number of worker threads needed.
-	 */
+     * Constructs an new StoryRunner.
+     * 
+     * @param xmlFile
+     *            The story XML file.
+     * @param workerThreads
+     *            Number of worker threads needed.
+     */
 	public JXIOStoryRunner(int workerThreads) {
 		this.workers = new WorkerThreads(workerThreads);
 	}
 
 	/**
-	 * Retrieves all worker threads
-	 * 
-	 * @return The worker threads of the story runner.
-	 */
+     * Retrieves all worker threads
+     * 
+     * @return The worker threads of the story runner.
+     */
 	public WorkerThreads getWorkerThreads() {
 		return this.workers;
 	}
 
 	/**
-	 * Reads the story XML file.
-	 */
+     * Reads the story XML file.
+     */
 	public void read(File storyFile) {
 		try {
 			// Set needed XML document handling objects
@@ -93,13 +93,22 @@ public class JXIOStoryRunner implements StoryRunner {
 			// Get Servers
 			servers = getServers();
 
-		} catch (ParserConfigurationException | SAXException | IOException e) {
+			// Print Summary
+			System.out.println("Finised reading the story.");
+			System.out.println("Story Summary:");
+			printSummary();
+
+		} catch (ParserConfigurationException e) {
+			System.out.println("[ERROR] XML Read Expetion occurred.");
+		} catch (SAXException e) {
+			System.out.println("[ERROR] XML Read Expetion occurred.");
+		} catch (IOException e) {
 			System.out.println("[ERROR] XML Read Expetion occurred.");
 		}
 	}
 
 	private List<Server> getServers() {
-		List<Server> servers = new ArrayList<>();
+		List<Server> servers = new ArrayList<Server>();
 		// Read given tag
 		NodeList nodeList = docRead.getElementsByTagName("server");
 		// Iterate over all occurrences
@@ -110,8 +119,9 @@ public class JXIOStoryRunner implements StoryRunner {
 				// Create a new server
 				String id = getTagValue(element, "id");
 				String process = getTagValue(element, "process");
+				String port = getTagValue(element, "port");
 				String duration = getTagValue(element, "duration");
-				String maxSSPerSM = getTagValue(element, "max_ss_per_sm");
+				String maxWorkers = getTagValue(element, "max_workers");
 				String delay = getTagValue(element, "delay");
 				String startDelay = getTagValue(element, "start_delay");
 				String tps = getTagValue(element, "tps");
@@ -119,9 +129,9 @@ public class JXIOStoryRunner implements StoryRunner {
 
 				Server server;
 				if (id != null) {
-					server = new Server(Integer.valueOf(id), Integer.valueOf(process), Integer.valueOf(duration),
-					        Integer.valueOf(maxSSPerSM), Integer.valueOf(delay), Integer.valueOf(startDelay),
-					        Integer.valueOf(tps));
+					server = new Server(Integer.valueOf(id), Integer.valueOf(process), Integer.valueOf(port), Integer
+					        .valueOf(duration), Integer.valueOf(maxWorkers), Integer.valueOf(delay), Integer
+					        .valueOf(startDelay), Integer.valueOf(tps));
 					// Add process
 					servers.add(server);
 				}
@@ -131,7 +141,7 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	private List<Client> getClients() {
-		List<Client> clients = new ArrayList<>();
+		List<Client> clients = new ArrayList<Client>();
 		// Read given tag
 		NodeList nodeList = docRead.getElementsByTagName("client");
 		// Iterate over all occurrences
@@ -141,19 +151,18 @@ public class JXIOStoryRunner implements StoryRunner {
 				Element element = (Element) node;
 				// Create a new client
 				String id = getTagValue(element, "id");
-				;
 				String process = getTagValue(element, "process");
+				String server = getTagValue(element, "server");
 				String duration = getTagValue(element, "duration");
 				String batch = getTagValue(element, "batch");
-				String server = getTagValue(element, "server");
 				String startDelay = getTagValue(element, "start_delay");
 				String tps = getTagValue(element, "tps");
 
 				Client client;
 				if (id != null) {
-					client = new Client(Integer.valueOf(id), Integer.valueOf(process), Integer.valueOf(duration),
-					        Integer.valueOf(batch), Integer.valueOf(server), Integer.valueOf(startDelay),
-					        Integer.valueOf(tps));
+					client = new Client(Integer.valueOf(id), Integer.valueOf(process), Integer.valueOf(server), Integer
+					        .valueOf(duration), Integer.valueOf(batch), Integer.valueOf(startDelay), Integer
+					        .valueOf(tps));
 					// Add process
 					clients.add(client);
 				}
@@ -163,7 +172,7 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	private List<Process> getProcesses() {
-		List<Process> processes = new ArrayList<>();
+		List<Process> processes = new ArrayList<Process>();
 		// Read given tag
 		NodeList nodeList = docRead.getElementsByTagName("process");
 		// Iterate over all occurrences
@@ -174,12 +183,12 @@ public class JXIOStoryRunner implements StoryRunner {
 				// Create a new process
 				String id = getTagValue(element, "id");
 				String location = getTagValue(element, "location");
-				String numEQHs = getTagValue(element, "num_eqhs");
+				String numEqhs = getTagValue(element, "num_eqhs");
 				String timeout = getTagValue(element, "timeout");
 				Process process;
 				if (id != null) {
-					process = new Process(Integer.valueOf(id), location, Integer.valueOf(numEQHs),
-					        Integer.valueOf(timeout));
+					process = new Process(Integer.valueOf(id), location, Integer.valueOf(numEqhs), Integer
+					        .valueOf(timeout));
 					// Add process
 					processes.add(process);
 				}
@@ -189,7 +198,7 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	private List<Machine> getMachines() {
-		List<Machine> machines = new ArrayList<>();
+		List<Machine> machines = new ArrayList<Machine>();
 		// Read given tag
 		NodeList nodeList = docRead.getElementsByTagName("machine");
 		// Iterate over all occurrences
@@ -248,9 +257,9 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-	 * Runs the story.
-	 */
-	@Override
+     * Runs the story.
+     */
+
 	public void run() {
 		System.out.println("Story Running");
 		System.out.println("=============");
@@ -264,12 +273,12 @@ public class JXIOStoryRunner implements StoryRunner {
 		// Thread.sleep(10);
 
 		ClientPlayer c1 = null;
-        try {
-	        c1 = new ClientPlayer(new URI("rdma://0:52002/"), 0, 6, 2);
-        } catch (URISyntaxException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
+		try {
+			c1 = new ClientPlayer(new URI("rdma://0:52002/"), 0, 6, 2);
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		getWorkerThreads().getWorkerThread().addWorkAction(c1.getAttachAction());
 
 		// ClientPlayer c2 = new ClientPlayer(new URI("rdma://0:52002/"), 4, 6, 3);
@@ -296,6 +305,7 @@ public class JXIOStoryRunner implements StoryRunner {
 		for (Server server : servers) {
 			System.out.print(" " + server.getId());
 		}
+		System.out.println();
 	}
 
 }

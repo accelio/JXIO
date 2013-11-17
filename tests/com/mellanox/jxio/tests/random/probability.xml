@@ -1,6 +1,6 @@
 <root>
 	<machines>
-		<machine_amount value="2"/>
+		<machine_amount value="1"/>
 		<machine>
 			<name value="A"/>
 			<address value="11.4.3.22"/>
@@ -8,28 +8,29 @@
 			<manag_interface value="192.168.1.242"/>
 		</machine>
 		<machine>
-			<name value="B"/>
-			<address value="11.4.3.23"/>
-			<type value="Eth"/>
-			<manag_interface value="192.168.1.243"/>
-		</machine>
+                        <name value="B"/>
+                        <address value="11.4.3.23"/>
+                        <type value="Eth"/>
+                        <manag_interface value="192.168.1.243"/>
+                </machine>
 	</machines>
 
 	<!-- JXIO process parameters -->
 	<processes>
-		<process_amount value="[20]:0, [50]:1-10, [30]:11-100"/>
-		<location value="[50]:A, [50]:B"/>
-		<num_eqhs value="[90]:1 , [10]:10"/>
-		<timeout value="[50]:20 , [50]:30, [0]:default"/>
+		<process_amount value="[100]:1"/>
+		<location value="[100]:A"/>
+		<num_eqhs value="[90]:3 , [10]:4-5"/>
+		<timeout value="[50]:20 , [50]:30"/>
 	</processes>
 
 	<!-- Server process parameters -->
 	<servers>
-		<server_amount value="[20]:2, [25]:5, [25]:8, [30]:10"/>
-		<process value="random"/>
+		<server_amount value="[100]:1"/>
+	        <process value="random"/>
+		<port value="[100]:4400-4499"/>
 		<start_delay value="[100]:0"/>
 		<duration value="[100]:25"/>
-		<max_ss_per_sm value="[100]:100"/>
+		<max_workers value="[100]:5"/>
 		<msg_pools>
 			<msg_pool_amount value="[100]:2-5"/>
 		        <msg_pool_count value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
@@ -42,7 +43,7 @@
 
 	<!-- Client process parameters -->
 	<clients>
-        	<client_amount value="[20]:2, [25]:5, [25]:8, [30]:10"/>
+        	<client_amount value="[100]:1"/>
 	        <process value="random"/>
 		<server value="random"/>
         	<start_delay value="[100]:12"/>
@@ -52,7 +53,7 @@
         		<msg_size_in_factor value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
 	        	<msg_size_out_factor value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
         	</msgs>
-		<tps value="[30]:100, [25]:100-500, [25]:500-50000, [20]:max"/>
+		<tps value="[30]:100, [25]:100-500, [25]:500-50000, [20]:100000"/>
 		<batch value="[100]:5"/>
 	</clients>
 </root>

@@ -21,7 +21,7 @@ import java.util.List;
 
 public class Story {
 
-	private List<Character> charactersList = new ArrayList<>();
+	private List<Character> charactersList = new ArrayList<Character>();
 
 	/**
 	 * Add a character to the story.

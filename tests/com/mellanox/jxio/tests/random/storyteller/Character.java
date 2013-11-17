@@ -24,8 +24,8 @@ import java.util.Map;
 public class Character {
 
 	private String              characterType;
-	private Map<String, String> attributes           = new HashMap<>();
-	private List<Character>     supportingCharacters = new ArrayList<>();
+	private Map<String, String> attributes           = new HashMap<String, String>();
+	private List<Character>     supportingCharacters = new ArrayList<Character>();
 
 	/**
 	 * @return The character's type
@@ -78,7 +78,7 @@ public class Character {
 	 * supporting characters.
 	 */
 	public List<String> getSupportingCharactersTypes() {
-		List<String> supportingCharactersTypes = new ArrayList<>();
+		List<String> supportingCharactersTypes = new ArrayList<String>();
 		for (Character character : supportingCharacters) {
 			supportingCharactersTypes.add(character.getCharacterType());
 		}

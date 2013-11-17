@@ -65,7 +65,7 @@ public class StoryTeller {
 	 */
 	public StoryTeller(File xmlFile) {
 		this.story = new Story();
-		this.counters = new HashMap<>();
+		this.counters = new HashMap<String, Integer>();
 		this.xmlFile = xmlFile;
 	}
 
@@ -101,9 +101,13 @@ public class StoryTeller {
 			for (String characterType : characterTypes) {
 				readByTag(characterType);
 			}
-		} catch (ParserConfigurationException | SAXException | IOException e) {
+		} catch (ParserConfigurationException e) {
 			System.out.println("[ERROR] XML Read Expetion occurred.");
-		}
+		} catch (SAXException e) {
+			System.out.println("[ERROR] XML Read Expetion occurred.");
+		} catch (IOException e) {
+			System.out.println("[ERROR] XML Read Expetion occurred.");
+		}		
 	}
 
 	/**
@@ -112,7 +116,7 @@ public class StoryTeller {
 	 * @return A list of all the story characters.
 	 */
 	private List<String> getStoryCharacters() {
-		List<String> characterTypes = new ArrayList<>();
+		List<String> characterTypes = new ArrayList<String>();
 		// Read root tag
 		NodeList nodeList = docRead.getElementsByTagName("root");
 		// Iterate over all occurrences
@@ -207,7 +211,7 @@ public class StoryTeller {
 	private String randomizeValueByProbability(String nodeValue) {
 		// Do only if this is a probability defined value
 		if (nodeValue.contains(":")) {
-			List<Item<String>> items = new ArrayList<>();
+			List<Item<String>> items = new ArrayList<Item<String>>();
 			String[] nodeValues = nodeValue.split(",");
 			// Create an Item list of possible values and there probability
 			for (String pair : nodeValues) {
@@ -218,7 +222,7 @@ public class StoryTeller {
 				// Add Item to list
 				items.add(new Item<String>(value, probability));
 			}
-			RandomSelector<String> rs = (seed == -1) ? new RandomSelector<>(items) : new RandomSelector<>(items, random);
+			RandomSelector<String> rs = (seed == -1) ? new RandomSelector<String>(items) : new RandomSelector<String>(items, random);
 			// Randomize a value by the probabilities given
 			return rs.getRandom().getValue();
 
@@ -242,7 +246,7 @@ public class StoryTeller {
 			int min = Integer.parseInt(edges[0]);
 			int max = Integer.parseInt(edges[1]);
 			int remainder = max - min;
-			int rand = (remainder <= 0) ? 0 : random.nextInt(remainder) + min;
+			int rand = (remainder <= 0) ? max : random.nextInt(remainder) + min;
 			return String.valueOf(rand);
 		}
 		// Return the simple value
@@ -284,7 +288,7 @@ public class StoryTeller {
 
 				// Send DOM to file
 				tr.transform(new DOMSource(docWrite), new StreamResult(new FileOutputStream(Main.xmlFileDir
-				        + "\\new_story.xml")));
+				        + "/new_story.xml")));
 
 			} catch (TransformerException te) {
 				System.out.println("[ERROR] " + te.getMessage());
@@ -397,7 +401,7 @@ public class StoryTeller {
 					single_e = docWrite.createElement(att);
 					String value;
 					if (mainCharacter.getAttribute(att).equals("random")) {
-						value = randomaizeRange("0-" + counters.get(att + "_amount"));
+						value = randomaizeRange("1-" + counters.get(att + "_amount"));
 					} else {
 						value = randomizeValueByProbability(mainCharacter.getAttribute(att)).trim();
 					}
@@ -424,7 +428,7 @@ public class StoryTeller {
 						sub_e = docWrite.createElement(att);
 						String value;
 						if (mainCharacter.getAttribute(att).equals("random")) {
-							value = randomaizeRange("0-" + counters.get(att + "_amount"));
+							value = randomaizeRange("1-" + counters.get(att + "_amount"));
 						} else {
 							value = randomizeValueByProbability(mainCharacter.getAttribute(att)).trim();
 						}
