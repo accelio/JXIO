@@ -6,7 +6,7 @@ cd $DIR
 
 # Checks to see if JAVA path is valid
 if [ ! -e ${JAVA_HOME} ]; then
-        echo -e "\nError: JAVA not found!\n"
+        echo -e "\nError: JAVA_HOME not defined in shell!\n"
         exit 1
 fi
 
