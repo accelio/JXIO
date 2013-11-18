@@ -46,7 +46,7 @@ Client::Client(const char* url, long ptrCtx) {
 	}
 
 	/* connect the session  */
-	this->con = xio_connect(session, ctxClass->ctx, 0, this);
+	this->con = xio_connect(session, ctxClass->ctx, 0, NULL, this);
 
 	if (con == NULL) {
 		log(lsERROR, "Error in creating connection\n");
