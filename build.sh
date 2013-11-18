@@ -11,8 +11,9 @@ SRC_JAVA_FOLDER=$TOP_DIR/java/src
 SRC_JAVA_FILES="$SRC_JAVA_FOLDER/com/mellanox/jxio/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/impl/*.java"
 NATIVE_LIBS="libjxio.so libxio.so"
 
-# turning off bullseye, for case it was left on
-cov01 --off
+# turning off bullseye for case it was left on (only if cov01 is found on this machine)
+BULLSEYE_CMD=cov01
+command -v $BULLSEYE_CMD >/dev/null 2>&1 && $BULLSEYE_CMD --off
 
 # Clean
 rm -fr $BIN_FOLDER
