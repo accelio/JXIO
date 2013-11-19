@@ -28,6 +28,7 @@ public class Main {
 	public static final int    ITERATIONS = 1;
 	public static String       xmlFileDir;
 	private static String      xmlFileName;
+	private static String      tellstory;
 	private static StoryTeller storyTeller;
 	private static StoryRunner storyRunner;
 	@SuppressWarnings("unused")
@@ -49,15 +50,18 @@ public class Main {
 				// Handle the XML file
 				xmlFileDir = args[0];
 				xmlFileName = args[1];
+				tellstory = args[2];
 				// Get input seed or randomize one
-				seed = (args.length != 3) ? new Random().nextLong() : Long.valueOf(args[2]);
+				seed = (args.length != 4) ? new Random().nextLong() : Long.valueOf(args[3]);
 				// Create a new StoryTeller Instance
 				File probabiltyFile = new File(xmlFileDir + "/" + xmlFileName);
 				storyTeller = new StoryTeller(probabiltyFile); // If needed add second argument 'seed'
-				// Tell Story
-				storyTeller.read();
-				storyTeller.write();
-				System.out.println("Finised reading probability file.");
+				if (tellstory.equalsIgnoreCase("YES")){
+					// Tell Story
+					storyTeller.read();
+					storyTeller.write();
+					System.out.println("Finised reading probability file.");
+				}
 				// Create a new StoryRunner Instance
 				storyRunner = new JXIOStoryRunner();
 				// Read story
@@ -78,8 +82,11 @@ public class Main {
      * @return True if number of arguments is valid.
      */
 	private static boolean argsCheck(String[] args) {
-		if (args.length < 2) {
-			print("[ERROR] Missing argument!\nFirst arugment needs to be the directory of the tests XML file.\nSecond arugment needs to be the file name of the tests XML file.\nA third arugment MAY be added as a seed (for random selections).");
+		if (args.length < 3) {
+			print("[ERROR] Missing argument!\nFirst arugment needs to be the directory of the tests XML file." +
+					"\nSecond arugment needs to be the file name of the tests XML file." +
+					"\nThird arugment needs to be YES/NO on telling a story." +
+					"\nA forth arugment MAY be added as a seed (for random selections).");
 			return false;
 		}
 		return true;
