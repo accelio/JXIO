@@ -37,20 +37,17 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.mellanox.jxio.tests.random.Character;
 import com.mellanox.jxio.tests.random.Main;
-import com.mellanox.jxio.tests.random.storyteller.Character;
-import com.mellanox.jxio.tests.random.storyteller.Story;
+import com.mellanox.jxio.tests.random.Story;
 
 public class StoryTeller {
 
 	private final File           xmlFile;
 	private Document             docRead;
 	private Document             docWrite;
-	private Character            character;
 	private Story                story;
 	private Map<String, Integer> counters;
 	private List<String>         characterTypes;
@@ -95,11 +92,13 @@ public class StoryTeller {
 			docRead.getDocumentElement().normalize();
 
 			// Get characters
-			characterTypes = getStoryCharacters();
+			characterTypes = Story.getStoryCharacters(docRead);
 
 			// Read all character types
 			for (String characterType : characterTypes) {
-				readByTag(characterType);
+				Character character = Story.readCharacter(docRead, characterType);
+				story.addCharacter(character);
+				
 			}
 		} catch (ParserConfigurationException e) {
 			System.out.println("[ERROR] XML Read Expetion occurred.");
@@ -108,96 +107,6 @@ public class StoryTeller {
 		} catch (IOException e) {
 			System.out.println("[ERROR] XML Read Expetion occurred.");
 		}		
-	}
-
-	/**
-	 * Retrieves all story characters in the probability file.
-	 * 
-	 * @return A list of all the story characters.
-	 */
-	private List<String> getStoryCharacters() {
-		List<String> characterTypes = new ArrayList<String>();
-		// Read root tag
-		NodeList nodeList = docRead.getElementsByTagName("root");
-		// Iterate over all occurrences
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			Node node = nodeList.item(i);
-			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				Element element = (Element) node;
-				// Iterate over all sub-tags
-				for (int j = 1; j < element.getChildNodes().getLength(); j++) {
-					Node item = element.getChildNodes().item(j);
-					// Check for data tags
-					if (!item.getNodeName().equals("#text") && !item.getNodeName().equals("#comment")) {
-						// Get attribute's name
-						String att = item.getNodeName();
-						characterTypes.add(att);
-					}
-				}
-			}
-		}
-		return characterTypes;
-	}
-
-	/**
-	 * Reads all occurrences of a specific and creates corresponding characters in the story.
-	 * 
-	 * @param tag
-	 *            A specific tag to read for the XML file.
-	 */
-	private void readByTag(String tag) {
-		// Read given tag
-		NodeList nodeList = docRead.getElementsByTagName(tag.toString());
-		// Iterate over all occurrences
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			Node node = nodeList.item(i);
-			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				Element element = (Element) node;
-				// Create a new story character
-				character = new Character();
-				character.setCharacterType(tag);
-				// Update character's attributes
-				updateAttributes(element, character);
-				// Add character to story
-				story.addCharacter(character);
-			}
-		}
-	}
-
-	/**
-	 * Reads all sub-tags of a given element and and sets them as attributes to the given character.
-	 * 
-	 * @param element
-	 *            The DOM element of the character.
-	 * @param mainCharacter
-	 *            The character to whom the attributes are assigned.
-	 */
-	private void updateAttributes(Element element, Character mainCharacter) {
-		// Iterate over all sub-tags
-		for (int j = 1; j < element.getChildNodes().getLength(); j++) {
-			Node item = element.getChildNodes().item(j);
-			// Check for data tags
-			if (!item.getNodeName().equals("#text")) {
-				// Get attribute's name
-				String att = item.getNodeName();
-				// Get attribute's value
-				Node valueNode = item.getAttributes().getNamedItem("value");
-				String value = null;
-				// If no value found, as it is a title tag, recurse into it's sub-tags
-				if (valueNode != null) {
-					value = valueNode.getNodeValue();
-					mainCharacter.setAttribute(att, value);
-				} else {
-					// Create a supporting character
-					Character supportingCharacter = new Character();
-					supportingCharacter.setCharacterType(att);
-					// Update it's attributes
-					updateAttributes((Element) item, supportingCharacter);
-					// Save to main character
-					mainCharacter.addSupportingCharacter(supportingCharacter);
-				}
-			}
-		}
 	}
 
 	/**
@@ -271,7 +180,7 @@ public class StoryTeller {
 			generateStoryTag(rootEle);
 			// Generate characters and supporting characters
 			for (Character character : story.getCharacters()) {
-				String single = singleFromPlural(character.getCharacterType());
+				String single = Story.singleFromPlural(docRead, character.getCharacterType());
 				generateTag(rootEle, character, counters.get(single + "_amount"));
 			}
 
@@ -322,41 +231,10 @@ public class StoryTeller {
 		}
 		// Generate numbers of characters based on the amount field value
 		for (String characterType : characterTypes) {
-			generateNumberTag(e, singleFromPlural(characterType) + "_amount");
+			generateNumberTag(e, Story.singleFromPlural(docRead, characterType) + "_amount");
 		}
 		// Finish Story
 		rootEle.appendChild(e);
-	}
-
-	/**
-	 * Converts a word in plural form to it's single form. This is used based on the assumption that there exists a
-	 * field under the plural name tag called "single_amount".
-	 * 
-	 * @param plural
-	 *            A string representing a word in plural form.
-	 * @return A string representing the given word in single form.
-	 */
-	private String singleFromPlural(String plural) {
-		// Read the plural tag and get it's singular form from the amount tag
-		String single = null;
-		NodeList nodeList = docRead.getElementsByTagName(plural);
-		// Iterate over all occurrences
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			Node node = nodeList.item(i);
-			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				Element element = (Element) node;
-				// Iterate over all sub-tags
-				for (int j = 1; j < element.getChildNodes().getLength(); j++) {
-					Node item = element.getChildNodes().item(j);
-					// Check for data tags
-					String att = item.getNodeName();
-					if (att.contains("_amount")) {
-						single = att.substring(0, att.indexOf("_amount"));
-					}
-				}
-			}
-		}
-		return single;
 	}
 
 	/**
@@ -392,7 +270,7 @@ public class StoryTeller {
 
 		Element e, single_e, sub_e;
 		String rootTitle = mainCharacter.getCharacterType();
-		String singleTitle = singleFromPlural(rootTitle);
+		String singleTitle = Story.singleFromPlural(docRead, rootTitle);
 
 		if (singleTitle == null) {
 			// Generate attributes (excluding inner tags)
@@ -438,7 +316,7 @@ public class StoryTeller {
 				}
 				// Generate inner tags
 				for (Character supportingCharacter : mainCharacter.getSupportingCharacters()) {
-					String occurrences = supportingCharacter.getAttribute(singleFromPlural(supportingCharacter
+					String occurrences = supportingCharacter.getAttribute(Story.singleFromPlural(docRead, supportingCharacter
 					        .getCharacterType()) + "_amount");
 					// Check if amount is configured
 					if (occurrences != null) {
