@@ -1,5 +1,7 @@
 #!/bin/bash
 
+code_coverage_on=$1
+
 # Configuring Running Directory
 TOP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $TOP_DIR
@@ -11,7 +13,8 @@ SRC_JAVA_FOLDER=$TOP_DIR/java/src
 SRC_JAVA_FILES="$SRC_JAVA_FOLDER/com/mellanox/jxio/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/impl/*.java"
 NATIVE_LIBS="libjxio.so libxio.so"
 
-# turning off bullseye for case it was left on (only if cov01 is found on this machine)
+export PATH=$BULLSEYE_DIR:$PATH
+ #turning off bullseye for case it was left on (only if cov01 is found on this machine)
 BULLSEYE_CMD=cov01
 command -v $BULLSEYE_CMD >/dev/null 2>&1 && $BULLSEYE_CMD --off
 
@@ -32,7 +35,7 @@ fi
 echo "Build JXIO... (c code)"
 cd $TOP_DIR
 
-if [[ -n "$COVFILE" ]];then
+if [[ -n "$code_coverage_on" ]];then
 	sudo rm -rf $COVFILE
 	cov01 --on
 	cov01 --status
@@ -41,7 +44,7 @@ cd c/ && ./autogen.sh && ./configure && make clean && make && cp -f src/libjxio.
 if [[ $? != 0 ]] ; then
     exit 1
 fi
-if [[ -n "$COVFILE" ]];then
+if [[ -n "$code_coverage_on" ]];then
 	cov01 --off
 fi
 
