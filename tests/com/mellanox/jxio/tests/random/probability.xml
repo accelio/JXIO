@@ -2,8 +2,8 @@
 	<machines>
 		<machine_amount value="1"/>
 		<machine>
-			<name value="A"/>
-			<address value="11.4.3.22"/>
+			<name value="zorro010"/>
+			<address value="36.0.0.120"/>
 			<type value="Eth"/>
 			<manag_interface value="192.168.1.242"/>
 		</machine>
@@ -18,7 +18,7 @@
 	<!-- JXIO process parameters -->
 	<processes>
 		<process_amount value="[100]:1"/>
-		<location value="[100]:A"/>
+		<machine value="[100]:1"/>
 		<num_eqhs value="[90]:3 , [10]:4-5"/>
 		<timeout value="[50]:20 , [50]:30"/>
 	</processes>

@@ -121,10 +121,12 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-	 * Retrieve all characters matching a specific type.
-	 * @param charcterType A character type in single form.
-	 * @return A list of all characters of the requested type.
-	 */
+     * Retrieve all characters matching a specific type.
+     * 
+     * @param charcterType
+     *            A character type in single form.
+     * @return A list of all characters of the requested type.
+     */
 	public List<Character> getCharacters(String charcterType) {
 		List<Character> chracterList = new ArrayList<Character>();
 		for (Character character : story.getCharacters()) {
@@ -154,11 +156,20 @@ public class JXIOStoryRunner implements StoryRunner {
 		ServerPortalPlayer[] serverPlayers = new ServerPortalPlayer[servers.size()];
 		for (Character server : servers) {
 			try {
-				String hostname = server.getAttribute("location");
+				// Get server parameters
+				int id = Integer.valueOf(server.getAttribute("id"));
 				int port = Integer.valueOf(server.getAttribute("port"));
-				int startDelay = Integer.valueOf(server.getAttribute("start_delay"));
+				Character process = getCharacterFromListById(processes, server.getAttribute("process"));
 				int duration = Integer.valueOf(server.getAttribute("duration"));
-
+				int maxWorkers = Integer.valueOf(server.getAttribute("max_workers"));
+				int delay = Integer.valueOf(server.getAttribute("delay"));
+				int startDelay = Integer.valueOf(server.getAttribute("start_delay"));
+				int tps = Integer.valueOf(server.getAttribute("tps"));
+				
+				// Resolve hostname
+				Character machine = getCharacterFromListById(machines, process.getAttribute("machine"));
+				String hostname = machine.getAttribute("address");
+				
 				ServerPortalPlayer sp = new ServerPortalPlayer(new URI("rdma://" + hostname + ":" + port + "/"),
 				        startDelay, duration, getWorkerThreads());
 				serverPlayers[i] = sp;
@@ -175,12 +186,21 @@ public class JXIOStoryRunner implements StoryRunner {
 		i = 0;
 		for (Character client : clients) {
 			try {
-				String hostname = "0";
-				// String hostname = server.getProcess().getLocation().getHostname();
-				int port = 500;
-				int startDelay = Integer.valueOf(client.getAttribute("start_delay"));
+				// Get client parameters
+				int id = Integer.valueOf(client.getAttribute("id"));
+				int process = Integer.valueOf(client.getAttribute("process"));
 				int duration = Integer.valueOf(client.getAttribute("duration"));
+				int batch = Integer.valueOf(client.getAttribute("batch"));
+				Character server = getCharacterFromListById(servers, client.getAttribute("server"));
+				int startDelay = Integer.valueOf(client.getAttribute("start_delay"));
 				int tps = Integer.valueOf(client.getAttribute("tps"));
+				
+				// Resolve hostname and port
+				Character server_process =  getCharacterFromListById(processes, server.getAttribute("process"));
+				Character machine = getCharacterFromListById(machines, server_process.getAttribute("machine"));
+				String hostname = machine.getAttribute("address");
+				int port = Integer.valueOf(server.getAttribute("port"));
+				
 				ClientPlayer cp = new ClientPlayer(new URI("rdma://" + hostname + ":" + port + "/"), startDelay,
 				        duration, tps);
 				clientPlayers[i] = cp;
@@ -200,8 +220,23 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-	 * Prints a summary of the story.
+	 * Retrieves a specific character from a list of characters.
+	 * @param characters The list of characters.
+	 * @param id The ID of the requsted character.
+	 * @return The charcater from the list with there ID matching the given ID.
 	 */
+	private Character getCharacterFromListById(List<Character> characters, String id) {
+		for (Character character : characters) {
+			if (character.getAttribute("id").equals(id)) {
+				return character;
+			}
+		}
+		return null;
+	}
+
+	/**
+     * Prints a summary of the story.
+     */
 	private void printSummary() {
 		System.out.print("Machines:");
 		for (Character machine : machines) {
