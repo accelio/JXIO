@@ -115,7 +115,7 @@ public class Story {
 		for (int j = 1; j < element.getChildNodes().getLength(); j++) {
 			Node item = element.getChildNodes().item(j);
 			// Check for data tags
-			if (!item.getNodeName().equals("#text")) {
+			if (!item.getNodeName().equals("#text") && !item.getNodeName().equals("#comment")) {
 				// Get attribute's name
 				String att = item.getNodeName();
 				// Get attribute's value
