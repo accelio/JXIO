@@ -57,5 +57,7 @@ void logs_from_xio_callback_unregister();
 void logs_from_xio_set_threshold(log_severity_t threshold);
 
 bool close_xio_connection(struct xio_session *session, struct xio_context *ctx);
+bool forward_session(struct xio_session *session, const char * url);
+bool accept_session(struct xio_session *session);
 
 #endif // ! Utils__H___

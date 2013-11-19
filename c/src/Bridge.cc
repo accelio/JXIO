@@ -273,16 +273,24 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSessio
 	close_xio_connection(session, context->ctx);
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_server_portal)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session)
 {
 	const char *url = env->GetStringUTFChars(jurl, NULL);
+
 	struct xio_session *session = (struct xio_session *)ptr_session;
-	ServerPortal * server = (ServerPortal *) ptr_server_portal;
-	bool retVal = server->accept(session, url);
+	bool retVal = forward_session(session, url);
 	env->ReleaseStringUTFChars(jurl, url);
 
 	return retVal;
 }
+
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSessionNative(JNIEnv *env, jclass cls, jlong ptr_session)
+{
+	struct xio_session *session = (struct xio_session *)ptr_session;
+	bool retVal = accept_session(session);
+	return retVal;
+}
+
 
 extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMsgPoolNative(JNIEnv *env, jclass cls, jint msg_num, jint in_size, jint out_size, jlongArray ptr)
 {

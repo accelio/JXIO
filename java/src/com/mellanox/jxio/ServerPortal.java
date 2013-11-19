@@ -92,16 +92,20 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		return true;
 	}
 
-	public void accept(ServerSession ses) {
-		this.forward(this, ses);
+	public void accept(ServerSession serverSession) {
+		serverSession.setEventQueueHandler(this.eventQHndl);
+		Bridge.acceptSession(serverSession.getId());
 	}
 
 	public void forward(ServerPortal portal, ServerSession serverSession) {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("portal " + portal + " ses id is " + serverSession.getId());
 		}
-		serverSession.setEventQueueHandler(portal.eventQHndl);
-		Bridge.forwardSession(portal.getUri(), serverSession.getId(), portal.getId());
+		if (portal == this){//in case forward was called but the user really means accept
+			accept(serverSession);
+			return;
+		}
+		Bridge.forwardSession(portal.getUri(), serverSession.getId());
 	}
 
 	void onEvent(Event ev) {

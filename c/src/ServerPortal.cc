@@ -55,16 +55,6 @@ ServerPortal::~ServerPortal() {
 	}
 }
 
-bool ServerPortal::accept(struct xio_session *session, const char * url) {
-	log(lsDEBUG, "****** url before forward is %s. xio_session is %p\n", url, session);
-
-	int retVal = xio_accept(session, &url, 1, NULL, 0);
-	if (retVal) {
-		log(lsERROR, "Error in accepting session. error %d\n", retVal);
-		return false;
-	}
-	return true;
-}
 
 bool ServerPortal::onSessionEvent(xio_session_event eventType,
 		struct xio_session *session) {

@@ -111,13 +111,20 @@ public class Bridge {
 		return ret;
 	}
 
-	private static native long forwardSessionNative(String url, long ptrSes, long ptrServer);
+	private static native long forwardSessionNative(String url, long ptrSes);
 
-	public static long forwardSession(String url, long ptrSes, long ptrServer) {
-		long ptr = forwardSessionNative(url, ptrSes, ptrServer);
+	public static long forwardSession(String url, long ptrSes) {
+		long ptr = forwardSessionNative(url, ptrSes);
 		return ptr;
 	}
 
+	private static native long acceptSessionNative(long ptrSes);
+
+	public static long acceptSession(long ptrSes) {
+		long ptr = acceptSessionNative(ptrSes);
+		return ptr;
+	}
+	
 	private static native ByteBuffer createMsgPoolNative(int count, int inSize, int outSize, long[] ptrMsg);
 
 	public static ByteBuffer createMsgPool(int count, int inSize, int outSize, long[] ptrMsg) {

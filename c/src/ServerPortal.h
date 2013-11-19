@@ -32,7 +32,6 @@ public:
 	//to move some to private?
 	ServerPortal(const char *url, long ptrCtx);
 	~ServerPortal();
-	bool accept(struct xio_session *session, const char * url);
 
 	bool onSessionEvent(xio_session_event eventType,
 			struct xio_session *session);
