@@ -5,7 +5,7 @@ log4j.rootLogger=INFO, file, CONSOLE
 #change log threshold of ServerManager Logger to DEBUG
 log4j.logger.com.mellanox.jxio.ServerManager=DEBUG
 #change log threshold and appender of Bridge logger
-log4j.logger.LogFromNative=DEBUG, Clog
+log4j.logger.LogFromNative=INFO, Clog
 #Bridge logger will be printed only to bridge appender.
 log4j.additivity.LogFromNative=false
  
@@ -24,7 +24,9 @@ log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout
 log4j.appender.CONSOLE.layout.conversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS} %t %-5p %c{1}:%L - %m%n
 
 
-log4j.appender.Clog=org.apache.log4j.DailyRollingFileAppender
-log4j.appender.Clog.File=LogFromNative.log
+#log4j.appender.Clog=org.apache.log4j.DailyRollingFileAppender
+#log4j.appender.Clog.File=LogFromNative.log
+log4j.appender.Clog=org.apache.log4j.ConsoleAppender
+log4j.appender.Clog.Target=System.out
 log4j.appender.Clog.layout=org.apache.log4j.PatternLayout
 log4j.appender.Clog.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS} %t %-5p - %m%n

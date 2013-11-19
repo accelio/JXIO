@@ -45,7 +45,7 @@ static jmethodID jmethodID_logToJava; // handle to java cb method
 // JNI inner functions implementations
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 {
-	printf("in JXIO/c/Bridge - JNI_OnLoad\n");
+	//printf("in JXIO/c/Bridge - JNI_OnLoad\n");
 
 	cached_jvm = jvm;
 	JNIEnv *env;
@@ -88,27 +88,33 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 		}
 	}
 
-	//logToJava callback
+	// logToJava callback
 	jmethodID_logToJava = env->GetStaticMethodID(jclassBridge, "logToJava", "(Ljava/lang/String;I)V");
 	if (jmethodID_logToJava == NULL) {
 		printf("-->> In C++ java Bridge.logToJava() callback method was NOT found\n");
 		return JNI_ERR;
 	}
 
-	// Disable Accelio's internal mem pool
+	// setup log collection from AccelIO into JXIO's logging
+	logs_from_xio_set_threshold(g_log_threshold);
+	logs_from_xio_callback_register();
+
+	// disable Accelio's internal mem pool
 	// JXIO requiers Java user application to allocate our memory pool
 	int optlen = 0;
 	if (xio_set_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_ENABLE_MEM_POOL, &optlen, sizeof(optlen))) {
 		fprintf(stderr, "in JXIO/c/Bridge - failed to disable AccelIO's internal memory pool buffers\n");
 	}
 
-	printf("in JXIO/c/Bridge - java callback methods were found and cached\n");
+	log(lsDEBUG, "in JXIO/c/Bridge - java callback methods were found and cached\n");
 
 	return JNI_VERSION_1_4;  //direct buffer requires java 1.4
 }
 
 extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *jvm, void* reserved)
 {
+	logs_from_xio_callback_unregister();
+
 	// NOTE: We never reached this place
 	static bool alreadyCalled = false;
 	if (alreadyCalled) return;
@@ -127,10 +133,11 @@ extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *jvm, void* reserved)
 	return;
 }
 
-void Bridge_invoke_logToJava_callback(const char* log_message,const int severity) {
+void Bridge_invoke_logToJava_callback(const char* log_message,const int severity)
+{
 	JNIEnv *env;
 	if (cached_jvm->GetEnv((void **) &env, JNI_VERSION_1_4)) {
-		printf("-->> Error getting JNIEnv In C++ JNI_logToJava when trying to log message - %s\n",log_message);
+		printf("-->> Error getting JNIEnv In C++ JNI_logToJava when trying to log message: '%s'\n", log_message);
 		return;
 	}
 
@@ -142,6 +149,7 @@ void Bridge_invoke_logToJava_callback(const char* log_message,const int severity
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_setLogLevelNative(JNIEnv *env, jclass cls, jint logLevel)
 {
 	log_set_threshold((log_severity_t)logLevel);
+	logs_from_xio_set_threshold(g_log_threshold);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_createCtxNative(JNIEnv *env, jclass cls, jint eventQueueSize, jobject dataToC)
@@ -276,7 +284,6 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_forward
 	return retVal;
 }
 
-
 extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMsgPoolNative(JNIEnv *env, jclass cls, jint msg_num, jint in_size, jint out_size, jlongArray ptr)
 {
 	jlong temp[msg_num+1];
@@ -301,7 +308,6 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMs
 	env->SetLongArrayRegion(ptr,0, msg_num+1, temp);
 	return jbuf;
 }
-
 
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_deleteMsgPoolNative(JNIEnv *env, jclass cls, jlongArray ptr_msg_pool)
 {
@@ -342,7 +348,8 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_jxio_impl_Bridge_getError
 	return str;
 }
 
-JNIEnv *JX_attachNativeThread() {
+JNIEnv *JX_attachNativeThread()
+{
 	JNIEnv *env;
 	if (!cached_jvm) {
 		printf("cached_jvm is NULL");
@@ -352,7 +359,7 @@ JNIEnv *JX_attachNativeThread() {
 	if (ret < 0) {
 		printf("cached_jvm->AttachCurrentThread failed ret=%d", ret);
 	}
-	printf("completed successfully env=%p", env);
+	log(lsDEBUG, "completed successfully env=%p", env);
 	return env; // note: this handler is valid for all functions in this thread
 }
 

@@ -41,6 +41,9 @@ enum log_severity_t {
 	lsTRACE,
 };
 
+// THE 'log()' macro that should be used everywhere...
+#define log(severity, ...) do { if (severity <= g_log_threshold)  log_func(__FILE__, __LINE__, __FUNCTION__, severity, __VA_ARGS__);} while(0)
+
 extern log_severity_t g_log_threshold;
 const log_severity_t DEFAULT_LOG_THRESHOLD = lsINFO;
 
@@ -48,8 +51,10 @@ void log_set_threshold(log_severity_t _threshold);
 
 void log_func(const char* file, const int line, const char* func, log_severity_t severity, const char *fmt, ...); // should not be called directly
 
-// THE 'log()' macro that should be used everywhere...
-#define log(severity, ...) do { if (severity <= g_log_threshold)  log_func(__FILE__, __LINE__, __FUNCTION__, severity, __VA_ARGS__);} while(0)
+// helper functions to setup log collection from AccelIO into JXIO's logging
+void logs_from_xio_callback_register();
+void logs_from_xio_callback_unregister();
+void logs_from_xio_set_threshold(log_severity_t threshold);
 
 bool close_xio_connection(struct xio_session *session, struct xio_context *ctx);
 
