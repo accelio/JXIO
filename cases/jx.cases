@@ -12,31 +12,11 @@
 	</global>
 	<case>
 		<info>jx test</info>
-		<name>open close client test</name>
+		<name>run simple story</name>
 		<tout>1500</tout>
 		<cmd>
 			<params>
-				<static_args>--host 36.0.0.121 --port 1234 --test_num 1</static_args>
-			</params>
-		</cmd>
-	</case>
-	<case>
-		<info>jx test</info>
-		<name>non existing hostname client test</name>
-		<tout>1500</tout>
-		<cmd>
-			<params>
-				<static_args>--host 36.0.0.121 --port 1234 --test_num 2</static_args>
-			</params>
-		</cmd>
-	</case>
-	<case>
-		<info>jx test</info>
-		<name>mutiple clients on same eqh client test</name>
-		<tout>1500</tout>
-		<cmd>
-			<params>
-				<static_args>--host 36.0.0.121 --port 1234 --test_num 3</static_args>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
 			</params>
 		</cmd>
 	</case>
