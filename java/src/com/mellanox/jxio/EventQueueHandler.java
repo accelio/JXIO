@@ -207,18 +207,23 @@ public class EventQueueHandler implements Runnable {
 
 	void addEventable(Eventable eventable) {
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("** adding "+eventable.getId()+" to map ");
+			LOG.debug("** adding "+eventable.getId()+" to map of EQH id=" + this.getId());
 		}
+		//add lock
+		synchronized (eventables) {
 		if (eventable.getId() != 0){
 			eventables.put(eventable.getId(), eventable);
 		}
 	}
+	}
 
 	void removeEventable(Eventable eventable) {
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("** removing "+eventable.getId()+" from map ");
+			LOG.debug("** removing "+eventable.getId()+" from map of EQH id=" + this.getId());
 		}
-		eventables.remove(eventable.getId());
+		synchronized (eventables) {
+			eventables.remove(eventable.getId());
+        }
 	}
 
 	void addMsgInUse(Msg msg) {
@@ -246,7 +251,9 @@ public class EventQueueHandler implements Runnable {
 			int reason = eventQueue.getInt();
 			String s = Bridge.getError(reason);
 			EventSession evSes = new EventSession(eventType, id, errorType, s);
-			eventable = eventables.get(id);
+			synchronized (eventables) {
+				eventable = eventables.get(id);	            
+            }
 			eventable.onEvent(evSes);
 		}	
 		break;
@@ -254,7 +261,9 @@ public class EventQueueHandler implements Runnable {
 		case 1: //msg error
 		{
 			EventMsgError evMsgErr = new EventMsgError(eventType, id);
-			eventable = eventables.get(id);
+			synchronized (eventables) {
+				eventable = eventables.get(id);	            
+            }
 			eventable.onEvent(evMsgErr);
 		}
 		break;
@@ -301,7 +310,9 @@ public class EventQueueHandler implements Runnable {
 			String uri = readString(eventQueue);		
 			String srcIP = readString(eventQueue);			
 
-			eventable = eventables.get(id);
+			synchronized (eventables) {
+				eventable = eventables.get(id);	            
+            }
 			EventNewSession evNewSes = new EventNewSession(eventType, id, ptrSes, uri, srcIP);
 			eventable.onEvent(evNewSes);
 		}
