@@ -29,9 +29,6 @@ Msg::Msg(char* buf, struct xio_mr* xio_mr, int in_buf_size, int out_buf_size,
 	this->xio_msg = (struct xio_msg *) calloc(1, sizeof(struct xio_msg));
 	this->pool = pool;
 	this->buf_out = this->buf + in_buf_size;
-
-	log(lsDEBUG, "****** buf inside msg out size is %d\n", this->out_buf_size);
-
 	this->set_xio_msg_client_fields();
 }
 

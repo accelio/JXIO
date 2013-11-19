@@ -70,6 +70,8 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 		msg_list->push_front(m);
 		msg_ptrs[i] = m;
 	}
+	log(lsDEBUG, "finished allocating msg pool. this=%p, msg_num=%d,  in_size=%d, out_size=%d\n", this, msg_num, in_size, out_size);
+
 	return;
 
 cleanup_list:

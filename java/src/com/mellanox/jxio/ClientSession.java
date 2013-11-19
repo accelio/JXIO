@@ -54,7 +54,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		}
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("id is " + id);
+			LOG.debug("id as recieved from C is " + id);
 		}
 		this.setId(id);
 

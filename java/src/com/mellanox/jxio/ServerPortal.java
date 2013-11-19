@@ -61,6 +61,9 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		if (getId() == 0) {
 			LOG.fatal("there was an error creating ServerPortal");
 		}
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("id as recieved from C is " + getId());
+		}
 		this.uriPort0 = replacePortInsideURI(uri, 0);
 		this.uri = replacePortInsideURI(uri, this.port).toString();
 
@@ -95,7 +98,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 
 	public void forward(ServerPortal portal, ServerSession serverSession) {
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("portal " + portal + "ses id is " + serverSession.getId());
+			LOG.debug("portal " + portal + " ses id is " + serverSession.getId());
 		}
 		serverSession.setEventQueueHandler(portal.eventQHndl);
 		Bridge.forwardSession(portal.getUri(), serverSession.getId(), portal.getId());

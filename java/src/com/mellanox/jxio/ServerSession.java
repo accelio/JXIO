@@ -41,6 +41,9 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	public ServerSession(long sessionKey, Callbacks callbacks) {
 		this.callbacks = callbacks;
 		setId(sessionKey);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("id as recieved from C is " + getId());
+		}
 	}
 
 	public boolean close() {
