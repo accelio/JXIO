@@ -21,16 +21,21 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import com.mellanox.jxio.ServerPortal;
 
 public class WorkerThreads {
+	
+	private final static Log LOG = LogFactory.getLog(WorkerThreads.class.getSimpleName());
 
 	private final WorkerThread[]  workers;
 	private final ExecutorService executor;
 	private final int             num_workers;
 	private int                   next_worker_index = -1;
 	private List<ServerPortalPlayer> listPortalPlayers;
+	Random rand;
+
 
 	public WorkerThreads(int num_eqhc) {
 		super();
@@ -43,6 +48,7 @@ public class WorkerThreads {
 			this.workers = null;
 		}
 		this.listPortalPlayers = new ArrayList<ServerPortalPlayer>();
+		this.rand = new Random();
 	}
 
 	public void close() {
@@ -52,14 +58,20 @@ public class WorkerThreads {
 	}
 	
 	public void addPortal(ServerPortalPlayer sp){
+		synchronized (listPortalPlayers) {
 		this.listPortalPlayers.add(sp);
+        }
 	}
 	
 	public ServerPortalPlayer getPortal(){
-		Random rand = new Random();
-		int index = rand.nextInt(listPortalPlayers.size());
-		return listPortalPlayers.get(index);
-		
+		ServerPortalPlayer p = null;
+		synchronized (listPortalPlayers) {
+//			int index = this.rand.nextInt(listPortalPlayers.size());
+			int index = 1;
+			p =  listPortalPlayers.get(index);
+			LOG.debug ("chosen index is "+index);
+        }
+		return p;		
 	}
 
 	public WorkerThread getWorkerThread() {

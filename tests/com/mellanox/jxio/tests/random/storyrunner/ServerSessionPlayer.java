@@ -40,6 +40,8 @@ public class ServerSessionPlayer extends GeneralPlayer {
 		this.sp = sp;
 		this.sk = newSessionKey;
 		this.srcIP = srcIP;
+		
+		this.server = new ServerSession(sk, new JXIOServerCallbacks(this));
 		LOG.debug("new " + this.toString() + " done");
 	}
 	
@@ -53,9 +55,6 @@ public class ServerSessionPlayer extends GeneralPlayer {
 	public void attach(WorkerThread workerThread) {
 		LOG.info(this.toString() + " attaching to WorkerThread (" + workerThread.toString() + ")");
 		this.workerThread = workerThread;
-
-		// connect to server
-		this.server = new ServerSession(sk, new JXIOServerCallbacks(this));
 
 		// prepare MsgPool
 		this.mp = new MsgPool(10, 64 * 1024, 256);

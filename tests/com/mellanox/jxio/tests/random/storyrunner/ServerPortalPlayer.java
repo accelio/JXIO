@@ -49,6 +49,8 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		return "ServerPortalPlayer (uri=" + uri.toString() + ")";
 	}
 
+	WorkerThread getWorkerThread(){return workerThread;}
+
 	@Override
 	public void attach(WorkerThread workerThread) {
 		LOG.info(this.toString() + " attaching to WorkerThread (" + workerThread.toString() + ")");
@@ -104,10 +106,12 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 		public void onSessionNew(long newSessionKey, String uriSrc, String srcIP) {
 			LOG.info("onSessionNew: uri=" + uriSrc + ", srcaddr=" + srcIP);
-			ServerPortalPlayer sp = workerThreads.getPortal();
+			
+			ServerPortalPlayer sp = workerThreads.getPortal();	
 			ServerSessionPlayer ss = new ServerSessionPlayer(sp, newSessionKey, srcIP);
-			WorkerThread worker = workerThreads.getWorkerThread();
-			worker.addWorkAction(ss.getAttachAction());
+			this.sm.listener.forward(sp.listener, ss.getServerSession());
+//			WorkerThread worker = this.sm.getWorkerThread();
+//			worker.addWorkAction(ss.getAttachAction());
 		}
 
         public void onSessionEvent(EventName session_event, String reason) {
