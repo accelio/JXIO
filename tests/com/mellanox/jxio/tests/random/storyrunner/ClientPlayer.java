@@ -128,7 +128,7 @@ public class ClientPlayer extends GeneralPlayer {
 		public void onSessionEstablished() {
 			LOG.info("onSessionEstablished");
 
-			this.c.sendMsgTimerStart();
+//			this.c.sendMsgTimerStart();
 		}
 
         public void onSessionEvent(EventName session_event, String reason) {

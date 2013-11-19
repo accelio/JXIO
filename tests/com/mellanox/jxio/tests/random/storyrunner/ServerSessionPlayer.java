@@ -51,14 +51,15 @@ public class ServerSessionPlayer extends GeneralPlayer {
 		return "ServerSessionPlayer (srcaddr=" + srcIP + ")";
 	}
 
+	
 	@Override
 	public void attach(WorkerThread workerThread) {
 		LOG.info(this.toString() + " attaching to WorkerThread (" + workerThread.toString() + ")");
 		this.workerThread = workerThread;
 
 		// prepare MsgPool
-		this.mp = new MsgPool(10, 64 * 1024, 256);
-		this.workerThread.getEQH().bindMsgPool(this.mp);
+	//	this.mp = new MsgPool(10, 64 * 1024, 256);
+	//	this.workerThread.getEQH().bindMsgPool(this.mp);
 
 		// update ServerManager that it can 'accept' this 'newSessionKey'
 		this.sp.notifyReadyforWork(this, this.sk);
