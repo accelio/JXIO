@@ -87,8 +87,12 @@ public class ServerSessionPlayer extends GeneralPlayer {
 		}
 
         public void onSessionEvent(EventName session_event, String reason) {
-			LOG.error("onSessionError: event='" + session_event.toString() + "', reason='" + reason + "'");
-			System.exit(1);
+           	if (session_event == EventName.SESSION_TEARDOWN) {
+        		LOG.info("SESSION_TEARDOWN. reason='" + reason + "'");
+        	}else{
+        		LOG.error("onSessionError: event='" + session_event.toString() + "', reason='" + reason + "'");
+        		System.exit(1);
+        	}
 		}
 
 		public void onMsgError() {

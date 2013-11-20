@@ -46,27 +46,13 @@ public class JXIOStoryRunner implements StoryRunner {
 	private WorkerThreads   workers;
 
 	/**
-     * Constructs an new StoryRunner with infinite worker threads.
+     * Constructs an new StoryRunner
      * 
-     * @param xmlFile
-     *            The story XML file.
      */
 	public JXIOStoryRunner() {
-		this(-1);
+		this.story = new Story();
 	}
 
-	/**
-     * Constructs an new StoryRunner.
-     * 
-     * @param xmlFile
-     *            The story XML file.
-     * @param workerThreads
-     *            Number of worker threads needed.
-     */
-	public JXIOStoryRunner(int workerThreads) {
-		this.story = new Story();
-		this.workers = new WorkerThreads(workerThreads);
-	}
 
 	/**
      * Retrieves all worker threads
@@ -149,6 +135,14 @@ public class JXIOStoryRunner implements StoryRunner {
 		System.out.println("=============");
 		System.out.println("Story Running");
 		System.out.println("=============");
+		
+		
+		Character p = processes.get(0);//for now, there is only one process
+		int numWorkerThreads = Integer.valueOf(p.getAttribute("num_eqhs"));
+		
+		System.out.println("there are " + numWorkerThreads + " working threads");
+		//create worker threads
+		this.workers = new WorkerThreads(numWorkerThreads);
 
 		// Simple Client-Server
 		// Configure Servers

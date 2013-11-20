@@ -133,7 +133,7 @@ public class ClientPlayer extends GeneralPlayer {
 
         public void onSessionEvent(EventName session_event, String reason) {
 			if (this.c.isClosing == true && session_event == EventName.SESSION_TEARDOWN) {
-				LOG.info("onSessionEvent: event='" + session_event.toString() + "', reason='" + reason + "'");
+				LOG.info("onSESSION_TEARDOWN, reason='" + reason + "'");
 			} else {
 				LOG.error("onSessionError: event='" + session_event.toString() + "', reason='" + reason + "'");
 				System.exit(1);
