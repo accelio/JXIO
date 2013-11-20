@@ -20,7 +20,7 @@ $(TARGET):$(SRC_JAVA_FILES)
 	(cd c; make)
 	cp c/src/libjxio.so $(BIN_FOLDER)
 	javac -cp lib/commons-logging.jar -d $(BIN_FOLDER) $(SRC_JAVA_FILES)
-	(cd $(BIN_FOLDER) ;jar -cvf $(TARGET) com $(NATIVE_LIBS))
+	(cd $(BIN_FOLDER); jar -cfm $(TARGET) ../manifest.txt com $(NATIVE_LIBS))
 
 clean:
 	(cd c; make clean)

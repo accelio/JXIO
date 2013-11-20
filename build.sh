@@ -53,4 +53,4 @@ cd $TOP_DIR
 javac -cp lib/commons-logging.jar -d $BIN_FOLDER $SRC_JAVA_FILES
 
 echo "Creating JXIO jar..."
-cd $BIN_FOLDER; jar -cf $TARGET com $NATIVE_LIBS
+cd $BIN_FOLDER && jar -cfm $TARGET ../manifest.txt com $NATIVE_LIBS
