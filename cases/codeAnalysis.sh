@@ -66,7 +66,7 @@ cd $RUNNING_DIR
 # Define report parameters
 attachment="$JAVA_REPORT_FILE $C_REPORT_FILE"
 subject="JXIO Code Analysis Report"
-recipients="alongr@mellanox.com katyak@mellanox.com"
+recipients="alongr@mellanox.com katyak@mellanox.com alexr@mellanox.com"
 MAIL_MESSAGE=mail.html
 MAIL_MESSAGE_HTML="<h1>JXIO Code Analysis Report</h1><br>Attached are the JXIO Java and C code analysis for `date +%d/%m/%y`.<br>"
 
