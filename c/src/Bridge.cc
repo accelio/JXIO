@@ -99,10 +99,16 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 	logs_from_xio_set_threshold(g_log_threshold);
 	logs_from_xio_callback_register();
 
+	// disable Accelio's HugeTbl memory allocation scheme
+	int opt = 1;
+	if (xio_set_opt(NULL, XIO_OPTLEVEL_ACCELIO, XIO_OPTNAME_DISABLE_HUGETBL, &opt, sizeof(opt))) {
+		fprintf(stderr, "in JXIO/c/Bridge - failed to disable AccelIO's HugeTbl memory allocation scheme\n");
+	}
+
 	// disable Accelio's internal mem pool
 	// JXIO requiers Java user application to allocate our memory pool
-	int optlen = 0;
-	if (xio_set_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_ENABLE_MEM_POOL, &optlen, sizeof(optlen))) {
+	opt = 0;
+	if (xio_set_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_ENABLE_MEM_POOL, &opt, sizeof(opt))) {
 		fprintf(stderr, "in JXIO/c/Bridge - failed to disable AccelIO's internal memory pool buffers\n");
 	}
 
