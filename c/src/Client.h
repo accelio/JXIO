@@ -40,6 +40,8 @@ public:
 	bool error_creating;
 	bool onSessionEvent(xio_session_event eventType,
 			struct xio_session *session);
+	bool isClient() {return true;}
+
 };
 
 #endif // ! Client__H___

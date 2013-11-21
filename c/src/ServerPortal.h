@@ -35,6 +35,7 @@ public:
 
 	bool onSessionEvent(xio_session_event eventType,
 			struct xio_session *session);
+	bool isClient() {return false;}
 
 	struct xio_server* server;
 	bool error_creating;

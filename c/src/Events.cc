@@ -41,8 +41,7 @@ Events::Events()
 	this->event.ptr = 0;
 }
 
-int Events::writeOnSessionErrorEvent(char *buf, void *ptrForJava, struct xio_session *session,
-			struct xio_session_event_data *event_data)
+int Events::writeOnSessionErrorEvent(char *buf, void *ptrForJava, struct xio_session_event_data *event_data)
 {
 	this->event.type = htonl(EVENT_SESSION_ERROR);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));

@@ -130,15 +130,20 @@ int on_session_established_callback(struct xio_session *session,
 int on_session_event_callback(struct xio_session *session,
 		struct xio_session_event_data *event_data, void *cb_prv_data) {
 
-	log(lsDEBUG, "got on_session_event_callback\n");
+	log(lsDEBUG, "got on_session_event_callback. event=%d, cb_prv_data=%p, session=%p\n",
+			event_data->event, cb_prv_data, session);
 
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
-	Context *ctx = cntxbl->get_ctx_class();
+
+	bool isClient = cntxbl->isClient();
 
 	if (cntxbl->onSessionEvent(event_data->event, session)) {
+		Context *ctx = cntxbl->get_ctx_class();
 		char* buf = ctx->event_queue->get_buffer();
-		int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, cntxbl,
-				session, event_data);
+		/*in case it is a client, the java object is represented by cb_prv_data
+		/in case it is a server, the java object is represented by xio_session  */
+		void *ptrForJava = isClient ? (void*)cntxbl : (void*)session;
+		int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, ptrForJava, event_data);
 		done_event_creating(ctx, sizeWritten);
 	}
 	return 0;

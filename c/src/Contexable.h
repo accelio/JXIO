@@ -34,6 +34,8 @@ public:
 	virtual bool onSessionEvent(xio_session_event eventType,
 			struct xio_session *session) = 0;
 
+	virtual bool isClient() = 0;
+
 private:
 	Context* ctx_class;
 };

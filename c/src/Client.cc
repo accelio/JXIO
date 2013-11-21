@@ -70,6 +70,7 @@ Client::~Client() {
 	if (xio_session_close(session)) {
 		log(lsERROR, "Error xio_session_close failed. client=%p\n", this);
 	}
+	log(lsDEBUG, "done deleting Client=%p.\n", this);
 }
 
 bool Client::close_connection() {

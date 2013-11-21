@@ -42,7 +42,7 @@ ServerPortal::ServerPortal(const char *url, long ptrCtx) {
 		error_creating = true;
 	}
 
-	log(lsDEBUG, "****** port number is %d\n", this->port);
+	log(lsDEBUG, "c-tor of ServerPortal %p finished. port=%d\n", this, this->port);
 }
 
 ServerPortal::~ServerPortal() {
@@ -53,6 +53,7 @@ ServerPortal::~ServerPortal() {
 	if (xio_unbind(this->server)) {
 		log(lsERROR, "Error xio_unbind failed\n");
 	}
+	log(lsDEBUG, "done deleting ServerPortal=%p.\n", this);
 }
 
 
