@@ -37,7 +37,7 @@ public:
 
 	bool error_creating;
 	char   			*buf;
-	int 			buf_size;
+	long 			buf_size;
 	Msg** 			msg_ptrs;
 
 private:

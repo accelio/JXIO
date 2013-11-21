@@ -37,7 +37,7 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 		log(lsWARN, "attempting to allocate&registering memory. THIS COULD HURT PERFORMANCE!!!!!\n");
 		this->buf = (char*) malloc(this->buf_size);
 		if (this->buf == NULL) {
-			log(lsERROR, "allocating memory failed. aborting\n");
+			log(lsERROR, "allocating memory of size %ld failed. aborting\n", this->buf_size);
 			goto mark_error;
 		}
 		this->xio_mr = xio_reg_mr(this->buf, this->buf_size);
