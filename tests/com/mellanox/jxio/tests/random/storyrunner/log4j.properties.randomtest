@@ -16,7 +16,7 @@ log4j.additivity.LogFromNative=false
 log4j.appender.file=org.apache.log4j.DailyRollingFileAppender
 log4j.appender.file.File=jxio.log
 log4j.appender.file.layout=org.apache.log4j.PatternLayout
-log4j.appender.file.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS} %t %-5p %c{1}:%L - %m%n
+log4j.appender.file.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS} %t %-5p %c{1}:%L %m%n
 log4j.appender.file.Append=false
 log4j.appender.file.Threshold=INFO
 
@@ -24,7 +24,7 @@ log4j.appender.file.Threshold=INFO
 log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender
 log4j.appender.CONSOLE.Target=System.out
 log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout
-log4j.appender.CONSOLE.layout.conversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS} %t %-5p %c{1}:%L - %m%n
+log4j.appender.CONSOLE.layout.conversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS} %t %-5p %c{1}:%L %m%n
 
 
 #log4j.appender.Clog=org.apache.log4j.DailyRollingFileAppender
@@ -32,4 +32,4 @@ log4j.appender.CONSOLE.layout.conversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS} %t %
 log4j.appender.Clog=org.apache.log4j.ConsoleAppender
 log4j.appender.Clog.Target=System.out
 log4j.appender.Clog.layout=org.apache.log4j.PatternLayout
-log4j.appender.Clog.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS} %t %-5p - %m%n
+log4j.appender.Clog.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss,SSS} %t %-5p %m
