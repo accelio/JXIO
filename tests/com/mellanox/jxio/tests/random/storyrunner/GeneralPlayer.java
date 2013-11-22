@@ -19,6 +19,15 @@ package com.mellanox.jxio.tests.random.storyrunner;
 public abstract class GeneralPlayer {
 	protected GeneralPlayer player;
 
+	// callback from AttachAction
+	protected abstract void attach(WorkerThread workerThread);
+
+	// callback from InitializeTimer
+	protected abstract void initialize();
+
+	// callback from TerminateTimer
+	protected abstract void terminate();
+
 	public AttachAction getAttachAction() {
 		return new AttachAction(this);
 	}
@@ -35,23 +44,31 @@ public abstract class GeneralPlayer {
 		}
 	}
 
-	protected class TerminatTimer extends TimerList.Timer {
+	protected class InitializeTimer extends TimerList.Timer {
 		private final GeneralPlayer player;
 
-		public TerminatTimer(GeneralPlayer player, long durationMicroSec) {
+		public InitializeTimer(GeneralPlayer player, long durationMicroSec) {
 			super(durationMicroSec);
 			this.player = player;
 		}
 
 		@Override
 		public void onTimeOut() {
-			this.player.close();
+			this.player.initialize();
 		}
 	}
 
-	// callback from AttachAction
-	protected abstract void attach(WorkerThread workerThread);
+	protected class TerminateTimer extends TimerList.Timer {
+		private final GeneralPlayer player;
 
-	// callback from TerminatTimer
-	protected abstract void close();
+		public TerminateTimer(GeneralPlayer player, long durationMicroSec) {
+			super(durationMicroSec);
+			this.player = player;
+		}
+
+		@Override
+		public void onTimeOut() {
+			this.player.terminate();
+		}
+	}
 }

@@ -29,16 +29,15 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	private final static Log LOG = LogFactory.getLog(ServerPortalPlayer.class.getSimpleName());
 
 	private final URI        uri;
-	private final long       durationSec;
-	@SuppressWarnings("unused")
-    private final long       startDelaySec;
+	private final long       runDurationSec;
+	private final long       startDelaySec;
 	private WorkerThread     workerThread;
 	private WorkerThreads    workerThreads;
 	private ServerPortal    listener;
 
-	public ServerPortalPlayer(URI uri, long startDelaySec, long durationSec, WorkerThreads workerThreads) {
+	public ServerPortalPlayer(URI uri, long startDelaySec, long runDurationSec, WorkerThreads workerThreads) {
 		this.uri = uri;
-		this.durationSec = durationSec;
+		this.runDurationSec = runDurationSec;
 		this.startDelaySec = startDelaySec;
 		this.workerThreads = workerThreads;
 		LOG.debug("new " + this.toString() + " done");
@@ -53,15 +52,14 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 	@Override
 	public void attach(WorkerThread workerThread) {
-		LOG.info(this.toString() + " attaching to WorkerThread (" + workerThread.toString() + ")");
+		LOG.info(this.toString() + ": attaching to WorkerThread '" + workerThread.toString() + "'" + 
+				", startDelay = " + startDelaySec + "sec, runDuration = " + runDurationSec + "sec");
+
 		this.workerThread = workerThread;
 
-		// connect to server
-		this.listener = new ServerPortal(this.workerThread.getEQH(), uri, new JXIOPortalCallbacks(this));
-
-		// register terminate timer
-		TimerList.Timer tTerminate = new TerminatTimer(this, this.durationSec * 1000000);
-		this.workerThread.start(tTerminate);
+		// register initialize  timer
+		TimerList.Timer tInitialize = new InitializeTimer(this, this.startDelaySec * 1000000);
+		this.workerThread.start(tInitialize);
 	}
 
 	URI getUriForServer() {
@@ -69,8 +67,22 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	}
 
 	@Override
-	protected void close() {
-		LOG.info("closing");
+	protected void initialize() {
+		LOG.debug("initializing");
+
+		// start server listener
+		LOG.info("starting server listener on '" + uri.getHost() + ":" + uri.getPort() + "'");
+		this.listener = new ServerPortal(this.workerThread.getEQH(), uri, new JXIOPortalCallbacks(this));
+		LOG.debug("server listening on '" + this.listener.getUriForServer() + "'");
+
+		// register terminate timer
+		TimerList.Timer tTerminate = new TerminateTimer(this, this.runDurationSec * 1000000);
+		this.workerThread.start(tTerminate);
+	}
+
+	@Override
+	protected void terminate() {
+		LOG.info("terminating");
 		this.listener.close();
 		LOG.info("exiting - SUCCESS (???)");
 		System.exit(0);

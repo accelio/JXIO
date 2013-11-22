@@ -31,7 +31,7 @@ public class ClientPlayer extends GeneralPlayer {
 	private final static Log LOG = LogFactory.getLog(ClientPlayer.class.getSimpleName());
 
 	private final URI        uri;
-	private final long       durationSec;
+	private final long       runDurationSec;
 	private final long       startDelaySec;
 	private final long       msgDelayMicroSec;
 	private WorkerThread     workerThread;
@@ -39,9 +39,9 @@ public class ClientPlayer extends GeneralPlayer {
 	private MsgPool          mp;
 	private boolean          isClosing = false;
 
-	public ClientPlayer(URI uri, long startDelaySec, long durationSec, long msgRate) {
+	public ClientPlayer(URI uri, long startDelaySec, long runDurationSec, long msgRate) {
 		this.uri = uri;
-		this.durationSec = durationSec;
+		this.runDurationSec = runDurationSec;
 		this.startDelaySec = startDelaySec;
 		this.msgDelayMicroSec = (msgRate > 0) ? (1000000 / msgRate) : 0;
 		LOG.debug("new " + this.toString() + " done");
@@ -53,26 +53,14 @@ public class ClientPlayer extends GeneralPlayer {
 
 	@Override
 	public void attach(WorkerThread workerThread) {
-		LOG.info(this.toString() + " attaching to WorkerThread (" + workerThread.toString() + ")");
+		LOG.info(this.toString() + ": attaching to WorkerThread '" + workerThread.toString() + "'" + 
+				", startDelay = " + startDelaySec + "sec, runDuration = " + runDurationSec + "sec");
+
 		this.workerThread = workerThread;
 
-		LOG.debug(this.toString() + " sleeping for " + this.startDelaySec/1000 + " msec ,,,");
-		try {
-	        Thread.sleep(this.startDelaySec * 1000);
-        } catch (InterruptedException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-
-		LOG.debug(this.toString() + " connecting,,,");
-		this.client = new ClientSession(this.workerThread.getEQH(), uri, new JXIOCallbacks(this));
-
-		// prepare MsgPool
-		this.mp = new MsgPool(10, 64 * 1024, 256);
-
-		// register terminate timer
-		TimerList.Timer tTerminate = new TerminatTimer(this, this.durationSec * 1000000);
-		this.workerThread.start(tTerminate);
+		// register initialize  timer
+		TimerList.Timer tInitialize = new InitializeTimer(this, this.startDelaySec * 1000000);
+		this.workerThread.start(tInitialize);
 	}
 
 	protected void sendMsgTimerStart() {
@@ -108,8 +96,24 @@ public class ClientPlayer extends GeneralPlayer {
 	}
 
 	@Override
-	protected void close() {
-		LOG.info("closing");
+	protected void initialize() {
+		LOG.debug("initializing");
+
+		// connect to server
+		LOG.info("connecting to '" + uri.getHost() + ":" + uri.getPort() + "'");
+		this.client = new ClientSession(this.workerThread.getEQH(), uri, new JXIOCallbacks(this));
+
+		// prepare MsgPool
+		this.mp = new MsgPool(10, 64 * 1024, 256);
+
+		// register terminate timer
+		TimerList.Timer tTerminate = new TerminateTimer(this, this.runDurationSec * 1000000);
+		this.workerThread.start(tTerminate);
+	}
+
+	@Override
+	protected void terminate() {
+		LOG.info("terminating");
 		this.isClosing = true;
 		this.client.close();
 	}

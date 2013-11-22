@@ -66,8 +66,13 @@ public class ServerSessionPlayer extends GeneralPlayer {
 	}
 
 	@Override
-	protected void close() {
-		LOG.info("closing (TODO)");
+	protected void initialize() {
+		LOG.info("initializing");
+	}
+
+	@Override
+	protected void terminate() {
+		LOG.info("terminating (TODO)");
 	}
 
 	protected ServerSession getServerSession() {
