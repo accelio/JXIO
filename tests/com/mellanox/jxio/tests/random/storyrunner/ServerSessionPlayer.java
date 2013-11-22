@@ -27,52 +27,55 @@ import com.mellanox.jxio.EventName;
 
 public class ServerSessionPlayer extends GeneralPlayer {
 
-	private final static Log          LOG = LogFactory.getLog(ServerSessionPlayer.class.getSimpleName());
+	private final static Log         LOG = LogFactory.getLog(ServerSessionPlayer.class.getSimpleName());
 
-	private final String              srcIP;
-	private final long                sk;
-	private final ServerPortalPlayer  sp;
-	private WorkerThread              workerThread;
-	private ServerSession             server;
-	private MsgPool                   mp;
+	private static int               id  = 0;
+	private final String             name;
+	private final String             srcIP;
+	private final long               sk;
+	private final ServerPortalPlayer spp;
+	private WorkerThread             workerThread;
+	private ServerSession            server;
+	private MsgPool                  mp;
 
-	public ServerSessionPlayer(ServerPortalPlayer sp, long newSessionKey, String srcIP) {
-		this.sp = sp;
+	public ServerSessionPlayer(ServerPortalPlayer spp, long newSessionKey, String srcIP) {
+		this.name = "SSP[" + id++ + "]";
+		this.spp = spp;
 		this.sk = newSessionKey;
 		this.srcIP = srcIP;
-		
 		this.server = new ServerSession(sk, new JXIOServerCallbacks(this));
 		LOG.debug("new " + this.toString() + " done");
 	}
-	
-	public ServerPortalPlayer getServerPortalPlayer(){ return sp;}
 
-	public String toString() {
-		return "ServerSessionPlayer (srcaddr=" + srcIP + ")";
+	public ServerPortalPlayer getServerPortalPlayer() {
+		return spp;
 	}
 
-	
+	public String toString() {
+		return name;
+	}
+
 	@Override
 	public void attach(WorkerThread workerThread) {
 		LOG.info(this.toString() + " attaching to WorkerThread (" + workerThread.toString() + ")");
 		this.workerThread = workerThread;
 
 		// prepare MsgPool
-	//	this.mp = new MsgPool(10, 64 * 1024, 256);
-	//	this.workerThread.getEQH().bindMsgPool(this.mp);
+		// this.mp = new MsgPool(10, 64 * 1024, 256);
+		// this.workerThread.getEQH().bindMsgPool(this.mp);
 
 		// update ServerManager that it can 'accept' this 'newSessionKey'
-		this.sp.notifyReadyforWork(this, this.sk);
+		this.spp.notifyReadyforWork(this, this.sk);
 	}
 
 	@Override
 	protected void initialize() {
-		LOG.info("initializing");
+		LOG.info(this.toString() + ": initializing");
 	}
 
 	@Override
 	protected void terminate() {
-		LOG.info("terminating (TODO)");
+		LOG.info(this.toString() + ": terminating (TODO)");
 	}
 
 	protected ServerSession getServerSession() {
@@ -80,28 +83,28 @@ public class ServerSessionPlayer extends GeneralPlayer {
 	}
 
 	class JXIOServerCallbacks implements ServerSession.Callbacks {
-		private final ServerSessionPlayer ss;
+		private final ServerSessionPlayer ssp;
 
-		public JXIOServerCallbacks(ServerSessionPlayer ss) {
-			this.ss = ss;
+		public JXIOServerCallbacks(ServerSessionPlayer ssp) {
+			this.ssp = ssp;
 		}
 
 		public void onRequest(Msg msg) {
-			LOG.info("onRequest: msg = " + msg.toString());
-			ss.server.sendResponce(msg);
+			LOG.info(ssp.toString() + ": onRequest: msg = " + msg.toString());
+			ssp.server.sendResponce(msg);
 		}
 
-        public void onSessionEvent(EventName session_event, String reason) {
-           	if (session_event == EventName.SESSION_TEARDOWN) {
-        		LOG.info("SESSION_TEARDOWN. reason='" + reason + "'");
-        	}else{
-        		LOG.error("onSessionError: event='" + session_event.toString() + "', reason='" + reason + "'");
-        		System.exit(1);
-        	}
+		public void onSessionEvent(EventName session_event, String reason) {
+			if (session_event == EventName.SESSION_TEARDOWN) {
+				LOG.info(ssp.toString() + ": SESSION_TEARDOWN. reason='" + reason + "'");
+			} else {
+				LOG.error(ssp.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='" + reason + "'");
+				System.exit(1);
+			}
 		}
 
 		public void onMsgError() {
-			LOG.info("onMsgError");
+			LOG.info(ssp.toString() + ": onMsgError");
 		}
 	}
 }

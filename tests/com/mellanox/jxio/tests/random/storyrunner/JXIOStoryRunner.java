@@ -164,7 +164,7 @@ public class JXIOStoryRunner implements StoryRunner {
 				Character machine = getCharacterFromListById(machines, process.getAttribute("machine"));
 				String hostname = machine.getAttribute("address");
 				
-				ServerPortalPlayer sp = new ServerPortalPlayer(new URI("rdma://" + hostname + ":" + port + "/"),
+				ServerPortalPlayer sp = new ServerPortalPlayer(id, new URI("rdma://" + hostname + ":" + port + "/"),
 				        startDelay, duration, getWorkerThreads());
 				serverPlayers[i] = sp;
 				i++;
@@ -195,7 +195,7 @@ public class JXIOStoryRunner implements StoryRunner {
 				String hostname = machine.getAttribute("address");
 				int port = Integer.valueOf(server.getAttribute("port"));
 				
-				ClientPlayer cp = new ClientPlayer(new URI("rdma://" + hostname + ":" + port + "/"), startDelay,
+				ClientPlayer cp = new ClientPlayer(id, new URI("rdma://" + hostname + ":" + port + "/"), startDelay,
 				        duration, tps);
 				clientPlayers[i] = cp;
 				i++;

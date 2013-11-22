@@ -28,8 +28,9 @@ import com.mellanox.jxio.EventName;
 
 public class ClientPlayer extends GeneralPlayer {
 
-	private final static Log LOG = LogFactory.getLog(ClientPlayer.class.getSimpleName());
+	private final static Log LOG       = LogFactory.getLog(ClientPlayer.class.getSimpleName());
 
+	private final String     name;
 	private final URI        uri;
 	private final long       runDurationSec;
 	private final long       startDelaySec;
@@ -39,7 +40,8 @@ public class ClientPlayer extends GeneralPlayer {
 	private MsgPool          mp;
 	private boolean          isClosing = false;
 
-	public ClientPlayer(URI uri, long startDelaySec, long runDurationSec, long msgRate) {
+	public ClientPlayer(int id, URI uri, long startDelaySec, long runDurationSec, long msgRate) {
+		this.name = new String("CP[" + id + "]");
 		this.uri = uri;
 		this.runDurationSec = runDurationSec;
 		this.startDelaySec = startDelaySec;
@@ -48,29 +50,29 @@ public class ClientPlayer extends GeneralPlayer {
 	}
 
 	public String toString() {
-		return "ClientPlayer (uri=" + uri.toString() + ")";
+		return name;
 	}
 
 	@Override
 	public void attach(WorkerThread workerThread) {
-		LOG.info(this.toString() + ": attaching to WorkerThread '" + workerThread.toString() + "'" + 
-				", startDelay = " + startDelaySec + "sec, runDuration = " + runDurationSec + "sec");
+		LOG.info(this.toString() + ": attaching to WorkerThread '" + workerThread.toString() + "'" + ", startDelay = "
+		        + startDelaySec + "sec, runDuration = " + runDurationSec + "sec");
 
 		this.workerThread = workerThread;
 
-		// register initialize  timer
+		// register initialize timer
 		TimerList.Timer tInitialize = new InitializeTimer(this, this.startDelaySec * 1000000);
 		this.workerThread.start(tInitialize);
 	}
 
 	protected void sendMsgTimerStart() {
-    	if (this.msgDelayMicroSec > 0) {
-    		LOG.info(this.toString() + " starting send timer for " + this.msgDelayMicroSec + "usec");
-    		TimerList.Timer tSendMsg = new SendMsgTimer(this.msgDelayMicroSec, this);
-    		this.workerThread.start(tSendMsg);
-    	}
+		if (this.msgDelayMicroSec > 0) {
+			LOG.info(this.toString() + ": starting send timer for " + this.msgDelayMicroSec + "usec");
+			TimerList.Timer tSendMsg = new SendMsgTimer(this.msgDelayMicroSec, this);
+			this.workerThread.start(tSendMsg);
+		}
 	}
-	
+
 	private class SendMsgTimer extends TimerList.Timer {
 		private final ClientPlayer player;
 
@@ -97,10 +99,10 @@ public class ClientPlayer extends GeneralPlayer {
 
 	@Override
 	protected void initialize() {
-		LOG.debug("initializing");
+		LOG.debug(this.toString() + ": initializing");
 
 		// connect to server
-		LOG.info("connecting to '" + uri.getHost() + ":" + uri.getPort() + "'");
+		LOG.info(this.toString() + ": connecting to '" + uri.getHost() + ":" + uri.getPort() + "'");
 		this.client = new ClientSession(this.workerThread.getEQH(), uri, new JXIOCallbacks(this));
 
 		// prepare MsgPool
@@ -113,33 +115,32 @@ public class ClientPlayer extends GeneralPlayer {
 
 	@Override
 	protected void terminate() {
-		LOG.info("terminating");
+		LOG.info(this.toString() + ": terminating");
 		this.isClosing = true;
 		this.client.close();
 	}
 
 	class JXIOCallbacks implements ClientSession.Callbacks {
 		private final ClientPlayer c;
-		
+
 		public JXIOCallbacks(ClientPlayer c) {
 			this.c = c;
-        }
-		
+		}
+
 		public void onMsgError() {
-			LOG.info("onMsgErrorCallback");
+			LOG.info(c.toString() + ": onMsgErrorCallback");
 		}
 
 		public void onSessionEstablished() {
-			LOG.info("onSessionEstablished");
-
-//			this.c.sendMsgTimerStart();
+			LOG.info(c.toString() + ": onSessionEstablished");
+			// this.c.sendMsgTimerStart();
 		}
 
-        public void onSessionEvent(EventName session_event, String reason) {
+		public void onSessionEvent(EventName session_event, String reason) {
 			if (this.c.isClosing == true && session_event == EventName.SESSION_TEARDOWN) {
-				LOG.info("onSESSION_TEARDOWN, reason='" + reason + "'");
+				LOG.info(c.toString() + ": onSESSION_TEARDOWN, reason='" + reason + "'");
 			} else {
-				LOG.error("onSessionError: event='" + session_event.toString() + "', reason='" + reason + "'");
+				LOG.error(c.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='" + reason + "'");
 				System.exit(1);
 			}
 		}

@@ -28,14 +28,16 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 	private final static Log LOG = LogFactory.getLog(ServerPortalPlayer.class.getSimpleName());
 
+	private final String     name;
 	private final URI        uri;
 	private final long       runDurationSec;
 	private final long       startDelaySec;
 	private WorkerThread     workerThread;
 	private WorkerThreads    workerThreads;
-	private ServerPortal    listener;
+	private ServerPortal     listener;
 
-	public ServerPortalPlayer(URI uri, long startDelaySec, long runDurationSec, WorkerThreads workerThreads) {
+	public ServerPortalPlayer(int id, URI uri, long startDelaySec, long runDurationSec, WorkerThreads workerThreads) {
+		this.name = new String("SPP[" + id + "]");
 		this.uri = uri;
 		this.runDurationSec = runDurationSec;
 		this.startDelaySec = startDelaySec;
@@ -45,19 +47,21 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	}
 
 	public String toString() {
-		return "ServerPortalPlayer (uri=" + uri.toString() + ")";
+		return name;
 	}
 
-	WorkerThread getWorkerThread(){return workerThread;}
+	WorkerThread getWorkerThread() {
+		return workerThread;
+	}
 
 	@Override
 	public void attach(WorkerThread workerThread) {
-		LOG.info(this.toString() + ": attaching to WorkerThread '" + workerThread.toString() + "'" + 
-				", startDelay = " + startDelaySec + "sec, runDuration = " + runDurationSec + "sec");
+		LOG.info(this.toString() + ": attaching to WorkerThread '" + workerThread.toString() + "'" + ", startDelay = "
+		        + startDelaySec + "sec, runDuration = " + runDurationSec + "sec");
 
 		this.workerThread = workerThread;
 
-		// register initialize  timer
+		// register initialize timer
 		TimerList.Timer tInitialize = new InitializeTimer(this, this.startDelaySec * 1000000);
 		this.workerThread.start(tInitialize);
 	}
@@ -68,12 +72,12 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 	@Override
 	protected void initialize() {
-		LOG.debug("initializing");
+		LOG.debug(this.toString() + ": initializing");
 
 		// start server listener
-		LOG.info("starting server listener on '" + uri.getHost() + ":" + uri.getPort() + "'");
+		LOG.info(this.toString() + ": starting server listener on '" + uri.getHost() + ":" + uri.getPort() + "'");
 		this.listener = new ServerPortal(this.workerThread.getEQH(), uri, new JXIOPortalCallbacks(this));
-		LOG.debug("server listening on '" + this.listener.getUriForServer() + "'");
+		LOG.debug(this.toString() + ": server listening on '" + this.listener.getUriForServer() + "'");
 
 		// register terminate timer
 		TimerList.Timer tTerminate = new TerminateTimer(this, this.runDurationSec * 1000000);
@@ -82,9 +86,9 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 	@Override
 	protected void terminate() {
-		LOG.info("terminating");
+		LOG.info(this.toString() + ": terminating");
 		this.listener.close();
-		LOG.info("exiting - SUCCESS (???)");
+		LOG.info(this.toString() + ": exiting - SUCCESS (???)");
 		System.exit(0);
 	}
 
@@ -94,45 +98,45 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	}
 
 	public class CompleteOnNewSessionForward implements WorkerThread.QueueAction {
-		private final ServerPortalPlayer sm;
-		private final ServerSessionPlayer ss;
+		private final ServerPortalPlayer  spp;
+		private final ServerSessionPlayer ssp;
 		private final long                newSessionKey;
 
-		public CompleteOnNewSessionForward(ServerPortalPlayer sm, ServerSessionPlayer ss, long newSessionKey) {
-			this.sm = sm;
-			this.ss = ss;
+		public CompleteOnNewSessionForward(ServerPortalPlayer spp, ServerSessionPlayer ssp, long newSessionKey) {
+			this.spp = spp;
+			this.ssp = ssp;
 			this.newSessionKey = newSessionKey;
 		}
 
 		public void doAction(WorkerThread workerThread) {
-			this.sm.listener.forward(this.ss.getServerPortalPlayer().listener, this.ss.getServerSession());
+			this.spp.listener.forward(this.ssp.getServerPortalPlayer().listener, this.ssp.getServerSession());
 		}
 	}
 
 	class JXIOPortalCallbacks implements ServerPortal.Callbacks {
-		private final ServerPortalPlayer sm;
+		private final ServerPortalPlayer spp;
 
-		public JXIOPortalCallbacks(ServerPortalPlayer sm) {
-			this.sm = sm;
+		public JXIOPortalCallbacks(ServerPortalPlayer spp) {
+			this.spp = spp;
 		}
 
 		public void onSessionNew(long newSessionKey, String uriSrc, String srcIP) {
-			LOG.info("onSessionNew: uri=" + uriSrc + ", srcaddr=" + srcIP);
-			
-			ServerPortalPlayer sp = workerThreads.getPortal();	
+			LOG.info(spp.toString() + ": onSessionNew: uri=" + uriSrc + ", srcaddr=" + srcIP);
+
+			ServerPortalPlayer sp = workerThreads.getPortal();
 			ServerSessionPlayer ss = new ServerSessionPlayer(sp, newSessionKey, srcIP);
-			this.sm.listener.forward(sp.listener, ss.getServerSession());
-//			WorkerThread worker = this.sm.getWorkerThread();
-//			worker.addWorkAction(ss.getAttachAction());
+			this.spp.listener.forward(sp.listener, ss.getServerSession());
+			// WorkerThread worker = this.sm.getWorkerThread();
+			// worker.addWorkAction(ss.getAttachAction());
 		}
 
-        public void onSessionEvent(EventName session_event, String reason) {
-        	if (session_event == EventName.SESSION_TEARDOWN) {
-        		LOG.info("SESSION_TEARDOWN. reason='" + reason + "'");
-        	}else{
-        		LOG.error("onSessionError: event='" + session_event.toString() + "', reason='" + reason + "'");
-        		System.exit(1);
-        	}
+		public void onSessionEvent(EventName session_event, String reason) {
+			if (session_event == EventName.SESSION_TEARDOWN) {
+				LOG.info(spp.toString() + ": SESSION_TEARDOWN. reason='" + reason + "'");
+			} else {
+				LOG.error(spp.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='" + reason + "'");
+				System.exit(1);
+			}
 		}
 
 	}
