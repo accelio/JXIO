@@ -27,7 +27,7 @@
 	<servers>
 		<server_amount value="[100]:1"/>
 		<process value="random"/>
-		<port value="[100]:4400-4499"/>
+		<port value="[70]:3000-3010, [30]:3011-65536"/>
 		<start_delay value="[100]:0"/>
 		<duration value="[100]:25"/>
 		<num_workers value="[100]:1-5"/>
