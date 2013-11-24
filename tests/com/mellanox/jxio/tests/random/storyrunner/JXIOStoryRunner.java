@@ -165,7 +165,7 @@ public class JXIOStoryRunner implements StoryRunner {
 				String hostname = machine.getAttribute("address");
 				URI uri = new URI("rdma://" + hostname + ":" + port + "/");
 				
-				ServerPortalPlayer sp = new ServerPortalPlayer(id, uri, startDelay, duration, getWorkerThreads());
+				ServerPortalPlayer sp = new ServerPortalPlayer(numWorkers, id, 0, uri, startDelay, duration, getWorkerThreads());
 				serverPlayers[i] = sp;
 				i++;
 			} catch (URISyntaxException e) {

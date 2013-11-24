@@ -56,20 +56,20 @@ public class WorkerThreads {
 		}
 	}
 
-	public void addPortal(ServerPortalPlayer sp) {
+	public void addPortal(ServerPortalPlayer spp) {
 		synchronized (listPortalPlayers) {
-			this.listPortalPlayers.add(sp);
+			this.listPortalPlayers.add(spp);
 		}
 	}
 
 	public ServerPortalPlayer getPortal() {
-		ServerPortalPlayer p = null;
+		ServerPortalPlayer spp = null;
 		synchronized (listPortalPlayers) {
 			int index = this.rand.nextInt(listPortalPlayers.size());
-			p = listPortalPlayers.get(index);
+			spp = listPortalPlayers.get(index);
 			LOG.debug("chosen index is " + index);
 		}
-		return p;
+		return spp;
 	}
 
 	public WorkerThread getWorkerThread() {

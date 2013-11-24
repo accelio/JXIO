@@ -28,23 +28,27 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 	private final static Log LOG = LogFactory.getLog(ServerPortalPlayer.class.getSimpleName());
 
+	private final int        id;
 	private final String     name;
 	private final URI        uri;
+	private final int        numWorkers;
 	private final long       runDurationSec;
 	private final long       startDelaySec;
 	private WorkerThread     workerThread;
 	private WorkerThreads    workerThreads;
 	private ServerPortal     listener;
 
-	public ServerPortalPlayer(int id, URI uri, long startDelaySec, long runDurationSec, WorkerThreads workerThreads) {
-		this.name = new String("SPP[" + id + "]");
+	public ServerPortalPlayer(int numWorkers, int id, int instance, URI uri, long startDelaySec, long runDurationSec, WorkerThreads workerThreads) {
+		this.name = new String("SPP[" + id + ":" + instance + "]");
+		this.id = id;
 		this.uri = uri;
+		this.numWorkers = numWorkers;
 		this.runDurationSec = runDurationSec;
 		this.startDelaySec = startDelaySec;
 		this.workerThreads = workerThreads;
 		LOG.debug("new " + this.toString() + " done");
 	}
-
+	
 	public String toString() {
 		return name;
 	}
@@ -84,6 +88,12 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		// register terminate timer
 		TimerList.Timer tTerminate = new TerminateTimer(this, this.runDurationSec * 1000000);
 		this.workerThread.start(tTerminate);
+
+		// workers
+		for (int i = 0; i < numWorkers; i++) {
+			ServerPortalPlayer spp = new ServerPortalPlayer(0, this.id, i+1, this.listener.getUriForServer(), 0, runDurationSec, workerThreads);
+			workerThreads.getWorkerThread().addWorkAction(spp.getAttachAction());
+		}
 	}
 
 	@Override
