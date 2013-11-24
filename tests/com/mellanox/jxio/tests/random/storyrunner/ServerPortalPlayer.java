@@ -43,7 +43,6 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		this.startDelaySec = startDelaySec;
 		this.workerThreads = workerThreads;
 		LOG.debug("new " + this.toString() + " done");
-		workerThreads.addPortal(this);
 	}
 
 	public String toString() {
@@ -78,6 +77,9 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		LOG.info(this.toString() + ": starting server listener on '" + uri.getHost() + ":" + uri.getPort() + "'");
 		this.listener = new ServerPortal(this.workerThread.getEQH(), uri, new JXIOPortalCallbacks(this));
 		LOG.debug(this.toString() + ": server listening on '" + this.listener.getUriForServer() + "'");
+
+		// register server in available list of portals
+		workerThreads.addPortal(this);
 
 		// register terminate timer
 		TimerList.Timer tTerminate = new TerminateTimer(this, this.runDurationSec * 1000000);
