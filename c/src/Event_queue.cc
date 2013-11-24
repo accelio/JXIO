@@ -28,13 +28,12 @@ Event_queue::Event_queue(int size)
 	error_creating = false;
 	this->buf = (char*)malloc(size * sizeof(char));
 	if (this->buf== NULL){
-		log(lsERROR, "Could not allocate memory for Event Queue buffer\n");
+		log(lsDEBUG, "ERROR, could not allocate memory for Event Queue buffer\n");
 		error_creating = true;
 		return;
 	}
 
 }
-
 
 Event_queue::~Event_queue()
 {
@@ -57,12 +56,3 @@ void Event_queue::increase_offset(int increase)
 {
 	this->offset += increase;
 }
-
-
-
-
-
-
-
-
-

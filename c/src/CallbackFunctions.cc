@@ -44,7 +44,6 @@ int on_new_session_callback(struct xio_session *session,
 	done_event_creating(ctx, sizeWritten);
 
 	log(lsDEBUG, "the end of new session callback\n");
-
 	return 0;
 }
 
@@ -62,8 +61,7 @@ int on_msg_send_complete_callback(struct xio_session *session,
 
 int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 		int more_in_batch, void *cb_prv_data) {
-	log(lsDEBUG,
-			"on_msg_callback is %p. len is %d msg is %p\n", msg->user_context, msg->in.data_iov[0].iov_len, msg);
+	log(lsDEBUG, "on_msg_callback is %p. len is %d msg is %p\n", msg->user_context, msg->in.data_iov[0].iov_len, msg);
 
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();

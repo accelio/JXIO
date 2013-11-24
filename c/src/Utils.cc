@@ -98,11 +98,11 @@ bool close_xio_connection(struct xio_session *session, struct xio_context *ctx)
 {
 	xio_connection * con = xio_get_connection(session, ctx);
 	if (con == NULL) {
-		log(lsERROR, "no connection found (xio_session=%p, xio_context=%p)", session, ctx);
+		log(lsDEBUG, "ERROR, no connection found (xio_session=%p, xio_context=%p)", session, ctx);
 		return false;
 	}
 	if (xio_disconnect(con)) {
-		log(lsERROR, "xio_disconnect failed (xio_session=%p, xio_context=%p)", session, ctx);
+		log(lsDEBUG, "ERROR, xio_disconnect failed (xio_session=%p, xio_context=%p)", session, ctx);
 		return false;
 	}
 	return true;
@@ -114,7 +114,7 @@ bool forward_session(struct xio_session *session, const char * url) {
 
 	int retVal = xio_accept(session, &url, 1, NULL, 0);
 	if (retVal) {
-		log(lsERROR, "Error in accepting session=%p. error %d\n", session, retVal);
+		log(lsDEBUG, "ERROR, accepting session=%p. error %d\n", session, retVal);
 		return false;
 	}
 	return true;
@@ -126,7 +126,7 @@ bool accept_session(struct xio_session *session) {
 
 	int retVal = xio_accept(session, NULL, 0, NULL, 0);
 	if (retVal) {
-		log(lsERROR, "Error in accepting session=%p. error %d\n",session, retVal);
+		log(lsDEBUG, "ERROR, accepting session=%p. error %d\n",session, retVal);
 		return false;
 	}
 	return true;

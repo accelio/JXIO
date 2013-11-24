@@ -28,21 +28,21 @@ Context::Context(int eventQSize)
 	this->events_num = 0;
 
 	ev_loop = xio_ev_loop_init();
-	if (ev_loop == NULL){
-		log (lsERROR, "Error, xio_ev_loop_init failed\n");
+	if (ev_loop == NULL) {
+		log(lsDEBUG, "ERROR, xio_ev_loop_init failed\n");
 		error_creating = true;
 		return;
 	}
 
 	ctx = xio_ctx_open(NULL, ev_loop, 0);
-	if (ctx == NULL){
-		log (lsERROR, "Error, xio_ctx_open failed\n");
+	if (ctx == NULL) {
+		log(lsDEBUG, "ERROR, xio_ctx_open failed\n");
 		goto cleanupEvLoop;
 	}
 
 	this->event_queue = new Event_queue(eventQSize);
-	if (this->event_queue->error_creating){
-		log (lsERROR, "Error, fail in create of EventQueue object\n");
+	if (this->event_queue->error_creating) {
+		log(lsDEBUG, "ERROR, fail in create of EventQueue object\n");
 		goto cleanupCtx;
 	}
 	this->events = new Events();
@@ -120,6 +120,3 @@ void Context::add_msg_pool (MsgPool* msg_pool)
 {
 	this->msg_pool = msg_pool;
 }
-
-
-

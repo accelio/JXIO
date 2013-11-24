@@ -87,7 +87,7 @@ bool Client::onSessionEvent(xio_session_event eventType,
 		struct xio_session *session) {
 	switch (eventType) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
-		log(lsINFO, "got XIO_SESSION_CONNECTION_CLOSED_EVENT in client=%p\n", this);
+		log(lsDEBUG, "got XIO_SESSION_CONNECTION_CLOSED_EVENT in client=%p\n", this);
 		return false;
 
 	case XIO_SESSION_CONNECTION_ERROR_EVENT:
@@ -101,8 +101,7 @@ bool Client::onSessionEvent(xio_session_event eventType,
 		return false;
 
 	case XIO_SESSION_TEARDOWN_EVENT:
-		log(lsINFO,
-				"got XIO_SESSION_TEARDOWN_EVENT. must delete session class in client=%p\n", this);
+		log(lsDEBUG, "got XIO_SESSION_TEARDOWN_EVENT. must delete session class in client=%p\n", this);
 		delete (this);
 		//the event should also be written to buffer to let user know that the session was closed
 		return true;
@@ -110,8 +109,7 @@ bool Client::onSessionEvent(xio_session_event eventType,
 	case XIO_SESSION_REJECT_EVENT:
 	case XIO_SESSION_ERROR_EVENT:
 	default:
-		log(lsWARN,
-				"UNHANDLED event: got '%s' event (%d).in client=%p\n",  xio_session_event_str(eventType), eventType, this);
+		log(lsWARN, "UNHANDLED event: got '%s' event (%d).in client=%p\n",  xio_session_event_str(eventType), eventType, this);
 		return true;
 	}
 }
