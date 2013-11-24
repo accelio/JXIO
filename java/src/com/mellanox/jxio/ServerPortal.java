@@ -34,7 +34,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	private String                  uri;
 	private URI                     uriPort0;
 	private final int               port;
-	private static final Log        LOG    = LogFactory.getLog(ServerPortal.class.getCanonicalName());
+	private static final Log        LOG = LogFactory.getLog(ServerPortal.class.getCanonicalName());
 
 	public static interface Callbacks {
 		public void onSessionNew(long ptrSes, String uri, String srcIP);
@@ -101,11 +101,15 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("portal " + portal + " ses id is " + serverSession.getId());
 		}
-		if (portal == this){//in case forward was called but the user really means accept
+		if (portal == this) {// in case forward was called but the user really means accept
 			accept(serverSession);
 			return;
 		}
 		Bridge.forwardSession(portal.getUri(), serverSession.getId());
+	}
+
+	boolean getIsExpectingEventAfterClose() {
+		return false;
 	}
 
 	void onEvent(Event ev) {
@@ -149,9 +153,9 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		try {
 			newUri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), newPort, uri.getPath(), uri.getQuery(),
 			        uri.getFragment());
-        } catch (URISyntaxException e) {
-        	e.printStackTrace();
-        }
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
 		LOG.debug("uri with port " + newPort + " is " + newUri.toString());
 		return newUri;
 	}

@@ -26,9 +26,9 @@ import com.mellanox.jxio.impl.EventSession;
 
 public class ServerSession extends EventQueueHandler.Eventable {
 
-	private final Callbacks callbacks;
+	private final Callbacks   callbacks;
 	private EventQueueHandler eventQHandler;
-	private static final Log  LOG    = LogFactory.getLog(ServerSession.class.getCanonicalName());
+	private static final Log  LOG = LogFactory.getLog(ServerSession.class.getCanonicalName());
 
 	public static interface Callbacks {
 		public void onRequest(Msg msg);
@@ -47,8 +47,8 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	}
 
 	public boolean close() {
-		eventQHandler.removeEventable(this); //TODO: fix this
-		if (getId() == 0){
+		eventQHandler.removeEventable(this); // TODO: fix this
+		if (getId() == 0) {
 			LOG.error("closing ServerSession with empty id");
 			return false;
 		}
@@ -57,62 +57,66 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		return true;
 	}
 
+	boolean getIsExpectingEventAfterClose() {
+		return true;
+	}
+
 	public boolean sendResponce(Msg msg) {
 		boolean ret = Bridge.serverSendReply(msg.getId());
-		if (!ret){
-			LOG.error( "there was an error sending the message");
+		if (!ret) {
+			LOG.error("there was an error sending the message");
 		}
-		this.eventQHandler.releaseMsgBackToPool(msg); 
+		this.eventQHandler.releaseMsgBackToPool(msg);
 		/*
-	    this message shold be released back to pool.
-	    even though the message might not reached the client yet, it's ok since this pool is 
-	    used only for matching of id to object. the actual release to pool is done on c side
+		 * this message shold be released back to pool.
+		 * even though the message might not reached the client yet, it's ok since this pool is
+		 * used only for matching of id to object. the actual release to pool is done on c side
 		 */
 		return ret;
 	}
 
-	void setEventQueueHandler(EventQueueHandler eqh){
+	void setEventQueueHandler(EventQueueHandler eqh) {
 		this.eventQHandler = eqh;
 		this.eventQHandler.addEventable(this);
 	}
 
 	void onEvent(Event ev) {
 		switch (ev.getEventType()) {
-			case 0: //session error event
-				LOG.error("received session error event");
-				if (ev  instanceof EventSession) {
+			case 0: // session event
+				LOG.debug("received session event");
+				if (ev instanceof EventSession) {
 					int errorType = ((EventSession) ev).getErrorType();
 					String reason = ((EventSession) ev).getReason();
 					callbacks.onSessionEvent(EventName.getEventByIndex(errorType), reason);
 
 					if (errorType == 1) {// event = "SESSION_TEARDOWN";
 						eventQHandler.removeEventable(this); // now we are officially done with this session and it can
-															 // be deleted from the EQH
+						                                     // be deleted from the EQH
 					}
 				}
 				break;
 
-			case 1: //msg error
+			case 1: // msg error
 				LOG.error("received msg error event");
 				callbacks.onMsgError();
 				break;
 
-			case 3: //on request
-				if(LOG.isTraceEnabled()) {
+			case 3: // on request
+				if (LOG.isTraceEnabled()) {
 					LOG.trace("received msg event");
 				}
 				Msg msg = ((EventNewMsg) ev).getMsg();
 				callbacks.onRequest(msg);
 				break;
 
-			case 6: //msg sent complete
-				if(LOG.isTraceEnabled()) {
+			case 6: // msg sent complete
+				if (LOG.isTraceEnabled()) {
 					LOG.trace("received msg sent complete event");
 				}
 				break;
 
 			default:
-				LOG.error("received an unknown event "+ ev.getEventType());	
+				LOG.error("received an unknown event " + ev.getEventType());
 		}
 	}
 
