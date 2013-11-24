@@ -26,11 +26,11 @@
 	<!-- Server process parameters -->
 	<servers>
 		<server_amount value="[100]:1"/>
-	        <process value="random"/>
+		<process value="random"/>
 		<port value="[100]:4400-4499"/>
 		<start_delay value="[100]:0"/>
 		<duration value="[100]:25"/>
-		<max_workers value="[100]:5"/>
+		<num_workers value="[100]:1-5"/>
 		<msg_pools>
 			<msg_pool_amount value="[100]:2-5"/>
 		        <msg_pool_count value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>

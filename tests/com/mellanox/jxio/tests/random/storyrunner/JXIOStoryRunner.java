@@ -155,7 +155,7 @@ public class JXIOStoryRunner implements StoryRunner {
 				int port = Integer.valueOf(server.getAttribute("port"));
 				Character process = getCharacterFromListById(processes, server.getAttribute("process"));
 				int duration = Integer.valueOf(server.getAttribute("duration"));
-				int maxWorkers = Integer.valueOf(server.getAttribute("max_workers"));
+				int numWorkers = Integer.valueOf(server.getAttribute("num_workers"));
 				int delay = Integer.valueOf(server.getAttribute("delay"));
 				int startDelay = Integer.valueOf(server.getAttribute("start_delay"));
 				int tps = Integer.valueOf(server.getAttribute("tps"));
@@ -163,9 +163,9 @@ public class JXIOStoryRunner implements StoryRunner {
 				// Resolve hostname
 				Character machine = getCharacterFromListById(machines, process.getAttribute("machine"));
 				String hostname = machine.getAttribute("address");
+				URI uri = new URI("rdma://" + hostname + ":" + port + "/");
 				
-				ServerPortalPlayer sp = new ServerPortalPlayer(id, new URI("rdma://" + hostname + ":" + port + "/"),
-				        startDelay, duration, getWorkerThreads());
+				ServerPortalPlayer sp = new ServerPortalPlayer(id, uri, startDelay, duration, getWorkerThreads());
 				serverPlayers[i] = sp;
 				i++;
 			} catch (URISyntaxException e) {
