@@ -17,6 +17,7 @@
 package com.mellanox.jxio.tests.random.storyrunner;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -101,9 +102,18 @@ public class ClientPlayer extends GeneralPlayer {
 	protected void initialize() {
 		LOG.debug(this.toString() + ": initializing");
 
+		// add ClientPlayer's name to the connect URI request
+		String struri = new String(this.uri.toString() + "?name=" + toString());
+		URI connecturi = null;
+		try {
+			connecturi = new URI(struri);
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		
 		// connect to server
-		LOG.info(this.toString() + ": connecting to '" + uri.getHost() + ":" + uri.getPort() + "'");
-		this.client = new ClientSession(this.workerThread.getEQH(), uri, new JXIOCallbacks(this));
+		LOG.info(this.toString() + ": connecting to '" + connecturi.toString() + "'");
+		this.client = new ClientSession(this.workerThread.getEQH(), connecturi, new JXIOCallbacks(this));
 
 		// prepare MsgPool
 		this.mp = new MsgPool(10, 64 * 1024, 256);
