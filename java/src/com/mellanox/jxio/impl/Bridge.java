@@ -169,9 +169,8 @@ public class Bridge {
 			case 5:
 				LogFromNative.debug(log_message);
 				break;
-			case 4:
-				LogFromNative.info(log_message);
-				break;
+			// case 4: combined with 'default'
+
 			case 3:
 				LogFromNative.warn(log_message);
 				break;
@@ -181,6 +180,7 @@ public class Bridge {
 			case 1:
 				LogFromNative.fatal(log_message);
 				break;
+			case 4:
 			default:
 				LogFromNative.info(log_message);
 				break;
