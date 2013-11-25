@@ -36,7 +36,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 		public void onSessionEstablished();
 
-		public void onSessionEvent(EventName session_event, String reason);
+		public void onSessionEvent(EventName session_event, EventReason reason);
 
 		public void onMsgError();
 	}
@@ -99,8 +99,8 @@ public class ClientSession extends EventQueueHandler.Eventable {
 				if (ev instanceof EventSession) {
 
 					int errorType = ((EventSession) ev).getErrorType();
-					String reason = ((EventSession) ev).getReason();
-					callbacks.onSessionEvent(EventName.getEventByIndex(errorType), reason);
+					int reason = ((EventSession) ev).getReason();
+					callbacks.onSessionEvent(EventName.getEventByIndex(errorType), EventReason.getEventByIndex(reason));
 
 					if (errorType == 1) {// event = "SESSION_TEARDOWN";
 						eventQHandler.removeEventable(this); // now we are officially done with this session and it can

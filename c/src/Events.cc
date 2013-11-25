@@ -46,7 +46,11 @@ int Events::writeOnSessionErrorEvent(char *buf, void *ptrForJava, struct xio_ses
 	this->event.type = htonl(EVENT_SESSION_ERROR);
 	this->event.ptr = htobe64(intptr_t(ptrForJava));
 	this->event.event_specific.session_error.error_type = htonl(event_data->event);
-	this->event.event_specific.session_error.error_reason = htonl (event_data->reason);
+	int reason = 0;
+	if (event_data->reason){
+		reason = event_data->reason - XIO_BASE_STATUS + 1;
+	}
+	this->event.event_specific.session_error.error_reason = htonl (reason);
 
 	this->size = sizeof(struct event_session_error) + sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 

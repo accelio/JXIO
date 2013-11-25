@@ -350,17 +350,6 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_bindMsg
 	return true;
 }
 
-extern "C" JNIEXPORT jstring JNICALL Java_com_mellanox_jxio_impl_Bridge_getErrorNative(JNIEnv *env, jclass cls, jint errorReason)
-{
-	struct xio_session *session;
-	const char * error;
-	jstring str;
-
-	error = xio_strerror(errorReason);
-	str = env->NewStringUTF(error);
-	//	free(error); TODO: to free it????
-	return str;
-}
 
 JNIEnv *JX_attachNativeThread()
 {

@@ -276,8 +276,7 @@ public class EventQueueHandler implements Runnable {
 			{
 				int errorType = eventQueue.getInt();
 				int reason = eventQueue.getInt();
-				String s = Bridge.getError(reason);
-				EventSession evSes = new EventSession(eventType, id, errorType, s);
+				EventSession evSes = new EventSession(eventType, id, errorType, reason);
 				synchronized (eventables) {
 					eventable = eventables.get(id);
 				}

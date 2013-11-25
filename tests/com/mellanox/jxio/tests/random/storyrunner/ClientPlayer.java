@@ -26,6 +26,7 @@ import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
 import com.mellanox.jxio.ClientSession;
 import com.mellanox.jxio.EventName;
+import com.mellanox.jxio.EventReason;
 
 public class ClientPlayer extends GeneralPlayer {
 
@@ -146,11 +147,11 @@ public class ClientPlayer extends GeneralPlayer {
 			// this.c.sendMsgTimerStart();
 		}
 
-		public void onSessionEvent(EventName session_event, String reason) {
+		public void onSessionEvent(EventName session_event, EventReason reason) {
 			if (this.c.isClosing == true && session_event == EventName.SESSION_TEARDOWN) {
-				LOG.info(c.toString() + ": onSESSION_TEARDOWN, reason='" + reason + "'");
+				LOG.info(c.toString() + ": onSESSION_TEARDOWN, reason='" + reason.toString() + "'");
 			} else {
-				LOG.error(c.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='" + reason + "'");
+				LOG.error(c.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='" + reason.toString() + "'");
 				System.exit(1);
 			}
 		}

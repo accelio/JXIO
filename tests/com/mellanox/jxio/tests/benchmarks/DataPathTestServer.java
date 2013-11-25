@@ -23,6 +23,7 @@ import com.mellanox.jxio.EventQueueHandler;
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.ServerSession;
 import com.mellanox.jxio.EventName;
+import com.mellanox.jxio.EventReason;
 
 
 public class DataPathTestServer {
@@ -42,8 +43,8 @@ public class DataPathTestServer {
 			session.sendResponce(msg);
 		}
 
-        public void onSessionEvent(EventName session_event, String reason) {
-			LOG.error("GOT EVENT " + session_event.toString() + "because of " + reason);
+        public void onSessionEvent(EventName session_event, EventReason reason) {
+			LOG.error("GOT EVENT " + session_event.toString() + "because of " + reason.toString());
 		}
 
 		public void onMsgError() {

@@ -71,8 +71,8 @@ public class MySesClient {
 		LOG.info("[SUCCESS] Session Established! Bring the champagne!");
 	}
 
-    public void onSessionEvent(EventName session_event, String reason) {
-	    LOG.error("[EVENT] GOT EVENT " + session_event.toString() + " because of " + reason);
+    public void onSessionEvent(EventName session_event, EventReason reason) {
+	    LOG.error("[EVENT] GOT EVENT " + session_event.toString() + " because of " + reason.toString());
 	}
 
 	public void onReply(Msg msg){	

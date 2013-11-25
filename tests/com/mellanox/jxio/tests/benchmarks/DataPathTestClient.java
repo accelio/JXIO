@@ -28,6 +28,7 @@ import com.mellanox.jxio.EventQueueHandler;
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
 import com.mellanox.jxio.EventName;
+import com.mellanox.jxio.EventReason;
 
 
 public class DataPathTestClient implements Runnable {
@@ -111,8 +112,8 @@ public class DataPathTestClient implements Runnable {
 			print(" Session Established");
 		}
 
-        public void onSessionEvent(EventName session_event, String reason) {
-			print("GOT EVENT " + session_event.toString() + " because of " + reason);
+        public void onSessionEvent(EventName session_event, EventReason reason) {
+			print("GOT EVENT " + session_event.toString() + " because of " + reason.toString());
 		}
 
 		public void onReply(Msg msg) {

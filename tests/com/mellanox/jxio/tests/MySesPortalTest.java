@@ -77,8 +77,8 @@ public class MySesPortalTest {
 			man.forward(worker, ses);
 		}
 
-        public void onSessionEvent(EventName session_event, String reason) {
-			LOG.error("GOT EVENT " + session_event.toString() + "because of " + reason);
+        public void onSessionEvent(EventName session_event, EventReason reason) {
+			LOG.error("GOT EVENT " + session_event.toString() + "because of " + reason.toString());
 			}
 
 	}

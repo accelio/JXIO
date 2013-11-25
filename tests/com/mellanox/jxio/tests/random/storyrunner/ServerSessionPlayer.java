@@ -24,6 +24,7 @@ import com.mellanox.jxio.MsgPool;
 import com.mellanox.jxio.ServerPortal;
 import com.mellanox.jxio.ServerSession;
 import com.mellanox.jxio.EventName;
+import com.mellanox.jxio.EventReason;
 
 public class ServerSessionPlayer extends GeneralPlayer {
 
@@ -94,11 +95,11 @@ public class ServerSessionPlayer extends GeneralPlayer {
 			ssp.server.sendResponce(msg);
 		}
 
-		public void onSessionEvent(EventName session_event, String reason) {
+		public void onSessionEvent(EventName session_event, EventReason reason) {
 			if (session_event == EventName.SESSION_TEARDOWN) {
-				LOG.info(ssp.toString() + ": SESSION_TEARDOWN. reason='" + reason + "'");
+				LOG.info(ssp.toString() + ": SESSION_TEARDOWN. reason='" + reason.toString() + "'");
 			} else {
-				LOG.error(ssp.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='" + reason + "'");
+				LOG.error(ssp.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='" + reason.toString() + "'");
 				System.exit(1);
 			}
 		}

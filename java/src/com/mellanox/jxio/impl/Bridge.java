@@ -159,13 +159,6 @@ public class Bridge {
 		return ret;
 	}
 
-	private static native String getErrorNative(int errorReason);
-
-	public static String getError(int errorReason) {
-		String s = getErrorNative(errorReason);
-		return s;
-	}
-
 	// this method is called by JNI in order to log messages to JXIO log
 	static public void logToJava(String log_message, int severity) {
 

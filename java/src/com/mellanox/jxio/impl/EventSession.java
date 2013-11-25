@@ -18,19 +18,19 @@ package com.mellanox.jxio.impl;
 
 public class EventSession extends Event {
 	private int errorType;
-	private String reason;
+	private int reason;
 	
-	public EventSession(int eventType, long id, int error, String s){
+	public EventSession(int eventType, long id, int error, int r){
 		super(eventType, id); 
 		this.errorType = error;
-		this.reason = s;
+		this.reason = r;
 	}
 	
 	public int getErrorType() {
 		return errorType;
 	}
 	
-	public String getReason() {
+	public int getReason() {
 		return reason;
 	}
 }

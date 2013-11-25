@@ -82,9 +82,9 @@ public class MutipleManagersOnSameEQHTest implements Runnable {
 				TestManager.print("got on new event");
 			}
 
-            public void onSessionEvent(EventName session_event, String reason) {
+            public void onSessionEvent(EventName session_event, EventReason reason) {
 				// dummy implementation
-				TestManager.print("GOT EVENT " + session_event.toString() + "because of " + reason);	            
+				TestManager.print("GOT EVENT " + session_event.toString() + "because of " + reason.toString());	            
 			}
 		}
 	}

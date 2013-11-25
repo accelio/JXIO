@@ -26,6 +26,8 @@ import com.mellanox.jxio.ClientSession;
 import com.mellanox.jxio.EventQueueHandler;
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.EventName;
+import com.mellanox.jxio.EventReason;
+
 
 public class StatClientSession {
 	private final static Log LOG = LogFactory.getLog(StatTest.class.getCanonicalName());
@@ -80,7 +82,7 @@ public class StatClientSession {
 			clients[session_num].close();
 		}
 
-        public void onSessionEvent(EventName session_event, String reason) {
+        public void onSessionEvent(EventName session_event, EventReason reason) {
         	
         	if (session_event == EventName.SESSION_TEARDOWN){
         		print(session_num + " Session Teardown");
@@ -90,7 +92,7 @@ public class StatClientSession {
 					eqh.breakEventLoop();
 				}
         	}
-			print(session_num + "GOT EVENT " + session_event.toString() + " because of " + reason);
+			print(session_num + "GOT EVENT " + session_event.toString() + " because of " + reason.toString());
 		}
 
 		public void onReply(Msg msg) {
