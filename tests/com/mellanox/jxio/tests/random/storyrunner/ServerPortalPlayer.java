@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.ServerPortal;
 import com.mellanox.jxio.EventName;
+import com.mellanox.jxio.EventReason;
 
 public class ServerPortalPlayer extends GeneralPlayer {
 
@@ -100,8 +101,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	protected void terminate() {
 		LOG.info(this.toString() + ": terminating");
 		this.listener.close();
-		LOG.info(this.toString() + ": exiting - SUCCESS (???)");
-		System.exit(0);
+		//isclosing = true?
 	}
 
 	public void notifyReadyforWork(ServerSessionPlayer ss, long newSessionKey) {
@@ -142,11 +142,11 @@ public class ServerPortalPlayer extends GeneralPlayer {
 			// worker.addWorkAction(ss.getAttachAction());
 		}
 
-		public void onSessionEvent(EventName session_event, String reason) {
+		public void onSessionEvent(EventName session_event, EventReason reason) {
 			if (session_event == EventName.SESSION_TEARDOWN) {
-				LOG.info(spp.toString() + ": SESSION_TEARDOWN. reason='" + reason + "'");
+				LOG.info(spp.toString() + ": SESSION_TEARDOWN. reason='" + reason.toString() + "'");
 			} else {
-				LOG.error(spp.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='" + reason + "'");
+				LOG.error(spp.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='" + reason.toString() + "'");
 				System.exit(1);
 			}
 		}

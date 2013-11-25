@@ -35,6 +35,7 @@ public class WorkerThreads {
 	private int                      next_worker_index = -1;
 	private List<ServerPortalPlayer> listPortalPlayers;
 	private final Random             rand;
+	private int 					actualWorkersNumber;//represetns #worker threads that were created
 
 	public WorkerThreads(int num_eqhc) {
 		super();
@@ -51,6 +52,10 @@ public class WorkerThreads {
 	}
 
 	public void close() {
+		
+		for (int i = 0; i<actualWorkersNumber; i++){
+			workers[i].notifyClose();
+		}
 		executor.shutdown();
 		while (!executor.isTerminated()) {
 		}
@@ -108,6 +113,7 @@ public class WorkerThreads {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		actualWorkersNumber++;
 		return worker;
 	}
 }

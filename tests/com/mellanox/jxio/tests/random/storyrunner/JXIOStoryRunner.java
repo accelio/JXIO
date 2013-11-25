@@ -23,7 +23,8 @@ import java.util.List;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -35,6 +36,8 @@ import com.mellanox.jxio.tests.random.Character;
 import com.mellanox.jxio.tests.random.Story;
 
 public class JXIOStoryRunner implements StoryRunner {
+
+	private final static Log LOG = LogFactory.getLog(JXIOStoryRunner.class.getSimpleName());
 
 	private Document        docRead;
 	private Story           story;
@@ -140,11 +143,15 @@ public class JXIOStoryRunner implements StoryRunner {
 		Character p = processes.get(0);//for now, there is only one process
 		int numWorkerThreads = Integer.valueOf(p.getAttribute("num_eqhs"));
 		
-		System.out.println("there are " + numWorkerThreads + " working threads");
+		LOG.info("there are " + numWorkerThreads + " working threads");
 		//create worker threads
 		this.workers = new WorkerThreads(numWorkerThreads);
 
 		// Simple Client-Server
+		
+		//this variable will hold the max duration of client/server in this process
+		int max_duration = 0;
+		
 		// Configure Servers
 		int i = 0;
 		ServerPortalPlayer[] serverPlayers = new ServerPortalPlayer[servers.size()];
@@ -164,6 +171,9 @@ public class JXIOStoryRunner implements StoryRunner {
 				Character machine = getCharacterFromListById(machines, process.getAttribute("machine"));
 				String hostname = machine.getAttribute("address");
 				URI uri = new URI("rdma://" + hostname + ":" + port + "/");
+				if (startDelay + duration > max_duration){
+					max_duration = startDelay + duration;
+				}
 				
 				ServerPortalPlayer sp = new ServerPortalPlayer(numWorkers, id, 0, uri, startDelay, duration, getWorkerThreads());
 				serverPlayers[i] = sp;
@@ -195,6 +205,9 @@ public class JXIOStoryRunner implements StoryRunner {
 				String hostname = machine.getAttribute("address");
 				int port = Integer.valueOf(server.getAttribute("port"));
 				
+				if (startDelay + duration > max_duration){
+					max_duration = startDelay + duration;
+				}
 				ClientPlayer cp = new ClientPlayer(id, new URI("rdma://" + hostname + ":" + port + "/"), startDelay,
 				        duration, tps);
 				clientPlayers[i] = cp;
@@ -211,6 +224,24 @@ public class JXIOStoryRunner implements StoryRunner {
 		for (ClientPlayer cp : clientPlayers) {
 			getWorkerThreads().getWorkerThread().addWorkAction(cp.getAttachAction());
 		}
+		
+		LOG.info("max duration of a thread is " + max_duration);
+		try{
+			//sleeping for max_duration + 2 extra sec
+			Thread.sleep((max_duration+2)*1000);
+		} catch (InterruptedException e){
+			e.printStackTrace();
+		}
+		
+		System.out.println("=============");
+		System.out.println("done sleeping! must kill all threads!");
+		System.out.println("=============");
+		
+		getWorkerThreads().close();
+		
+		System.out.println("=============");
+		System.out.println("done killing!");
+		System.out.println("=============");
 	}
 
 	/**

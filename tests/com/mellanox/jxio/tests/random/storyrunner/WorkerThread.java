@@ -28,6 +28,7 @@ public class WorkerThread implements Runnable {
 	private final TimerList                  timers;
 	private final EventQueueHandler          eqh;
 	private final BlockingQueue<QueueAction> actions;
+	private volatile boolean stopThread = false;
 
 	public WorkerThread() {
 		super();
@@ -76,17 +77,44 @@ public class WorkerThread implements Runnable {
 				action.doAction(this);
 			}
 
+			if (stopThread){
+				break;
+			}
 			// block for JXIO events or timer list duration
 			eqh.runEventLoop(-1, timers.getWaitDuration());
 
 			// check Timers
 			timers.checkForTimeOuts();
 		}
+		LOG.debug("thread " + this.toString() + " - closing EQH");
+		eqh.close();
+		LOG.debug("thread " + this.toString() + " has finished running");
+		
 	}
 
 	// wakeup the thread's internal loop so it can check it's incoming event queue
 	private void wakeup() {
 		LOG.debug(toString() + " waking up...");
 		eqh.breakEventLoop();
+	}
+	
+	public void notifyClose(){
+		CloseEQH action = new CloseEQH(this, this.getEQH());
+		this.addWorkAction(action);	
+}
+
+	public class CloseEQH implements WorkerThread.QueueAction {
+		EventQueueHandler eqh;
+		WorkerThread wt;
+		
+		public CloseEQH(WorkerThread wt, EventQueueHandler eqh) {
+			this.eqh = eqh;
+			this.wt = wt;
+		}
+
+		public void doAction(WorkerThread workerThread) {
+			wt.stopThread = true;
+//			eqh.close();
+		}
 	}
 }
