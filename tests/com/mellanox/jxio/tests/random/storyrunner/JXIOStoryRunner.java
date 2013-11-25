@@ -140,16 +140,16 @@ public class JXIOStoryRunner implements StoryRunner {
 		System.out.println("=============");
 		
 		
-		Character p = processes.get(0);//for now, there is only one process
+		Character p = processes.get(0);// for now, there is only one process
 		int numWorkerThreads = Integer.valueOf(p.getAttribute("num_eqhs"));
-		
+
 		LOG.info("there are " + numWorkerThreads + " working threads");
-		//create worker threads
-		this.workers = new WorkerThreads(numWorkerThreads);
+		// create worker threads
+		this.workers = new WorkerThreads(numWorkerThreads, servers.size());
 
 		// Simple Client-Server
 		
-		//this variable will hold the max duration of client/server in this process
+		// this variable will hold the max duration of client/server in this process
 		int max_duration = 0;
 		
 		// Configure Servers
@@ -166,24 +166,23 @@ public class JXIOStoryRunner implements StoryRunner {
 				int delay = Integer.valueOf(server.getAttribute("delay"));
 				int startDelay = Integer.valueOf(server.getAttribute("start_delay"));
 				int tps = Integer.valueOf(server.getAttribute("tps"));
-				
+
 				// Resolve hostname
 				Character machine = getCharacterFromListById(machines, process.getAttribute("machine"));
 				String hostname = machine.getAttribute("address");
 				URI uri = new URI("rdma://" + hostname + ":" + port + "/");
-				if (startDelay + duration > max_duration){
-					max_duration = startDelay + duration;
-				}
-				
+
 				ServerPortalPlayer sp = new ServerPortalPlayer(numWorkers, id, 0, uri, startDelay, duration, getWorkerThreads());
 				serverPlayers[i] = sp;
 				i++;
+
+				if (startDelay + duration > max_duration) {
+					max_duration = startDelay + duration;
+				}
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
 		}
-
-		// Thread.sleep(10);
 
 		// Configure Clients
 		ClientPlayer[] clientPlayers = new ClientPlayer[clients.size()];
@@ -198,24 +197,26 @@ public class JXIOStoryRunner implements StoryRunner {
 				Character server = getCharacterFromListById(servers, client.getAttribute("server"));
 				int startDelay = Integer.valueOf(client.getAttribute("start_delay"));
 				int tps = Integer.valueOf(client.getAttribute("tps"));
-				
+
 				// Resolve hostname and port
-				Character server_process =  getCharacterFromListById(processes, server.getAttribute("process"));
+				Character server_process = getCharacterFromListById(processes, server.getAttribute("process"));
 				Character machine = getCharacterFromListById(machines, server_process.getAttribute("machine"));
 				String hostname = machine.getAttribute("address");
 				int port = Integer.valueOf(server.getAttribute("port"));
-				
-				if (startDelay + duration > max_duration){
-					max_duration = startDelay + duration;
-				}
-				ClientPlayer cp = new ClientPlayer(id, new URI("rdma://" + hostname + ":" + port + "/"), startDelay,
-				        duration, tps);
+				URI uri = new URI("rdma://" + hostname + ":" + port + "/");
+
+				ClientPlayer cp = new ClientPlayer(id, uri, startDelay, duration, tps);
 				clientPlayers[i] = cp;
 				i++;
+
+				if (startDelay + duration > max_duration) {
+					max_duration = startDelay + duration;
+				}
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
 		}
+
 		// Run Server Players
 		for (ServerPortalPlayer spp : serverPlayers) {
 			getWorkerThreads().getWorkerThread().addWorkAction(spp.getAttachAction());
@@ -224,21 +225,21 @@ public class JXIOStoryRunner implements StoryRunner {
 		for (ClientPlayer cp : clientPlayers) {
 			getWorkerThreads().getWorkerThread().addWorkAction(cp.getAttachAction());
 		}
-		
-		LOG.info("max duration of a thread is " + max_duration);
-		try{
-			//sleeping for max_duration + 2 extra sec
-			Thread.sleep((max_duration+2)*1000);
-		} catch (InterruptedException e){
+
+		LOG.info("max duration of all threads is " + max_duration + " seconds");
+		try {
+			// sleeping for max_duration + 2 extra sec
+			Thread.sleep((max_duration + 2) * 1000);
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
+
 		System.out.println("=============");
 		System.out.println("done sleeping! must kill all threads!");
 		System.out.println("=============");
-		
+
 		getWorkerThreads().close();
-		
+
 		System.out.println("=============");
 		System.out.println("done killing!");
 		System.out.println("=============");

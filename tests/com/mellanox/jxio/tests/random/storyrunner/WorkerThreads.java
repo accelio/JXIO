@@ -21,33 +21,39 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import com.mellanox.jxio.ServerPortal;
 
 public class WorkerThreads {
 
-	private final static Log         LOG               = LogFactory.getLog(WorkerThreads.class.getSimpleName());
+	private final static Log                LOG               = LogFactory.getLog(WorkerThreads.class.getSimpleName());
+	private final WorkerThread[]            workers;
+	private final ExecutorService           executor;
+	private final Random                    rand;
+	private final int                       num_workers;
+	private int                             next_worker_index = -1;
+	private ArrayList<ServerPortalPlayer>[] listPortalPlayers;
+	private int                             actualWorkersNumber; // represetns worker threads that were created
 
-	private final WorkerThread[]     workers;
-	private final ExecutorService    executor;
-	private final int                num_workers;
-	private int                      next_worker_index = -1;
-	private List<ServerPortalPlayer> listPortalPlayers;
-	private final Random             rand;
-	private int 					actualWorkersNumber;//represetns #worker threads that were created
-
-	public WorkerThreads(int num_eqhc) {
+	@SuppressWarnings("unchecked")
+	public WorkerThreads(int numEQHs, int numListners) {
 		super();
-		this.num_workers = num_eqhc;
+		this.num_workers = numEQHs;
 		this.executor = Executors.newCachedThreadPool();
 		if (this.num_workers != -1) {
-			this.workers = new WorkerThread[num_eqhc];
+			this.workers = new WorkerThread[numEQHs];
 			this.next_worker_index = 0;
 		} else {
 			this.workers = null;
 		}
-		this.listPortalPlayers = new ArrayList<ServerPortalPlayer>();
+		this.listPortalPlayers = (ArrayList<ServerPortalPlayer>[]) new ArrayList[numListners];
+		for (int i = 0; i < numListners; i++) {
+			this.listPortalPlayers[i] = new ArrayList<ServerPortalPlayer>();
+		}
+
 		this.rand = new Random();
 	}
 
@@ -61,17 +67,17 @@ public class WorkerThreads {
 		}
 	}
 
-	public void addPortal(ServerPortalPlayer spp) {
-		synchronized (listPortalPlayers) {
-			this.listPortalPlayers.add(spp);
+	public void addPortal(int id, ServerPortalPlayer spp) {
+		synchronized (listPortalPlayers[id-1]) {
+			this.listPortalPlayers[id-1].add(spp);
 		}
 	}
 
-	public ServerPortalPlayer getPortal() {
+	public ServerPortalPlayer getPortal(int id) {
 		ServerPortalPlayer spp = null;
-		synchronized (listPortalPlayers) {
-			int index = this.rand.nextInt(listPortalPlayers.size());
-			spp = listPortalPlayers.get(index);
+		synchronized (listPortalPlayers[id-1]) {
+			int index = this.rand.nextInt(listPortalPlayers[id-1].size());
+			spp = listPortalPlayers[id-1].get(index);
 			LOG.debug("chosen index is " + index);
 		}
 		return spp;
