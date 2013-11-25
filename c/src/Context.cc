@@ -118,5 +118,6 @@ void Context::on_event_loop_handler(int fd, int events, void *data)
 
 void Context::add_msg_pool (MsgPool* msg_pool)
 {
+	log (lsDEBUG, "[%p] adding msg pool=%p\n", this, msg_pool);
 	this->msg_pool = msg_pool;
 }
