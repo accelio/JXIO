@@ -47,12 +47,9 @@ public class TestManager {
 	}
 	
 	private static void configure() {
-		tests[1] = new OpenCloseManagerTest(TestManager.port);
-		tests[2] = new NonExistingHostnameManagerTest(TestManager.port);
-		tests[3] = new MutipleManagersOnSameEQHTest();
-		tests[4] = new OpenRunEventLoopCloseClientTest();
-		tests[5] = new MutipleThreadsManager(TestManager.port);
-		tests[6] = new BreakEventLoopTests();
+		tests[1] = new MutipleManagersOnSameEQHTest();
+		tests[2] = new OpenRunEventLoopCloseClientTest();
+		tests[3] = new BreakEventLoopTests();
 	}
 
 	private static void argsRead(String[] args) {
