@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.apache.commons.logging.Log;
@@ -28,7 +27,6 @@ import org.apache.commons.logging.LogFactory;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -139,11 +137,8 @@ public class JXIOStoryRunner implements StoryRunner {
 		System.out.println("Story Running");
 		System.out.println("=============");
 		
-		
 		Character p = processes.get(0);// for now, there is only one process
 		int numWorkerThreads = Integer.valueOf(p.getAttribute("num_eqhs"));
-		//dummy implementation
-		numWorkerThreads = -1;
 
 		LOG.info("there are " + numWorkerThreads + " working threads");
 		// create worker threads
@@ -168,13 +163,24 @@ public class JXIOStoryRunner implements StoryRunner {
 				int delay = Integer.valueOf(server.getAttribute("delay"));
 				int startDelay = Integer.valueOf(server.getAttribute("start_delay"));
 				int tps = Integer.valueOf(server.getAttribute("tps"));
-
+				
+				// Get server msg pools
+				List<Character> supportingCharacters = server.getSupportingCharacters();
+				List<Character> msgPoolsList = null;
+				for (Character charcter : supportingCharacters){
+					if (charcter.getCharacterType().equals("msg_pools")){
+						msgPoolsList = charcter.getSupportingCharacters();
+					}
+				}
+				if (msgPoolsList == null){
+					System.out.println("[ERROR] No msg_pool defined for server " + server.getAttribute("id") + "!");
+					return;
+				}
 				ArrayList<int[]> msgPools = new ArrayList<int[]>();
-				//dummy code: will be replaced by code that reads from xml file
-				for (int j = 0; j<1; j++){
-					int count = 12;
-					int in = 20;
-					int out = 30;
+				for (Character msgPool : msgPoolsList){
+					int count = Integer.valueOf(msgPool.getAttribute("msg_pool_count"));
+					int in = Integer.valueOf(msgPool.getAttribute("msg_pool_size_in"));
+					int out = Integer.valueOf(msgPool.getAttribute("msg_pool_size_out"));
 					int [] pool = {count, in, out}; 
 					msgPools.add(pool);
 				}
@@ -210,6 +216,12 @@ public class JXIOStoryRunner implements StoryRunner {
 				int startDelay = Integer.valueOf(client.getAttribute("start_delay"));
 				int tps = Integer.valueOf(client.getAttribute("tps"));
 
+				// Get client msgs
+				int count = Integer.valueOf(client.getAttribute("msg_count_factor"));
+				int in = Integer.valueOf(client.getAttribute("msg_size_in_factor"));
+				int out = Integer.valueOf(client.getAttribute("msg_size_out_factor"));
+				int [] pool = {count, in, out}; 
+				
 				// Resolve hostname and port
 				Character server_process = getCharacterFromListById(processes, server.getAttribute("process"));
 				Character machine = getCharacterFromListById(machines, server_process.getAttribute("machine"));
@@ -221,12 +233,6 @@ public class JXIOStoryRunner implements StoryRunner {
 				if (startDelay + duration > max_duration){
 					max_duration = startDelay + duration;
 				}
-				
-				//dummy code: will be replaced by code that reads from xml file
-				int count = 10;
-				int in = 20;
-				int out = 30;
-				int [] pool = {count, in, out}; 
 				
 				ClientPlayer cp = new ClientPlayer(id, uri, startDelay, duration, tps, pool);
 				clientPlayers[i] = cp;
