@@ -38,6 +38,7 @@ public class ServerSessionPlayer extends GeneralPlayer {
 	private WorkerThread             workerThread;
 	private ServerSession            server;
 	private MsgPool                  mp;
+	private int counterReceivedMsgs;
 
 	public ServerSessionPlayer(ServerPortalPlayer spp, long newSessionKey, String srcIP) {
 		this.name = "SSP[" + id++ + "]";
@@ -77,6 +78,7 @@ public class ServerSessionPlayer extends GeneralPlayer {
 	@Override
 	protected void terminate() {
 		LOG.info(this.toString() + ": terminating (TODO)");
+		LOG.info(this.toString() + ": received " + counterReceivedMsgs);
 	}
 
 	protected ServerSession getServerSession() {
@@ -91,7 +93,10 @@ public class ServerSessionPlayer extends GeneralPlayer {
 		}
 
 		public void onRequest(Msg msg) {
-			LOG.info(ssp.toString() + ": onRequest: msg = " + msg.toString());
+			counterReceivedMsgs++;
+			if (LOG.isDebugEnabled()){
+				LOG.debug(ssp.toString() + ": onRequest: msg = " + msg.toString() + "#" + counterReceivedMsgs);
+			}
 			ssp.server.sendResponce(msg);
 		}
 

@@ -32,7 +32,7 @@
 		<duration value="[100]:25"/>
 		<num_workers value="[100]:1-5"/>
 		<msg_pools>
-			<msg_pool_amount value="[100]:2-5"/>
+			<msg_pool_amount value="[100]:1"/>
 		        <msg_pool_count value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
         		<msg_pool_size_in value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
 	        	<msg_pool_size_out value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>

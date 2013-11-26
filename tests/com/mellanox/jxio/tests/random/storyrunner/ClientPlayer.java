@@ -41,13 +41,15 @@ public class ClientPlayer extends GeneralPlayer {
 	private ClientSession    client;
 	private MsgPool          mp;
 	private boolean          isClosing = false;
+	int [] poolData;
 
-	public ClientPlayer(int id, URI uri, long startDelaySec, long runDurationSec, long msgRate) {
+	public ClientPlayer(int id, URI uri, long startDelaySec, long runDurationSec, long msgRate, int[] pool) {
 		this.name = new String("CP[" + id + "]");
 		this.uri = uri;
 		this.runDurationSec = runDurationSec;
 		this.startDelaySec = startDelaySec;
 		this.msgDelayMicroSec = (msgRate > 0) ? (1000000 / msgRate) : 0;
+		this.poolData = pool;
 		LOG.debug("new " + this.toString() + " done");
 	}
 
@@ -61,6 +63,7 @@ public class ClientPlayer extends GeneralPlayer {
 		        + startDelaySec + "sec, runDuration = " + runDurationSec + "sec");
 
 		this.workerThread = workerThread;
+		this.mp = new MsgPool (poolData[0], poolData[1], poolData[2]);
 
 		// register initialize timer
 		TimerList.Timer tInitialize = new InitializeTimer(this, this.startDelaySec * 1000000);
@@ -144,7 +147,7 @@ public class ClientPlayer extends GeneralPlayer {
 
 		public void onSessionEstablished() {
 			LOG.info(c.toString() + ": onSessionEstablished");
-			// this.c.sendMsgTimerStart();
+			this.c.sendMsgTimerStart();
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {

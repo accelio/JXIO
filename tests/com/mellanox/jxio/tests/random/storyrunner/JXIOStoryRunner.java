@@ -142,6 +142,8 @@ public class JXIOStoryRunner implements StoryRunner {
 		
 		Character p = processes.get(0);// for now, there is only one process
 		int numWorkerThreads = Integer.valueOf(p.getAttribute("num_eqhs"));
+		//dummy implementation
+		numWorkerThreads = -1;
 
 		LOG.info("there are " + numWorkerThreads + " working threads");
 		// create worker threads
@@ -167,18 +169,28 @@ public class JXIOStoryRunner implements StoryRunner {
 				int startDelay = Integer.valueOf(server.getAttribute("start_delay"));
 				int tps = Integer.valueOf(server.getAttribute("tps"));
 
+				ArrayList<int[]> msgPools = new ArrayList<int[]>();
+				//dummy code: will be replaced by code that reads from xml file
+				for (int j = 0; j<1; j++){
+					int count = 12;
+					int in = 20;
+					int out = 30;
+					int [] pool = {count, in, out}; 
+					msgPools.add(pool);
+				}
+				
 				// Resolve hostname
 				Character machine = getCharacterFromListById(machines, process.getAttribute("machine"));
 				String hostname = machine.getAttribute("address");
 				URI uri = new URI("rdma://" + hostname + ":" + port + "/");
-
-				ServerPortalPlayer sp = new ServerPortalPlayer(numWorkers, id, 0, uri, startDelay, duration, getWorkerThreads());
-				serverPlayers[i] = sp;
-				i++;
-
-				if (startDelay + duration > max_duration) {
+				if (startDelay + duration > max_duration){
 					max_duration = startDelay + duration;
 				}
+
+				ServerPortalPlayer sp = new ServerPortalPlayer(numWorkers, id, 0, uri, startDelay, duration, 
+						getWorkerThreads(), msgPools);
+				serverPlayers[i] = sp;
+				i++;
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
@@ -205,13 +217,20 @@ public class JXIOStoryRunner implements StoryRunner {
 				int port = Integer.valueOf(server.getAttribute("port"));
 				URI uri = new URI("rdma://" + hostname + ":" + port + "/");
 
-				ClientPlayer cp = new ClientPlayer(id, uri, startDelay, duration, tps);
-				clientPlayers[i] = cp;
-				i++;
-
-				if (startDelay + duration > max_duration) {
+				
+				if (startDelay + duration > max_duration){
 					max_duration = startDelay + duration;
 				}
+				
+				//dummy code: will be replaced by code that reads from xml file
+				int count = 10;
+				int in = 20;
+				int out = 30;
+				int [] pool = {count, in, out}; 
+				
+				ClientPlayer cp = new ClientPlayer(id, uri, startDelay, duration, tps, pool);
+				clientPlayers[i] = cp;
+				i++;
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}

@@ -17,6 +17,7 @@
 package com.mellanox.jxio.tests.random.storyrunner;
 
 import java.net.URI;
+import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import com.mellanox.jxio.ServerPortal;
 import com.mellanox.jxio.EventName;
 import com.mellanox.jxio.EventReason;
+import com.mellanox.jxio.MsgPool;
 
 public class ServerPortalPlayer extends GeneralPlayer {
 
@@ -38,8 +40,10 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	private WorkerThread     workerThread;
 	private WorkerThreads    workerThreads;
 	private ServerPortal     listener;
+	private ArrayList<int[]> msgPools;
 
-	public ServerPortalPlayer(int numWorkers, int id, int instance, URI uri, long startDelaySec, long runDurationSec, WorkerThreads workerThreads) {
+	public ServerPortalPlayer(int numWorkers, int id, int instance, URI uri, long startDelaySec, 
+			long runDurationSec, WorkerThreads workerThreads, ArrayList<int[]> msgPools) {
 		this.name = new String("SPP[" + id + ":" + instance + "]");
 		this.id = id;
 		this.uri = uri;
@@ -47,6 +51,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		this.runDurationSec = runDurationSec;
 		this.startDelaySec = startDelaySec;
 		this.workerThreads = workerThreads;
+		this.msgPools = msgPools;
 		LOG.debug("new " + this.toString() + " done");
 	}
 	
@@ -64,6 +69,11 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		        + startDelaySec + "sec, runDuration = " + runDurationSec + "sec");
 
 		this.workerThread = workerThread;
+
+		for (int[] p : msgPools) {
+			MsgPool pool = new MsgPool (p[0], p[1], p[2]);
+			workerThread.getEQH().bindMsgPool(pool);
+        }
 
 		// register initialize timer
 		TimerList.Timer tInitialize = new InitializeTimer(this, this.startDelaySec * 1000000);
@@ -92,7 +102,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 		// workers
 		for (int i = 0; i < numWorkers; i++) {
-			ServerPortalPlayer spp = new ServerPortalPlayer(0, this.id, i+1, this.listener.getUriForServer(), 0, runDurationSec, workerThreads);
+			ServerPortalPlayer spp = new ServerPortalPlayer(0, this.id, i+1, this.listener.getUriForServer(), 0, runDurationSec, workerThreads, msgPools);
 			workerThreads.getWorkerThread().addWorkAction(spp.getAttachAction());
 		}
 	}
