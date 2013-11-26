@@ -150,7 +150,7 @@ public class StoryTeller {
 	 */
 	private String randomaizeRange(String range) {
 		// Do only if this is indeed a range
-		if (range.contains("-")) {
+		if (range.contains("-") && range.indexOf("-") != 0){
 			String[] edges = range.split("-");
 			int min = Integer.parseInt(edges[0]);
 			int max = Integer.parseInt(edges[1]);
