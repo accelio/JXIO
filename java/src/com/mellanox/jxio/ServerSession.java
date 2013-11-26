@@ -27,7 +27,11 @@ import com.mellanox.jxio.impl.EventSession;
 public class ServerSession extends EventQueueHandler.Eventable {
 
 	private final Callbacks   callbacks;
-	private EventQueueHandler eventQHandler;
+	/*events that are session related will arrive on eqh that received the original
+	 * onSessionNew events. msg events will arrive on the eqh to which the session was
+	 * forwarded */
+	private EventQueueHandler eventQHandlerMsg;
+	private EventQueueHandler eventQHandlerSession;
 	private static final Log  LOG = LogFactory.getLog(ServerSession.class.getCanonicalName());
 
 	public static interface Callbacks {
@@ -47,7 +51,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	}
 
 	public boolean close() {
-		eventQHandler.removeEventable(this); // TODO: fix this
+		removeFromEQHs();
 		if (getId() == 0) {
 			LOG.error("closing ServerSession with empty id");
 			return false;
@@ -66,7 +70,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		if (!ret) {
 			LOG.error("there was an error sending the message");
 		}
-		this.eventQHandler.releaseMsgBackToPool(msg);
+		this.eventQHandlerMsg.releaseMsgBackToPool(msg);
 		/*
 		 * this message shold be released back to pool.
 		 * even though the message might not reached the client yet, it's ok since this pool is
@@ -75,9 +79,11 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		return ret;
 	}
 
-	void setEventQueueHandler(EventQueueHandler eqh) {
-		this.eventQHandler = eqh;
-		this.eventQHandler.addEventable(this);
+	void setEventQueueHandlers(EventQueueHandler eqhS, EventQueueHandler eqhM) {
+		this.eventQHandlerMsg = eqhM;
+		this.eventQHandlerMsg.addEventable(this);
+		this.eventQHandlerSession = eqhS;
+		this.eventQHandlerSession.addEventable(this); //if eqhS==eqhM, EventQueueHandler.eventables will contain only one value
 	}
 
 	void onEvent(Event ev) {
@@ -90,7 +96,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					callbacks.onSessionEvent(EventName.getEventByIndex(errorType), EventReason.getEventByIndex(reason));
 
 					if (errorType == 1) {// event = "SESSION_TEARDOWN";
-						eventQHandler.removeEventable(this); // now we are officially done with this session and it can
+						removeFromEQHs();// now we are officially done with this session and it can
 						                                     // be deleted from the EQH
 					}
 				}
@@ -120,4 +126,10 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		}
 	}
 
+	private void removeFromEQHs(){
+		eventQHandlerSession.removeEventable(this); 
+		if (eventQHandlerSession != eventQHandlerMsg){
+			eventQHandlerMsg.removeEventable(this);
+		}
+	}
 }
