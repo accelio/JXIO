@@ -53,7 +53,7 @@ echo -e "Done!\n"
 ###################
 
 echo -e "\n--- C Code Analysis ---\n"
-echo "Coverity Report" > $C_REPORT_FILE
+touch $C_REPORT_FILE
 # To be completed
 
 ################
@@ -63,12 +63,25 @@ echo "Coverity Report" > $C_REPORT_FILE
 # Move back to running directory
 cd $RUNNING_DIR
 
+# Calculate number of errors
+let "JAVA_ERRORS = `wc -l ${JAVA_REPORT_FILE} | cut -d " " -f 1`"
+let "C_ERRORS = `wc -l ${C_REPORT_FILE} | cut -d " " -f 1`"
+
 # Define report parameters
 attachment="$JAVA_REPORT_FILE $C_REPORT_FILE"
 subject="JXIO Code Analysis Report"
+if ([ $JAVA_ERRORS == 0 ] && [ $C_ERRORS == 0 ]); then
+	subject="${subject} - no issues found"
+fi
 recipients="alongr@mellanox.com katyak@mellanox.com alexr@mellanox.com"
 MAIL_MESSAGE=mail.html
-MAIL_MESSAGE_HTML="<h1>JXIO Code Analysis Report</h1><br>Attached are the JXIO Java and C code analysis for `date +%d/%m/%y`.<br>"
+MAIL_MESSAGE_HTML="<h1>JXIO Code Analysis Report</h1><br>Attached are the JXIO Java and C code analysis for `date +%d/%m/%y`.<br><br>"
+if [ $JAVA_ERRORS != 0 ]; then
+	MAIL_MESSAGE_HTML="${MAIL_MESSAGE_HTML} Found $JAVA_ERRORS JAVA Errors/Warnings.<br>"
+fi
+if [ $C_ERRORS != 0 ]; then
+	MAIL_MESSAGE_HTML="${MAIL_MESSAGE_HTML} Found $C_ERRORS C Errors/Warnings.<br>"
+fi
 
 # Configure report
 MAIL_MESSAGE_HTML="<html><body><font face=""Calibri"" size=3>"${MAIL_MESSAGE_HTML}"</font></body></html>"
