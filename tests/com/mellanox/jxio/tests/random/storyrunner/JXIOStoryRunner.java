@@ -37,36 +37,35 @@ public class JXIOStoryRunner implements StoryRunner {
 
 	private final static Log LOG = LogFactory.getLog(JXIOStoryRunner.class.getSimpleName());
 
-	private Document        docRead;
-	private Story           story;
-	private List<String>    characterTypes;
-	private List<Character> machines;
-	private List<Character> processes;
-	private List<Character> servers;
-	private List<Character> clients;
-	private WorkerThreads   workers;
+	private Document         docRead;
+	private Story            story;
+	private List<String>     characterTypes;
+	private List<Character>  machines;
+	private List<Character>  processes;
+	private List<Character>  servers;
+	private List<Character>  clients;
+	private WorkerThreads    workers;
 
 	/**
-     * Constructs an new StoryRunner
-     * 
-     */
+	 * Constructs an new StoryRunner
+	 * 
+	 */
 	public JXIOStoryRunner() {
 		this.story = new Story();
 	}
 
-
 	/**
-     * Retrieves all worker threads
-     * 
-     * @return The worker threads of the story runner.
-     */
+	 * Retrieves all worker threads
+	 * 
+	 * @return The worker threads of the story runner.
+	 */
 	public WorkerThreads getWorkerThreads() {
 		return this.workers;
 	}
 
 	/**
-     * Reads the story XML file.
-     */
+	 * Reads the story XML file.
+	 */
 	public void read(File storyFile) {
 		try {
 			// Set needed XML document handling objects
@@ -108,12 +107,12 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Retrieve all characters matching a specific type.
-     * 
-     * @param charcterType
-     *            A character type in single form.
-     * @return A list of all characters of the requested type.
-     */
+	 * Retrieve all characters matching a specific type.
+	 * 
+	 * @param charcterType
+	 *            A character type in single form.
+	 * @return A list of all characters of the requested type.
+	 */
 	public List<Character> getCharacters(String charcterType) {
 		List<Character> chracterList = new ArrayList<Character>();
 		for (Character character : story.getCharacters()) {
@@ -126,8 +125,8 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Runs the story.
-     */
+	 * Runs the story.
+	 */
 	public void run() {
 		System.out.println("=============");
 		System.out.println("Story Summary");
@@ -136,7 +135,7 @@ public class JXIOStoryRunner implements StoryRunner {
 		System.out.println("=============");
 		System.out.println("Story Running");
 		System.out.println("=============");
-		
+
 		Character p = processes.get(0);// for now, there is only one process
 		int numWorkerThreads = Integer.valueOf(p.getAttribute("num_eqhs"));
 
@@ -145,10 +144,10 @@ public class JXIOStoryRunner implements StoryRunner {
 		this.workers = new WorkerThreads(numWorkerThreads, servers.size());
 
 		// Simple Client-Server
-		
+
 		// this variable will hold the max duration of client/server in this process
 		int max_duration = 0;
-		
+
 		// Configure Servers
 		int i = 0;
 		ServerPortalPlayer[] serverPlayers = new ServerPortalPlayer[servers.size()];
@@ -163,38 +162,38 @@ public class JXIOStoryRunner implements StoryRunner {
 				int delay = Integer.valueOf(server.getAttribute("delay"));
 				int startDelay = Integer.valueOf(server.getAttribute("start_delay"));
 				int tps = Integer.valueOf(server.getAttribute("tps"));
-				
+
 				// Get server msg pools
 				List<Character> supportingCharacters = server.getSupportingCharacters();
 				List<Character> msgPoolsList = null;
-				for (Character charcter : supportingCharacters){
-					if (charcter.getCharacterType().equals("msg_pools")){
+				for (Character charcter : supportingCharacters) {
+					if (charcter.getCharacterType().equals("msg_pools")) {
 						msgPoolsList = charcter.getSupportingCharacters();
 					}
 				}
-				if (msgPoolsList == null){
+				if (msgPoolsList == null) {
 					System.out.println("[ERROR] No msg_pool defined for server " + server.getAttribute("id") + "!");
 					return;
 				}
-				ArrayList<int[]> msgPools = new ArrayList<int[]>();
-				for (Character msgPool : msgPoolsList){
+				ArrayList<MsgPoolData> msgPools = new ArrayList<MsgPoolData>();
+				for (Character msgPool : msgPoolsList) {
 					int count = Integer.valueOf(msgPool.getAttribute("msg_pool_count"));
 					int in = Integer.valueOf(msgPool.getAttribute("msg_pool_size_in"));
 					int out = Integer.valueOf(msgPool.getAttribute("msg_pool_size_out"));
-					int [] pool = {count, in, out}; 
+					MsgPoolData pool = new MsgPoolData(count, in, out);
 					msgPools.add(pool);
 				}
-				
+
 				// Resolve hostname
 				Character machine = getCharacterFromListById(machines, process.getAttribute("machine"));
 				String hostname = machine.getAttribute("address");
 				URI uri = new URI("rdma://" + hostname + ":" + port + "/");
-				if (startDelay + duration > max_duration){
+				if (startDelay + duration > max_duration) {
 					max_duration = startDelay + duration;
 				}
 
-				ServerPortalPlayer sp = new ServerPortalPlayer(numWorkers, id, 0, uri, startDelay, duration, 
-						getWorkerThreads(), msgPools);
+				ServerPortalPlayer sp = new ServerPortalPlayer(numWorkers, id, 0, uri, startDelay, duration,
+				        getWorkerThreads(), msgPools);
 				serverPlayers[i] = sp;
 				i++;
 			} catch (URISyntaxException e) {
@@ -216,12 +215,6 @@ public class JXIOStoryRunner implements StoryRunner {
 				int startDelay = Integer.valueOf(client.getAttribute("start_delay"));
 				int tps = Integer.valueOf(client.getAttribute("tps"));
 
-				// Get client msgs
-				int count = Integer.valueOf(client.getAttribute("msg_count_factor"));
-				int in = Integer.valueOf(client.getAttribute("msg_size_in_factor"));
-				int out = Integer.valueOf(client.getAttribute("msg_size_out_factor"));
-				int [] pool = {count, in, out}; 
-				
 				// Resolve hostname and port
 				Character server_process = getCharacterFromListById(processes, server.getAttribute("process"));
 				Character machine = getCharacterFromListById(machines, server_process.getAttribute("machine"));
@@ -229,12 +222,16 @@ public class JXIOStoryRunner implements StoryRunner {
 				int port = Integer.valueOf(server.getAttribute("port"));
 				URI uri = new URI("rdma://" + hostname + ":" + port + "/");
 
-				
-				if (startDelay + duration > max_duration){
+				if (startDelay + duration > max_duration) {
 					max_duration = startDelay + duration;
 				}
-				
-				ClientPlayer cp = new ClientPlayer(id, uri, startDelay, duration, tps, pool);
+
+				// Get client msgs
+				int count = Integer.valueOf(client.getAttribute("msg_count_factor"));
+				int in = Integer.valueOf(client.getAttribute("msg_size_in_factor"));
+				int out = Integer.valueOf(client.getAttribute("msg_size_out_factor"));
+
+				ClientPlayer cp = new ClientPlayer(id, uri, startDelay, duration, tps, new MsgPoolData(count, in, out));
 				clientPlayers[i] = cp;
 				i++;
 			} catch (URISyntaxException e) {
@@ -272,8 +269,11 @@ public class JXIOStoryRunner implements StoryRunner {
 
 	/**
 	 * Retrieves a specific character from a list of characters.
-	 * @param characters The list of characters.
-	 * @param id The ID of the requsted character.
+	 * 
+	 * @param characters
+	 *            The list of characters.
+	 * @param id
+	 *            The ID of the requsted character.
 	 * @return The charcater from the list with there ID matching the given ID.
 	 */
 	private Character getCharacterFromListById(List<Character> characters, String id) {
@@ -286,8 +286,8 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Prints a summary of the story.
-     */
+	 * Prints a summary of the story.
+	 */
 	private void printSummary() {
 		System.out.print("Machines:");
 		for (Character machine : machines) {

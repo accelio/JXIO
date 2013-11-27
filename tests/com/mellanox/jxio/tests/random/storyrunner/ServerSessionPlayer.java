@@ -77,7 +77,6 @@ public class ServerSessionPlayer extends GeneralPlayer {
 
 	@Override
 	protected void terminate() {
-		LOG.info(this.toString() + ": terminating (TODO)");
 		LOG.info(this.toString() + ": received " + counterReceivedMsgs);
 	}
 
@@ -94,8 +93,8 @@ public class ServerSessionPlayer extends GeneralPlayer {
 
 		public void onRequest(Msg msg) {
 			counterReceivedMsgs++;
-			if (LOG.isDebugEnabled()){
-				LOG.debug(ssp.toString() + ": onRequest: msg = " + msg.toString() + "#" + counterReceivedMsgs);
+			if (LOG.isTraceEnabled()){
+				LOG.trace(ssp.toString() + ": onRequest: msg = " + msg.toString() + "#" + counterReceivedMsgs);
 			}
 			ssp.server.sendResponce(msg);
 		}

@@ -29,21 +29,21 @@ import com.mellanox.jxio.MsgPool;
 
 public class ServerPortalPlayer extends GeneralPlayer {
 
-	private final static Log LOG = LogFactory.getLog(ServerPortalPlayer.class.getSimpleName());
+	private final static Log       LOG = LogFactory.getLog(ServerPortalPlayer.class.getSimpleName());
 
-	private final int        id;
-	private final String     name;
-	private final URI        uri;
-	private final int        numWorkers;
-	private final long       runDurationSec;
-	private final long       startDelaySec;
-	private WorkerThread     workerThread;
-	private WorkerThreads    workerThreads;
-	private ServerPortal     listener;
-	private ArrayList<int[]> msgPools;
+	private final int              id;
+	private final String           name;
+	private final URI              uri;
+	private final int              numWorkers;
+	private final long             runDurationSec;
+	private final long             startDelaySec;
+	private WorkerThread           workerThread;
+	private WorkerThreads          workerThreads;
+	private ServerPortal           listener;
+	private final ArrayList<MsgPoolData> msgPools;
 
-	public ServerPortalPlayer(int numWorkers, int id, int instance, URI uri, long startDelaySec, 
-			long runDurationSec, WorkerThreads workerThreads, ArrayList<int[]> msgPools) {
+	public ServerPortalPlayer(int numWorkers, int id, int instance, URI uri, long startDelaySec, long runDurationSec,
+	        WorkerThreads workerThreads, ArrayList<MsgPoolData> msgPools) {
 		this.name = new String("SPP[" + id + ":" + instance + "]");
 		this.id = id;
 		this.uri = uri;
@@ -54,7 +54,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		this.msgPools = msgPools;
 		LOG.debug("new " + this.toString() + " done");
 	}
-	
+
 	public String toString() {
 		return name;
 	}
@@ -70,10 +70,10 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 		this.workerThread = workerThread;
 
-		for (int[] p : msgPools) {
-			MsgPool pool = new MsgPool (p[0], p[1], p[2]);
+		for (MsgPoolData p : msgPools) {
+			MsgPool pool = new MsgPool(p.getCount(), p.getInSize(), p.getOutSize());
 			workerThread.getEQH().bindMsgPool(pool);
-        }
+		}
 
 		// register initialize timer
 		TimerList.Timer tInitialize = new InitializeTimer(this, this.startDelaySec * 1000000);
@@ -102,7 +102,8 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 		// workers
 		for (int i = 0; i < numWorkers; i++) {
-			ServerPortalPlayer spp = new ServerPortalPlayer(0, this.id, i+1, this.listener.getUriForServer(), 0, runDurationSec, workerThreads, msgPools);
+			ServerPortalPlayer spp = new ServerPortalPlayer(0, this.id, i + 1, this.listener.getUriForServer(), 0,
+			        runDurationSec, workerThreads, msgPools);
 			workerThreads.getWorkerThread().addWorkAction(spp.getAttachAction());
 		}
 	}
@@ -111,7 +112,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	protected void terminate() {
 		LOG.info(this.toString() + ": terminating");
 		this.listener.close();
-		//isclosing = true?
+		// isclosing = true?
 	}
 
 	public void notifyReadyforWork(ServerSessionPlayer ss, long newSessionKey) {
@@ -156,7 +157,8 @@ public class ServerPortalPlayer extends GeneralPlayer {
 			if (session_event == EventName.SESSION_TEARDOWN) {
 				LOG.info(spp.toString() + ": SESSION_TEARDOWN. reason='" + reason.toString() + "'");
 			} else {
-				LOG.error(spp.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='" + reason.toString() + "'");
+				LOG.error(spp.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='"
+				        + reason.toString() + "'");
 				System.exit(1);
 			}
 		}

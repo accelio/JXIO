@@ -30,20 +30,22 @@ import com.mellanox.jxio.EventReason;
 
 public class ClientPlayer extends GeneralPlayer {
 
-	private final static Log LOG       = LogFactory.getLog(ClientPlayer.class.getSimpleName());
+	private final static Log  LOG       = LogFactory.getLog(ClientPlayer.class.getSimpleName());
 
-	private final String     name;
-	private final URI        uri;
-	private final long       runDurationSec;
-	private final long       startDelaySec;
-	private final long       msgDelayMicroSec;
-	private WorkerThread     workerThread;
-	private ClientSession    client;
-	private MsgPool          mp;
-	private boolean          isClosing = false;
-	int [] poolData;
+	private final String      name;
+	private final URI         uri;
+	private final long        runDurationSec;
+	private final long        startDelaySec;
+	private final long        msgDelayMicroSec;
+	private WorkerThread      workerThread;
+	private ClientSession     client;
+	private MsgPool           mp;
+	private boolean           isClosing = false;
+	private int               counterReceivedMsgs;
+	private int               counterSentMsgs;
+	private final MsgPoolData poolData;
 
-	public ClientPlayer(int id, URI uri, long startDelaySec, long runDurationSec, long msgRate, int[] pool) {
+	public ClientPlayer(int id, URI uri, long startDelaySec, long runDurationSec, long msgRate, MsgPoolData pool) {
 		this.name = new String("CP[" + id + "]");
 		this.uri = uri;
 		this.runDurationSec = runDurationSec;
@@ -63,7 +65,7 @@ public class ClientPlayer extends GeneralPlayer {
 		        + startDelaySec + "sec, runDuration = " + runDurationSec + "sec");
 
 		this.workerThread = workerThread;
-		this.mp = new MsgPool (poolData[0], poolData[1], poolData[2]);
+		this.mp = new MsgPool(poolData.getCount(), poolData.getInSize(), poolData.getOutSize());
 
 		// register initialize timer
 		TimerList.Timer tInitialize = new InitializeTimer(this, this.startDelaySec * 1000000);
@@ -72,7 +74,9 @@ public class ClientPlayer extends GeneralPlayer {
 
 	protected void sendMsgTimerStart() {
 		if (this.msgDelayMicroSec > 0) {
-			LOG.info(this.toString() + ": starting send timer for " + this.msgDelayMicroSec + "usec");
+			if (LOG.isTraceEnabled()) {
+				LOG.trace(this.toString() + ": starting send timer for " + this.msgDelayMicroSec + "usec");
+			}
 			TimerList.Timer tSendMsg = new SendMsgTimer(this.msgDelayMicroSec, this);
 			this.workerThread.start(tSendMsg);
 		}
@@ -88,16 +92,25 @@ public class ClientPlayer extends GeneralPlayer {
 
 		@Override
 		public void onTimeOut() {
-			LOG.info("SendMsgTimer: " + this.player.toString());
+			if (LOG.isTraceEnabled()) {
+				LOG.trace("SendMsgTimer: " + this.player.toString());
+			}
 
 			// register next send timer
 			if (!this.player.isClosing) {
 				sendMsgTimerStart();
-
+				counterSentMsgs++;
 				// send msg
 				Msg m = this.player.mp.getMsg();
-				if (this.player.client.sendMessage(m) != true)
-					m.returnToParentPool();
+				if (m != null && this.player.client.sendMessage(m) != true){
+						m.returnToParentPool();
+				} else {// MsgPool is empty (client used up all the msgs and
+					    // they didn't return from client yet
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(this.toString() + "no more messages in pool: skipping a timer");
+					}
+				}
+
 			}
 		}
 	}
@@ -114,7 +127,7 @@ public class ClientPlayer extends GeneralPlayer {
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
-		
+
 		// connect to server
 		LOG.info(this.toString() + ": connecting to '" + connecturi.toString() + "'");
 		this.client = new ClientSession(this.workerThread.getEQH(), connecturi, new JXIOCallbacks(this));
@@ -129,7 +142,13 @@ public class ClientPlayer extends GeneralPlayer {
 
 	@Override
 	protected void terminate() {
-		LOG.info(this.toString() + ": terminating");
+		LOG.info(this.toString() + ": terminating. sent " + this.counterSentMsgs + "msgs");
+		if (this.counterReceivedMsgs != this.counterSentMsgs) {
+			LOG.error(this.toString() + "there were " + this.counterSentMsgs + " sent and " + this.counterReceivedMsgs
+			        + " received");
+		} else {
+			LOG.info(this.toString() + "sent and received same # of msgs");
+		}
 		this.isClosing = true;
 		this.client.close();
 	}
@@ -154,13 +173,17 @@ public class ClientPlayer extends GeneralPlayer {
 			if (this.c.isClosing == true && session_event == EventName.SESSION_TEARDOWN) {
 				LOG.info(c.toString() + ": onSESSION_TEARDOWN, reason='" + reason.toString() + "'");
 			} else {
-				LOG.error(c.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='" + reason.toString() + "'");
+				LOG.error(c.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='"
+				        + reason.toString() + "'");
 				System.exit(1);
 			}
 		}
 
 		public void onReply(Msg msg) {
-			LOG.info("onReply " + msg.toString());
+			counterReceivedMsgs++;
+			if (LOG.isTraceEnabled()) {
+				LOG.trace(c.toString() + ": onReply: msg = " + msg.toString() + "#" + counterReceivedMsgs);
+			}
 			msg.returnToParentPool();
 		}
 	}
