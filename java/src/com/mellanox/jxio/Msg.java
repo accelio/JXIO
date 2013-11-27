@@ -21,11 +21,13 @@ import java.nio.ByteBuffer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.mellanox.jxio.EventQueueHandler.Eventable;
+
 public class Msg {
 
 	private static final Log LOG= LogFactory.getLog(Msg.class.getCanonicalName());
 	private long refToCObject;
-	private ClientSession clientSession;
+	private Eventable clientSession;
 	private MsgPool msgPool; //reference to MsgPool holding this buffer
 	private ByteBuffer in, out;
 	private Object userContext; //variable for usage by the user
@@ -64,11 +66,11 @@ public class Msg {
 		return msgPool;
 	}
 
-	void setClientSession(ClientSession clientSession) {
+	void setClientSession(Eventable clientSession) {
 		this.clientSession = clientSession;
 	}
 
-	ClientSession getClientSession() {
+	Eventable getClientSession() {
 		return clientSession;
 	}
 
