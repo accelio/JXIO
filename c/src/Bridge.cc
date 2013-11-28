@@ -112,7 +112,7 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 		fprintf(stderr, "in JXIO/c/Bridge - failed to disable AccelIO's internal memory pool buffers\n");
 	}
 
-	log(lsDEBUG, "in JXIO/c/Bridge - java callback methods were found and cached\n");
+	log(lsDEBUG,"in JXIO/c/Bridge - java callback methods were found and cached\n");
 
 	return JNI_VERSION_1_4;  //direct buffer requires java 1.4
 }
@@ -139,8 +139,7 @@ extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *jvm, void* reserved)
 	return;
 }
 
-void Bridge_invoke_logToJava_callback(const char* log_message,const int severity)
-{
+void Bridge_invoke_logToJava_callback(const char* log_message, const int severity) {
 	JNIEnv *env;
 	if (cached_jvm->GetEnv((void **) &env, JNI_VERSION_1_4)) {
 		printf("-->> Error getting JNIEnv In C++ JNI_logToJava when trying to log message: '%s'\n", log_message);
@@ -148,7 +147,7 @@ void Bridge_invoke_logToJava_callback(const char* log_message,const int severity
 	}
 
 	jstring j_message = env->NewStringUTF(log_message);
-	env->CallStaticVoidMethod(jclassBridge, jmethodID_logToJava, j_message,severity);
+	env->CallStaticVoidMethod(jclassBridge, jmethodID_logToJava, j_message, severity);
 	env->DeleteLocalRef(j_message);
 }
 
@@ -168,7 +167,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_createC
 	}
 	if (ctx->error_creating) {
 		delete (ctx);
-		return false;
+		return true;
 	}
 	jobject jbuf = env->NewDirectByteBuffer(ctx->event_queue->get_buffer(), eventQueueSize );
 
@@ -213,6 +212,10 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_delEventLoo
 
 extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
 {
+	if (ptrCtx == 0){
+		log(lsERROR, "eqh does not exist\n");
+		return 0;
+	}
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	Client * ses = new Client(url, ptrCtx);
 	env->ReleaseStringUTFChars(jurl, url);
@@ -313,7 +316,7 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMs
 	}
 	jobject jbuf = env->NewDirectByteBuffer(pool->buf, pool->buf_size);
 
-	 //TODO: go over the actual data structure and not msg_ptrs
+	//TODO: go over the actual data structure and not msg_ptrs
 	temp [0] = (jlong)(intptr_t) pool;//the first element in array represents ptr to MsgPool
 	for (int i=1; i<=msg_num; i++) {
 		temp[i] = (jlong)(intptr_t) pool->msg_ptrs[i-1];
@@ -349,7 +352,6 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_bindMsg
 	ctx->add_msg_pool(pool);
 	return true;
 }
-
 
 JNIEnv *JX_attachNativeThread()
 {

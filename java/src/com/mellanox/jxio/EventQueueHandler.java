@@ -41,8 +41,8 @@ public class EventQueueHandler implements Runnable {
 
 	private final long             refToCObject;
 	private final int              eventQueueSize        = 15000;                                                    // size
-																													  // of
-																													  // byteBuffer
+	                                                                                                                  // of
+	                                                                                                                  // byteBuffer
 	private int                    eventsWaitingInQ      = 0;
 	private ByteBuffer             eventQueue            = null;
 	private ElapsedTimeMeasurement elapsedTime           = null;
@@ -97,6 +97,11 @@ public class EventQueueHandler implements Runnable {
 	 * @return number of events processes or zero if timeout
 	 */
 	public int runEventLoop(int maxEvents, long timeOutMicroSec) {
+		if (getId() == 0) {
+			LOG.error("no context opened on C side. can not run event loop");
+			return 0;
+		}
+
 		this.breakLoop = false;
 		boolean is_forever = (timeOutMicroSec == -1) ? true : false;
 		boolean is_infinite_events = (maxEvents == -1) ? true : false;
@@ -150,8 +155,13 @@ public class EventQueueHandler implements Runnable {
 	 * This function can be called from any thread context
 	 */
 	public void breakEventLoop() {
+		if (getId() == 0) {
+			LOG.error("no context opened on C side. can not break event loop");
+			return;
+		}
 		if (this.breakLoop == false) {
 			this.breakLoop = true;
+
 			Bridge.breakEventLoop(getId());
 		}
 	}
@@ -163,6 +173,10 @@ public class EventQueueHandler implements Runnable {
 	 * This function Should be called only once no other thread is inside the runEventLoop()
 	 */
 	public void close() {
+		if (getId() == 0) {
+			LOG.error("no context opened on C side. can not close event loop");
+			return;
+		}
 		while (!this.eventables.isEmpty()) {
 			int waitForEvent = 0;
 			for (Map.Entry<Long, Eventable> entry : this.eventables.entrySet()) {
@@ -174,7 +188,7 @@ public class EventQueueHandler implements Runnable {
 					ev.close();
 				}
 				if (ev.getIsExpectingEventAfterClose()) {
-					waitForEvent ++;
+					waitForEvent++;
 				}
 			}
 			if (waitForEvent != 0) {
@@ -381,6 +395,10 @@ public class EventQueueHandler implements Runnable {
 	}
 
 	public boolean bindMsgPool(MsgPool msgPool) {
+		if (getId() == 0) {
+			LOG.error("no context opened on C side. can not bind msg pool");
+			return false;
+		}
 		// the messages inside the pool must be added to hashmap, so that the appropraite msg can be tracked
 		// once a request arrives
 		List<Msg> msgArray = msgPool.getAllMsg();
