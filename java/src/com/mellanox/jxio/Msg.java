@@ -25,23 +25,27 @@ import com.mellanox.jxio.EventQueueHandler.Eventable;
 
 public class Msg {
 
-	private static final Log LOG= LogFactory.getLog(Msg.class.getCanonicalName());
-	private long refToCObject;
-	private Eventable clientSession;
-	private MsgPool msgPool; //reference to MsgPool holding this buffer
-	private ByteBuffer in, out;
-	private Object userContext; //variable for usage by the user
-	
-	Msg(ByteBuffer buffer, int inSize, int outSize, long id, MsgPool msgPool){
+	private static final Log LOG = LogFactory.getLog(Msg.class.getCanonicalName());
+	private long             refToCObject;
+	private Eventable        clientSession;
+	private MsgPool          msgPool;                                              // reference to MsgPool holding this
+																					// buffer
+	private ByteBuffer       in, out;
+	private Object           userContext;                                          // variable for usage by the user
+
+	Msg(ByteBuffer buffer, int inSize, int outSize, long id, MsgPool msgPool) {
 		in = createSubBuffer(0, inSize, buffer);
 		out = createSubBuffer(inSize, buffer.capacity(), buffer);
 		this.msgPool = msgPool;
 		this.refToCObject = id;
-//		if(LOG.isDebugEnabled()) {
-//			LOG.debug("IN: capacity is " + in.capacity() + " limit " + in.limit()+ " position "+ in.position()+ " remaining is "+ in.remaining());
-//			LOG.debug("OUT: capacity is " + out.capacity() + " limit " + out.limit()+ " position "+ out.position()+ " remaining is "+ out.remaining());
-//		}
+		// if(LOG.isDebugEnabled()) {
+		// LOG.debug("IN: capacity is " + in.capacity() + " limit " + in.limit()+ " position "+ in.position()+
+		// " remaining is "+ in.remaining());
+		// LOG.debug("OUT: capacity is " + out.capacity() + " limit " + out.limit()+ " position "+ out.position()+
+		// " remaining is "+ out.remaining());
+		// }
 	}
+
 	public void returnToParentPool() {
 		msgPool.releaseMsg(this);
 	}
@@ -57,13 +61,18 @@ public class Msg {
 	public Object getUserContext() {
 		return userContext;
 	}
+
 	public void setUserContext(Object userContext) {
 		this.userContext = userContext;
 	}
-	
-	
+
 	MsgPool getParentPool() {
 		return msgPool;
+	}
+
+	public void resetPositions() {
+		this.in.position(0);
+		this.out.position(0);
 	}
 
 	void setClientSession(Eventable clientSession) {
@@ -78,7 +87,7 @@ public class Msg {
 		return refToCObject;
 	}
 
-	private ByteBuffer createSubBuffer(int position, int limit, ByteBuffer buf){
+	private ByteBuffer createSubBuffer(int position, int limit, ByteBuffer buf) {
 		ByteBuffer sub;
 		buf.position(position);
 		buf.limit(limit);

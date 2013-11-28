@@ -62,6 +62,7 @@ public class MsgPool {
 
 	public void releaseMsg(Msg msg) {
 		if (msg.getParentPool() == this) {
+			msg.resetPositions();
 			listMsg.add(msg);
 		} else {
 			LOG.error("parent pool and actual msg pool do not match!");

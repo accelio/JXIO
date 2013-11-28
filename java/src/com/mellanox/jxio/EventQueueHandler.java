@@ -409,6 +409,7 @@ public class EventQueueHandler implements Runnable {
 	}
 
 	void releaseMsgBackToPool(Msg msg) {
+		msg.resetPositions();
 		this.msgsPendingNewRequest.put(msg.getId(), msg);
 	}
 
