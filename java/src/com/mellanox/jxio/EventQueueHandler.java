@@ -384,7 +384,7 @@ public class EventQueueHandler implements Runnable {
 		return s1;
 	}
 
-	private class DataFromC {
+	static private class DataFromC {
 		long       ptrCtx;
 		ByteBuffer eventQueue;
 
