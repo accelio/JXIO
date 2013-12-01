@@ -115,7 +115,7 @@ bool Client::onSessionEvent(xio_session_event eventType,
 }
 
 bool Client::send_msg(Msg *msg) {
-	log(lsDEBUG, "##################### sending msg in client=%p\n", this);
+	log(lsTRACE, "##################### sending msg=%p in client=%p\n", msg, this);
 	int ret_val = xio_send_request(this->con, msg->get_xio_msg());
 	if (ret_val) {
 		log(lsERROR, "Got error %d while sending xio_msg in client=%p\n", ret_val, this);

@@ -49,19 +49,19 @@ int on_new_session_callback(struct xio_session *session,
 
 int on_msg_send_complete_callback(struct xio_session *session,
 		struct xio_msg *msg, void *cb_prv_data) {
-	log(lsDEBUG, "got on_msg_send_complete_callback\n");
+	log(lsTRACE, "got on_msg_send_complete_callback for msg=%p\n", msg->user_context);
 
 	//must release the message
 	Msg *msg_from_pool = (Msg*) msg->user_context;
 	msg_from_pool->release_to_pool();
 
-	log(lsDEBUG, "finished on_msg_send_complete_callback\n");
+	log(lsTRACE, "finished on_msg_send_complete_callback for msg=%p\n", msg->user_context);
 	return 0;
 }
 
 int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 		int more_in_batch, void *cb_prv_data) {
-	log(lsDEBUG, "on_msg_callback is %p. len is %d msg is %p\n", msg->user_context, msg->in.data_iov[0].iov_len, msg);
+	log(lsTRACE, "on_msg_callback is %p. len is %d msg is %p\n", msg->user_context, msg->in.data_iov[0].iov_len, msg);
 
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
@@ -72,7 +72,7 @@ int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 				msg->in.data_iov[0].iov_len);
 		msg->user_context = msg_from_pool;
 		msg_from_pool->set_xio_msg_req(msg);
-		log(lsDEBUG, "!!!!!!!!!!!!!! xio_msg is %p\n", msg);
+		log(lsTRACE, "!!!!!!!!!!!!!! xio_msg is %p\n", msg);
 	}
 
 	char* buf = ctx->event_queue->get_buffer();
