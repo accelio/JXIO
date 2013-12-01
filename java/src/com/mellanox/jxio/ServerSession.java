@@ -111,8 +111,15 @@ public class ServerSession extends EventQueueHandler.Eventable {
 				if (LOG.isTraceEnabled()) {
 					LOG.trace("received msg event");
 				}
-				Msg msg = ((EventNewMsg) ev).getMsg();
-				callbacks.onRequest(msg);
+				EventNewMsg evNewMsg;
+				if (ev instanceof EventNewMsg){
+					evNewMsg = (EventNewMsg) ev;
+					Msg msg = evNewMsg.getMsg();
+					callbacks.onRequest(msg);
+				} else {
+					LOG.error("Event is not an instance of EventNewMsg");
+				}
+				
 				break;
 
 			case 6: // msg sent complete
