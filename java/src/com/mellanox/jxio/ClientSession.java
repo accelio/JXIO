@@ -44,7 +44,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	public ClientSession(EventQueueHandler eventQHandler, URI uri, Callbacks callbacks) {
 		this.eventQHandler = eventQHandler;
 		this.callbacks = callbacks;
-		if (!uri.getScheme().equals(new String("rdma"))) {
+		if (!uri.getScheme().equals("rdma")) {
 			LOG.fatal("mal formatted URI: " + uri);
 		}
 
@@ -125,8 +125,15 @@ public class ClientSession extends EventQueueHandler.Eventable {
 				if (LOG.isTraceEnabled()) {
 					LOG.trace("received msg event");
 				}
-				Msg msg = ((EventNewMsg) ev).getMsg();
-				callbacks.onReply(msg);
+				EventNewMsg evNewMsg;
+				if (ev instanceof EventNewMsg){
+					evNewMsg = (EventNewMsg) ev;
+					Msg msg = evNewMsg.getMsg();
+					callbacks.onReply(msg);
+				} else{
+					LOG.error("Event is not an instance of EventNewMsg");
+				}
+				
 				break;
 
 			default:
