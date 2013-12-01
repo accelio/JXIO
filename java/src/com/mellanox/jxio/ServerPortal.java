@@ -50,7 +50,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		this.eventQHndl = eventQHandler;
 		this.callbacks = callbacks;
 
-		if (!uri.getScheme().equals(new String("rdma"))) {
+		if (!uri.getScheme().equals("rdma")) {
 			LOG.fatal("mal formatted URI: " + uri);
 		}
 
@@ -154,10 +154,12 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		try {
 			newUri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), newPort, uri.getPath(), uri.getQuery(),
 			        uri.getFragment());
+			LOG.debug("uri with port " + newPort + " is " + newUri.toString());
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
+			LOG.error("URISyntaxException occured while trying to create a new URI");
 		}
-		LOG.debug("uri with port " + newPort + " is " + newUri.toString());
+		
 		return newUri;
 	}
 
