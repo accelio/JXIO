@@ -20,8 +20,8 @@
 #include "Msg.h"
 #include "MsgPool.h"
 
-Msg::Msg(char* buf, struct xio_mr* xio_mr, int in_buf_size, int out_buf_size, MsgPool* pool)
-{
+Msg::Msg(char* buf, struct xio_mr* xio_mr, int in_buf_size, int out_buf_size,
+		MsgPool* pool) {
 	this->buf = buf;
 	this->xio_mr = xio_mr;
 	this->in_buf_size = in_buf_size;
@@ -45,16 +45,24 @@ void Msg::set_xio_msg_client_fields() {
 
 	this->xio_msg->out.header.iov_base = NULL;
 	this->xio_msg->out.header.iov_len = 0;
-	this->xio_msg->out.data_iovlen = 1;
-	this->xio_msg->out.data_iov[0].iov_base = this->buf_out;
-	this->xio_msg->out.data_iov[0].iov_len = this->out_buf_size;
-	this->xio_msg->out.data_iov[0].mr = this->xio_mr;
+	if (this->out_buf_size == 0) {
+		this->xio_msg->out.data_iovlen = 0;
+	} else {
+		this->xio_msg->out.data_iovlen = 1;
+		this->xio_msg->out.data_iov[0].iov_base = this->buf_out;
+		this->xio_msg->out.data_iov[0].iov_len = this->out_buf_size;
+		this->xio_msg->out.data_iov[0].mr = this->xio_mr;
+	}
 
 	this->xio_msg->in.header.iov_base = NULL;
-	this->xio_msg->in.data_iovlen = 1;
-	this->xio_msg->in.data_iov[0].iov_base = this->buf;
-	this->xio_msg->in.data_iov[0].iov_len = this->in_buf_size;
-	this->xio_msg->in.data_iov[0].mr = this->xio_mr;
+	if (this->in_buf_size == 0) {
+		this->xio_msg->in.data_iovlen = 0;
+	} else {
+		this->xio_msg->in.data_iovlen = 1;
+		this->xio_msg->in.data_iov[0].iov_base = this->buf;
+		this->xio_msg->in.data_iov[0].iov_len = this->in_buf_size;
+		this->xio_msg->in.data_iov[0].mr = this->xio_mr;
+	}
 }
 
 void Msg::set_xio_msg_server_fields() {
@@ -124,17 +132,22 @@ void Msg::dump(struct xio_msg *xio_msg) {
 	if (xio_msg->type == XIO_MSG_TYPE_REQ)
 		log(lsDEBUG, "serial number:%ld \n", xio_msg->sn);
 	else if (xio_msg->type == XIO_MSG_TYPE_RSP)
-		log(lsDEBUG, "response:%p, serial number:%ld \n", xio_msg->request, ((xio_msg->request) ? xio_msg->request->sn : -1));
+		log(lsDEBUG,
+				"response:%p, serial number:%ld \n", xio_msg->request, ((xio_msg->request) ? xio_msg->request->sn : -1));
 
-	log(lsDEBUG, "in header: length:%d, address:%p, \n", xio_msg->in.header.iov_len, xio_msg->in.header.iov_base);
+	log(lsDEBUG,
+			"in header: length:%d, address:%p, \n", xio_msg->in.header.iov_len, xio_msg->in.header.iov_base);
 	log(lsDEBUG, "in data size:%d \n", xio_msg->in.data_iovlen);
 	for (int i = 0; i < xio_msg->in.data_iovlen; i++)
-		log(lsDEBUG, "in data[%d]: length:%d, address:%p, mr:%p\n", i, xio_msg->in.data_iov[i].iov_len, xio_msg->in.data_iov[i].iov_base, xio_msg->in.data_iov[i].mr);
+		log(lsDEBUG,
+				"in data[%d]: length:%d, address:%p, mr:%p\n", i, xio_msg->in.data_iov[i].iov_len, xio_msg->in.data_iov[i].iov_base, xio_msg->in.data_iov[i].mr);
 
-	log(lsDEBUG, "out header: length:%d, address:%p, \n", xio_msg->out.header.iov_len, xio_msg->out.header.iov_base);
+	log(lsDEBUG,
+			"out header: length:%d, address:%p, \n", xio_msg->out.header.iov_len, xio_msg->out.header.iov_base);
 	log(lsDEBUG, "out data size:%d \n", xio_msg->out.data_iovlen);
 	for (int i = 0; i < xio_msg->out.data_iovlen; i++)
-		log(lsDEBUG, "out data[%d]: length:%d, address:%p, mr:%p\n", i, xio_msg->out.data_iov[i].iov_len, xio_msg->out.data_iov[i].iov_base, xio_msg->out.data_iov[i].mr);
+		log(lsDEBUG,
+				"out data[%d]: length:%d, address:%p, mr:%p\n", i, xio_msg->out.data_iov[i].iov_len, xio_msg->out.data_iov[i].iov_base, xio_msg->out.data_iov[i].mr);
 	log(lsDEBUG, "*********************************************\n");
 }
 
