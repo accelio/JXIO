@@ -99,11 +99,17 @@ public class ClientPlayer extends GeneralPlayer {
 			// register next send timer
 			if (!this.player.isClosing) {
 				sendMsgTimerStart();
-				counterSentMsgs++;
 				// send msg
 				Msg m = this.player.mp.getMsg();
-				if (m != null && this.player.client.sendMessage(m) != true){
+				if (m != null) {
+					String str = "Client " + this.toString() + " sending msg # " + counterSentMsgs;
+					Utils.writeMsg(m, str);
+					if (this.player.client.sendMessage(m)) {
+						counterSentMsgs++;
+					} else {
+						LOG.error(this.toString() + " failed to send a message");
 						m.returnToParentPool();
+					}
 				} else {// MsgPool is empty (client used up all the msgs and
 					    // they didn't return from client yet
 					if (LOG.isDebugEnabled()) {
@@ -132,9 +138,6 @@ public class ClientPlayer extends GeneralPlayer {
 		LOG.info(this.toString() + ": connecting to '" + connecturi.toString() + "'");
 		this.client = new ClientSession(this.workerThread.getEQH(), connecturi, new JXIOCallbacks(this));
 
-		// prepare MsgPool
-		this.mp = new MsgPool(10, 64 * 1024, 256);
-
 		// register terminate timer
 		TimerList.Timer tTerminate = new TerminateTimer(this, this.runDurationSec * 1000000);
 		this.workerThread.start(tTerminate);
@@ -143,12 +146,6 @@ public class ClientPlayer extends GeneralPlayer {
 	@Override
 	protected void terminate() {
 		LOG.info(this.toString() + ": terminating. sent " + this.counterSentMsgs + "msgs");
-		if (this.counterReceivedMsgs != this.counterSentMsgs) {
-			LOG.error(this.toString() + "there were " + this.counterSentMsgs + " sent and " + this.counterReceivedMsgs
-			        + " received");
-		} else {
-			LOG.info(this.toString() + "sent and received same # of msgs");
-		}
 		this.isClosing = true;
 		this.client.close();
 	}
@@ -172,6 +169,12 @@ public class ClientPlayer extends GeneralPlayer {
 		public void onSessionEvent(EventName session_event, EventReason reason) {
 			if (this.c.isClosing == true && session_event == EventName.SESSION_TEARDOWN) {
 				LOG.info(c.toString() + ": onSESSION_TEARDOWN, reason='" + reason.toString() + "'");
+				if (c.counterReceivedMsgs != c.counterSentMsgs) {
+					LOG.error(c.toString() + "there were " + c.counterSentMsgs + " sent and " + c.counterReceivedMsgs
+					        + " received");
+				} else {
+					LOG.info(c.toString() + "sent and received same # of msgs");
+				}
 			} else {
 				LOG.error(c.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='"
 				        + reason.toString() + "'");
@@ -181,6 +184,10 @@ public class ClientPlayer extends GeneralPlayer {
 
 		public void onReply(Msg msg) {
 			counterReceivedMsgs++;
+			if (!Utils.checkIntegrity(msg)) {
+				LOG.error(c.toString() + "checksums for message #" + counterReceivedMsgs + " do not match.");
+			}
+
 			if (LOG.isTraceEnabled()) {
 				LOG.trace(c.toString() + ": onReply: msg = " + msg.toString() + "#" + counterReceivedMsgs);
 			}

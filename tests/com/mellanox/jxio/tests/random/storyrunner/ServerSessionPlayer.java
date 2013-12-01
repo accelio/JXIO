@@ -26,7 +26,7 @@ import com.mellanox.jxio.ServerSession;
 import com.mellanox.jxio.EventName;
 import com.mellanox.jxio.EventReason;
 
-public class ServerSessionPlayer extends GeneralPlayer {
+public class ServerSessionPlayer {
 
 	private final static Log         LOG = LogFactory.getLog(ServerSessionPlayer.class.getSimpleName());
 
@@ -38,7 +38,7 @@ public class ServerSessionPlayer extends GeneralPlayer {
 	private WorkerThread             workerThread;
 	private ServerSession            server;
 	private MsgPool                  mp;
-	private int counterReceivedMsgs;
+	private int                      counterReceivedMsgs;
 
 	public ServerSessionPlayer(ServerPortalPlayer spp, long newSessionKey, String srcIP) {
 		this.name = "SSP[" + id++ + "]";
@@ -57,29 +57,6 @@ public class ServerSessionPlayer extends GeneralPlayer {
 		return name;
 	}
 
-	@Override
-	public void attach(WorkerThread workerThread) {
-		LOG.info(this.toString() + " attaching to WorkerThread (" + workerThread.toString() + ")");
-		this.workerThread = workerThread;
-
-		// prepare MsgPool
-		// this.mp = new MsgPool(10, 64 * 1024, 256);
-		// this.workerThread.getEQH().bindMsgPool(this.mp);
-
-		// update ServerManager that it can 'accept' this 'newSessionKey'
-		this.spp.notifyReadyforWork(this, this.sk);
-	}
-
-	@Override
-	protected void initialize() {
-		LOG.info(this.toString() + ": initializing");
-	}
-
-	@Override
-	protected void terminate() {
-		LOG.info(this.toString() + ": received " + counterReceivedMsgs);
-	}
-
 	protected ServerSession getServerSession() {
 		return server;
 	}
@@ -93,17 +70,25 @@ public class ServerSessionPlayer extends GeneralPlayer {
 
 		public void onRequest(Msg msg) {
 			counterReceivedMsgs++;
-			if (LOG.isTraceEnabled()){
+
+			if (!Utils.checkIntegrity(msg)) {
+				LOG.error(ssp.toString() + "checksums for message #" + counterReceivedMsgs + " do not match.");
+			}
+			if (LOG.isTraceEnabled()) {
 				LOG.trace(ssp.toString() + ": onRequest: msg = " + msg.toString() + "#" + counterReceivedMsgs);
 			}
+			String str = "Server " + ssp.toString() + " received " + counterReceivedMsgs + "msgs";
+			Utils.writeMsg(msg, str);
 			ssp.server.sendResponce(msg);
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
 			if (session_event == EventName.SESSION_TEARDOWN) {
 				LOG.info(ssp.toString() + ": SESSION_TEARDOWN. reason='" + reason.toString() + "'");
+				LOG.info(ssp.toString() + ": received " + counterReceivedMsgs + "msgs");
 			} else {
-				LOG.error(ssp.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='" + reason.toString() + "'");
+				LOG.error(ssp.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='"
+				        + reason.toString() + "'");
 				System.exit(1);
 			}
 		}
