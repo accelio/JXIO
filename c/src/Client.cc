@@ -95,6 +95,10 @@ bool Client::onSessionEvent(xio_session_event eventType,
 		close_connection();
 		return false;
 
+	case XIO_SESSION_NEW_CONNECTION_EVENT:
+		log(lsDEBUG, "got XIO_SESSION_NEW_CONNECTION_EVENT in client=%p\n", this);
+		return false;
+
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
 		log(lsDEBUG, "got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT in client=%p\n", this);
 		close_connection();

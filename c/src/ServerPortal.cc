@@ -67,6 +67,10 @@ bool ServerPortal::onSessionEvent(xio_session_event eventType, struct xio_sessio
 		close_xio_connection(session, this->get_ctx_class()->ctx);
 		return false;
 
+	case XIO_SESSION_NEW_CONNECTION_EVENT:
+		log(lsDEBUG, "got XIO_SESSION_NEW_CONNECTION_EVENT\n");
+		return false;
+
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
 		log(lsDEBUG, "got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT\n");
 		close_xio_connection(session, this->get_ctx_class()->ctx);
