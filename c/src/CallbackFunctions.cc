@@ -34,7 +34,7 @@ void done_event_creating(Context *ctx, int sizeWritten) {
 // implementation of the XIO callbacks
 int on_new_session_callback(struct xio_session *session,
 		struct xio_new_session_req *req, void *cb_prv_data) {
-	log(lsDEBUG, "got on_new_session_callback\n");
+	log(lsDEBUG, "got on_new_session_callback for session=%p\n", session);
 
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
@@ -43,7 +43,6 @@ int on_new_session_callback(struct xio_session *session,
 			req);
 	done_event_creating(ctx, sizeWritten);
 
-	log(lsDEBUG, "the end of new session callback\n");
 	return 0;
 }
 
