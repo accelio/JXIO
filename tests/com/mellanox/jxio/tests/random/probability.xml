@@ -47,7 +47,8 @@
 	        <process value="random"/>
 		<server value="random"/>
         	<start_delay value="[100]:8-12"/>
-	        <duration value="[100]:1-5"/>
+		<duration value="[100]:1-5"/>
+		<reject value="[100]:0"/>
 		<msgs>
 		        <msg_count_factor value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
         		<msg_size_in_factor value="[20]:64-512, [50]:64, [30]:512-1024, [0]:1024-32000"/>

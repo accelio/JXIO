@@ -111,6 +111,9 @@ bool Client::onSessionEvent(xio_session_event eventType,
 		return true;
 
 	case XIO_SESSION_REJECT_EVENT:
+		log(lsDEBUG, "got XIO_SESSION_REJECT_EVENT. must delete session class in client=%p\n", this);
+		return true;
+
 	case XIO_SESSION_ERROR_EVENT:
 	default:
 		log(lsWARN, "UNHANDLED event: got '%s' event (%d).in client=%p\n",  xio_session_event_str(eventType), eventType, this);

@@ -108,6 +108,10 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		serverSession.setEventQueueHandlers(this.eventQHndl, portal.eventQHndl);
 		Bridge.forwardSession(portal.getUri(), serverSession.getId());
 	}
+	
+	public void reject(long ptrSes, EventReason res, String data){
+		Bridge.rejectSession(ptrSes, res.getIndex(), data, data.length());
+	}
 
 	boolean getIsExpectingEventAfterClose() {
 		return false;

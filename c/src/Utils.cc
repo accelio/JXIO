@@ -131,3 +131,22 @@ bool accept_session(struct xio_session *session) {
 	}
 	return true;
 }
+
+
+bool reject_session(struct xio_session *session, int reason,
+		char *user_context, size_t user_context_len) {
+
+	log(lsDEBUG, "before reject xio_session=%p. reason is %d\n", session, reason);
+
+	enum xio_status s = (enum xio_status)(reason + XIO_BASE_STATUS -1);
+
+	int retVal = xio_reject(session, s, user_context, user_context_len);
+	if (retVal) {
+		log(lsDEBUG, "ERROR, rejecting session=%p. error %d\n",session, retVal);
+		return false;
+	}
+	return true;
+}
+
+
+

@@ -300,6 +300,26 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptS
 	return retVal;
 }
 
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_rejectSessionNative(JNIEnv *env, jclass cls, jlong ptr_session, jint reason, jstring jdata, jint length)
+{
+	struct xio_session *session = (struct xio_session *)ptr_session;
+
+	const char *data = env->GetStringUTFChars(jdata, NULL);
+	char * data_copy = (char*)malloc (length + 1);
+	if(data_copy == NULL){
+		log(lsERROR, "memory allocation failed\n");
+		env->ReleaseStringUTFChars(jdata, data);
+		return false;
+	}
+
+	strcpy(data_copy, data);
+	bool retVal = reject_session(session, reason, data_copy, length);
+
+	env->ReleaseStringUTFChars(jdata, data);
+	free (data_copy);
+	return retVal;
+}
+
 
 extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMsgPoolNative(JNIEnv *env, jclass cls, jint msg_num, jint in_size, jint out_size, jlongArray ptr)
 {

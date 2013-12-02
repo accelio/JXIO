@@ -125,6 +125,12 @@ public class Bridge {
 		return ptr;
 	}
 	
+	private static native long rejectSessionNative(long ptrSes, int reason, String data, int length);
+	public static long rejectSession(long ptrSes, int reason, String data, int length) {
+		long ptr = rejectSessionNative(ptrSes, reason, data, length);
+		return ptr;
+	}
+	
 	private static native ByteBuffer createMsgPoolNative(int count, int inSize, int outSize, long[] ptrMsg);
 
 	public static ByteBuffer createMsgPool(int count, int inSize, int outSize, long[] ptrMsg) {

@@ -152,12 +152,14 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 		public void onSessionNew(long newSessionKey, String uriSrc, String srcIP) {
 			LOG.info(spp.toString() + ": onSessionNew: uri=" + uriSrc + ", srcaddr=" + srcIP);
+			if (uriSrc.contains("toReject")){
+				this.spp.listener.reject(newSessionKey, EventReason.NOT_SUPPORTED, "");
+				return;
+			}
 
 			ServerPortalPlayer sp = workerThreads.getPortal(this.spp.id);
 			ServerSessionPlayer ss = new ServerSessionPlayer(sp, newSessionKey, srcIP);
 			this.spp.listener.forward(sp.listener, ss.getServerSession());
-			// WorkerThread worker = this.sm.getWorkerThread();
-			// worker.addWorkAction(ss.getAttachAction());
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {

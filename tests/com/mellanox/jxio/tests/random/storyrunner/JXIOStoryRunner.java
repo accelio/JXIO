@@ -220,7 +220,12 @@ public class JXIOStoryRunner implements StoryRunner {
 				Character machine = getCharacterFromListById(machines, server_process.getAttribute("machine"));
 				String hostname = machine.getAttribute("address");
 				int port = Integer.valueOf(server.getAttribute("port"));
-				URI uri = new URI("rdma://" + hostname + ":" + port + "/");
+				int reject = Integer.valueOf(client.getAttribute("reject"));
+				String suffix = "";
+				if (reject == 1){
+					suffix = "toReject";
+				}
+				URI uri = new URI("rdma://" + hostname + ":" + port + "/"+suffix);
 
 				if (startDelay + duration > max_duration) {
 					max_duration = startDelay + duration;
