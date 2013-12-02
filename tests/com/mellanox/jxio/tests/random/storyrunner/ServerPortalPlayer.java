@@ -29,21 +29,22 @@ import com.mellanox.jxio.MsgPool;
 
 public class ServerPortalPlayer extends GeneralPlayer {
 
-	private final static Log       LOG = LogFactory.getLog(ServerPortalPlayer.class.getSimpleName());
+	private final static Log             LOG = LogFactory.getLog(ServerPortalPlayer.class.getSimpleName());
 
-	private final int              id;
-	private final String           name;
-	private final URI              uri;
-	private final int              numWorkers;
-	private final long             runDurationSec;
-	private final long             startDelaySec;
-	private WorkerThread           workerThread;
-	private WorkerThreads          workerThreads;
-	private ServerPortal           listener;
-	private final ArrayList<MsgPoolData> msgPools;
+	private final int                    id;
+	private final String                 name;
+	private final URI                    uri;
+	private final int                    numWorkers;
+	private final long                   runDurationSec;
+	private final long                   startDelaySec;
+	private WorkerThread                 workerThread;
+	private WorkerThreads                workerThreads;
+	private ServerPortal                 listener;
+	private final ArrayList<MsgPoolData> msgPoolsData;
+	private ArrayList<MsgPool>           msgPools;
 
 	public ServerPortalPlayer(int numWorkers, int id, int instance, URI uri, long startDelaySec, long runDurationSec,
-	        WorkerThreads workerThreads, ArrayList<MsgPoolData> msgPools) {
+	        WorkerThreads workerThreads, ArrayList<MsgPoolData> msgPoolsData) {
 		this.name = new String("SPP[" + id + ":" + instance + "]");
 		this.id = id;
 		this.uri = uri;
@@ -51,7 +52,8 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		this.runDurationSec = runDurationSec;
 		this.startDelaySec = startDelaySec;
 		this.workerThreads = workerThreads;
-		this.msgPools = msgPools;
+		this.msgPoolsData = msgPoolsData;
+		msgPools = new ArrayList<MsgPool>();
 		LOG.debug("new " + this.toString() + " done");
 	}
 
@@ -70,8 +72,9 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 		this.workerThread = workerThread;
 
-		for (MsgPoolData p : msgPools) {
+		for (MsgPoolData p : msgPoolsData) {
 			MsgPool pool = new MsgPool(p.getCount(), p.getInSize(), p.getOutSize());
+			msgPools.add(pool);
 			workerThread.getEQH().bindMsgPool(pool);
 		}
 
@@ -103,7 +106,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		// workers
 		for (int i = 0; i < numWorkers; i++) {
 			ServerPortalPlayer spp = new ServerPortalPlayer(0, this.id, i + 1, this.listener.getUriForServer(), 0,
-			        runDurationSec, workerThreads, msgPools);
+			        runDurationSec, workerThreads, msgPoolsData);
 			workerThreads.getWorkerThread().addWorkAction(spp.getAttachAction());
 		}
 	}
@@ -112,6 +115,10 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	protected void terminate() {
 		LOG.info(this.toString() + ": terminating");
 		this.listener.close();
+		for (MsgPool pool : msgPools) {
+			this.workerThread.getEQH().releaseMsgPool(pool);
+			pool.deleteMsgPool();
+		}
 		// isclosing = true?
 	}
 

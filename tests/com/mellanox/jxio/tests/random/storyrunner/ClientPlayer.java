@@ -148,6 +148,7 @@ public class ClientPlayer extends GeneralPlayer {
 		LOG.info(this.toString() + ": terminating. sent " + this.counterSentMsgs + "msgs");
 		this.isClosing = true;
 		this.client.close();
+		this.mp.deleteMsgPool();
 	}
 
 	class JXIOCallbacks implements ClientSession.Callbacks {
