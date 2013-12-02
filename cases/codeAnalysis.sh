@@ -66,12 +66,15 @@ cd $RUNNING_DIR
 # Calculate number of errors
 let "JAVA_ERRORS = `wc -l ${JAVA_REPORT_FILE} | cut -d " " -f 1`"
 let "C_ERRORS = `wc -l ${C_REPORT_FILE} | cut -d " " -f 1`"
+TOTAL_ERRORS=$(($JAVA_ERRORS + $C_ERRORS))
 
 # Define report parameters
 attachment="$JAVA_REPORT_FILE $C_REPORT_FILE"
 subject="JXIO Code Analysis Report"
-if ([ $JAVA_ERRORS == 0 ] && [ $C_ERRORS == 0 ]); then
+if ([ $TOTAL_ERRORS == 0 ]); then
 	subject="${subject} - no issues found"
+else
+	subject="${subject} - found $TOTAL_ERRORS issue(s)"
 fi
 recipients="alongr@mellanox.com katyak@mellanox.com alexr@mellanox.com"
 MAIL_MESSAGE=mail.html
