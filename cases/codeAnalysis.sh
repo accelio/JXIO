@@ -11,7 +11,7 @@ cd $RUNNING_DIR
 
 # Configure report files
 JAVA_REPORT_FILE="java_analysis_report.txt"
-C_REPORT_FILE="c_analysis_report.txt"
+C_REPORT_FILE="c_analysis_report.html"
 
 ######################
 # Java Code Analysis #
@@ -49,6 +49,9 @@ if [ $? != 0 ]; then
 fi
 echo -e "\nDone!\n"
 
+# Calculate number of errors
+let "JAVA_ERRORS = `wc -l ${JAVA_REPORT_FILE} | cut -d " " -f 1`"
+
 # Cleaning up
 echo -e "\nCleaning up after findbugs...!"
 rm -rf findbugs
@@ -59,19 +62,38 @@ echo -e "Done!\n"
 ###################
 
 echo -e "\n--- C Code Analysis ---\n"
-touch $C_REPORT_FILE
-# To be completed
+
+# Move back to running directory
+cd $RUNNING_DIR
+
+# Move to the C code src folder
+cd ../c/src/
+
+# Run Covertiy
+echo -e "\nRunning Coverity...!\n"
+make cov > $RUNNING_DIR/$C_REPORT_FILE
+if [ $? != 0 ]; then
+	echo -e "\n[ERROR] Error while running coverity!"
+	exit 1
+fi
+echo -e "\nDone!\n"
+
+# Calculate number of errors
+let "C_ERRORS = `grep "C/C++ errors" ${RUNNING_DIR}/${C_REPORT_FILE} | head -n 1 | cut -d " " -f 2`"
+
+# Config Report
+cp cov-build/c/output/errors/index.html ${RUNNING_DIR}/${C_REPORT_FILE}
 
 ################
 # Send Reports #
 ################
 
+echo -e "\n--- Sending Report ---\n"
+
 # Move back to running directory
 cd $RUNNING_DIR
 
 # Calculate number of errors
-let "JAVA_ERRORS = `wc -l ${JAVA_REPORT_FILE} | cut -d " " -f 1`"
-let "C_ERRORS = `wc -l ${C_REPORT_FILE} | cut -d " " -f 1`"
 TOTAL_ERRORS=$(($JAVA_ERRORS + $C_ERRORS))
 
 # Define report parameters
@@ -82,7 +104,7 @@ if ([ $TOTAL_ERRORS == 0 ]); then
 else
 	subject="${subject} - found $TOTAL_ERRORS issue(s)"
 fi
-recipients="alongr@mellanox.com" #katyak@mellanox.com alexr@mellanox.com"
+recipients="alongr@mellanox.com katyak@mellanox.com alexr@mellanox.com"
 MAIL_MESSAGE=mail.html
 MAIL_MESSAGE_HTML="<h1>JXIO Code Analysis Report</h1><br>Attached are the JXIO Java and C code analysis for `date +%d/%m/%y`.<br><br>"
 if [ $JAVA_ERRORS != 0 ]; then
