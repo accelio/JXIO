@@ -239,6 +239,17 @@ public class JXIOStoryRunner implements StoryRunner {
 		return chracterList;
 	}
 
+	/**
+     * Returns a mapping a characters to a list of matching characters by a given attribute.
+     * 
+     * @param supportingCharacter
+     *            A list of characters the sublists of it will be the values of the returned map.
+     * @param attribute
+     *            The attribute by which the supporting characters will be matched to the main character.
+     * @param Characters
+     *            A list of characters the will be the keys of the returned map.
+     * @return A map that matches the characters to the relevant supporting characters.
+     */
 	private Map<Character, List<Character>> mapCharactersByCharacter(List<Character> supportingCharacter,
 	        String attribute, List<Character> Characters) {
 		Map<Character, List<Character>> map = new HashMap<Character, List<Character>>();
@@ -291,6 +302,14 @@ public class JXIOStoryRunner implements StoryRunner {
 		return list;
 	}
 
+	/**
+     * Updates the maps of a given chapter to map and store server players, client players, max durations and worker
+     * threads.
+     * 
+     * @param chapter
+     *            The chapter which it's maps should be updated.
+     * @return 0 on success, -1 otherwise.
+     */
 	private int mapPlayers(Chapter chapter) {
 
 		chapter.processServerPlayers = new HashMap<Character, List<ServerPortalPlayer>>();
@@ -346,6 +365,16 @@ public class JXIOStoryRunner implements StoryRunner {
 				Character server = getCharacterFromListByAttribute(servers, "id", client.getAttribute("server"));
 				int startDelay = Integer.valueOf(client.getAttribute("start_delay"));
 				int tps = Integer.valueOf(client.getAttribute("tps"));
+
+				// Get client hoops
+				List<Character> supportingCharacters = client.getSupportingCharacters();
+				List<Character> hoops = null;
+				for (Character charcter : supportingCharacters) {
+					if (charcter.getCharacterType().equals("hoops")) {
+						hoops = charcter.getSupportingCharacters();
+						break;
+					}
+				}
 
 				// Get client msgs
 				int count = Integer.valueOf(client.getAttribute("msg_count_factor"));
@@ -481,7 +510,7 @@ public class JXIOStoryRunner implements StoryRunner {
 	/**
      * A JXIO Process to be run as a forked task.
      */
-	static public class JXIOProcessTask extends RecursiveTask<Integer> implements Callable<Integer>{
+	static public class JXIOProcessTask extends RecursiveTask<Integer> implements Callable<Integer> {
 
 		private final Character                machine;
 		private final Character                process;
@@ -569,12 +598,12 @@ public class JXIOStoryRunner implements StoryRunner {
 		}
 
 		/**
-         * The funciton that is invoked when running a collection of forked processes. Computes the total running time of the process
-         * (can be used for benchmarking).
+         * The funciton that is invoked when running a collection of forked processes. Computes the total running time
+         * of the process (can be used for benchmarking).
          */
 		public Integer call() throws Exception {
-	        return compute();
-        }
+			return compute();
+		}
 	}
 
 }
