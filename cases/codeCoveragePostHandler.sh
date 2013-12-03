@@ -80,8 +80,17 @@ if (( $? != 0 ));then
 fi
 
 javaCoverageSummary=$javaCoverageDir/$SUMMARY_FILENAME
+javaSrcRemote=$javaCoverageDir/$SRC_DIRNAME
+javaSrcLocal=$JXIO_DIR/$JXIO_RELATIVE_JAVA_SRC
+if [[ $javaSrcLocal == "/" ]];then
+	echo "$echoPrefix: java source can not be found"
+	exit 1
+fi
+cp -r $javaSrcLocal/* $javaSrcRemote
+
+
 tmpFile=$javaCoverageDir/DELETE_ME_mars
-bash $COBERTURA_DIR/cobertura-check.sh --datafile $javaCoverageFinal --branch 100 --line 100 --totalbranch 100 --totalline 100 $JXIO_DIR/$JXIO_RELATIVE_JAVA_SRC 2&> $tmpFile
+bash $COBERTURA_DIR/cobertura-check.sh --datafile $javaCoverageFinal --branch 100 --line 100 --totalbranch 100 --totalline 100 $javaSrcRemote 2&> $tmpFile
 #if (( $? != 30 ));then
 #	echo "$echoPrefix: cobertura-check failure"	
 #	exit 1
@@ -90,7 +99,7 @@ cat $tmpFile | awk '($1=="Project"){print $5 ": " $9}' > $javaCoverageSummary
 rm $tmpFile
 
 javaCoverageReportDir=$javaCoverageDir/$REPORT_DIRNAME
-bash $COBERTURA_DIR/cobertura-report.sh --datafile $javaCoverageFinal --destination $javaCoverageReportDir $JXIO_DIR/$JXIO_RELATIVE_JAVA_SRC
+bash $COBERTURA_DIR/cobertura-report.sh --datafile $javaCoverageFinal --destination $javaCoverageReportDir $javaSrcRemote
 if (( $? != 0 ));then
 	echo "$echoPrefix: cobertura-report failure"
 	exit 1
