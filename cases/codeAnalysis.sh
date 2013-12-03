@@ -41,6 +41,12 @@ cd $RUNNING_DIR
 # Run findbugs
 echo -e "\nRunning findbugs...!\n"
 findbugs/findbugs-2.0.2/bin/findbugs -auxclasspath ../lib/commons-logging.jar -low  ../bin/jxio.jar > $JAVA_REPORT_FILE
+if [ $? != 0 ]; then
+	echo -e "\n[ERROR] Exeption occurred while running findbugs!"
+	echo -e "It is possible that the .jar file needed doesn't exist."
+	echo -e "Try rebuilding JXIO by running ./build.sh.\n"
+	exit 1
+fi
 echo -e "\nDone!\n"
 
 # Cleaning up
@@ -76,7 +82,7 @@ if ([ $TOTAL_ERRORS == 0 ]); then
 else
 	subject="${subject} - found $TOTAL_ERRORS issue(s)"
 fi
-recipients="alongr@mellanox.com katyak@mellanox.com alexr@mellanox.com"
+recipients="alongr@mellanox.com" #katyak@mellanox.com alexr@mellanox.com"
 MAIL_MESSAGE=mail.html
 MAIL_MESSAGE_HTML="<h1>JXIO Code Analysis Report</h1><br>Attached are the JXIO Java and C code analysis for `date +%d/%m/%y`.<br><br>"
 if [ $JAVA_ERRORS != 0 ]; then
@@ -93,7 +99,7 @@ echo $MAIL_MESSAGE_HTML > $MAIL_MESSAGE
 # Send report
 mutt -e "set content_type=text/html" -a $attachment -s "${subject}" -- ${recipients} < $MAIL_MESSAGE > /dev/null 2>&1
 while [ $? != 0 ]; do
-        echo "mutt -e "set content_type=text/html" -a $attachment -s "${subject}" -- ${recipients} < $MAIL_MESSAGE > /dev/null 2>&1"
+        mutt -e "set content_type=text/html" -a $attachment -s "${subject}" -- ${recipients} < $MAIL_MESSAGE > /dev/null 2>&1
 done
 echo -e  "\nSent!\n"
 
