@@ -148,7 +148,6 @@ public class ClientPlayer extends GeneralPlayer {
 		LOG.info(this.toString() + ": terminating. sent " + this.counterSentMsgs + "msgs");
 		this.isClosing = true;
 		this.client.close();
-		this.mp.deleteMsgPool();
 	}
 
 	class JXIOCallbacks implements ClientSession.Callbacks {
@@ -176,6 +175,7 @@ public class ClientPlayer extends GeneralPlayer {
 				} else {
 					LOG.info(c.toString() + "sent and received same # of msgs");
 				}
+				c.mp.deleteMsgPool();
 			} else {
 				LOG.error(c.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='"
 				        + reason.toString() + "'");
@@ -189,7 +189,6 @@ public class ClientPlayer extends GeneralPlayer {
 				LOG.error(c.toString() + "checksums for message #" + counterReceivedMsgs + " do not match.");
 				System.exit(1);
 			}
-
 			if (LOG.isTraceEnabled()) {
 				LOG.trace(c.toString() + ": onReply: msg = " + msg.toString() + "#" + counterReceivedMsgs);
 			}
