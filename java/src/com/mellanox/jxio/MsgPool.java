@@ -53,7 +53,7 @@ public class MsgPool {
 
 	public Msg getMsg() {
 		if (listMsg.isEmpty()) {
-			LOG.error("there are no more messages in pool");
+			LOG.warn("there are no more messages in pool");
 			return null;
 		}
 		Msg msg = listMsg.remove(0); // 1 is for debugging. should be 0
