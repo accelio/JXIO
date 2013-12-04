@@ -78,10 +78,11 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		}
 		Bridge.closeSessionClient(getId());
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("at the end of SessionClientClose");
-		}
 		setIsClosing(true);
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("at the end of SessionClientClose" + this.toString());
+		}
 		return true;
 	}
 
@@ -123,17 +124,17 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 			case 4: // on reply
 				if (LOG.isTraceEnabled()) {
-					LOG.trace("received msg event");
+					LOG.trace("received msg event at client" + this.toString());
 				}
 				EventNewMsg evNewMsg;
-				if (ev instanceof EventNewMsg){
+				if (ev instanceof EventNewMsg) {
 					evNewMsg = (EventNewMsg) ev;
 					Msg msg = evNewMsg.getMsg();
 					callbacks.onReply(msg);
-				} else{
-					LOG.error("Event is not an instance of EventNewMsg");
+				} else {
+					LOG.error("Event is not an instance of EventNewMsg" + this.toString());
 				}
-				
+
 				break;
 
 			default:
