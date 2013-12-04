@@ -55,6 +55,7 @@ void Msg::set_xio_msg_client_fields() {
 	}
 
 	this->xio_msg->in.header.iov_base = NULL;
+	this->xio_msg->in.header.iov_len = 0;
 	if (this->in_buf_size == 0) {
 		this->xio_msg->in.data_iovlen = 0;
 	} else {
