@@ -83,7 +83,6 @@ struct  event_struct {
 class Events {
 public:
 	int size;
-	struct event_struct event;
 
 	Events();
 
