@@ -187,6 +187,7 @@ public class ClientPlayer extends GeneralPlayer {
 			counterReceivedMsgs++;
 			if (!Utils.checkIntegrity(msg)) {
 				LOG.error(c.toString() + "checksums for message #" + counterReceivedMsgs + " do not match.");
+				System.exit(1);
 			}
 
 			if (LOG.isTraceEnabled()) {

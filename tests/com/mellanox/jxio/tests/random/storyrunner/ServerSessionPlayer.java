@@ -73,6 +73,7 @@ public class ServerSessionPlayer {
 
 			if (!Utils.checkIntegrity(msg)) {
 				LOG.error(ssp.toString() + "checksums for message #" + counterReceivedMsgs + " do not match.");
+				System.exit(1);
 			}
 			if (LOG.isTraceEnabled()) {
 				LOG.trace(ssp.toString() + ": onRequest: msg = " + msg.toString() + "#" + counterReceivedMsgs);
