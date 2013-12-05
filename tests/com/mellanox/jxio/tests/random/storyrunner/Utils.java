@@ -19,24 +19,30 @@ package com.mellanox.jxio.tests.random.storyrunner;
 import com.mellanox.jxio.Msg;
 import java.util.zip.CRC32;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public final class Utils {
+	private final static Log LOG = LogFactory.getLog(ClientPlayer.class.getSimpleName());
 
 	// private c-tor to avoid instantiation of the class
 	private Utils() {
 	}
 
-	public static void writeMsg(Msg m, String str) {
+	public static void writeMsg(Msg m, String str, long time) {
 		CRC32 checksum = new CRC32();
 		int size = str.length();
 		byte bytes[] = str.getBytes();
 		checksum.update(bytes, 0, size);
 		long lngChecksum = checksum.getValue();
+		m.getOut().putLong(time);
 		m.getOut().putLong(lngChecksum);
 		m.getOut().putInt(size);
 		m.getOut().put(bytes);
 	}
 
 	public static boolean checkIntegrity(Msg msg) {
+		long sendTime = msg.getIn().getLong();
 		long rcvCheckSum = msg.getIn().getLong();
 		int size = msg.getIn().getInt();
 		byte bytes[] = new byte[size];

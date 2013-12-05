@@ -79,7 +79,8 @@ public class ServerSessionPlayer {
 				LOG.trace(ssp.toString() + ": onRequest: msg = " + msg.toString() + "#" + counterReceivedMsgs);
 			}
 			String str = "Server " + ssp.toString() + " received " + counterReceivedMsgs + "msgs";
-			Utils.writeMsg(msg, str);
+			long time = msg.getIn().getLong(0);
+			Utils.writeMsg(msg, str, time);
 			ssp.server.sendResponce(msg);
 		}
 
