@@ -104,7 +104,7 @@ public class ClientPlayer extends GeneralPlayer {
 				Msg m = this.player.mp.getMsg();
 				if (m != null) {
 					String str = "Client " + this.toString() + " sending msg # " + counterSentMsgs;
-					long sendTime = System.nanoTime();
+					final long sendTime = System.nanoTime();
 					Utils.writeMsg(m, str, sendTime);
 					if (this.player.client.sendMessage(m)) {
 						counterSentMsgs++;
@@ -198,7 +198,7 @@ public class ClientPlayer extends GeneralPlayer {
 				System.exit(1);
 			}
 
-			long roundTrip = roundTrip(msg);
+			final long roundTrip = roundTrip(msg);
 			if (roundTrip > 100000000) { // 100 milisec
 				LOG.error(c.toString() + " round trip took " + roundTrip / 1000000 + "milisec");
 				System.exit(1);
@@ -210,12 +210,12 @@ public class ClientPlayer extends GeneralPlayer {
 		}
 
 		private long roundTrip(Msg m) {
-			long recTime = System.nanoTime();
-			long sendTime = m.getIn().getLong(0);
-			long rTrip = recTime - sendTime;
+			final long recTime = System.nanoTime();
+			final long sendTime = m.getOut().getLong(0);
+			final long rTrip = recTime - sendTime;
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(c.toString() + ": roundTrip for message " + counterReceivedMsgs + " took " + rTrip / 1000000
-				        + "nanosec");
+				LOG.trace(c.toString() + ": roundTrip for message " + counterReceivedMsgs + " took " + rTrip / 1000
+				        + "usec");
 			}
 			return rTrip;
 		}
