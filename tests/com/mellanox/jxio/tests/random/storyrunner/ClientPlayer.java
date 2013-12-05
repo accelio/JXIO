@@ -44,6 +44,7 @@ public class ClientPlayer extends GeneralPlayer {
 	private int               counterReceivedMsgs;
 	private int               counterSentMsgs;
 	private final MsgPoolData poolData;
+	private long              startSessionTime;
 
 	public ClientPlayer(int id, URI uri, long startDelaySec, long runDurationSec, long msgRate, MsgPoolData pool) {
 		this.name = new String("CP[" + id + "]");
@@ -137,6 +138,7 @@ public class ClientPlayer extends GeneralPlayer {
 
 		// connect to server
 		LOG.info(this.toString() + ": connecting to '" + connecturi.toString() + "'");
+		this.startSessionTime = System.nanoTime();
 		this.client = new ClientSession(this.workerThread.getEQH(), connecturi, new JXIOCallbacks(this));
 
 		// register terminate timer
@@ -163,7 +165,12 @@ public class ClientPlayer extends GeneralPlayer {
 		}
 
 		public void onSessionEstablished() {
-			LOG.info(c.toString() + ": onSessionEstablished");
+			final long timeSessionEstablished = System.nanoTime() - c.startSessionTime;
+			if (timeSessionEstablished > 100000000) { // 100 milisec
+				LOG.error(c.toString() + " session establish took " + timeSessionEstablished / 1000 + "usec");
+				System.exit(1);
+			}
+			LOG.info(c.toString() + ": onSessionEstablished. took " + timeSessionEstablished / 1000 + "usec");
 			this.c.sendMsgTimerStart();
 		}
 
@@ -190,10 +197,10 @@ public class ClientPlayer extends GeneralPlayer {
 				LOG.error(c.toString() + "checksums for message #" + counterReceivedMsgs + " do not match.");
 				System.exit(1);
 			}
-			
+
 			long roundTrip = roundTrip(msg);
-			if (roundTrip > 100000000){ //100 milisec
-				LOG.error(c.toString() + " round trip took " + roundTrip/1000000 + "milisec");
+			if (roundTrip > 100000000) { // 100 milisec
+				LOG.error(c.toString() + " round trip took " + roundTrip / 1000000 + "milisec");
 				System.exit(1);
 			}
 			if (LOG.isTraceEnabled()) {
@@ -201,13 +208,14 @@ public class ClientPlayer extends GeneralPlayer {
 			}
 			msg.returnToParentPool();
 		}
-		
-		private long roundTrip(Msg m){
+
+		private long roundTrip(Msg m) {
 			long recTime = System.nanoTime();
 			long sendTime = m.getIn().getLong(0);
 			long rTrip = recTime - sendTime;
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(c.toString() + ": roundTrip for message " + counterReceivedMsgs + " took " + rTrip/1000000 + "nanosec");
+				LOG.trace(c.toString() + ": roundTrip for message " + counterReceivedMsgs + " took " + rTrip / 1000000
+				        + "nanosec");
 			}
 			return rTrip;
 		}
