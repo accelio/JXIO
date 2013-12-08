@@ -55,7 +55,7 @@ public class Main {
 				seed = (args.length != 4) ? new Random().nextLong() : Long.valueOf(args[3]);
 				// Create a new StoryTeller Instance
 				File probabiltyFile = new File(xmlFileDir + "/" + xmlFileName);
-				storyTeller = new StoryTeller(probabiltyFile, seed); // If needed add second argument 'seed'
+				storyTeller = new StoryTeller(probabiltyFile, seed);
 				if (tellstory.equalsIgnoreCase("YES")){
 					// Tell Story
 					storyTeller.read();
