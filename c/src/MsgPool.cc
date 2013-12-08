@@ -131,7 +131,7 @@ MsgPool::~MsgPool()
 Msg* MsgPool::get_msg_from_pool()
 {
 	if (msg_list->empty()) {
-		log(lsFATAL, "msg list is empty\n");
+		log(lsFATAL, "msg list is empty at MsgPool=%p. EXITING\n", this);
 		exit(1);
 	}
 	Msg * msg = msg_list->front();
