@@ -24,4 +24,4 @@ fi
 
 # Run the tests
 echo -e "\nRunning random test....\n"
-java -Dlog4j.configuration=com/mellanox/jxio/tests/random/storyrunner/log4j.properties.randomtest -cp "$COBERTURA_JAR_PATH:../bin/jxio.jar:../lib/commons-logging.jar:../lib/log4j-1.2.15.jar:." $java_coverage_props com.mellanox.jxio.tests.random.Main $1 $2 $3
+java -Dlog4j.configuration=com/mellanox/jxio/tests/random/storyrunner/log4j.properties.randomtest -cp "$COBERTURA_JAR_PATH:../bin/jxio.jar:../lib/commons-logging.jar:../lib/log4j-1.2.15.jar:." $java_coverage_props com.mellanox.jxio.tests.random.Main $1 $2 $3 $4
