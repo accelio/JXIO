@@ -10,6 +10,7 @@ RUNNING_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $RUNNING_DIR
 
 # Configure report files
+REPORTS_STORAGE="/.autodirect/acclgwork/jxio/static_code_analysis/"
 JAVA_REPORT_FILE="java_analysis_report.txt"
 C_REPORT_FILE="c_analysis_report.html"
 
@@ -83,6 +84,30 @@ let "C_ERRORS = `grep "C/C++ errors" ${RUNNING_DIR}/${C_REPORT_FILE} | head -n 1
 
 # Config Report
 cp cov-build/c/output/errors/index.html ${RUNNING_DIR}/${C_REPORT_FILE}
+
+#################
+# Store Reports #
+#################
+
+echo -e "\n--- Storing Reports ---\n"
+
+# Move back to running directory
+cd $RUNNING_DIR
+
+# Storing
+folder=`date +"%Y_%m_%d"`
+mkdir -p ${REPORTS_STORAGE}/${folder}
+
+# Store Java report
+cp ${JAVA_REPORT_FILE} ${REPORTS_STORAGE}/${folder}
+
+# Store C report
+toreplace="1\/"
+replacewith="\\\\\\\\mtrlabfs01\\\\acclgwork\\\\jxio\\\\static_code_analysis\\\\$folder\\\\src\\\\cov-build\\\\c\\\\output\\\\errors\\\\1\\\\"
+sed -i "s/$toreplace/$replacewith/g" ${C_REPORT_FILE}
+
+cp ${C_REPORT_FILE} ${REPORTS_STORAGE}/${folder}
+cp -r ../c/src/ ${REPORTS_STORAGE}/${folder}
 
 ################
 # Send Reports #
