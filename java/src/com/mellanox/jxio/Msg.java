@@ -18,14 +18,14 @@ package com.mellanox.jxio;
 
 import java.nio.ByteBuffer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+//import org.apache.commons.logging.Log;
+//import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.EventQueueHandler.Eventable;
 
 public class Msg {
 
-	private static final Log LOG = LogFactory.getLog(Msg.class.getCanonicalName());
+	//private static final Log LOG = LogFactory.getLog(Msg.class.getCanonicalName());
 	private long             refToCObject;
 	private Eventable        clientSession;
 	private MsgPool          msgPool;                                              // reference to MsgPool holding this
