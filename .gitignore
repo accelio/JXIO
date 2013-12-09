@@ -28,6 +28,9 @@ config.status
 config/
 configure
 libtool
+depcomp
+install-sh
+missing
 
 # Project/Eclipse
 .cproject

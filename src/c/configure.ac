@@ -1,7 +1,7 @@
 # this is example-file: configure.ac
 
 # initial information about the project
-AC_INIT([libjx],[1.0],[])
+AC_INIT([libjxio],[1.0],[])
 
 
 
@@ -20,7 +20,8 @@ AC_PROG_CXX([g++])
 # reset compiler flags to initial flags
 CFLAGS=$OLD_CFLAGS
 
-AM_INIT_AUTOMAKE([1.9])
+AM_INIT_AUTOMAKE([1.11])
+AM_SILENT_RULES([yes])
 
 # use the C compiler for the following checks
 AC_LANG([C],[C++])

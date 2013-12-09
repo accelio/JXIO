@@ -1,3 +1,3 @@
-[submodule "accelio"]
-	path = accelio
+[submodule "src/accelio"]
+	path = src/accelio
 	url = https://github.com/accelio/accelio.git

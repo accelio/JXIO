@@ -7,7 +7,8 @@ echo -e "\nThe JXIO top directory is $TOP_DIR\n"
 
 TARGET=jxio.jar
 BIN_FOLDER=$TOP_DIR/bin
-SRC_JAVA_FOLDER=$TOP_DIR/java/src
+LIB_FOLDER=$TOP_DIR/src/lib
+SRC_JAVA_FOLDER=$TOP_DIR/src/java
 SRC_JAVA_FILES="$SRC_JAVA_FOLDER/com/mellanox/jxio/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/impl/*.java"
 NATIVE_LIBS="libjxio.so libxio.so"
 
@@ -24,7 +25,7 @@ mkdir -p $BIN_FOLDER
 echo "Build Accelio....(libxio c code)"
 cd $TOP_DIR
 git submodule update --init
-cd accelio/ && ./autogen.sh && ./configure --disable-raio-build && make && cp -f src/usr/.libs/libxio.so $BIN_FOLDER
+cd src/accelio/ && ./autogen.sh && ./configure --disable-raio-build --enable-silent-rules && make && cp -f src/usr/.libs/libxio.so $BIN_FOLDER
 if [[ $? != 0 ]] ; then
     exit 1
 fi
@@ -32,13 +33,12 @@ fi
 ## Build JX
 echo "Build JXIO... (c code)"
 cd $TOP_DIR
-
 if [[ -n "$CODE_COVERAGE_ON" ]];then
 	sudo rm -rf $COVFILE
 	cov01 --on
 	cov01 --status
 fi
-cd c/ && ./autogen.sh && ./configure && make clean && make && cp -f src/libjxio.so $BIN_FOLDER
+cd src/c/ && ./autogen.sh && ./configure && make clean && make && cp -f src/libjxio.so $BIN_FOLDER
 if [[ $? != 0 ]] ; then
     exit 1
 fi
@@ -48,7 +48,10 @@ fi
 
 echo "Build JXIO... (java code)"
 cd $TOP_DIR
-javac -cp lib/commons-logging.jar -d $BIN_FOLDER $SRC_JAVA_FILES
+javac -cp $LIB_FOLDER/commons-logging.jar -d $BIN_FOLDER $SRC_JAVA_FILES
+if [[ $? != 0 ]] ; then
+    exit 1
+fi
 
 echo "Creating JXIO jar..."
 cd $BIN_FOLDER && jar -cfm $TARGET ../manifest.txt com $NATIVE_LIBS
