@@ -19,6 +19,7 @@ package com.mellanox.jxio;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -179,13 +180,15 @@ public class EventQueueHandler implements Runnable {
 		}
 		while (!this.eventables.isEmpty()) {
 			int waitForEvent = 0;
-			for (Map.Entry<Long, Eventable> entry : this.eventables.entrySet()) {
-				Eventable ev = entry.getValue();
+			Iterator<Map.Entry<Long, Eventable>> it = this.eventables.entrySet().iterator();
+			while (it.hasNext()) {
+				Eventable ev = it.next().getValue();
 				if (!ev.getIsClosing()) {
 					if (LOG.isDebugEnabled()) {
-						LOG.debug("[" + getId() + "] closing eventable with refToCObject " + entry.getKey());
+						LOG.debug("[" + getId() + "] closing eventable with refToCObject " + ev.getId());
 					}
 					ev.close();
+					it = this.eventables.entrySet().iterator();
 				}
 				if (ev.getIsExpectingEventAfterClose()) {
 					waitForEvent++;
