@@ -33,7 +33,7 @@ PORT=$3
 
 # Compile
 echo -e "\nCompiling JAVA files....\n"
-javac -cp "../bin/jxio.jar:../lib/commons-logging.jar" com/mellanox/jxio/helloworld/*.java
+javac -cp "../bin/jxio.jar:../src/lib/commons-logging.jar" com/mellanox/jxio/helloworld/*.java
 if [[ $? != 0 ]] ; then
     exit 1
 fi
@@ -52,4 +52,4 @@ exit 1
 fi
 
 echo -e "\nRunning ${APPLICATION_NAME} side test...\n"
-java -Dlog4j.configuration=com/mellanox/jxio/log4j.properties.jxio -cp "../bin/jxio.jar:../lib/commons-logging.jar:../lib/log4j-1.2.15.jar:." $APPLICATION $IP $PORT
+java -Dlog4j.configuration=com/mellanox/jxio/log4j.properties.jxio -cp "../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." $APPLICATION $IP $PORT
