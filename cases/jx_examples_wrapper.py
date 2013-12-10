@@ -17,11 +17,11 @@ class JxWrapper(ClientServerWrapper):
         super(JxWrapper, self).configure_parser()
  
         # Arguments
-        self.add_client_cmd_argument('--ip', help='The server's IP.', type=str, value_only=True, priority=1)
-        self.add_client_cmd_argument('--port', help='The server's port', type=str, value_only=True, priority=2)
+        self.add_client_cmd_argument('--ip_address_client', help='The server IP.', type=str, value_only=True, priority=1)
+        self.add_client_cmd_argument('--port_client', help='The server port', type=str, value_only=True, priority=2)
 
-        self.add_server_cmd_argument('--ip', help='The server's IP.', type=str, value_only=True, priority=1)
-        self.add_server_cmd_argument('--port', help='The server's port', type=str, value_only=True, priority=2)
+        self.add_server_cmd_argument('--ip_address_server', help='The server IP.', type=str, value_only=True, priority=1)
+        self.add_server_cmd_argument('--port_server', help='The server port', type=str, value_only=True, priority=2)
 
 #     def get_server_manage_ip(self):
 #         return self.ServerPlayer.Ip

@@ -16,14 +16,18 @@ fi
 
 # Check arguments
 if [ -z $1 ]; then
-	 echo -e "$0 ERROR: Missig first parameter. Should be a 'server' or 'client'.\n"
+	echo -e "$0 ERROR: Missig first parameter. Should be a 'server' or 'client'.\n"
+	exit 1
 fi
 if [ -z $2 ]; then
-	 echo -e "$0 ERROR: Missig second parameter. Should be a server IP.\n"
+	echo -e "$0 ERROR: Missig second parameter. Should be a server IP.\n"
+	exit 1
 fi
 if [ -z $3 ]; then
-	 echo -e "$0 ERROR: Missig third parameter. Should be a server port.\n"
+	echo -e "$0 ERROR: Missig third parameter. Should be a server port.\n"
+	exit 1
 fi
+
 # Get server or client side
 SIDE=$1
 # Get machine IP
@@ -51,5 +55,12 @@ echo -e "$0 ERROR: Missig first parameter. Should be a 'server' or 'client'.\n"
 exit 1
 fi
 
+# Config Covertura
+java_coverage_props=""
+if [[ -n "$CODE_COVERAGE_ON" ]];then
+        java_coverage_props="-D"$COBERTURA_COVFILE_PATH_PROP_NAME"="$COBERTURA_COVFILE
+fi
+
+# Run the tests
 echo -e "\nRunning ${APPLICATION_NAME} side test...\n"
-java -Dlog4j.configuration=com/mellanox/jxio/log4j.properties.jxio -cp "../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." $APPLICATION $IP $PORT
+java -Dlog4j.configuration=com/mellanox/jxio/log4j.properties.jxio -cp "$COBERTURA_JAR_PATH:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." $java_coverage_props $APPLICATION $IP $PORT
