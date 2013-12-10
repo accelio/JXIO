@@ -93,12 +93,14 @@ public class ServerSession extends EventQueueHandler.Eventable {
 				if (ev instanceof EventSession) {
 					int errorType = ((EventSession) ev).getErrorType();
 					int reason = ((EventSession) ev).getReason();
-					callbacks.onSessionEvent(EventName.getEventByIndex(errorType), EventReason.getEventByIndex(reason));
-
-					if (errorType == 1) {// event = "SESSION_TEARDOWN";
+					EventName eventName = EventName.getEventByIndex(errorType);
+					if (eventName == EventName.SESSION_TEARDOWN) {
 						removeFromEQHs();// now we are officially done with this session and it can
 						                                     // be deleted from the EQH
 					}
+					callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
+
+					
 				}
 				break;
 
