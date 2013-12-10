@@ -178,6 +178,9 @@ public class EventQueueHandler implements Runnable {
 			LOG.error("no context opened on C side. can not close event loop");
 			return;
 		}
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("[" + getId() + "] closing EQH " );
+		}
 		while (!this.eventables.isEmpty()) {
 			int waitForEvent = 0;
 			Iterator<Map.Entry<Long, Eventable>> it = this.eventables.entrySet().iterator();
@@ -198,13 +201,16 @@ public class EventQueueHandler implements Runnable {
 				runEventLoop(waitForEvent, -1);
 			}
 			LOG.warn("attempting to close EQH while objects " + this.eventables.keySet()
-			        + " are still listening. aborting");
+			        + " are still listening.");
 		}
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("[" + getId() + "] no more objects listening");
 		}
 		Bridge.closeCtx(getId());
 		this.stopLoop = true;
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("[" + getId() + "] closing EQH is finished" );
+		}
 	}
 
 	static abstract class Eventable {
