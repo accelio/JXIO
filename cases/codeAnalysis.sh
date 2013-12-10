@@ -41,7 +41,7 @@ cd $RUNNING_DIR
 
 # Run findbugs
 echo -e "\nRunning findbugs...!\n"
-findbugs/findbugs-2.0.2/bin/findbugs -auxclasspath ../lib/commons-logging.jar -low  ../bin/jxio.jar > $JAVA_REPORT_FILE
+findbugs/findbugs-2.0.2/bin/findbugs -auxclasspath ../src/lib/commons-logging.jar -low  ../bin/jxio.jar > $JAVA_REPORT_FILE
 if [ $? != 0 ]; then
 	echo -e "\n[ERROR] Exeption occurred while running findbugs!"
 	echo -e "It is possible that the .jar file needed doesn't exist."
@@ -68,7 +68,7 @@ echo -e "\n--- C Code Analysis ---\n"
 cd $RUNNING_DIR
 
 # Move to the C code src folder
-cd ../c/src/
+cd ../src/c/src/
 
 # Run Covertiy
 echo -e "\nRunning Coverity...!\n"
@@ -80,7 +80,7 @@ fi
 echo -e "\nDone!\n"
 
 # Calculate number of errors
-let "C_ERRORS = `grep "C/C++ errors" ${RUNNING_DIR}/${C_REPORT_FILE} | head -n 1 | cut -d " " -f 2`"
+let "C_ERRORS = `grep "C/C++ error" ${RUNNING_DIR}/${C_REPORT_FILE} | head -n 1 | cut -d " " -f 2`"
 
 # Config Report
 cp cov-build/c/output/errors/index.html ${RUNNING_DIR}/${C_REPORT_FILE}
@@ -107,7 +107,7 @@ replacewith="\\\\\\\\mtrlabfs01\\\\acclgwork\\\\jxio\\\\static_code_analysis\\\\
 sed -i "s/$toreplace/$replacewith/g" ${C_REPORT_FILE}
 
 cp ${C_REPORT_FILE} ${REPORTS_STORAGE}/${folder}
-cp -r ../c/src/ ${REPORTS_STORAGE}/${folder}
+cp -r ../src/c/src/ ${REPORTS_STORAGE}/${folder}
 
 ################
 # Send Reports #

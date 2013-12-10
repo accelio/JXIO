@@ -19,7 +19,7 @@
 #include <libxio.h>
 
 log_severity_t g_log_threshold = DEFAULT_LOG_THRESHOLD;
-log_severity_t g_xio_log_level_to_jxio_severity[XIO_LOG_LEVEL_INFO];
+log_severity_t g_xio_log_level_to_jxio_severity[XIO_LOG_LEVEL_LAST];
 
 void log_set_threshold(log_severity_t _threshold)
 {
