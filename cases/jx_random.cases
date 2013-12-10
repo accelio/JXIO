@@ -2,11 +2,11 @@
 	<global>
 		<Test>
 			<info>test</info>
-			<name>jx test</name>
+			<name>jx random test</name>
 			<owner>AlonGr</owner>
 		</Test>
 		<Case>
-			<wrapper>./jx_wrapper.py</wrapper>
+			<wrapper>./jx_random_wrapper.py</wrapper>
 			<tout>1500</tout>
 		</Case>
 	</global>

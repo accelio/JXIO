@@ -1,0 +1,24 @@
+<CASEDEF>
+	<global>
+		<Test>
+			<info>test</info>
+			<name>jx examples test</name>
+			<owner>AlonGr</owner>
+		</Test>
+		<Case>
+			<wrapper>./jx_examples_wrapper.py</wrapper>
+			<tout>1500</tout>
+		</Case>
+	</global>
+	<case>
+		<info>jx test</info>
+		<name>run hello world</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--ip 36.0.0.121 --port 6464 </static_args>
+			</params>
+		</cmd>
+	</case>
+</CASEDEF>
+
