@@ -394,6 +394,24 @@ public class JXIOStoryRunner implements StoryRunner {
 				if (reject == 1) {
 					suffix = "toReject";
 				}
+
+				
+				// Updated URI with hoops
+				for (Character hoop : hoops) {
+					String serverHoopID = hoop.getAttribute("server");
+					Character serverHoop = getCharacterFromListByAttribute(servers, "id", serverHoopID);
+					String processHoopID = serverHoop.getAttribute("process");
+					Character processHoop = getCharacterFromListByAttribute(processes, "id", processHoopID);
+					String machineHoopID = processHoop.getAttribute("machine");
+					Character machineHoop = getCharacterFromListByAttribute(machines, "id", machineHoopID);
+					String hostnameHoop = machineHoop.getAttribute("address");
+					String portHoop = serverHoop.getAttribute("port");
+
+					// Add hoop to URI suffix
+					suffix += "?next" + hostnameHoop + ":" + portHoop + "/";
+				}
+
+				//Update URI
 				URI uri = new URI("rdma://" + hostname + ":" + port + "/" + suffix);
 
 				// Update max duration
