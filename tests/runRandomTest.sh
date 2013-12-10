@@ -12,7 +12,7 @@ fi
 
 # Compile
 echo -e "\nCompiling JAVA files....\n"
-javac -cp "../bin/jxio.jar:../lib/commons-logging.jar" `find -name "*.java"`
+javac -cp "../bin/jxio.jar:../src/lib/commons-logging.jar" `find -name "*.java"`
 if [[ $? != 0 ]] ; then
     exit 1
 fi
@@ -24,4 +24,4 @@ fi
 
 # Run the tests
 echo -e "\nRunning random test....\n"
-java -Dlog4j.configuration=com/mellanox/jxio/tests/random/storyrunner/log4j.properties.randomtest -cp "$COBERTURA_JAR_PATH:../bin/jxio.jar:../lib/commons-logging.jar:../lib/log4j-1.2.15.jar:." $java_coverage_props com.mellanox.jxio.tests.random.Main $1 $2 $3 $4
+java -Dlog4j.configuration=com/mellanox/jxio/tests/random/storyrunner/log4j.properties.randomtest -cp "$COBERTURA_JAR_PATH:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." $java_coverage_props com.mellanox.jxio.tests.random.Main $1 $2 $3 $4
