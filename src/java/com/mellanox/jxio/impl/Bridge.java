@@ -104,10 +104,10 @@ public class Bridge {
 		return ret;
 	}
 
-	private static native boolean closeServerSessionNative(long ptr);
+	private static native boolean closeSessionServerNative(long ptr);
 
 	public static boolean closeServerSession(long ptr) {
-		boolean ret = closeServerSessionNative(ptr);
+		boolean ret = closeSessionServerNative(ptr);
 		return ret;
 	}
 
