@@ -83,8 +83,7 @@ bool Client::close_connection() {
 	return true;
 }
 
-bool Client::onSessionEvent(xio_session_event eventType,
-		struct xio_session *session) {
+bool Client::onSessionEvent(xio_session_event eventType, struct xio_session *session) {
 	switch (eventType) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
 		log(lsDEBUG, "got XIO_SESSION_CONNECTION_CLOSED_EVENT in client=%p\n", this);
@@ -121,8 +120,9 @@ bool Client::onSessionEvent(xio_session_event eventType,
 	}
 }
 
-bool Client::send_msg(Msg *msg) {
-	log(lsTRACE, "##################### sending msg=%p in client=%p\n", msg, this);
+bool Client::send_msg(Msg *msg, const int size) {
+	log(lsTRACE, "##################### sending msg=%p, size=%d in client=%p\n", msg, this, size);
+	msg->set_xio_msg_out_size(size);
 	int ret_val = xio_send_request(this->con, msg->get_xio_msg());
 	if (ret_val) {
 		log(lsERROR, "Got error %d while sending xio_msg in client=%p\n", ret_val, this);

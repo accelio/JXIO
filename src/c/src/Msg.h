@@ -27,19 +27,17 @@ class MsgPool;
 
 class Msg {
 public:
-	Msg(char * buf, struct xio_mr *xio_mr, int in_buf_size, int out_buf_size,
-			MsgPool* pool);
+	Msg(char * buf, struct xio_mr *xio_mr, int in_buf_size, int out_buf_size, MsgPool* pool);
 	~Msg();
 	void set_xio_msg_client_fields(); //this method is used by client side
-	void set_xio_msg_req(struct xio_msg *m); //this method is used by server side
+	void set_xio_msg_req(struct xio_msg *msg); //this method is used by server side
 	void set_xio_msg_server_fields();
 	void set_xio_msg_fields_for_assign(struct xio_msg *msg); //used when assign_buffer callback is called
-	void * get_buf() {
-		return buf;
-	}
-	struct xio_msg * get_xio_msg();
+	void set_xio_msg_out_size(const int size);
+	void* get_buf() { return buf; }
+	struct xio_msg* get_xio_msg();
 	void release_to_pool();
-	bool send_reply();
+	bool send_reply(const int size);
 	void dump(); //func for debugging only
 	void dump(struct xio_msg *m); //func for debugging only
 

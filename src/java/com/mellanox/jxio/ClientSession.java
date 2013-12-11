@@ -33,11 +33,8 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 	public static interface Callbacks {
 		public void onReply(Msg msg);
-
 		public void onSessionEstablished();
-
 		public void onSessionEvent(EventName session_event, EventReason reason);
-
 		public void onMsgError();
 	}
 
@@ -69,7 +66,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		
 		msg.setClientSession(this);
 		eventQHandler.addMsgInUse(msg);
-		boolean ret = Bridge.clientSendReq(this.getId(), msg.getId());
+		boolean ret = Bridge.clientSendReq(this.getId(), msg.getId(), msg.getOut().position());
 		if (!ret) {
 			LOG.error("there was an error sending the message");
 		}

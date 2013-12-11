@@ -46,121 +46,122 @@ public class Bridge {
 
 	private static native void closeCtxNative(long ptr);
 
-	public static void closeCtx(long ptr) {
-		closeCtxNative(ptr);
+	public static void closeCtx(final long ptrCtx) {
+		closeCtxNative(ptrCtx);
 	}
 
 	private static native int runEventLoopNative(long ptr, long timeOutMicroSec);
 
-	public static int runEventLoop(long ptr, long timeOutMicroSec) {
-		int ret = runEventLoopNative(ptr, timeOutMicroSec);
+	public static int runEventLoop(final long ptrCtx, final long timeOutMicroSec) {
+		int ret = runEventLoopNative(ptrCtx, timeOutMicroSec);
 		return ret;
 	}
 
-	private static native void breakEventLoopNative(long ptr);
+	private static native void breakEventLoopNative(long ptrCtx);
 
-	public static void breakEventLoop(long ptr) {
-		breakEventLoopNative(ptr);
+	public static void breakEventLoop(final long ptrCtx) {
+		breakEventLoopNative(ptrCtx);
 	}
 
-	private static native int addEventLoopFdNative(long ptr, long fd, int events, long priv_data);
+	private static native int addEventLoopFdNative(long ptrCtx, long fd, int events, long priv_data);
 
-	public static int addEventLoopFd(long ptr, long fd, int events, long priv_data) {
-		int ret = addEventLoopFdNative(ptr, fd, events, priv_data);
+	public static int addEventLoopFd(final long ptrCtx, long fd, int events, long priv_data) {
+		int ret = addEventLoopFdNative(ptrCtx, fd, events, priv_data);
 		return ret;
 	}
 
-	private static native int delEventLoopFdNative(long ptr, long fd);
+	private static native int delEventLoopFdNative(long ptrCtx, long fd);
 
-	public static int delEventLoopFd(long ptr, long fd) {
-		int ret = delEventLoopFdNative(ptr, fd);
+	public static int delEventLoopFd(final long ptrCtx, long fd) {
+		int ret = delEventLoopFdNative(ptrCtx, fd);
 		return ret;
 	}
 
 	private static native long startSessionClientNative(String url, long ptrCtx);
 
-	public static long startSessionClient(String url, long ptrCtx) {
+	public static long startSessionClient(final String url, final long ptrCtx) {
 		long p = startSessionClientNative(url, ptrCtx);
 		return p;
 	}
 
-	private static native void closeSessionClientNative(long sesPtr);
+	private static native void closeSessionClientNative(long ptrSes);
 
-	public static void closeSessionClient(long sesPtr) {
-		closeSessionClientNative(sesPtr);
+	public static void closeSessionClient(final long ptrSes) {
+		closeSessionClientNative(ptrSes);
 	}
 
 	private static native long[] startServerPortalNative(String url, long ptrCtx);
 
-	public static long[] startServerPortal(String url, long ptrCtx) {
+	public static long[] startServerPortal(final String url, final long ptrCtx) {
 		long ptr[] = startServerPortalNative(url, ptrCtx);
 		return ptr;
 	}
 
 	private static native boolean stopServerPortalNative(long ptr);
 
-	public static boolean stopServerPortal(long ptr) {
-		boolean ret = stopServerPortalNative(ptr);
+	public static boolean stopServerPortal(final long ptrSrv) {
+		boolean ret = stopServerPortalNative(ptrSrv);
 		return ret;
 	}
 
 	private static native boolean closeSessionServerNative(long ptr);
 
-	public static boolean closeServerSession(long ptr) {
-		boolean ret = closeSessionServerNative(ptr);
+	public static boolean closeServerSession(final long ptrSes) {
+		boolean ret = closeSessionServerNative(ptrSes);
 		return ret;
 	}
 
 	private static native long forwardSessionNative(String url, long ptrSes);
 
-	public static long forwardSession(String url, long ptrSes) {
+	public static long forwardSession(final String url, final long ptrSes) {
 		long ptr = forwardSessionNative(url, ptrSes);
 		return ptr;
 	}
 
 	private static native long acceptSessionNative(long ptrSes);
 
-	public static long acceptSession(long ptrSes) {
+	public static long acceptSession(final long ptrSes) {
 		long ptr = acceptSessionNative(ptrSes);
 		return ptr;
 	}
 	
 	private static native long rejectSessionNative(long ptrSes, int reason, String data, int length);
-	public static long rejectSession(long ptrSes, int reason, String data, int length) {
+	
+	public static long rejectSession(final long ptrSes, final int reason, final String data, final int length) {
 		long ptr = rejectSessionNative(ptrSes, reason, data, length);
 		return ptr;
 	}
 	
 	private static native ByteBuffer createMsgPoolNative(int count, int inSize, int outSize, long[] ptrMsg);
 
-	public static ByteBuffer createMsgPool(int count, int inSize, int outSize, long[] ptrMsg) {
+	public static ByteBuffer createMsgPool(final int count, final int inSize, final int outSize, long[] ptrMsg) {
 		ByteBuffer b = createMsgPoolNative(count, inSize, outSize, ptrMsg);
 		return b;
 	}
 
 	private static native void deleteMsgPoolNative(long ptrMsgPool);
 
-	public static void deleteMsgPool(long ptrMsgPool) {
+	public static void deleteMsgPool(final long ptrMsgPool) {
 		deleteMsgPoolNative(ptrMsgPool);
 	}
 	
-	private static native boolean clientSendReqNative(long ptrSession, long ptrMsg);
+	private static native boolean clientSendReqNative(long ptrSession, long ptrMsg, int size);
 
-	public static boolean clientSendReq(long ptrSession, long ptrMsg) {
-		boolean ret = clientSendReqNative(ptrSession, ptrMsg);
+	public static boolean clientSendReq(final long ptrSession, final long ptrMsg, final int size) {
+		boolean ret = clientSendReqNative(ptrSession, ptrMsg, size);
 		return ret;
 	}
 
-	private static native boolean serverSendReplyNative(long ptrMsg);
+	private static native boolean serverSendResponceNative(long ptrMsg, int size);
 
-	public static boolean serverSendReply(long ptrMsg) {
-		boolean ret = serverSendReplyNative(ptrMsg);
+	public static boolean serverSendResponce(final long ptrMsg, final int size) {
+		boolean ret = serverSendResponceNative(ptrMsg, size);
 		return ret;
 	}
 
 	private static native boolean bindMsgPoolNative(long ptrMsgPool, long ptrEQH);
 
-	public static boolean bindMsgPool(long ptrMsgPool, long ptrEQH) {
+	public static boolean bindMsgPool(final long ptrMsgPool, final long ptrEQH) {
 		boolean ret = bindMsgPoolNative(ptrMsgPool, ptrEQH);
 		return ret;
 	}

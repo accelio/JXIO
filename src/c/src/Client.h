@@ -28,20 +28,19 @@
 
 class Client: public Contexable {
 public:
-	//to move some to private?
-	Client(const char* url, long ptrCtx);
-	~Client();
-	bool close_connection();
-	bool send_msg(Msg* m);
-
 	struct xio_session* session;
 	struct xio_connection* con;
 
 	bool error_creating;
-	bool onSessionEvent(xio_session_event eventType,
-			struct xio_session *session);
-	bool isClient() {return true;}
 
+	//to move some to private?
+	Client(const char* url, long ptrCtx);
+	~Client();
+	bool close_connection();
+	bool send_msg(Msg *msg, const int size);
+
+	bool onSessionEvent(xio_session_event eventType, struct xio_session *session);
+	bool isClient() {return true;}
 };
 
 #endif // ! Client__H___

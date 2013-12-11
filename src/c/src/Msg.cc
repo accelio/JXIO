@@ -87,11 +87,30 @@ void Msg::set_xio_msg_fields_for_assign(struct xio_msg *msg) {
 	this->set_xio_msg_req(msg);
 }
 
-bool Msg::send_reply() {
-	log(lsDEBUG,
-			"inside Server::send_reply xio_msg is %p. msg is %p\n", this->get_xio_msg(), this);
+void Msg::set_xio_msg_req(struct xio_msg *msg) {
+	this->xio_msg->request = msg;
+//	log (lsDEBUG, "inside set_req_xio_msg msg is %p req is %p\n",this->xio_msg,  this->xio_msg->request);
+}
+
+void Msg::set_xio_msg_out_size(const int size) {
+	if (size > 0) {
+		this->xio_msg->out.data_iovlen = 1;
+		this->xio_msg->out.data_iov[0].iov_len = size;
+	}
+	else {
+		this->xio_msg->out.data_iovlen = 0;
+	}
+}
+
+void Msg::release_to_pool() {
+	this->pool->add_msg_to_pool(this);
+}
+
+bool Msg::send_reply(const int size) {
+	log(lsDEBUG, "inside Server::send_reply xio_msg is %p. msg is %p, sending %d bytes\n", this->get_xio_msg(), this, size);
 	//TODO : make sure that this function is not called in the fast path
 	this->set_xio_msg_server_fields();
+	set_xio_msg_out_size(size);
 	int ret_val = xio_send_response(this->get_xio_msg());
 	if (ret_val) {
 		log(lsERROR, "Got error %d while sending xio_msg\n", ret_val);
@@ -107,22 +126,17 @@ void Msg::dump() {
 	if (this->xio_msg->type == XIO_MSG_TYPE_REQ)
 		log(lsDEBUG, "serial number:%ld \n", this->xio_msg->sn);
 	else if (this->xio_msg->type == XIO_MSG_TYPE_RSP)
-		log(lsDEBUG,
-				"response:%p, serial number:%ld \n", this->xio_msg->request, ((this->xio_msg->request) ? this->xio_msg->request->sn : -1));
+		log(lsDEBUG, "response:%p, serial number:%ld \n", this->xio_msg->request, ((this->xio_msg->request) ? this->xio_msg->request->sn : -1));
 
-	log(lsDEBUG,
-			"in header: length:%d, address:%p, \n", this->xio_msg->in.header.iov_len, this->xio_msg->in.header.iov_base);
+	log(lsDEBUG, "in header: length:%d, address:%p, \n", this->xio_msg->in.header.iov_len, this->xio_msg->in.header.iov_base);
 	log(lsDEBUG, "in data size:%d \n", this->xio_msg->in.data_iovlen);
 	for (int i = 0; i < this->xio_msg->in.data_iovlen; i++)
-		log(lsDEBUG,
-				"in data[%d]: length:%d, address:%p, mr:%p\n", i, this->xio_msg->in.data_iov[i].iov_len, this->xio_msg->in.data_iov[i].iov_base, this->xio_msg->in.data_iov[i].mr);
+		log(lsDEBUG, "in data[%d]: length:%d, address:%p, mr:%p\n", i, this->xio_msg->in.data_iov[i].iov_len, this->xio_msg->in.data_iov[i].iov_base, this->xio_msg->in.data_iov[i].mr);
 
-	log(lsDEBUG,
-			"out header: length:%d, address:%p, \n", this->xio_msg->out.header.iov_len, this->xio_msg->out.header.iov_base);
+	log(lsDEBUG, "out header: length:%d, address:%p, \n", this->xio_msg->out.header.iov_len, this->xio_msg->out.header.iov_base);
 	log(lsDEBUG, "out data size:%d \n", this->xio_msg->out.data_iovlen);
 	for (int i = 0; i < this->xio_msg->out.data_iovlen; i++)
-		log(lsDEBUG,
-				"out data[%d]: length:%d, address:%p, mr:%p\n", i, this->xio_msg->out.data_iov[i].iov_len, this->xio_msg->out.data_iov[i].iov_base, this->xio_msg->out.data_iov[i].mr);
+		log(lsDEBUG, "out data[%d]: length:%d, address:%p, mr:%p\n", i, this->xio_msg->out.data_iov[i].iov_len, this->xio_msg->out.data_iov[i].iov_base, this->xio_msg->out.data_iov[i].mr);
 	log(lsDEBUG, "*********************************************\n");
 }
 
@@ -133,30 +147,16 @@ void Msg::dump(struct xio_msg *xio_msg) {
 	if (xio_msg->type == XIO_MSG_TYPE_REQ)
 		log(lsDEBUG, "serial number:%ld \n", xio_msg->sn);
 	else if (xio_msg->type == XIO_MSG_TYPE_RSP)
-		log(lsDEBUG,
-				"response:%p, serial number:%ld \n", xio_msg->request, ((xio_msg->request) ? xio_msg->request->sn : -1));
+		log(lsDEBUG, "response:%p, serial number:%ld \n", xio_msg->request, ((xio_msg->request) ? xio_msg->request->sn : -1));
 
-	log(lsDEBUG,
-			"in header: length:%d, address:%p, \n", xio_msg->in.header.iov_len, xio_msg->in.header.iov_base);
+	log(lsDEBUG, "in header: length:%d, address:%p, \n", xio_msg->in.header.iov_len, xio_msg->in.header.iov_base);
 	log(lsDEBUG, "in data size:%d \n", xio_msg->in.data_iovlen);
 	for (int i = 0; i < xio_msg->in.data_iovlen; i++)
-		log(lsDEBUG,
-				"in data[%d]: length:%d, address:%p, mr:%p\n", i, xio_msg->in.data_iov[i].iov_len, xio_msg->in.data_iov[i].iov_base, xio_msg->in.data_iov[i].mr);
+		log(lsDEBUG, "in data[%d]: length:%d, address:%p, mr:%p\n", i, xio_msg->in.data_iov[i].iov_len, xio_msg->in.data_iov[i].iov_base, xio_msg->in.data_iov[i].mr);
 
-	log(lsDEBUG,
-			"out header: length:%d, address:%p, \n", xio_msg->out.header.iov_len, xio_msg->out.header.iov_base);
+	log(lsDEBUG, "out header: length:%d, address:%p, \n", xio_msg->out.header.iov_len, xio_msg->out.header.iov_base);
 	log(lsDEBUG, "out data size:%d \n", xio_msg->out.data_iovlen);
 	for (int i = 0; i < xio_msg->out.data_iovlen; i++)
-		log(lsDEBUG,
-				"out data[%d]: length:%d, address:%p, mr:%p\n", i, xio_msg->out.data_iov[i].iov_len, xio_msg->out.data_iov[i].iov_base, xio_msg->out.data_iov[i].mr);
+		log(lsDEBUG, "out data[%d]: length:%d, address:%p, mr:%p\n", i, xio_msg->out.data_iov[i].iov_len, xio_msg->out.data_iov[i].iov_base, xio_msg->out.data_iov[i].mr);
 	log(lsDEBUG, "*********************************************\n");
-}
-
-void Msg::set_xio_msg_req(struct xio_msg *m) {
-	this->xio_msg->request = m;
-//	log (lsDEBUG, "inside set_req_xio_msg msg is %p req is %p\n",this->xio_msg,  this->xio_msg->request);
-}
-
-void Msg::release_to_pool() {
-	this->pool->add_msg_to_pool(this);
 }

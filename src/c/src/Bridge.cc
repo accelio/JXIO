@@ -324,7 +324,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_rejectS
 extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMsgPoolNative(JNIEnv *env, jclass cls, jint msg_num, jint in_size, jint out_size, jlongArray ptr)
 {
 	jlong temp[msg_num+1];
-	MsgPool *pool = new MsgPool (msg_num, in_size, out_size);
+	MsgPool *pool = new MsgPool(msg_num, in_size, out_size);
 	if (pool == NULL) {
 		log(lsERROR, "memory allocation failed\n");
 		return NULL;
@@ -348,27 +348,27 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMs
 
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_deleteMsgPoolNative(JNIEnv *env, jclass cls, jlongArray ptr_msg_pool)
 {
-	MsgPool * pool = (MsgPool *) ptr_msg_pool;
+	MsgPool * pool = (MsgPool*)ptr_msg_pool;
 	delete pool;
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_serverSendReplyNative(JNIEnv *env, jclass cls, jlong ptr_msg)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_serverSendResponceNative(JNIEnv *env, jclass cls, jlong ptr_msg, jint size)
 {
 	Msg * msg = (Msg*) ptr_msg;
-	return msg->send_reply();
+	return msg->send_reply(size);
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_clientSendReqNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_msg)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_clientSendReqNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_msg, jint size)
 {
 	Msg * msg = (Msg*) ptr_msg;
-	Client * client = (Client *) ptr_session;
-	return client->send_msg(msg);
+	Client * client = (Client*)ptr_session;
+	return client->send_msg(msg, size);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_bindMsgPoolNative(JNIEnv *env, jclass cls, jlong ptr_msg_pool, jlong ptr_ctx)
 {
 	Context * ctx = (Context*) ptr_ctx;
-	MsgPool * pool = (MsgPool*) ptr_msg_pool;
+	MsgPool * pool = (MsgPool*)ptr_msg_pool;
 	ctx->add_msg_pool(pool);
 	return true;
 }

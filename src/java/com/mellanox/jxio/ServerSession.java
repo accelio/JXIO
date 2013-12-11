@@ -36,9 +36,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 
 	public static interface Callbacks {
 		public void onRequest(Msg msg);
-
 		public void onSessionEvent(EventName session_event, EventReason reason);
-
 		public void onMsgError();
 	}
 
@@ -70,7 +68,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 			LOG.warn("Trying to send message while session is closing");
 			return false;
 		}
-		boolean ret = Bridge.serverSendReply(msg.getId());
+		boolean ret = Bridge.serverSendResponce(msg.getId(), msg.getOut().position());
 		if (!ret) {
 			LOG.error("there was an error sending the message");
 		}
