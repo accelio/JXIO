@@ -62,6 +62,11 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	}
 
 	public boolean sendMessage(Msg msg) {
+		if (this.getIsClosing()){
+			LOG.warn("Trying to send message while session is closing");
+			return false;
+		}
+		
 		msg.setClientSession(this);
 		eventQHandler.addMsgInUse(msg);
 		boolean ret = Bridge.clientSendReq(this.getId(), msg.getId());

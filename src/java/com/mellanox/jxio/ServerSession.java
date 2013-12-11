@@ -66,6 +66,10 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	}
 
 	public boolean sendResponce(Msg msg) {
+		if (this.getIsClosing()){
+			LOG.warn("Trying to send message while session is closing");
+			return false;
+		}
 		boolean ret = Bridge.serverSendReply(msg.getId());
 		if (!ret) {
 			LOG.error("there was an error sending the message");
