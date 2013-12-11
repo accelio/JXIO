@@ -18,8 +18,6 @@
 #include <map>
 #include "CallbackFunctions.h"
 
-#define K_DEBUG 1
-
 void done_event_creating(Context *ctx, int sizeWritten) {
 	ctx->event_queue->increase_offset(sizeWritten);
 
@@ -60,15 +58,17 @@ int on_msg_send_complete_callback(struct xio_session *session,
 
 int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 		int more_in_batch, void *cb_prv_data) {
-	log(lsTRACE, "on_msg_callback is %p. len is %d msg is %p\n", msg->user_context, msg->in.data_iov[0].iov_len, msg);
+	log(lsTRACE, "on_msg_callback is %p. num_iov = %d, len is %d msg is %p\n", msg->user_context, msg->in.data_iovlen, msg->in.data_iov[0].iov_len, msg);
 
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
 
+	const int msg_size = (msg->in.data_iovlen > 0) ? msg->in.data_iov[0].iov_len : 0;
+
 	if (msg->user_context == NULL) { //it's a request with a small buffer on server side
 		Msg* msg_from_pool = ctx->msg_pool->get_msg_from_pool();
-		memcpy(msg_from_pool->get_buf(), msg->in.data_iov[0].iov_base,
-				msg->in.data_iov[0].iov_len);
+		if (msg_size > 0)
+			memcpy(msg_from_pool->get_buf(), msg->in.data_iov[0].iov_base, msg_size);
 		msg->user_context = msg_from_pool;
 		msg_from_pool->set_xio_msg_req(msg);
 		log(lsTRACE, "!!!!!!!!!!!!!! xio_msg is %p\n", msg);
@@ -77,11 +77,9 @@ int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 	char* buf = ctx->event_queue->get_buffer();
 	int sizeWritten;
 	if (msg->type == XIO_MSG_TYPE_REQ) { //it's request
-		sizeWritten = ctx->events->writeOnReqReceivedEvent(buf,
-				msg->user_context, session, msg, msg->type);
+		sizeWritten = ctx->events->writeOnReqReceivedEvent(buf, msg->user_context, msg_size, session);
 	} else { //it's response
-		sizeWritten = ctx->events->writeOnReplyReceivedEvent(buf,
-				msg->user_context, msg, msg->type);
+		sizeWritten = ctx->events->writeOnReplyReceivedEvent(buf, msg->user_context, msg_size);
 	}
 
 	done_event_creating(ctx, sizeWritten);

@@ -41,9 +41,7 @@ import com.mellanox.jxio.impl.EventSessionEstablished;
 public class EventQueueHandler implements Runnable {
 
 	private final long             refToCObject;
-	private final int              eventQueueSize        = 15000;                                                    // size
-	                                                                                                                  // of
-	                                                                                                                  // byteBuffer
+	private final int              eventQueueSize        = 15000; // size of byteBuffer
 	private int                    eventsWaitingInQ      = 0;
 	private ByteBuffer             eventQueue            = null;
 	private ElapsedTimeMeasurement elapsedTime           = null;
@@ -52,8 +50,7 @@ public class EventQueueHandler implements Runnable {
 	private Map<Long, Msg>         msgsPendingNewRequest = new HashMap<Long, Msg>();
 	private volatile boolean       breakLoop             = false;
 	private volatile boolean       stopLoop              = false;
-	private static final Log       LOG                   = LogFactory
-	                                                             .getLog(EventQueueHandler.class.getCanonicalName());
+	private static final Log       LOG                   = LogFactory.getLog(EventQueueHandler.class.getCanonicalName());
 
 	// ctor
 	public EventQueueHandler() {
@@ -114,18 +111,10 @@ public class EventQueueHandler implements Runnable {
 		        && ((is_forever) || (!this.elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("["
-				        + getId()
-				        + "] in loop with "
-				        + eventsWaitingInQ
-				        + " events in Q. handled "
-				        + eventsHandled
-				        + " events, "
-				        + "elapsed time is "
-				        + this.elapsedTime.getElapsedTimeMicro()
-				        + " usec (blocking for "
+				LOG.debug("[" + getId() + "] in loop with " + eventsWaitingInQ + " events in Q. handled " + eventsHandled 
+				        + " events, " + "elapsed time is " + this.elapsedTime.getElapsedTimeMicro() + " usec (blocking for "
 				        + ((is_forever) ? "infinite duration)" : "a max duration of " + timeOutMicroSec / 1000
-				                + " msec.)"));
+		                + " msec.)"));
 			}
 
 			if (eventsWaitingInQ <= 0) { // the event queue is empty now, get more events from libxio
@@ -328,7 +317,9 @@ public class EventQueueHandler implements Runnable {
 			case 3: // on request
 			{
 				Msg msg = this.msgsPendingNewRequest.get(id);
-				long session_id = eventQueue.getLong();
+				final int msg_size = eventQueue.getInt();
+				msg.getIn().limit(msg_size);
+				final long session_id = eventQueue.getLong();
 				if (LOG.isTraceEnabled()) {
 					LOG.trace("session refToCObject" + session_id);
 				}
@@ -341,6 +332,8 @@ public class EventQueueHandler implements Runnable {
 			case 4: // on reply
 			{
 				Msg msg = msgsPendingReply.remove(id);
+				final int msg_size = eventQueue.getInt();
+				msg.getIn().limit(msg_size);
 				if (LOG.isTraceEnabled()) {
 					LOG.trace("msg is " + msg);
 				}
