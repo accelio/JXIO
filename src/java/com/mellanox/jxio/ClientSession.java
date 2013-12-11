@@ -29,12 +29,15 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 	private final Callbacks         callbacks;
 	private final EventQueueHandler eventQHandler;
-	private static final Log        LOG = LogFactory.getLog(ClientSession.class.getCanonicalName());
+	private static final Log        LOG           = LogFactory.getLog(ClientSession.class.getCanonicalName());
 
 	public static interface Callbacks {
 		public void onReply(Msg msg);
+
 		public void onSessionEstablished();
+
 		public void onSessionEvent(EventName session_event, EventReason reason);
+
 		public void onMsgError();
 	}
 
@@ -59,11 +62,11 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	}
 
 	public boolean sendMessage(Msg msg) {
-		if (this.getIsClosing()){
+		if (this.getIsClosing()) {
 			LOG.warn("Trying to send message while session is closing");
 			return false;
 		}
-		
+
 		msg.setClientSession(this);
 		eventQHandler.addMsgInUse(msg);
 		boolean ret = Bridge.clientSendReq(this.getId(), msg.getId(), msg.getOut().position());
@@ -74,13 +77,17 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	}
 
 	public boolean close() {
+		if (this.getIsClosing()) {
+			LOG.warn("attempting to close client that is already closed or being closed");
+			return false;
+		}
 		if (getId() == 0) {
 			LOG.error("closing Session with empty id");
 			return false;
 		}
-		Bridge.closeSessionClient(getId());
-
 		setIsClosing(true);
+		
+		Bridge.closeSessionClient(getId());
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("at the end of SessionClientClose" + this.toString());
@@ -106,9 +113,9 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					EventName eventName = EventName.getEventByIndex(errorType);
 					if (eventName == EventName.SESSION_TEARDOWN) {
 						eventQHandler.removeEventable(this); // now we are officially done with this session and it can
-						                                     // be deleted from the EQH
+						this.setIsClosing(true);   // be deleted from the EQH
 					}
-					callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));	
+					callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
 				}
 				break;
 
