@@ -16,6 +16,7 @@
  */
 package com.mellanox.jxio.helloworld;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -26,12 +27,13 @@ import com.mellanox.jxio.*;
 
 public class HelloClient {
 
+	public int                      exitStatus = 1;
+
 	private final static Log        LOG   = LogFactory.getLog(HelloClient.class.getCanonicalName());
 	private final MsgPool           mp;
 	private final ClientSession     client;
 	private final EventQueueHandler eqh;
-	private int                     msgsn = 0;
-
+	
 	HelloClient(URI uri) {
 		this.eqh = new EventQueueHandler();
 		this.mp = new MsgPool(256, 100, 100);
@@ -39,8 +41,12 @@ public class HelloClient {
 		this.client = new ClientSession(eqh, uri, new MyClientCallbacks(this));
 
 		Msg msg = this.mp.getMsg();
-		msg.getOut().putInt(0x55); // request HelloServer to auto-terminate this session
-		msg.getOut().putInt(this.msgsn++);
+		try {
+			msg.getOut().put("Hello Server".getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+        	// Just suppress the exception handling in this demo code
+        }
+
 		client.sendMessage(msg);
 	}
 
@@ -64,8 +70,9 @@ public class HelloClient {
 		HelloClient client = new HelloClient(uri);
 		client.run();
 
-		// Client is releasing JXIO resources and exiting
+		LOG.info("Client is releasing JXIO resources and exiting");
 		client.releaseResources();
+		System.exit(client.exitStatus);
 	}
 
 	public void run() {
@@ -95,17 +102,28 @@ public class HelloClient {
 
 		public void onReply(Msg msg) {
 			LOG.info("[SUCCESS] Got a message! Bring the champagne!");
-			LOG.info("msg is: '" + msg + "'");
+
+			// Read reply message String
+			byte ch;
+			StringBuffer buffer = new StringBuffer();
+			while (msg.getIn().hasRemaining() && ((ch = msg.getIn().get()) > -1)) {
+	            buffer.append((char)ch);
+	        }
+			LOG.info("msg is: '" + buffer.toString() + "'");
+
 			msg.returnToParentPool();
 
 			LOG.info("Closing the session...");
 			this.client.client.close();
+
+			exitStatus = 0; // Success, we got our message response back
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
 			if (session_event == EventName.SESSION_TEARDOWN) { // normal exit
 				LOG.info("[EVENT] Got event SESSION_TEARDOWN");
 			} else {
+				this.client.exitStatus = 1; // Failure on any kind of error
 				LOG.error("");
 			}
 			this.client.eqh.stop();
@@ -113,7 +131,8 @@ public class HelloClient {
 
 		public void onMsgError() {
 			LOG.info("[ERROR] onMsgErrorCallback");
-			System.exit(1);
+			this.client.exitStatus = 1; // Failure on any kind of error
+			System.exit(exitStatus);
 		}
 	}
 }

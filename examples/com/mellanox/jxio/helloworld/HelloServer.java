@@ -16,6 +16,7 @@
  */
 package com.mellanox.jxio.helloworld;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -70,7 +71,7 @@ public class HelloServer {
 		HelloServer server = new HelloServer(uri);
 		server.run();
 		
-		//server is releasing JXIO resources and exiting
+		LOG.info("Server is releasing JXIO resources and exiting");
 		server.releaseResources();
 	}
 
@@ -105,7 +106,23 @@ public class HelloServer {
 
 		public void onRequest(Msg msg) {
 			LOG.info("[SUCCESS] Got a message request! Prepare the champagne!");
-			LOG.info("msg is: '" + msg + "'");
+
+			// Read message String
+			byte ch;
+			StringBuffer buffer = new StringBuffer();
+			while (msg.getIn().hasRemaining() && ((ch = msg.getIn().get()) > -1)) {
+	            buffer.append((char)ch);
+	        }
+			LOG.info("msg is: '" + buffer.toString() + "'");
+
+			// Write response
+			try {
+	            msg.getOut().put("Hello to you too, Client".getBytes("UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+            	// Just suppress the exception handling in this demo code
+            }
+			
+			// Send the response
 			this.server.session.sendResponce(msg);
 		}
 
