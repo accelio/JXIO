@@ -32,10 +32,9 @@ public class Msg {
 																					// buffer
 	private ByteBuffer       in, out;
 	private Object           userContext;                                          // variable for usage by the user
-
 	Msg(ByteBuffer buffer, int inSize, int outSize, long id, MsgPool msgPool) {
 		in = createSubBuffer(0, inSize, buffer);
-		out = createSubBuffer(inSize, buffer.capacity(), buffer);
+		out = createSubBuffer(inSize, inSize+outSize, buffer);
 		this.msgPool = msgPool;
 		this.refToCObject = id;
 		// if(LOG.isDebugEnabled()) {
@@ -92,7 +91,6 @@ public class Msg {
 		buf.position(position);
 		buf.limit(limit);
 		sub = buf.slice();
-		sub.position(0);
 		return sub;
 	}
 }
