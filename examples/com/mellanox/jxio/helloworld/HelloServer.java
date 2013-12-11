@@ -44,6 +44,12 @@ public class HelloServer {
 		eqh.run();
 	}
 
+	public void releaseResources() {
+		eqh.releaseMsgPool(mp);
+		mp.deleteMsgPool();
+		eqh.close();
+	}
+
 	public static void main(String[] args) {
 		if (args.length < 2) {
 			usage();
@@ -63,6 +69,9 @@ public class HelloServer {
 
 		HelloServer server = new HelloServer(uri);
 		server.run();
+		
+		//server is releasing JXIO resources and exiting
+		server.releaseResources();
 	}
 
 	public static void usage() {
@@ -101,7 +110,13 @@ public class HelloServer {
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
-			LOG.info("[EVENT] Got event " + session_event + " because of " + reason);
+			if (session_event == EventName.SESSION_TEARDOWN) { // normal exit
+				LOG.info("[EVENT] Got event SESSION_TEARDOWN");
+			} else {
+				LOG.error("");
+			}
+			//in case you want to exit the server, stop the EQH
+			//eqh.stop();
 		}
 
 		public void onMsgError() {

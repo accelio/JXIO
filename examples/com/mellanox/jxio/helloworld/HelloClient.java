@@ -26,7 +26,7 @@ import com.mellanox.jxio.*;
 
 public class HelloClient {
 
-	private final static Log        LOG = LogFactory.getLog(HelloClient.class.getCanonicalName());
+	private final static Log        LOG   = LogFactory.getLog(HelloClient.class.getCanonicalName());
 	private final MsgPool           mp;
 	private final ClientSession     client;
 	private final EventQueueHandler eqh;
@@ -35,12 +35,12 @@ public class HelloClient {
 	HelloClient(URI uri) {
 		this.eqh = new EventQueueHandler();
 		this.mp = new MsgPool(256, 100, 100);
-		LOG.info("Try to establishe a new session to '" + uri + "'");
+		LOG.info("Try to establish a new session to '" + uri + "'");
 		this.client = new ClientSession(eqh, uri, new MyClientCallbacks(this));
 
 		Msg msg = this.mp.getMsg();
 		msg.getOut().putInt(0x55); // request HelloServer to auto-terminate this session
-		msg.getOut().putInt(this.msgsn++); 
+		msg.getOut().putInt(this.msgsn++);
 		client.sendMessage(msg);
 	}
 
@@ -63,11 +63,19 @@ public class HelloClient {
 
 		HelloClient client = new HelloClient(uri);
 		client.run();
+
+		// Client is releasing JXIO resources and exiting
+		client.releaseResources();
 	}
 
 	public void run() {
 		// block for JXIO incoming event
 		eqh.run();
+	}
+
+	public void releaseResources() {
+		mp.deleteMsgPool();
+		eqh.close();
 	}
 
 	public static void usage() {
@@ -89,14 +97,18 @@ public class HelloClient {
 			LOG.info("[SUCCESS] Got a message! Bring the champagne!");
 			LOG.info("msg is: '" + msg + "'");
 			msg.returnToParentPool();
-			
+
 			LOG.info("Closing the session...");
 			this.client.client.close();
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
-			LOG.info("[EVENT] Got event " + session_event + " because of " + reason);
-			System.exit(1);
+			if (session_event == EventName.SESSION_TEARDOWN) { // normal exit
+				LOG.info("[EVENT] Got event SESSION_TEARDOWN");
+			} else {
+				LOG.error("");
+			}
+			this.client.eqh.stop();
 		}
 
 		public void onMsgError() {
