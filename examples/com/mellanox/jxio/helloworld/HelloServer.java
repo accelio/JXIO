@@ -117,13 +117,17 @@ public class HelloServer {
 
 			// Write response
 			try {
-	            msg.getOut().put("Hello to you too, Client".getBytes("UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-            	// Just suppress the exception handling in this demo code
-            }
-			
+				msg.getOut().put("Hello to you too, Client".getBytes("UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				// Just suppress the exception handling in this demo code
+			}
+
 			// Send the response
 			this.server.session.sendResponce(msg);
+
+			// Un-comment here if case you want to close the connection from Server side...
+			// LOG.info("Closing the session...");
+			// this.server.session.close();
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
@@ -132,8 +136,9 @@ public class HelloServer {
 			} else {
 				LOG.error("");
 			}
-			//in case you want to exit the server, stop the EQH
-			//eqh.stop();
+			// Un-comment here if case you want to exit the server, stop the EQH
+			// LOG.info("Stopping the main EQH loop...");
+			// eqh.stop();
 		}
 
 		public void onMsgError() {
