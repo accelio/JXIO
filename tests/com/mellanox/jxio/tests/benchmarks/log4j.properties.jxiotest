@@ -1,5 +1,5 @@
 # Root logger option
-log4j.rootLogger=ERROR, file, CONSOLE
+log4j.rootLogger=INFO, file, CONSOLE
 
  
 # Direct log messages to a log file
