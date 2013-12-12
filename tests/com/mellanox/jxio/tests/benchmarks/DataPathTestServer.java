@@ -19,7 +19,6 @@ package com.mellanox.jxio.tests.benchmarks;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.mellanox.jxio.EventQueueHandler;
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.ServerSession;
 import com.mellanox.jxio.EventName;

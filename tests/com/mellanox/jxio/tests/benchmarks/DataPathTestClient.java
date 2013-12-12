@@ -121,6 +121,7 @@ public class DataPathTestClient implements Runnable {
 				print("Cannot get new message");
 				break;
 			}
+			msg.getOut().position(msg.getOut().capacity()); // simulate 'out_msgSize' was writen into buffer
 			if (!cs.sendMessage(msg)) {
 				print("Error sending");
 				msgPool.releaseMsg(msg);
@@ -173,6 +174,7 @@ public class DataPathTestClient implements Runnable {
 				if (firstTime) {
 					startTime = System.nanoTime();
 					firstTime = false;
+					msg.getOut().position(msg.getOut().capacity()); // simulate 'out_msgSize' was writen into buffer
 					cs.sendMessage(msg);
 					return;
 				} else {
@@ -223,6 +225,7 @@ public class DataPathTestClient implements Runnable {
 				startTime = System.nanoTime();
 			}
 			if (!closed) {
+				msg.getOut().position(msg.getOut().capacity()); // simulate 'out_msgSize' was writen into buffer
 				if (!cs.sendMessage(msg)) {
 					msgPool.releaseMsg(msg);
 				}
