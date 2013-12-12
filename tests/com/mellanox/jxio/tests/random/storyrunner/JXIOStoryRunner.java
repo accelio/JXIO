@@ -357,6 +357,8 @@ public class JXIOStoryRunner implements StoryRunner {
 		List<ClientPlayer> clientPlayers = new ArrayList<ClientPlayer>();
 		for (Character client : myClients) {
 			try {
+				String uriQueryStr = new String();
+				
 				// Get client parameters
 				int id = Integer.valueOf(client.getAttribute("id"));
 				Character process = getCharacterFromListByAttribute(processes, "id", client.getAttribute("process"));
@@ -376,6 +378,22 @@ public class JXIOStoryRunner implements StoryRunner {
 					}
 				}
 
+				// Updated URI with hoops
+				for (Character hoop : hoops) {
+					String serverHoopID = hoop.getAttribute("server");
+					Character serverHoop = getCharacterFromListByAttribute(servers, "id", serverHoopID);
+					String processHoopID = serverHoop.getAttribute("process");
+					Character processHoop = getCharacterFromListByAttribute(processes, "id", processHoopID);
+					String machineHoopID = processHoop.getAttribute("machine");
+					Character machineHoop = getCharacterFromListByAttribute(machines, "id", machineHoopID);
+					String hostnameHoop = machineHoop.getAttribute("address");
+					String portHoop = serverHoop.getAttribute("port");
+
+					// Add hoop to URI suffix
+					uriQueryStr += uriQueryStr.isEmpty() ? "?" : "&";
+					uriQueryStr += "nextHoop=" + hostnameHoop + ":" + portHoop;
+				}
+
 				// Get client msgs
 				int count = Integer.valueOf(client.getAttribute("msg_count_factor"));
 				int in = Integer.valueOf(client.getAttribute("msg_size_in_factor"));
@@ -390,30 +408,14 @@ public class JXIOStoryRunner implements StoryRunner {
 				String hostname = machine.getAttribute("address");
 				int port = Integer.valueOf(server.getAttribute("port"));
 				int reject = Integer.valueOf(client.getAttribute("reject"));
-				String suffix = "";
 				if (reject == 1) {
-					suffix = "toReject";
+					uriQueryStr += uriQueryStr.isEmpty() ? "?" : "&";
+					uriQueryStr += "rejectme=1";
 				}
-
 				
-				// Updated URI with hoops
-				for (Character hoop : hoops) {
-					String serverHoopID = hoop.getAttribute("server");
-					Character serverHoop = getCharacterFromListByAttribute(servers, "id", serverHoopID);
-					String processHoopID = serverHoop.getAttribute("process");
-					Character processHoop = getCharacterFromListByAttribute(processes, "id", processHoopID);
-					String machineHoopID = processHoop.getAttribute("machine");
-					Character machineHoop = getCharacterFromListByAttribute(machines, "id", machineHoopID);
-					String hostnameHoop = machineHoop.getAttribute("address");
-					String portHoop = serverHoop.getAttribute("port");
-
-					// Add hoop to URI suffix
-					suffix += "?next" + hostnameHoop + ":" + portHoop + "/";
-				}
-
-				//Update URI
-				URI uri = new URI("rdma://" + hostname + ":" + port + "/" + suffix);
-
+				// Create URI
+				URI uri = new URI("rdma://" + hostname + ":" + port + "/" + uriQueryStr);
+				
 				// Update max duration
 				if (startDelay + duration > maxDuration) {
 					maxDuration = startDelay + duration;

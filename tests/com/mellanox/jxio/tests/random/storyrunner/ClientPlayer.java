@@ -128,7 +128,9 @@ public class ClientPlayer extends GeneralPlayer {
 		LOG.debug(this.toString() + ": initializing");
 
 		// add ClientPlayer's name to the connect URI request
-		String struri = new String(this.uri.toString() + "?name=" + toString());
+		String struri = this.uri.toString();
+		struri += uriQueryStr.isEmpty() ? "?" : "&";
+		struri += "name=" + toString();
 		URI connecturi = null;
 		try {
 			connecturi = new URI(struri);
@@ -149,8 +151,9 @@ public class ClientPlayer extends GeneralPlayer {
 	@Override
 	protected void terminate() {
 		LOG.info(this.toString() + ": terminating. sent " + this.counterSentMsgs + "msgs");
+		if (!this.isClosing)
+			this.client.close();
 		this.isClosing = true;
-		this.client.close();
 	}
 
 	class JXIOCallbacks implements ClientSession.Callbacks {
@@ -168,40 +171,53 @@ public class ClientPlayer extends GeneralPlayer {
 			final long timeSessionEstablished = System.nanoTime() - c.startSessionTime;
 			if (timeSessionEstablished > 100000000) { // 100 milisec
 				LOG.error(c.toString() + " session establish took " + timeSessionEstablished / 1000 + "usec");
-				System.exit(1);
+				System.exit(1); // Failure in test - eject!
 			}
 			LOG.info(c.toString() + ": onSessionEstablished. took " + timeSessionEstablished / 1000 + "usec");
 			this.c.sendMsgTimerStart();
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
-			if (this.c.isClosing == true && session_event == EventName.SESSION_TEARDOWN) {
-				LOG.info(c.toString() + ": onSESSION_TEARDOWN, reason='" + reason.toString() + "'");
-				if (c.counterReceivedMsgs != c.counterSentMsgs) {
-					LOG.error(c.toString() + "there were " + c.counterSentMsgs + " sent and " + c.counterReceivedMsgs
-					        + " received");
-				} else {
-					LOG.info(c.toString() + "sent and received same # of msgs");
-				}
-				c.mp.deleteMsgPool();
-			} else {
-				LOG.error(c.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='"
-				        + reason.toString() + "'");
-				System.exit(1);
+			switch (session_event) {
+				case SESSION_TEARDOWN:
+					if (this.c.isClosing == true) {
+						LOG.info(c.toString() + ": onSESSION_TEARDOWN, reason='" + reason.toString() + "'");
+						if (c.counterReceivedMsgs != c.counterSentMsgs) {
+							LOG.error(c.toString() + "there were " + c.counterSentMsgs + " sent and "
+							        + c.counterReceivedMsgs + " received");
+						} else {
+							LOG.info(c.toString() + "sent and received same # of msgs");
+						}
+						c.mp.deleteMsgPool();
+						return;
+					}
+					break;
+				case SESSION_REJECT:
+					if (uri.getQuery().contains("rejectme=1")) {
+						LOG.info("Client session rejected as expected");
+						this.c.isClosing = true;
+						// Reject test completed SUCCESSFULLY
+						return;
+					}
+					break;
+				default:
+					break;
 			}
+			LOG.error(c.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='" + reason.toString() + "'");
+			System.exit(1); // Failure in test - eject!
 		}
 
 		public void onReply(Msg msg) {
 			counterReceivedMsgs++;
 			if (!Utils.checkIntegrity(msg)) {
 				LOG.error(c.toString() + "checksums for message #" + counterReceivedMsgs + " do not match.");
-				System.exit(1);
+				System.exit(1); // Failure in test - eject!
 			}
 
 			final long roundTrip = roundTrip(msg);
 			if (roundTrip > 100000000) { // 100 milisec
 				LOG.error(c.toString() + " round trip took " + roundTrip / 1000000 + "milisec");
-				System.exit(1);
+				System.exit(1); // Failure in test - eject!
 			}
 			if (LOG.isTraceEnabled()) {
 				LOG.trace(c.toString() + ": onReply: msg = " + msg.toString() + "#" + counterReceivedMsgs);

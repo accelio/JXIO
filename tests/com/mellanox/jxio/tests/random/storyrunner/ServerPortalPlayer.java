@@ -152,11 +152,15 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 		public void onSessionNew(long newSessionKey, String uriSrc, String srcIP) {
 			LOG.info(spp.toString() + ": onSessionNew: uri=" + uriSrc + ", srcaddr=" + srcIP);
-			if (uriSrc.contains("toReject")){
+			String clientName = uriSrc.substring(uriSrc.indexOf("name=") + 5);
+			if (uriSrc.contains("rejectme=1")) {
+
+				LOG.info("Rejecting session from '" + clientName + "'");
 				this.spp.listener.reject(newSessionKey, EventReason.NOT_SUPPORTED, "");
 				return;
 			}
 
+			LOG.info("Establishing new session from '" + clientName + "'");
 			ServerPortalPlayer sp = workerThreads.getPortal(this.spp.id);
 			ServerSessionPlayer ss = new ServerSessionPlayer(sp, newSessionKey, srcIP);
 			this.spp.listener.forward(sp.listener, ss.getServerSession());
