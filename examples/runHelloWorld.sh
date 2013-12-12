@@ -6,11 +6,11 @@ cd $DIR
 
 # Exporting LD library
 export LD_LIBRARY_PATH=$DIR
-echo -e "\nLD library is: $LD_LIBRARY_PATH\n"
+echo -e "\nLD library is: $LD_LIBRARY_PATH"
 
 # Checks to see if JAVA path is valid
 if [ ! -e ${JAVA_HOME} ]; then
-	echo -e "\nError: JAVA not found!\n"
+	echo -e "\nERROR: JAVA not found!\n"
 	exit 1
 fi
 
@@ -36,7 +36,7 @@ IP=$2
 PORT=$3
 
 # Compile
-echo -e "\nCompiling JAVA files....\n"
+echo -e "\nCompiling JAVA files...."
 javac -cp "../bin/jxio.jar:../src/lib/commons-logging.jar" com/mellanox/jxio/helloworld/*.java
 if [[ $? != 0 ]] ; then
     exit 1
@@ -62,5 +62,5 @@ if [[ -n "$CODE_COVERAGE_ON" ]];then
 fi
 
 # Run the tests
-echo -e "\nRunning ${APPLICATION_NAME} side test...\n"
+echo -e "\nRunning ${APPLICATION_NAME} side test..."
 java -Dlog4j.configuration=com/mellanox/jxio/log4j.properties.jxio -cp "$COBERTURA_JAR_PATH:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." $java_coverage_props $APPLICATION $IP $PORT
