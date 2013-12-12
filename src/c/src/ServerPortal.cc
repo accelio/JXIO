@@ -59,7 +59,7 @@ ServerPortal::~ServerPortal() {
 bool ServerPortal::onSessionEvent(xio_session_event eventType, struct xio_session *session) {
 	switch (eventType) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
-		log(lsDEBUG, "got XIO_SESSION_CONNECTION_CLOSED_EVENT. must close the session\n");
+		log(lsDEBUG, "got XIO_SESSION_CONNECTION_CLOSED_EVENT. \n");
 		return false;
 
 	case XIO_SESSION_CONNECTION_ERROR_EVENT:
@@ -73,7 +73,7 @@ bool ServerPortal::onSessionEvent(xio_session_event eventType, struct xio_sessio
 
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
 		log(lsDEBUG, "got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT\n");
-		close_xio_connection(session, this->get_ctx_class()->ctx);
+//		close_xio_connection(session, this->get_ctx_class()->ctx);
 		return false;
 
 	case XIO_SESSION_TEARDOWN_EVENT:

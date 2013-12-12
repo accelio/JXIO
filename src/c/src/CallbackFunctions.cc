@@ -125,8 +125,8 @@ int on_session_established_callback(struct xio_session *session,
 int on_session_event_callback(struct xio_session *session,
 		struct xio_session_event_data *event_data, void *cb_prv_data) {
 
-	log(lsDEBUG, "got on_session_event_callback. event=%d, cb_prv_data=%p, session=%p\n",
-			event_data->event, cb_prv_data, session);
+	log(lsDEBUG, "got on_session_event_callback. event=%d, cb_prv_data=%p, session=%p, conn=%p\n",
+			event_data->event, cb_prv_data, session, event_data->conn);
 
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 
