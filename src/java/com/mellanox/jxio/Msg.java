@@ -33,10 +33,11 @@ public class Msg {
 	private ByteBuffer       in, out;
 	private Object           userContext;                                          // variable for usage by the user
 	Msg(ByteBuffer buffer, int inSize, int outSize, long id, MsgPool msgPool) {
-		in = createSubBuffer(0, inSize, buffer);
-		out = createSubBuffer(inSize, inSize+outSize, buffer);
 		this.msgPool = msgPool;
 		this.refToCObject = id;
+		this.in = createSubBuffer(0, inSize, buffer);
+		this.out = createSubBuffer(inSize, inSize+outSize, buffer);
+		resetPositions();
 		// if(LOG.isDebugEnabled()) {
 		// LOG.debug("IN: capacity is " + in.capacity() + " limit " + in.limit()+ " position "+ in.position()+
 		// " remaining is "+ in.remaining());
@@ -65,13 +66,13 @@ public class Msg {
 		this.userContext = userContext;
 	}
 
-	MsgPool getParentPool() {
-		return msgPool;
+	public void resetPositions() {
+		this.in.position(0).limit(0);
+		this.out.clear();
 	}
 
-	public void resetPositions() {
-		this.in.position(0);
-		this.out.position(0);
+	MsgPool getParentPool() {
+		return msgPool;
 	}
 
 	void setClientSession(Eventable clientSession) {
