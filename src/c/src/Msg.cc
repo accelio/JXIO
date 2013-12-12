@@ -80,9 +80,9 @@ void Msg::set_xio_msg_server_fields() {
 }
 
 void Msg::set_xio_msg_fields_for_assign(struct xio_msg *msg) {
-	msg->in.data_iov[0].iov_base = buf;
-	msg->in.data_iov[0].iov_len = in_buf_size;
-	msg->in.data_iov[0].mr = xio_mr;
+	msg->in.data_iov[0].iov_base = this->buf;
+	msg->in.data_iov[0].iov_len = this->in_buf_size;
+	msg->in.data_iov[0].mr = this->xio_mr;
 	msg->user_context = this;
 	this->set_xio_msg_req(msg);
 }
@@ -100,6 +100,10 @@ void Msg::set_xio_msg_out_size(const int size) {
 	else {
 		this->xio_msg->out.data_iovlen = 0;
 	}
+}
+
+void Msg::reset_xio_msg_in_size() {
+	this->xio_msg->in.data_iov[0].iov_len = this->in_buf_size;
 }
 
 void Msg::release_to_pool() {

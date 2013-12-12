@@ -34,6 +34,7 @@ public:
 	void set_xio_msg_server_fields();
 	void set_xio_msg_fields_for_assign(struct xio_msg *msg); //used when assign_buffer callback is called
 	void set_xio_msg_out_size(const int size);
+	void reset_xio_msg_in_size();
 	void* get_buf() { return buf; }
 	struct xio_msg* get_xio_msg();
 	void release_to_pool();

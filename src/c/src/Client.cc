@@ -123,6 +123,7 @@ bool Client::onSessionEvent(xio_session_event eventType, struct xio_session *ses
 bool Client::send_msg(Msg *msg, const int size) {
 	log(lsTRACE, "##################### sending msg=%p, size=%d in client=%p\n", msg, size, this);
 	msg->set_xio_msg_out_size(size);
+	msg->reset_xio_msg_in_size();
 	int ret_val = xio_send_request(this->con, msg->get_xio_msg());
 	if (ret_val) {
 		log(lsERROR, "Got error %d while sending xio_msg in client=%p\n", ret_val, this);
