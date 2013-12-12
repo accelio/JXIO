@@ -11,39 +11,38 @@ public class BreakEventLoopTests implements Runnable {
 		EventQueueHandler eqh;
 		
 		public void run() {
-			TestManager.print("----- Setting up a event queue handler...(from thread = " + Thread.currentThread().getId() + ")");
+			System.out.println("----- Setting up a event queue handler...(from thread = " + Thread.currentThread().getId() + ")");
 			eqh = new EventQueueHandler();
 			
 			while (!exitFlag) {
-				TestManager.print("----- Continue Event Loop in blocking mode...");
+				System.out.println("----- Continue Event Loop in blocking mode...");
 				eqh.runEventLoop(1, -1); // Blocking! No events should trigger exit from loop unless broken on purpose 
 
 				loops++; // count the number of loops
-				TestManager.print("----- Got out of Event Loop...(Loops = " + loops + ")");
+				System.out.println("----- Got out of Event Loop...(Loops = " + loops + ")");
 			}
-			TestManager.print("----- Closing the event queue handler...");
+			System.out.println("----- Closing the event queue handler...");
 			eqh.close();
 
-			TestManager.print("----- Exiting up a event queue handler...(from thread = " + Thread.currentThread().getId() + ")");
+			System.out.println("----- Exiting up a event queue handler...(from thread = " + Thread.currentThread().getId() + ")");
 		}
 		
 		public void stop() {
-			TestManager.print("----- Stopping running thread with Event Loop (from thread = " + Thread.currentThread().getId() + ")");
+			System.out.println("----- Stopping running thread with Event Loop (from thread = " + Thread.currentThread().getId() + ")");
 			exitFlag = true;
 			wakeup();
-			TestManager.print("----- Stopped running thread with Event Loop (from thread = " + Thread.currentThread().getId() + ")");
+			System.out.println("----- Stopped running thread with Event Loop (from thread = " + Thread.currentThread().getId() + ")");
 		}
 
 		public void wakeup() {
-			TestManager.print("----- Breaking Event Loop (from thread = " + Thread.currentThread().getId() + ")");
+			System.out.println("----- Breaking Event Loop (from thread = " + Thread.currentThread().getId() + ")");
 			eqh.breakEventLoop();
 		}
 	}
 
 	public void run() {
-		///////////////////// Test 6 /////////////////////
 		// Break Event Loop
-		TestManager.print("*** Test 6: Break Event Loop *** ");
+		System.out.println("*** Test: Break Event Loop *** ");
 
 		// Setup tests
 		InnerEQHThread eqh1 = new InnerEQHThread();
@@ -81,12 +80,11 @@ public class BreakEventLoopTests implements Runnable {
 			e1.printStackTrace();
 		}
 
-		if (eqh1.loops == wakeup) {
-			TestManager.setSuccess(6);
-			TestManager.print("*** Test 6 Passed! *** ");
+		if (eqh1.loops == wakeup) {;
+			System.out.println("*** Test Passed! *** ");
 		}
 		else {
-			TestManager.print("*** Test 6 Failed! *** (wrong number of wakeup times (internal thread="+eqh1.loops+", wakeup called="+wakeup+")");
+			System.out.println("*** Test Failed! *** (wrong number of wakeup times (internal thread="+eqh1.loops+", wakeup called="+wakeup+")");
 		}
 	}
 }
