@@ -129,7 +129,7 @@ public class ClientPlayer extends GeneralPlayer {
 
 		// add ClientPlayer's name to the connect URI request
 		String struri = this.uri.toString();
-		struri += uriQueryStr.isEmpty() ? "?" : "&";
+		struri += struri.isEmpty() ? "?" : "&";
 		struri += "name=" + toString();
 		URI connecturi = null;
 		try {
@@ -169,7 +169,7 @@ public class ClientPlayer extends GeneralPlayer {
 
 		public void onSessionEstablished() {
 			final long timeSessionEstablished = System.nanoTime() - c.startSessionTime;
-			if (timeSessionEstablished > 100000000) { // 100 milisec
+			if (timeSessionEstablished > 100000000) { // 100 msec
 				LOG.error(c.toString() + " session establish took " + timeSessionEstablished / 1000 + "usec");
 				System.exit(1); // Failure in test - eject!
 			}
