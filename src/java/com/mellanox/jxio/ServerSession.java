@@ -63,7 +63,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		}
 		setIsClosing(true);
 		removeFromEQHs();
-		Bridge.closeServerSession(getId());
+		Bridge.closeServerSession(getId(), this.eventQHandlerSession.getId());
 		
 		return true;
 	}

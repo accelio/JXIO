@@ -96,15 +96,17 @@ void logs_from_xio_set_threshold(log_severity_t threshold)
 
 bool close_xio_connection(struct xio_session *session, struct xio_context *ctx)
 {
+	log (lsDEBUG, "closing connection for session=%p, context=%p\n", session, ctx);
 	xio_connection * con = xio_get_connection(session, ctx);
 	if (con == NULL) {
-		log(lsDEBUG, "ERROR, no connection found (xio_session=%p, xio_context=%p)", session, ctx);
+		log(lsDEBUG, "ERROR, no connection found (xio_session=%p, xio_context=%p)\n", session, ctx);
 		return false;
 	}
 	if (xio_disconnect(con)) {
-		log(lsDEBUG, "ERROR, xio_disconnect failed (xio_session=%p, xio_context=%p)", session, ctx);
+		log(lsDEBUG, "ERROR, xio_disconnect failed (xio_session=%p, xio_context=%p, conn=%p)\n", session, ctx, con);
 		return false;
 	}
+	log (lsDEBUG, "successfully closed connection=%p, for session=%p, context=%p\n", con, session, ctx);
 	return true;
 }
 
