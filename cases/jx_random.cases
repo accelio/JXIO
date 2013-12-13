@@ -12,16 +12,6 @@
 	</global>
 	<case>
 		<info>jx test</info>
-		<name>run simple story</name>
-		<tout>1500</tout>
-		<cmd>
-			<params>
-				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
-			</params>
-		</cmd>
-	</case>
-	<case>
-		<info>jx test</info>
 		<name>run story 1</name>
 		<tout>1500</tout>
 		<cmd>
@@ -70,5 +60,154 @@
 			</params>
 		</cmd>
 	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 6</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 7</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 8</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 9</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 10</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 11</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 12</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 13</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 14</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 15</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 16</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 17</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 18</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 19</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run story 20</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --tellstory yes</static_args>
+			</params>
+		</cmd>
+	</case>
 </CASEDEF>
-
