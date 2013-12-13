@@ -76,7 +76,7 @@ public class ClientPlayer extends GeneralPlayer {
 	protected void sendMsgTimerStart() {
 		if (this.msgDelayMicroSec > 0) {
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(this.toString() + ": starting send timer for " + this.msgDelayMicroSec + "usec");
+				LOG.trace(this.toString() + ": starting send timer for " + this.msgDelayMicroSec + " usec");
 			}
 			TimerList.Timer tSendMsg = new SendMsgTimer(this.msgDelayMicroSec, this);
 			this.workerThread.start(tSendMsg);
@@ -129,7 +129,7 @@ public class ClientPlayer extends GeneralPlayer {
 
 		// add ClientPlayer's name to the connect URI request
 		String struri = this.uri.toString();
-		struri += struri.isEmpty() ? "?" : "&";
+		struri += (this.uri.getQuery() == null) ? "?" : "&";
 		struri += "name=" + toString();
 		URI connecturi = null;
 		try {
@@ -183,7 +183,7 @@ public class ClientPlayer extends GeneralPlayer {
 					if (this.c.isClosing == true) {
 						LOG.info(c.toString() + ": onSESSION_TEARDOWN, reason='" + reason.toString() + "'");
 						if (c.counterReceivedMsgs != c.counterSentMsgs) {
-							LOG.error(c.toString() + "there were " + c.counterSentMsgs + " sent and "
+							LOG.error(c.toString() + ": there were " + c.counterSentMsgs + " sent and "
 							        + c.counterReceivedMsgs + " received");
 						} else {
 							LOG.info(c.toString() + ": SUCCESSFULLY received all sent msgs (" + c.counterReceivedMsgs + ")");
@@ -231,7 +231,7 @@ public class ClientPlayer extends GeneralPlayer {
 			final long rTrip = recTime - sendTime;
 			if (LOG.isTraceEnabled()) {
 				LOG.trace(c.toString() + ": roundTrip for message " + counterReceivedMsgs + " took " + rTrip / 1000
-				        + "usec");
+				        + " usec");
 			}
 			return rTrip;
 		}

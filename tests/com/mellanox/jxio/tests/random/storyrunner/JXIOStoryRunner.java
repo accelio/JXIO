@@ -360,7 +360,7 @@ public class JXIOStoryRunner implements StoryRunner {
 		List<ClientPlayer> clientPlayers = new ArrayList<ClientPlayer>();
 		for (Character client : myClients) {
 			try {
-				String uriQueryStr = new String();
+				String uriQueryStr = "";
 
 				// Get client parameters
 				int id = Integer.valueOf(client.getAttribute("id"));

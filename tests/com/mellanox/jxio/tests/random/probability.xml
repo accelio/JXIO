@@ -19,8 +19,9 @@
 	<processes>
 		<process_amount value="[100]:1"/>
 		<machine value="[100]:1"/>
-		<num_eqhs value="[90]:3 , [10]:4-5"/>
-		<timeout value="[50]:20 , [50]:30"/>
+		<num_eqhs value="[90]:3, [10]:4-5"/>
+		<timeout value="[100]:60"/>
+		<log_level value="[0]:OFF, [5]:FATAL, [5]:ERROR, [5]:WARN, [50]:INFO, [20]:DEBUG, [10]:TRACE, [5]:ALL"/>
 	</processes>
 
 	<!-- Server process parameters -->
@@ -33,30 +34,30 @@
 		<num_workers value="[100]:1-5"/>
 		<msg_pools>
 			<msg_pool_amount value="[100]:1"/>
-		        <msg_pool_count value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
-        		<msg_pool_size_in value="[20]:128-512, [50]:128, [30]:512-1024, [0]:1024-32000"/>
-	        	<msg_pool_size_out value="[20]:128-512, [50]:128, [30]:512-1024, [0]:1024-32000"/>
-        	</msg_pools>
+			<msg_pool_count value="[100]:10-1000"/>
+			<msg_pool_size_in value="[0]:0, [20]:12-512, [30]:512-1024, [50]:1024-128000"/>
+			<msg_pool_size_out value="[0]:0, [20]:12-512, [30]:512-1024, [50]:1024-128000"/>
+		</msg_pools>
 		<tps value="[30]:100, [25]:100-500, [25]:500-50000, [20]:60000"/>
 		<delay value="[20]:5, [20]:10, [60]:0"/>
 	</servers>
 
 	<!-- Client process parameters -->
 	<clients>
-        	<client_amount value="[100]:1"/>
+		<client_amount value="[100]:1"/>
 	        <process value="random"/>
 		<server value="random"/>
-        	<start_delay value="[100]:8-12"/>
-		<duration value="[100]:1-5"/>
+        	<start_delay value="[100]:2-10"/>
+		<duration value="[100]:5-10"/>
 		<reject value="[90]:0, [10]:1"/>
 		<hoops>
-			<hoop_amount value="[50]:0, [50]:1-10"/>
+			<hoop_amount value="[60]:0, [30]:1, [10]:2-4"/>
 			<server value="random"/>
 		</hoops>
-	        <msg_count_factor value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
-		<msg_size_in_factor value="[20]:128-512, [50]:128, [30]:512-1024, [0]:1024-32000"/>
-        	<msg_size_out_factor value="[20]:128-512, [50]:128, [30]:512-1024, [0]:1024-32000"/>
-		<tps value="[30]:100, [25]:100-500, [25]:500-50000, [20]:100000"/>
-		<batch value="[100]:5"/>
+		<msg_count_factor value="[20]:12-512, [50]:12, [30]:512-1024, [0]:1024-32000"/>
+		<msg_size_in_factor value="[20]:12-512, [30]:512-1024, [50]:1024-128000"/>
+		<msg_size_out_factor value="[20]:12-512, [30]:512-1024, [50]:1024-128000"/>
+		<tps value="[30]:100, [25]:100-500, [0]:500-50000, [0]:100000"/>
+		<batch value="[50]:1, [50]:2-1000"/>
 	</clients>
 </root>
