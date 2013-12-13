@@ -44,7 +44,7 @@
 
 	<!-- Client process parameters -->
 	<clients>
-		<client_amount value="[100]:1"/>
+		<client_amount value="[100]:1-3"/>
 	        <process value="random"/>
 		<server value="random"/>
         	<start_delay value="[100]:2-10"/>
