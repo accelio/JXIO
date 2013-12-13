@@ -36,23 +36,25 @@ public class ClientPlayer extends GeneralPlayer {
 	private final URI         uri;
 	private final long        runDurationSec;
 	private final long        startDelaySec;
+	private final int         msgBatchSize;
 	private final long        msgDelayMicroSec;
+	private final MsgPoolData poolData;
 	private WorkerThread      workerThread;
 	private ClientSession     client;
 	private MsgPool           mp;
-	private boolean           isClosing = false;
-	private int               counterReceivedMsgs;
-	private int               counterSentMsgs;
-	private final MsgPoolData poolData;
 	private long              startSessionTime;
+	private int               counterSentMsgs;
+	private int               counterReceivedMsgs;
+	private boolean           isClosing = false;
 
-	public ClientPlayer(int id, URI uri, long startDelaySec, long runDurationSec, long msgRate, MsgPoolData pool) {
+	public ClientPlayer(int id, URI uri, long startDelaySec, long runDurationSec, MsgPoolData pool, int msgRate, int msgBatch) {
 		this.name = new String("CP[" + id + "]");
 		this.uri = uri;
 		this.runDurationSec = runDurationSec;
 		this.startDelaySec = startDelaySec;
 		this.msgDelayMicroSec = (msgRate > 0) ? (1000000 / msgRate) : 0;
 		this.poolData = pool;
+		this.msgBatchSize = msgBatch;
 		LOG.debug("new " + this.toString() + " done");
 	}
 
@@ -97,28 +99,40 @@ public class ClientPlayer extends GeneralPlayer {
 				LOG.trace("SendMsgTimer: " + this.player.toString());
 			}
 
-			// register next send timer
-			if (!this.player.isClosing) {
-				sendMsgTimerStart();
-				// send msg
-				Msg m = this.player.mp.getMsg();
-				if (m != null) {
-					String str = "Client " + this.toString() + " sending msg # " + counterSentMsgs;
-					final long sendTime = System.nanoTime();
-					Utils.writeMsg(m, str, sendTime);
-					if (this.player.client.sendMessage(m)) {
-						counterSentMsgs++;
-					} else {
-						LOG.error(this.toString() + " failed to send a message");
-						m.returnToParentPool();
-					}
-				} else {// MsgPool is empty (client used up all the msgs and
-					    // they didn't return from client yet
-					if (LOG.isDebugEnabled()) {
-						LOG.debug(this.toString() + "no more messages in pool: skipping a timer");
-					}
-				}
+			if (this.player.isClosing) {
+				return;
+			}
 
+			// register next send timer
+			sendMsgTimerStart();
+
+			// check if we have for full batch of buffers ready for sending
+			if (this.player.mp.getCount() < this.player.msgBatchSize) {
+				return;
+			}
+
+			// send msgs
+			int numMsgToSend = this.player.msgBatchSize;
+			while (numMsgToSend > 0) {
+				numMsgToSend--;
+				Msg m = this.player.mp.getMsg();
+				if (m == null) {
+					// MsgPool is empty (client used up all the msgs and
+					// or they didn't return from server yet
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(this.toString() + ": no more messages in pool: skipping a timer");
+					}
+					return;
+				}
+				String str = "Client " + this.toString() + " sending msg # " + this.player.counterSentMsgs;
+				final long sendTime = System.nanoTime();
+				Utils.writeMsg(m, str, sendTime);
+				if (this.player.client.sendMessage(m)) {
+					this.player.counterSentMsgs++;
+				} else {
+					LOG.error(this.toString() + " failed to send a message = " + m);
+					m.returnToParentPool();
+				}
 			}
 		}
 	}

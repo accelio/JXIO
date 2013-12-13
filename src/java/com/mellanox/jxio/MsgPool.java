@@ -51,6 +51,10 @@ public class MsgPool {
 		}
 	}
 
+	public int getCount() {
+		return listMsg.size();
+	}
+
 	public Msg getMsg() {
 		if (listMsg.isEmpty()) {
 			LOG.warn("there are no more messages in pool");

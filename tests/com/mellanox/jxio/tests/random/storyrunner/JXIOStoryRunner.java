@@ -366,10 +366,10 @@ public class JXIOStoryRunner implements StoryRunner {
 				int id = Integer.valueOf(client.getAttribute("id"));
 				Character process = getCharacterFromListByAttribute(processes, "id", client.getAttribute("process"));
 				int duration = Integer.valueOf(client.getAttribute("duration"));
-				int batch = Integer.valueOf(client.getAttribute("batch"));
 				Character server = getCharacterFromListByAttribute(servers, "id", client.getAttribute("server"));
 				int startDelay = Integer.valueOf(client.getAttribute("start_delay"));
 				int tps = Integer.valueOf(client.getAttribute("tps"));
+				int batch = Integer.valueOf(client.getAttribute("batch"));
 
 				// Get client hoops
 				List<Character> supportingCharacters = client.getSupportingCharacters();
@@ -403,6 +403,9 @@ public class JXIOStoryRunner implements StoryRunner {
 				int out = Integer.valueOf(client.getAttribute("msg_size_out_factor"));
 				MsgPoolData pool = new MsgPoolData(count, in, out);
 
+				if (batch > count)
+					batch = count;
+
 				// Resolve hostname and port
 				Character serverProcess = getCharacterFromListByAttribute(processes, "id",
 				        server.getAttribute("process"));
@@ -425,7 +428,7 @@ public class JXIOStoryRunner implements StoryRunner {
 				}
 
 				// Add client
-				ClientPlayer cp = new ClientPlayer(id, uri, startDelay, duration, tps, pool);
+				ClientPlayer cp = new ClientPlayer(id, uri, startDelay, duration, pool, tps, batch);
 				clientPlayers.add(cp);
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
