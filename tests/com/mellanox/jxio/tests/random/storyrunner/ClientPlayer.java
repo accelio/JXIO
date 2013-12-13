@@ -150,7 +150,7 @@ public class ClientPlayer extends GeneralPlayer {
 
 	@Override
 	protected void terminate() {
-		LOG.info(this.toString() + ": terminating. sent " + this.counterSentMsgs + "msgs");
+		LOG.info(this.toString() + ": terminating. sent " + this.counterSentMsgs + " msgs");
 		if (!this.isClosing)
 			this.client.close();
 		this.isClosing = true;
@@ -170,10 +170,10 @@ public class ClientPlayer extends GeneralPlayer {
 		public void onSessionEstablished() {
 			final long timeSessionEstablished = System.nanoTime() - c.startSessionTime;
 			if (timeSessionEstablished > 100000000) { // 100 msec
-				LOG.error(c.toString() + " session establish took " + timeSessionEstablished / 1000 + "usec");
+				LOG.error(c.toString() + ": FAILURE, session establish took " + timeSessionEstablished / 1000 + " usec");
 				System.exit(1); // Failure in test - eject!
 			}
-			LOG.info(c.toString() + ": onSessionEstablished. took " + timeSessionEstablished / 1000 + "usec");
+			LOG.info(c.toString() + ": onSessionEstablished. took " + timeSessionEstablished / 1000 + " usec");
 			this.c.sendMsgTimerStart();
 		}
 
@@ -186,37 +186,37 @@ public class ClientPlayer extends GeneralPlayer {
 							LOG.error(c.toString() + "there were " + c.counterSentMsgs + " sent and "
 							        + c.counterReceivedMsgs + " received");
 						} else {
-							LOG.info(c.toString() + "sent and received same # of msgs");
+							LOG.info(c.toString() + ": SUCCESSFULLY received all sent msgs (" + c.counterReceivedMsgs + ")");
 						}
 						c.mp.deleteMsgPool();
 						return;
 					}
 					break;
 				case SESSION_REJECT:
-					if (uri.getQuery().contains("rejectme=1")) {
-						LOG.info("Client session rejected as expected");
-						this.c.isClosing = true;
+					if (uri.getQuery().contains("reject=1")) {
 						// Reject test completed SUCCESSFULLY
+						LOG.info(c.toString() + ": SUCCESSFULLY got rejected as expected");
+						this.c.isClosing = true;
 						return;
 					}
 					break;
 				default:
 					break;
 			}
-			LOG.error(c.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='" + reason.toString() + "'");
+			LOG.error(c.toString() + ": FAILURE, onSessionError: event='" + session_event.toString() + "', reason='" + reason.toString() + "'");
 			System.exit(1); // Failure in test - eject!
 		}
 
 		public void onReply(Msg msg) {
 			counterReceivedMsgs++;
 			if (!Utils.checkIntegrity(msg)) {
-				LOG.error(c.toString() + "checksums for message #" + counterReceivedMsgs + " do not match.");
+				LOG.error(c.toString() + ": FAILURE, checksums for message #" + counterReceivedMsgs + " does not match");
 				System.exit(1); // Failure in test - eject!
 			}
 
 			final long roundTrip = roundTrip(msg);
 			if (roundTrip > 100000000) { // 100 milisec
-				LOG.error(c.toString() + " round trip took " + roundTrip / 1000000 + "milisec");
+				LOG.error(c.toString() + ": FAILURE, msg round trip took " + roundTrip / 1000 + " usec");
 				System.exit(1); // Failure in test - eject!
 			}
 			if (LOG.isTraceEnabled()) {

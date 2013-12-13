@@ -39,9 +39,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import com.mellanox.jxio.tests.random.Character;
 import com.mellanox.jxio.tests.random.Main;
 import com.mellanox.jxio.tests.random.Story;
+import com.mellanox.jxio.tests.random.Character;
 
 public class StoryTeller {
 

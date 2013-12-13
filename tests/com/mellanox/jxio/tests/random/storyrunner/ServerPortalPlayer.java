@@ -153,7 +153,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		public void onSessionNew(long newSessionKey, String uriSrc, String srcIP) {
 			LOG.info(spp.toString() + ": onSessionNew: uri=" + uriSrc + ", srcaddr=" + srcIP);
 			String clientName = uriSrc.substring(uriSrc.indexOf("name=") + 5);
-			if (uriSrc.contains("rejectme=1")) {
+			if (uriSrc.contains("reject=1")) {
 
 				LOG.info("Rejecting session from '" + clientName + "'");
 				this.spp.listener.reject(newSessionKey, EventReason.NOT_SUPPORTED, "");
@@ -170,11 +170,10 @@ public class ServerPortalPlayer extends GeneralPlayer {
 			if (session_event == EventName.SESSION_TEARDOWN) {
 				LOG.info(spp.toString() + ": SESSION_TEARDOWN. reason='" + reason.toString() + "'");
 			} else {
-				LOG.error(spp.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='"
+				LOG.error(spp.toString() + ": FAILURE, onSessionError: event='" + session_event.toString() + "', reason='"
 				        + reason.toString() + "'");
 				System.exit(1);
 			}
 		}
-
 	}
 }

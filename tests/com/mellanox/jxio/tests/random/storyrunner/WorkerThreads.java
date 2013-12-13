@@ -17,15 +17,12 @@
 package com.mellanox.jxio.tests.random.storyrunner;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import com.mellanox.jxio.ServerPortal;
 
 public class WorkerThreads {
 
@@ -36,7 +33,7 @@ public class WorkerThreads {
 	private final int                       num_workers;
 	private int                             next_worker_index = -1;
 	private ArrayList<ServerPortalPlayer>[] listPortalPlayers;
-	private int                             actualWorkersNumber; // represetns worker threads that were created
+	private int                             actualWorkersNumber; // represents worker threads that were created
 
 	@SuppressWarnings("unchecked")
 	public WorkerThreads(int numEQHs, int numListners) {

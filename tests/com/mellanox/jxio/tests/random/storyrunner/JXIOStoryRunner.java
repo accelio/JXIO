@@ -31,11 +31,14 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -56,8 +59,8 @@ public class JXIOStoryRunner implements StoryRunner {
 	private List<Character>  clients;
 
 	/**
-     * A chapter from the story, segement of the story macthing a mahcine.
-     */
+	 * A chapter from the story, segment of the story matching a machine.
+	 */
 	private class Chapter {
 		public String                                   myIP;
 		public Character                                myMachine;
@@ -71,15 +74,15 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Constructs an new StoryRunner
-     */
+	 * Constructs an new StoryRunner
+	 */
 	public JXIOStoryRunner() {
 		this.story = new Story();
 	}
 
 	/**
-     * Reads the story XML file.
-     */
+	 * Reads the story XML file.
+	 */
 	public void read(File storyFile) {
 		try {
 			// Set needed XML document handling objects
@@ -125,8 +128,8 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Runs the story.
-     */
+	 * Runs the story.
+	 */
 	public void run() {
 
 		System.out.println("=============");
@@ -174,8 +177,8 @@ public class JXIOStoryRunner implements StoryRunner {
 		System.out.println("Your name is " + myChapter.myMachine.getAttribute("name"));
 
 		// Fetch my processes
-		myChapter.myProcesses = getCharactersFromListByAttribute(processes, "machine", myChapter.myMachine
-		        .getAttribute("id"));
+		myChapter.myProcesses = getCharactersFromListByAttribute(processes, "machine",
+		        myChapter.myMachine.getAttribute("id"));
 		if (myChapter.myProcesses.size() == 0) {
 			System.out.println("No process found for your machine!");
 			return null;
@@ -196,10 +199,10 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Retrive the current machine's Infiniband IPv4 address
-     * 
-     * @return An IPv4 address
-     */
+	 * Retrive the current machine's Infiniband IPv4 address
+	 * 
+	 * @return An IPv4 address
+	 */
 	private String getIP() {
 		String myIP = null;
 		try {
@@ -222,12 +225,12 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Retrieve all characters matching a specific type.
-     * 
-     * @param charcterType
-     *            A character type in single form.
-     * @return A list of all characters of the requested type.
-     */
+	 * Retrieve all characters matching a specific type.
+	 * 
+	 * @param charcterType
+	 *            A character type in single form.
+	 * @return A list of all characters of the requested type.
+	 */
 	private List<Character> getCharacters(String charcterType) {
 		List<Character> chracterList = new ArrayList<Character>();
 		for (Character character : story.getCharacters()) {
@@ -240,16 +243,16 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Returns a mapping a characters to a list of matching characters by a given attribute.
-     * 
-     * @param supportingCharacter
-     *            A list of characters the sublists of it will be the values of the returned map.
-     * @param attribute
-     *            The attribute by which the supporting characters will be matched to the main character.
-     * @param Characters
-     *            A list of characters the will be the keys of the returned map.
-     * @return A map that matches the characters to the relevant supporting characters.
-     */
+	 * Returns a mapping a characters to a list of matching characters by a given attribute.
+	 * 
+	 * @param supportingCharacter
+	 *            A list of characters the sublists of it will be the values of the returned map.
+	 * @param attribute
+	 *            The attribute by which the supporting characters will be matched to the main character.
+	 * @param Characters
+	 *            A list of characters the will be the keys of the returned map.
+	 * @return A map that matches the characters to the relevant supporting characters.
+	 */
 	private Map<Character, List<Character>> mapCharactersByCharacter(List<Character> supportingCharacter,
 	        String attribute, List<Character> Characters) {
 		Map<Character, List<Character>> map = new HashMap<Character, List<Character>>();
@@ -262,16 +265,16 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Retrieves a specific matching character from a list of characters.
-     * 
-     * @param characters
-     *            The list of characters.
-     * @param attribute
-     *            The atrribute to match.
-     * @param value
-     *            The value of the requsted attribute to match.
-     * @return The charcater from the list with there attribute matching the given value.
-     */
+	 * Retrieves a specific matching character from a list of characters.
+	 * 
+	 * @param characters
+	 *            The list of characters.
+	 * @param attribute
+	 *            The attribute to match.
+	 * @param value
+	 *            The value of the requested attribute to match.
+	 * @return The character from the list with there attribute matching the given value.
+	 */
 	private Character getCharacterFromListByAttribute(List<Character> characters, String attribute, String value) {
 		for (Character character : characters) {
 			if (character.getAttribute(attribute).equals(value)) {
@@ -282,16 +285,16 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Retrieves a list of matching characters from a list of characters.
-     * 
-     * @param characters
-     *            The list of characters.
-     * @param attribute
-     *            The atrribute to match.
-     * @param value
-     *            The value of the requsted attribute to match.
-     * @return A list of charcater from the list with there attribute matching the given value.
-     */
+	 * Retrieves a list of matching characters from a list of characters.
+	 * 
+	 * @param characters
+	 *            The list of characters.
+	 * @param attribute
+	 *            The attribute to match.
+	 * @param value
+	 *            The value of the requested attribute to match.
+	 * @return A list of character from the list with there attribute matching the given value.
+	 */
 	private List<Character> getCharactersFromListByAttribute(List<Character> characters, String attribute, String value) {
 		List<Character> list = new ArrayList<Character>();
 		for (Character character : characters) {
@@ -303,13 +306,13 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Updates the maps of a given chapter to map and store server players, client players, max durations and worker
-     * threads.
-     * 
-     * @param chapter
-     *            The chapter which it's maps should be updated.
-     * @return 0 on success, -1 otherwise.
-     */
+	 * Updates the maps of a given chapter to map and store server players, client players, max durations and worker
+	 * threads.
+	 * 
+	 * @param chapter
+	 *            The chapter which it's maps should be updated.
+	 * @return 0 on success, -1 otherwise.
+	 */
 	private int mapPlayers(Chapter chapter) {
 
 		chapter.processServerPlayers = new HashMap<Character, List<ServerPortalPlayer>>();
@@ -319,7 +322,7 @@ public class JXIOStoryRunner implements StoryRunner {
 
 		for (Character myProcess : chapter.myProcesses) {
 
-			// Configure Worker Theardes
+			// Configure Worker Threads
 			int numWorkerThreads = Integer.valueOf(myProcess.getAttribute("num_eqhs"));
 			WorkerThreads myWorkers = new WorkerThreads(numWorkerThreads, chapter.processServers.get(myProcess).size());
 			chapter.processWorkerThreads.put(myProcess, myWorkers);
@@ -344,12 +347,12 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Configures the client players of the given process.
-     * 
-     * @param myProcess
-     *            A character representing a process.
-     * @return The maximal duration of a client in the given process.
-     */
+	 * Configures the client players of the given process.
+	 * 
+	 * @param myProcess
+	 *            A character representing a process.
+	 * @return The maximal duration of a client in the given process.
+	 */
 	private int configureClients(Chapter chapter, Character myProcess) {
 		int maxDuration = 0;
 		// Configure Clients
@@ -358,7 +361,7 @@ public class JXIOStoryRunner implements StoryRunner {
 		for (Character client : myClients) {
 			try {
 				String uriQueryStr = new String();
-				
+
 				// Get client parameters
 				int id = Integer.valueOf(client.getAttribute("id"));
 				Character process = getCharacterFromListByAttribute(processes, "id", client.getAttribute("process"));
@@ -401,21 +404,21 @@ public class JXIOStoryRunner implements StoryRunner {
 				MsgPoolData pool = new MsgPoolData(count, in, out);
 
 				// Resolve hostname and port
-				Character serverProcess = getCharacterFromListByAttribute(processes, "id", server
-				        .getAttribute("process"));
-				Character machine = getCharacterFromListByAttribute(machines, "id", serverProcess
-				        .getAttribute("machine"));
+				Character serverProcess = getCharacterFromListByAttribute(processes, "id",
+				        server.getAttribute("process"));
+				Character machine = getCharacterFromListByAttribute(machines, "id",
+				        serverProcess.getAttribute("machine"));
 				String hostname = machine.getAttribute("address");
 				int port = Integer.valueOf(server.getAttribute("port"));
 				int reject = Integer.valueOf(client.getAttribute("reject"));
 				if (reject == 1) {
 					uriQueryStr += uriQueryStr.isEmpty() ? "?" : "&";
-					uriQueryStr += "rejectme=1";
+					uriQueryStr += "reject=1";
 				}
-				
+
 				// Create URI
 				URI uri = new URI("rdma://" + hostname + ":" + port + "/" + uriQueryStr);
-				
+
 				// Update max duration
 				if (startDelay + duration > maxDuration) {
 					maxDuration = startDelay + duration;
@@ -434,12 +437,12 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Configures the server players of the given process.
-     * 
-     * @param myProcess
-     *            A character representing a process.
-     * @return The maximal duration of a server in the given process, or -1 on error.
-     */
+	 * Configures the server players of the given process.
+	 * 
+	 * @param myProcess
+	 *            A character representing a process.
+	 * @return The maximal duration of a server in the given process, or -1 on error.
+	 */
 	private int configureServers(Chapter chapter, Character myProcess) {
 		int maxDuration = 0;
 		// Configure Servers
@@ -502,8 +505,8 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Prints a summary of the story.
-     */
+	 * Prints a summary of the story.
+	 */
 	private void printSummary() {
 		System.out.print("Machines:");
 		for (Character machine : machines) {
@@ -528,10 +531,11 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * A JXIO Process to be run as a forked task.
-     */
+	 * A JXIO Process to be run as a forked task.
+	 */
 	static public class JXIOProcessTask extends RecursiveTask<Integer> implements Callable<Integer> {
 
+		@SuppressWarnings("unused")
 		private final Character                machine;
 		private final Character                process;
 		private final List<ServerPortalPlayer> serverPlayers;
@@ -540,21 +544,21 @@ public class JXIOStoryRunner implements StoryRunner {
 		private final int                      maxDuration;
 
 		/**
-         * Constructs a new JXIOProcessTask
-         * 
-         * @param machine
-         *            The character representing to machine on which to process runs.
-         * @param process
-         *            The character representing the JXIO process.
-         * @param serverPlayers
-         *            A list of ServerPortalPlayers that should run on this process.
-         * @param clientPlayers
-         *            A list of ClientPlayers that should run on this process.
-         * @param workers
-         *            The WorkrTheards of the process.
-         * @param maxDuration
-         *            The maximal time duration for the process to run.
-         */
+		 * Constructs a new JXIOProcessTask
+		 * 
+		 * @param machine
+		 *            The character representing to machine on which to process runs.
+		 * @param process
+		 *            The character representing the JXIO process.
+		 * @param serverPlayers
+		 *            A list of ServerPortalPlayers that should run on this process.
+		 * @param clientPlayers
+		 *            A list of ClientPlayers that should run on this process.
+		 * @param workers
+		 *            The WorkrTheards of the process.
+		 * @param maxDuration
+		 *            The maximal time duration for the process to run.
+		 */
 		public JXIOProcessTask(Character machine, Character process, List<ServerPortalPlayer> serverPlayers,
 		        List<ClientPlayer> clientPlayers, WorkerThreads workers, int maxDuration) {
 			this.machine = machine;
@@ -566,13 +570,13 @@ public class JXIOStoryRunner implements StoryRunner {
 		}
 
 		/**
-         * The funciton that is invoked when running the forked process. Computes the total running time of the process
-         * (can be used for benchmarking).
-         */
+		 * The function that is invoked when running the forked process. Computes the total running time of the process
+		 * (can be used for benchmarking).
+		 */
 		@Override
 		protected Integer compute() {
 
-			// Set strting time
+			// Set starting time
 			int startTime = 0;
 
 			// Run
@@ -618,12 +622,11 @@ public class JXIOStoryRunner implements StoryRunner {
 		}
 
 		/**
-         * The funciton that is invoked when running a collection of forked processes. Computes the total running time
-         * of the process (can be used for benchmarking).
-         */
+		 * The function that is invoked when running a collection of forked processes. Computes the total running time
+		 * of the process (can be used for benchmarking).
+		 */
 		public Integer call() throws Exception {
 			return compute();
 		}
 	}
-
 }

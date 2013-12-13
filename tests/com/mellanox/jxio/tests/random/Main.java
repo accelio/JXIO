@@ -31,15 +31,14 @@ public class Main {
 	private static String      tellstory;
 	private static StoryTeller storyTeller;
 	private static StoryRunner storyRunner;
-	@SuppressWarnings("unused")
 	private static long        seed;
 
 	/**
-     * The main program that runs the probability XML file through the StoryTeller in order to produce a story XML file.
-     * 
-     * @param args
-     *            The command line arguments.
-     */
+	 * The main program that runs the probability XML file through the StoryTeller in order to produce a story XML file.
+	 * 
+	 * @param args
+	 *            The command line arguments.
+	 */
 	public static void main(String[] args) {
 
 		// Check for valid arguments
@@ -56,7 +55,7 @@ public class Main {
 				// Create a new StoryTeller Instance
 				File probabiltyFile = new File(xmlFileDir + "/" + xmlFileName);
 				storyTeller = new StoryTeller(probabiltyFile, seed);
-				if (tellstory.equalsIgnoreCase("YES")){
+				if (tellstory.equalsIgnoreCase("YES")) {
 					// Tell Story
 					storyTeller.read();
 					storyTeller.write();
@@ -75,12 +74,12 @@ public class Main {
 	}
 
 	/**
-     * Checks to is if the number of arguments passed is valid.
-     * 
-     * @param args
-     *            The command line arguments.
-     * @return True if number of arguments is valid.
-     */
+	 * Checks to is if the number of arguments passed is valid.
+	 * 
+	 * @param args
+	 *            The command line arguments.
+	 * @return True if number of arguments is valid.
+	 */
 	private static boolean argsCheck(String[] args) {
 		if (args.length < 3) {
 			print("[ERROR] Missing argument!\nFirst arugment needs to be the directory of the tests XML file." +
@@ -93,10 +92,10 @@ public class Main {
 	}
 
 	/**
-     * Prints the given message to the screen.
-     * 
-     * @param str
-     */
+	 * Prints the given message to the screen.
+	 * 
+	 * @param str
+	 */
 	public static void print(String str) {
 		System.out.println("\n" + str + "\n");
 	}

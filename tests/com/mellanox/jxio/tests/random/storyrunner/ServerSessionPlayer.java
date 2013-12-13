@@ -21,7 +21,6 @@ import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
-import com.mellanox.jxio.ServerPortal;
 import com.mellanox.jxio.ServerSession;
 import com.mellanox.jxio.EventName;
 import com.mellanox.jxio.EventReason;
@@ -37,7 +36,6 @@ public class ServerSessionPlayer {
 	private final ServerPortalPlayer spp;
 	private WorkerThread             workerThread;
 	private ServerSession            server;
-	private MsgPool                  mp;
 	private int                      counterReceivedMsgs;
 
 	public ServerSessionPlayer(ServerPortalPlayer spp, long newSessionKey, String srcIP) {
@@ -72,13 +70,13 @@ public class ServerSessionPlayer {
 			counterReceivedMsgs++;
 
 			if (!Utils.checkIntegrity(msg)) {
-				LOG.error(ssp.toString() + "checksums for message #" + counterReceivedMsgs + " do not match.");
+				LOG.error(ssp.toString() + ": FAILURE, checksums for message #" + counterReceivedMsgs + " does not match");
 				System.exit(1);
 			}
 			if (LOG.isTraceEnabled()) {
 				LOG.trace(ssp.toString() + ": onRequest: msg = " + msg.toString() + "#" + counterReceivedMsgs);
 			}
-			String str = "Server " + ssp.toString() + " received " + counterReceivedMsgs + "msgs";
+			String str = "Server " + ssp.toString() + " received " + counterReceivedMsgs + " msgs";
 			Utils.writeMsg(msg, str, 0);
 			ssp.server.sendResponce(msg);
 		}
@@ -86,9 +84,9 @@ public class ServerSessionPlayer {
 		public void onSessionEvent(EventName session_event, EventReason reason) {
 			if (session_event == EventName.SESSION_TEARDOWN) {
 				LOG.info(ssp.toString() + ": SESSION_TEARDOWN. reason='" + reason.toString() + "'");
-				LOG.info(ssp.toString() + ": received " + counterReceivedMsgs + "msgs");
+				LOG.info(ssp.toString() + ": received " + counterReceivedMsgs + " msgs");
 			} else {
-				LOG.error(ssp.toString() + ": onSessionError: event='" + session_event.toString() + "', reason='"
+				LOG.error(ssp.toString() + ": FAILURE, onSessionError: event='" + session_event.toString() + "', reason='"
 				        + reason.toString() + "'");
 				System.exit(1);
 			}
