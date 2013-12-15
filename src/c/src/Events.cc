@@ -167,7 +167,7 @@ int Events::writeOnFdReadyEvent(char *buf, int fd, int epoll_event)
 {
 	struct event_struct* event = (struct event_struct*)buf;
 	event->type = htonl(EVENT_FD_READY);
-	event->ptr = NULL; //  The java object receiving this event will be the EQH which handles this event_queue
+	event->ptr = 0; //  The java object receiving this event will be the EQH which handles this event_queue
 	event->event_specific.fd_ready.fd = htonl(fd);
 	event->event_specific.fd_ready.epoll_event = htonl(epoll_event);
 	this->size = sizeof(struct event_fd_ready) + sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;

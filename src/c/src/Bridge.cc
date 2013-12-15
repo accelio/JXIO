@@ -222,7 +222,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_startSessi
 
 	if (ses == NULL) {
 		log(lsERROR, "memory allocation failed\n");
-		return NULL;
+		return 0;
 	}
 	if (ses->error_creating) {
 		delete (ses);
