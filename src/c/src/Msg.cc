@@ -123,27 +123,6 @@ bool Msg::send_reply(const int size) {
 	return true;
 }
 
-void Msg::dump() {
-	log(lsDEBUG, "*********************************************\n");
-	log(lsDEBUG, "type:0x%x \n", this->xio_msg->type);
-	log(lsDEBUG, "status:%d \n", this->xio_msg->status);
-	if (this->xio_msg->type == XIO_MSG_TYPE_REQ)
-		log(lsDEBUG, "serial number:%ld \n", this->xio_msg->sn);
-	else if (this->xio_msg->type == XIO_MSG_TYPE_RSP)
-		log(lsDEBUG, "response:%p, serial number:%ld \n", this->xio_msg->request, ((this->xio_msg->request) ? this->xio_msg->request->sn : -1));
-
-	log(lsDEBUG, "in header: length:%d, address:%p, \n", this->xio_msg->in.header.iov_len, this->xio_msg->in.header.iov_base);
-	log(lsDEBUG, "in data size:%d \n", this->xio_msg->in.data_iovlen);
-	for (int i = 0; i < this->xio_msg->in.data_iovlen; i++)
-		log(lsDEBUG, "in data[%d]: length:%d, address:%p, mr:%p\n", i, this->xio_msg->in.data_iov[i].iov_len, this->xio_msg->in.data_iov[i].iov_base, this->xio_msg->in.data_iov[i].mr);
-
-	log(lsDEBUG, "out header: length:%d, address:%p, \n", this->xio_msg->out.header.iov_len, this->xio_msg->out.header.iov_base);
-	log(lsDEBUG, "out data size:%d \n", this->xio_msg->out.data_iovlen);
-	for (int i = 0; i < this->xio_msg->out.data_iovlen; i++)
-		log(lsDEBUG, "out data[%d]: length:%d, address:%p, mr:%p\n", i, this->xio_msg->out.data_iov[i].iov_len, this->xio_msg->out.data_iov[i].iov_base, this->xio_msg->out.data_iov[i].mr);
-	log(lsDEBUG, "*********************************************\n");
-}
-
 void Msg::dump(struct xio_msg *xio_msg) {
 	log(lsDEBUG, "*********************************************\n");
 	log(lsDEBUG, "type:0x%x \n", xio_msg->type);

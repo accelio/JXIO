@@ -39,7 +39,6 @@ public:
 	struct xio_msg* get_xio_msg();
 	void release_to_pool();
 	bool send_reply(const int size);
-	void dump(); //func for debugging only
 	void dump(struct xio_msg *m); //func for debugging only
 
 private:
