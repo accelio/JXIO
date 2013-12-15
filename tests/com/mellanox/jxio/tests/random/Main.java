@@ -51,7 +51,7 @@ public class Main {
 				xmlFileName = args[1];
 				tellstory = args[2];
 				// Get input seed or randomize one
-				seed = (args.length != 4) ? System.nanoTime() : Long.valueOf(args[3]);
+				seed = (args.length < 4 || args[3].equals("0")) ? System.nanoTime() : Long.valueOf(args[3]);
 				// Create a new StoryTeller Instance
 				File probabiltyFile = new File(xmlFileDir + "/" + xmlFileName);
 				storyTeller = new StoryTeller(probabiltyFile, seed);
