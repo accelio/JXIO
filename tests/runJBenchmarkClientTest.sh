@@ -56,4 +56,4 @@ fi
 #$5 core number for 'taskset' command
 #$6 file path for test results
 
-taskset -c $5 java -Dclient=1 -Dlog4j.configuration=com/mellanox/jxio/tests/benchmarks/log4j.properties.jxiotest -cp "../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.benchmarks.DataPathTestClient $1 $2 $3 $4 $6
+taskset -c $5 java -Dclient=1 -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.benchmarks.DataPathTestClient $1 $2 $3 $4 $6

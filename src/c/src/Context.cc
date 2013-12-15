@@ -79,16 +79,16 @@ int Context::run_event_loop(long timeout_micro_sec)
 
 	int timeout_msec = -1; // infinite timeout as default
 	if (timeout_micro_sec == -1) {
-		log (lsDEBUG, "[%p] before ev_loop_run. requested infinite timeout\n", this);
+		log(lsDEBUG, "[%p] before ev_loop_run. requested infinite timeout\n", this);
 	} else {
 		timeout_msec = timeout_micro_sec/1000;
-		log (lsDEBUG, "[%p] before ev_loop_run. requested timeout is %d msec\n", this, timeout_msec);
+		log(lsDEBUG, "[%p] before ev_loop_run. requested timeout is %d msec\n", this, timeout_msec);
 	}
 
 	// enter Accelio's event loop
 	xio_ev_loop_run_timeout(this->ev_loop, timeout_msec);
 
-	log (lsDEBUG, "[%p] after ev_loop_run. there are %d events\n", this, this->events_num);
+	log(lsDEBUG, "[%p] after ev_loop_run. there are %d events\n", this, this->events_num);
 
 	return this->events_num;
 }
@@ -118,6 +118,6 @@ void Context::on_event_loop_handler(int fd, int events, void *data)
 
 void Context::add_msg_pool (MsgPool* msg_pool)
 {
-	log (lsDEBUG, "[%p] adding msg pool=%p\n", this, msg_pool);
+	log(lsDEBUG, "[%p] adding msg pool=%p\n", this, msg_pool);
 	this->msg_pool = msg_pool;
 }

@@ -51,4 +51,4 @@ fi
 #$4 msg size
 #$5 core number for 'taskset' command 
 
-taskset -c $5 java -Dserver=1 -Dlog4j.configuration=com/mellanox/jxio/tests/benchmarks/log4j.properties.jxiotest -cp "../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.benchmarks.DataPathTestMngServer $1 $2 $3 $4 
+taskset -c $5 java -Dserver=1 -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.benchmarks.DataPathTestMngServer $1 $2 $3 $4 

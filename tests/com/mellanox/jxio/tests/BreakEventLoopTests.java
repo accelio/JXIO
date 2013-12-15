@@ -1,3 +1,19 @@
+/*
+ ** Copyright (C) 2013 Mellanox Technologies
+ **
+ ** Licensed under the Apache License, Version 2.0 (the "License");
+ ** you may not use this file except in compliance with the License.
+ ** You may obtain a copy of the License at:
+ **
+ ** http://www.apache.org/licenses/LICENSE-2.0
+ **
+ ** Unless required by applicable law or agreed to in writing, software
+ ** distributed under the License is distributed on an "AS IS" BASIS,
+ ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ ** either express or implied. See the License for the specific language
+ ** governing permissions and  limitations under the License.
+ **
+ */
 package com.mellanox.jxio.tests;
 
 import com.mellanox.jxio.EventQueueHandler;
@@ -21,6 +37,22 @@ public class BreakEventLoopTests implements Runnable {
 				loops++; // count the number of loops
 				System.out.println("----- Got out of Event Loop...(Loops = " + loops + ")");
 			}
+
+			System.out.println("----- Event Loop sleep test (10 msec sleep)...");
+			long timeout = 10000; // 10 msec
+			long start = System.nanoTime()/1000;
+			eqh.runEventLoop(1, timeout); // Blocking with Timeout!
+			long duration = System.nanoTime()/1000 - start;
+			long delta = duration - timeout;
+			long abs_delta = (delta < 0) ? -delta : delta;
+			if (abs_delta > 1000) {
+				System.out.println("*** Test FAILED! *** (it took too much time to wake up from EQH (blocked for " + delta + " usec more then requested)");
+				System.exit(1);
+			} 
+			else {
+				System.out.println("----- Woken by timeout correctly after " + delta + " usec...");
+			}
+
 			System.out.println("----- Closing the event queue handler...");
 			eqh.close();
 
@@ -84,7 +116,12 @@ public class BreakEventLoopTests implements Runnable {
 			System.out.println("*** Test Passed! *** ");
 		}
 		else {
-			System.out.println("*** Test Failed! *** (wrong number of wakeup times (internal thread="+eqh1.loops+", wakeup called="+wakeup+")");
+			System.out.println("*** Test FAILED! *** (wrong number of wakeup times (internal thread="+eqh1.loops+", wakeup called="+wakeup+")");
 		}
 	}
+	
+	public static void main(String[] args) {
+	    BreakEventLoopTests test = new BreakEventLoopTests();
+	    test.run();
+    }
 }

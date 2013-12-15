@@ -64,8 +64,8 @@ public class ClientPlayer extends GeneralPlayer {
 
 	@Override
 	public void attach(WorkerThread workerThread) {
-		LOG.info(this.toString() + ": attaching to WorkerThread '" + workerThread.toString() + "'" + ", startDelay = "
-		        + startDelaySec + "sec, runDuration = " + runDurationSec + "sec");
+		LOG.info(this.toString() + ": attaching to WorkerThread '" + workerThread.toString() + "'" + ", startDelay="
+		        + startDelaySec + "sec, runDuration=" + runDurationSec + "sec, msgRate=" + 1000000/msgDelayMicroSec + "pps");
 
 		this.workerThread = workerThread;
 		this.mp = new MsgPool(poolData.getCount(), poolData.getInSize(), poolData.getOutSize());
