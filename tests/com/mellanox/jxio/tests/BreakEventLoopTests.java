@@ -23,53 +23,71 @@ public class BreakEventLoopTests implements Runnable {
 	public class InnerEQHThread implements Runnable {
 
 		private volatile boolean exitFlag = false;
-		private int loops = 0;
+		public int loops = 0;
+		public int wakeups = 0;
 		EventQueueHandler eqh;
 		
 		public void run() {
-			System.out.println("----- Setting up a event queue handler...(from thread = " + Thread.currentThread().getId() + ")");
+			print("----- Setting up a event queue handler...");
 			eqh = new EventQueueHandler();
 			
+			checkEQHBreakFromOtherThread();
+			checkEQHBreakFromSelfThread();
+			checkEQHTimeout();
+
+			print("----- Closing the event queue handler...");
+			eqh.close();
+			print("----- Exiting up a event queue handler...");
+		}
+		
+		public void stop() {
+			print("----- Stopping running thread with event loop");
+			exitFlag = true;
+			wakeup();
+			print("----- Stopped running thread with event loop");
+		}
+
+		public void wakeup() {
+			wakeups++;
+			print("----- Breaking event loop (wakeups = " + wakeups + ")");
+			eqh.breakEventLoop();
+		}
+
+		private void blockOnEQH() {
+			print("----- Continue event loop in blocking mode...");
+			eqh.runEventLoop(1, -1); // Blocking! No events should trigger exit from loop unless broken on purpose 
+			loops++; // count the number of loops
+			print("----- Got out of event loop...(loops = " + loops + ")");
+		}
+
+		private void checkEQHBreakFromOtherThread() {
+			print("--- Testing EQH.wakeup() from other thread...");
 			while (!exitFlag) {
-				System.out.println("----- Continue Event Loop in blocking mode...");
-				eqh.runEventLoop(1, -1); // Blocking! No events should trigger exit from loop unless broken on purpose 
-
-				loops++; // count the number of loops
-				System.out.println("----- Got out of Event Loop...(Loops = " + loops + ")");
+				blockOnEQH(); // Main thread will be calling eqh.wakeup() while this thread is blocking on EQH
 			}
+		}
 
-			System.out.println("----- Event Loop sleep test (10 msec sleep)...");
+		private void checkEQHBreakFromSelfThread() {
+			print("--- Testing EQH.wakeup() from self thread...");
+			wakeup(); // This thread is calling eqh.wakeup() before going to block on EQH
+			blockOnEQH();
+		}
+
+		private void checkEQHTimeout() {
 			long timeout = 10000; // 10 msec
+			print("--- Testing EQH (" + timeout/1000 + " msec sleep)...");
 			long start = System.nanoTime()/1000;
 			eqh.runEventLoop(1, timeout); // Blocking with Timeout!
 			long duration = System.nanoTime()/1000 - start;
 			long delta = duration - timeout;
 			long abs_delta = (delta < 0) ? -delta : delta;
 			if (abs_delta > 1000) {
-				System.out.println("*** Test FAILED! *** (it took too much time to wake up from EQH (blocked for " + delta + " usec more then requested)");
-				System.exit(1);
+				printFailureAndExit("(it took too much time to wake up from EQH (blocked for " + delta + " usec more then requested)");
 			} 
 			else {
-				System.out.println("----- Woken by timeout correctly after " + delta + " usec...");
+				print("----- Woken by timeout correctly after " + timeout/1000 + " msec (with " + delta + " usec offset) ...");
 			}
-
-			System.out.println("----- Closing the event queue handler...");
-			eqh.close();
-
-			System.out.println("----- Exiting up a event queue handler...(from thread = " + Thread.currentThread().getId() + ")");
-		}
-		
-		public void stop() {
-			System.out.println("----- Stopping running thread with Event Loop (from thread = " + Thread.currentThread().getId() + ")");
-			exitFlag = true;
-			wakeup();
-			System.out.println("----- Stopped running thread with Event Loop (from thread = " + Thread.currentThread().getId() + ")");
-		}
-
-		public void wakeup() {
-			System.out.println("----- Breaking Event Loop (from thread = " + Thread.currentThread().getId() + ")");
-			eqh.breakEventLoop();
-		}
+		}	
 	}
 
 	public void run() {
@@ -81,42 +99,33 @@ public class BreakEventLoopTests implements Runnable {
 		Thread t1 = new Thread(eqh1);
 		t1.start();
 		
-		int wakeup = 0;
-
 		try {
 			Thread.sleep(2000);
 
 			eqh1.wakeup();
-			wakeup++;
 			Thread.sleep(20);
 
 			eqh1.wakeup();
-			wakeup++;
 			Thread.sleep(200);
 
 			eqh1.wakeup();
-			wakeup++;
 			Thread.sleep(20);
 
 			eqh1.wakeup();
-			wakeup++;
 			Thread.sleep(1000);
 
 			eqh1.stop();
-			wakeup++;
 
 			// Wait for thread to end
 			t1.join();
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
-		if (eqh1.loops == wakeup) {;
+		if (eqh1.loops != eqh1.wakeups) {
+			printFailureAndExit("wrong number of wakeup times (internal thread="+eqh1.loops+", wakeup called="+eqh1.wakeups+")");
+		} else {
 			System.out.println("*** Test Passed! *** ");
-		}
-		else {
-			System.out.println("*** Test FAILED! *** (wrong number of wakeup times (internal thread="+eqh1.loops+", wakeup called="+wakeup+")");
 		}
 	}
 	
@@ -124,4 +133,13 @@ public class BreakEventLoopTests implements Runnable {
 	    BreakEventLoopTests test = new BreakEventLoopTests();
 	    test.run();
     }
+	
+	private void print(String str) {
+		System.out.println("[tid=" + Thread.currentThread().getId() + "] " + str);
+	}
+
+	private void printFailureAndExit(String str) {
+		System.out.println("*** Test FAILED! *** " + str);
+		System.exit(1);
+	}
 }

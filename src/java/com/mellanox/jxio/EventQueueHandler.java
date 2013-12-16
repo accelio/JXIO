@@ -100,7 +100,6 @@ public class EventQueueHandler implements Runnable {
 			return 0;
 		}
 
-		this.breakLoop = false;
 		boolean is_forever = (timeOutMicroSec == -1) ? true : false;
 		boolean is_infinite_events = (maxEvents == -1) ? true : false;
 
@@ -130,6 +129,7 @@ public class EventQueueHandler implements Runnable {
 			}
 		}
 
+		this.breakLoop = false;
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("[" + getId() + "] returning with " + eventsWaitingInQ + " events in Q. handled " + eventsHandled
 			        + " events, elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec.");
