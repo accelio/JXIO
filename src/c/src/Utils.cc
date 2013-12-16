@@ -94,6 +94,31 @@ void logs_from_xio_set_threshold(log_severity_t threshold)
 	xio_set_opt(NULL, XIO_OPTLEVEL_ACCELIO, XIO_OPTNAME_LOG_LEVEL, &xio_log_level, sizeof(enum xio_log_level));
 }
 
+Context* delete_ctx_for_session(xio_session* session){
+	map_ses_ctx_t::iterator it;
+	pthread_mutex_lock(&mutex_for_map);
+	it=map_sessions.find(session);
+	if (it == map_sessions.end()){
+		log(lsERROR, "session=%p in map\n", session);
+		return NULL;
+	}
+	Context *ctx = it->second;
+	map_sessions.erase(it);
+	pthread_mutex_unlock(&mutex_for_map);
+	log(lsDEBUG, "deleting pair <ctx=%p, session=%p>\n", ctx, session);
+
+	return ctx;
+}
+
+void add_ctx_for_session(xio_session * session, Context* ctx){
+	log (lsDEBUG, "adding pair<ses=%p, ctx=%p>\n", session, ctx);
+	pthread_mutex_lock(&mutex_for_map);
+	map_sessions.insert(pair_ses_ctx_t(session, ctx));
+	pthread_mutex_unlock(&mutex_for_map);
+}
+
+
+
 bool close_xio_connection(struct xio_session *session, struct xio_context *ctx)
 {
 	log (lsDEBUG, "closing connection for session=%p, context=%p\n", session, ctx);
@@ -110,8 +135,7 @@ bool close_xio_connection(struct xio_session *session, struct xio_context *ctx)
 	return true;
 }
 
-
-bool forward_session(struct xio_session *session, const char * url) {
+bool forward_session(struct xio_session *session, const char * url, Context* context) {
 	log(lsDEBUG, "url before forward is %s. xio_session is %p\n", url, session);
 
 	int retVal = xio_accept(session, &url, 1, NULL, 0);
@@ -119,10 +143,11 @@ bool forward_session(struct xio_session *session, const char * url) {
 		log(lsDEBUG, "ERROR, accepting session=%p. error %d\n", session, retVal);
 		return false;
 	}
+	add_ctx_for_session(session, context);
 	return true;
 }
 
-bool accept_session(struct xio_session *session) {
+bool accept_session(struct xio_session *session, Context* context) {
 
 	log(lsDEBUG, "before accept xio_session is %p\n", session);
 
@@ -131,6 +156,7 @@ bool accept_session(struct xio_session *session) {
 		log(lsDEBUG, "ERROR, accepting session=%p. error %d\n",session, retVal);
 		return false;
 	}
+	add_ctx_for_session(session, context);
 	return true;
 }
 

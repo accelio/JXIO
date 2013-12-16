@@ -30,8 +30,9 @@ public:
 		this->ctx_class = c;
 	}
 
-	//returns true in case this event should be written to eventQueue and false if not
-	virtual bool onSessionEvent(xio_session_event eventType,
+	//this method will return ctx if the event should be written to event queue.
+	//Otherwise will return null
+	virtual Context* ctxForSessionEvent(xio_session_event eventType,
 			struct xio_session *session) = 0;
 
 	virtual bool isClient() = 0;

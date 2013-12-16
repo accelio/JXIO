@@ -24,7 +24,7 @@ void done_event_creating(Context *ctx, int sizeWritten) {
 	//need to stop the event queue only if this is the first callback
 	if (!ctx->events_num) {
 		log(lsDEBUG, "inside a callback - stopping the event queue\n");
-		xio_ev_loop_stop(ctx->ev_loop);
+		ctx->break_event_loop();
 	}
 	ctx->events_num++;
 }
@@ -131,9 +131,11 @@ int on_session_event_callback(struct xio_session *session,
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 
 	bool isClient = cntxbl->isClient();
+	Context *ctx = cntxbl->ctxForSessionEvent(event_data->event, session);
 
-	if (cntxbl->onSessionEvent(event_data->event, session)) {
-		Context *ctx = cntxbl->get_ctx_class();
+	if (ctx) {
+		log(lsDEBUG, "event will be written to ctx=%p\n", ctx);
+
 		char* buf = ctx->event_queue->get_buffer();
 		/*in case it is a client, the java object is represented by cb_prv_data
 		/in case it is a server, the java object is represented by xio_session  */

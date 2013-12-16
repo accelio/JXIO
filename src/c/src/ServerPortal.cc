@@ -40,7 +40,6 @@ ServerPortal::ServerPortal(const char *url, long ptrCtx) {
 		log(lsDEBUG, "ERROR in binding server\n");
 		error_creating = true;
 	}
-
 	log(lsDEBUG, "c-tor of ServerPortal %p finished. port=%d\n", this, this->port);
 }
 
@@ -56,32 +55,33 @@ ServerPortal::~ServerPortal() {
 }
 
 
-bool ServerPortal::onSessionEvent(xio_session_event eventType, struct xio_session *session) {
+Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xio_session *session) {
+
 	switch (eventType) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
 		log(lsDEBUG, "got XIO_SESSION_CONNECTION_CLOSED_EVENT. \n");
-		return false;
+		return NULL;
 
 	case XIO_SESSION_CONNECTION_ERROR_EVENT:
 		log(lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
-		close_xio_connection(session, this->get_ctx_class()->ctx);
-		return false;
+		return NULL;
 
 	case XIO_SESSION_NEW_CONNECTION_EVENT:
 		log(lsDEBUG, "got XIO_SESSION_NEW_CONNECTION_EVENT\n");
-		return false;
+		return NULL;
 
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
 		log(lsDEBUG, "got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT\n");
-//		close_xio_connection(session, this->get_ctx_class()->ctx);
-		return false;
+		return NULL;
 
 	case XIO_SESSION_TEARDOWN_EVENT:
 		log(lsDEBUG, "got XIO_SESSION_TEARDOWN_EVENT.\n");
 		//the event should also be written to buffer to let user know that the session was closed
-		return true;
+		return delete_ctx_for_session(session);
 	default:
 		log(lsWARN, "UNHANDLED event: got '%s' event (%d). \n", xio_session_event_str(eventType), eventType);
-		return true;
+		return delete_ctx_for_session(session);
 	}
 }
+
+

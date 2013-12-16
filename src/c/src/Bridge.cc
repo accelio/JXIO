@@ -198,18 +198,6 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_breakEventL
 	ctx->break_event_loop();
 }
 
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_addEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd, jint events, jlong priv_data)
-{
-	Context *ctx = (Context *)ptrCtx;
-	return ctx->add_event_loop_fd(fd, events, (void*)priv_data);
-}
-
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_delEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd)
-{
-	Context *ctx = (Context *)ptrCtx;
-	return ctx->del_event_loop_fd(fd);
-}
-
 extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
 {
 	if (ptrCtx == 0){
@@ -282,22 +270,21 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSessio
 	close_xio_connection(session, context->ctx);
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_ctx)
 {
 	const char *url = env->GetStringUTFChars(jurl, NULL);
-
 	struct xio_session *session = (struct xio_session *)ptr_session;
-	bool retVal = forward_session(session, url);
+	Context * ctx = (Context *) ptr_ctx;
+	bool retVal = forward_session(session, url, ctx);
 	env->ReleaseStringUTFChars(jurl, url);
-
 	return retVal;
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSessionNative(JNIEnv *env, jclass cls, jlong ptr_session)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSessionNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_ctx)
 {
 	struct xio_session *session = (struct xio_session *)ptr_session;
-	bool retVal = accept_session(session);
-	return retVal;
+	Context * ctx = (Context *) ptr_ctx;
+	return accept_session(session, ctx);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_rejectSessionNative(JNIEnv *env, jclass cls, jlong ptr_session, jint reason, jstring jdata, jint length)
@@ -372,6 +359,19 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_bindMsg
 	ctx->add_msg_pool(pool);
 	return true;
 }
+
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_addEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd, jint events, jlong priv_data)
+{
+	Context *ctx = (Context *)ptrCtx;
+	return ctx->add_event_loop_fd(fd, events, (void*)priv_data);
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_delEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd)
+{
+	Context *ctx = (Context *)ptrCtx;
+	return ctx->del_event_loop_fd(fd);
+}
+
 
 JNIEnv *JX_attachNativeThread()
 {

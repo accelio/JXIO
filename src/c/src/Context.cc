@@ -95,7 +95,9 @@ int Context::run_event_loop(long timeout_micro_sec)
 
 void Context::break_event_loop()
 {
+	log(lsDEBUG, "[%p] before break event loop\n", this);
 	xio_ev_loop_stop(this->ev_loop);
+	log(lsDEBUG, "[%p] after break event loop\n", this);
 }
 
 int Context::add_event_loop_fd(int fd, int events, void *priv_data)

@@ -22,10 +22,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
 #include "CallbackFunctions.h"
 #include "Contexable.h"
 
 class Context;
+
 
 class ServerPortal: public Contexable {
 public:
@@ -33,7 +35,8 @@ public:
 	ServerPortal(const char *url, long ptrCtx);
 	~ServerPortal();
 
-	bool onSessionEvent(xio_session_event eventType,
+	//this method will return ctx if the event should be written to event queue. Otherwise will return null
+	Context* ctxForSessionEvent(xio_session_event eventType,
 			struct xio_session *session);
 	bool isClient() {return false;}
 

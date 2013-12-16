@@ -94,7 +94,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 
 	public void accept(ServerSession serverSession) {
 		serverSession.setEventQueueHandlers(this.eventQHndl, this.eventQHndl);
-		Bridge.acceptSession(serverSession.getId());
+		Bridge.acceptSession(serverSession.getId(), this.eventQHndl.getId());
 	}
 
 	public void forward(ServerPortal portal, ServerSession serverSession) {
@@ -106,7 +106,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 			return;
 		}
 		serverSession.setEventQueueHandlers(this.eventQHndl, portal.eventQHndl);
-		Bridge.forwardSession(portal.getUri(), serverSession.getId());
+		Bridge.forwardSession(portal.getUri(), serverSession.getId(), portal.eventQHndl.getId());
 	}
 	
 	public void reject(long ptrSes, EventReason res, String data){

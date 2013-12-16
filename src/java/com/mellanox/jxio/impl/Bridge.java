@@ -111,17 +111,17 @@ public class Bridge {
 		return ret;
 	}
 
-	private static native long forwardSessionNative(String url, long ptrSes);
+	private static native long forwardSessionNative(String url, long ptrSes, long ptrCtx);
 
-	public static long forwardSession(final String url, final long ptrSes) {
-		long ptr = forwardSessionNative(url, ptrSes);
+	public static long forwardSession(final String url, final long ptrSes, final long ptrCtx) {
+		long ptr = forwardSessionNative(url, ptrSes, ptrCtx);
 		return ptr;
 	}
 
-	private static native long acceptSessionNative(long ptrSes);
+	private static native long acceptSessionNative(long ptrSes, long ptrCtx);
 
-	public static long acceptSession(final long ptrSes) {
-		long ptr = acceptSessionNative(ptrSes);
+	public static long acceptSession(final long ptrSes, final long ptrCtx) {
+		long ptr = acceptSessionNative(ptrSes, ptrCtx);
 		return ptr;
 	}
 	
