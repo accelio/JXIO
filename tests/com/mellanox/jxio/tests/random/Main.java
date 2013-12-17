@@ -52,6 +52,9 @@ public class Main {
 				tellstory = args[2];
 				// Get input seed or randomize one
 				seed = (args.length < 4 || args[3].equals("0")) ? System.nanoTime() : Long.valueOf(args[3]);
+				System.out.println("**********************************");
+				System.out.println("Story Random Seed: " + seed);
+				System.out.println("**********************************");
 				// Create a new StoryTeller Instance
 				File probabiltyFile = new File(xmlFileDir + "/" + xmlFileName);
 				storyTeller = new StoryTeller(probabiltyFile, seed);

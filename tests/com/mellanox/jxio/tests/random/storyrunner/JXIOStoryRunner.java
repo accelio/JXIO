@@ -607,13 +607,13 @@ public class JXIOStoryRunner implements StoryRunner {
 			}
 
 			System.out.println("=====================================");
-			System.out.println("done sleeping! must kill all threads!");
+			System.out.println("Done sleeping! Must kill all threads!");
 			System.out.println("=====================================");
 
 			workers.close();
 
 			System.out.println("=============");
-			System.out.println("done killing!");
+			System.out.println("Done killing!");
 			System.out.println("=============");
 
 			// Set ending time
