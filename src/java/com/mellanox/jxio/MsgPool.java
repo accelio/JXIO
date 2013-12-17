@@ -27,22 +27,25 @@ import com.mellanox.jxio.impl.Bridge;
 
 public class MsgPool {
 	private static final Log LOG     = LogFactory.getLog(MsgPool.class.getCanonicalName());
-	ByteBuffer               buffer;
-	private long             refToCObject;
+	private final int        capacity;
+	private final ByteBuffer buffer;
+	private final long       refToCObject;
 	List<Msg>                listMsg = new ArrayList<Msg>();
 
-	public MsgPool(int count, int inSize, int outSize) {
-		long refToCObjects[] = new long[count + 1]; // the first element represents the id of MsgPool
-		buffer = Bridge.createMsgPool(count, inSize, outSize, refToCObjects);
+	public MsgPool(int capacity, int inSize, int outSize) {
+		this.capacity = capacity;
+		long refToCObjects[] = new long[capacity + 1]; // the first element represents the id of MsgPool
+		buffer = Bridge.createMsgPool(capacity, inSize, outSize, refToCObjects);
 		if (buffer == null) {
 			LOG.fatal("there was an error creating the MsgPool");
+			refToCObject = 0;
 			return;
 			// TODO: throw exception
 		}
 		refToCObject = refToCObjects[0];
 		int msgBufferSize = inSize + outSize;
 
-		for (int i = 0; i < count; i++) {
+		for (int i = 0; i < capacity; i++) {
 			buffer.position(msgBufferSize * i);
 			ByteBuffer partialBuffer = buffer.slice();
 			partialBuffer.limit(msgBufferSize);
@@ -51,7 +54,18 @@ public class MsgPool {
 		}
 	}
 
-	public int getCount() {
+	// Returns true if this MsgPool contains no elements.
+	public boolean isEmpty() {
+		return listMsg.size() == 0;		
+	}
+
+	// Returns the number of Msgs this MsgPool was created with.
+	public int capacity() {
+		return this.capacity;
+	}
+
+	// Returns the number of Msgs the in this MsgPool.
+	public int count() {
 		return listMsg.size();
 	}
 

@@ -107,7 +107,7 @@ public class ClientPlayer extends GeneralPlayer {
 			sendMsgTimerStart();
 
 			// check if we have for full batch of buffers ready for sending
-			if (this.player.mp.getCount() < this.player.msgBatchSize) {
+			if (this.player.mp.count() < this.player.msgBatchSize) {
 				return;
 			}
 
