@@ -111,7 +111,7 @@ public class EventQueueHandler implements Runnable {
 
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("[" + getId() + "] in loop with " + eventsWaitingInQ + " events in Q. handled " + eventsHandled 
-				        + " events, " + "elapsed time is " + this.elapsedTime.getElapsedTimeMicro() + " usec (blocking for "
+				        + " events out of " + maxEvents + ", " + "elapsed time is " + this.elapsedTime.getElapsedTimeMicro() + " usec (blocking for "
 				        + ((is_forever) ? "infinite duration)" : "a max duration of " + timeOutMicroSec / 1000
 		                + " msec.)"));
 			}
