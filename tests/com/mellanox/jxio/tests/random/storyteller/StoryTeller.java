@@ -55,11 +55,11 @@ public class StoryTeller {
 	private Random               random = new Random();
 
 	/**
-	 * Constructs an new StoryTeller.
-	 * 
-	 * @param xmlFile
-	 *            The probability XML file.
-	 */
+     * Constructs an new StoryTeller.
+     * 
+     * @param xmlFile
+     *            The probability XML file.
+     */
 	public StoryTeller(File xmlFile) {
 		this.story = new Story();
 		this.counters = new HashMap<String, Integer>();
@@ -67,13 +67,13 @@ public class StoryTeller {
 	}
 
 	/**
-	 * Constructs an new StoryTeller with a fixed random seed.
-	 * 
-	 * @param xmlFile
-	 *            The probability XML file.
-	 * @param seed
-	 *            A long that represents the initial seed.
-	 */
+     * Constructs an new StoryTeller with a fixed random seed.
+     * 
+     * @param xmlFile
+     *            The probability XML file.
+     * @param seed
+     *            A long that represents the initial seed.
+     */
 	public StoryTeller(File xmlFile, long seed) {
 		this(xmlFile);
 		this.seed = seed;
@@ -81,8 +81,8 @@ public class StoryTeller {
 	}
 
 	/**
-	 * Reads the probability XML file.
-	 */
+     * Reads the probability XML file.
+     */
 	public void read() {
 		try {
 			// Set needed XML document handling objects
@@ -98,7 +98,7 @@ public class StoryTeller {
 			for (String characterType : characterTypes) {
 				Character character = Story.readCharacter(docRead, characterType);
 				story.addCharacter(character);
-				
+
 			}
 		} catch (ParserConfigurationException e) {
 			System.out.println("[ERROR] XML Read Expetion occurred.");
@@ -106,17 +106,17 @@ public class StoryTeller {
 			System.out.println("[ERROR] XML Read Expetion occurred.");
 		} catch (IOException e) {
 			System.out.println("[ERROR] XML Read Expetion occurred.");
-		}		
+		}
 	}
 
 	/**
-	 * Randomizes a set of values based on the defined probabilities.
-	 * 
-	 * @param nodeValue
-	 *            A list of [PROBABILITY]:RANGE pairs, [PROBABILITY]:VALUE pairs, just RANGE (equivalent to [100]:RANGE)
-	 *            or just VALUE (equivalent to [100]:VALUE).
-	 * @return A String representing a single random number value.
-	 */
+     * Randomizes a set of values based on the defined probabilities.
+     * 
+     * @param nodeValue
+     *            A list of [PROBABILITY]:RANGE pairs, [PROBABILITY]:VALUE pairs, just RANGE (equivalent to [100]:RANGE)
+     *            or just VALUE (equivalent to [100]:VALUE).
+     * @return A String representing a single random number value.
+     */
 	private String randomizeValueByProbability(String nodeValue) {
 		// Do only if this is a probability defined value
 		if (nodeValue.contains(":")) {
@@ -131,7 +131,8 @@ public class StoryTeller {
 				// Add Item to list
 				items.add(new Item<String>(value, probability));
 			}
-			RandomSelector<String> rs = (seed == -1) ? new RandomSelector<String>(items) : new RandomSelector<String>(items, random);
+			RandomSelector<String> rs = (seed == -1) ? new RandomSelector<String>(items) : new RandomSelector<String>(
+			        items, random);
 			// Randomize a value by the probabilities given
 			return rs.getRandom().getValue();
 
@@ -141,16 +142,16 @@ public class StoryTeller {
 	}
 
 	/**
-	 * Randomizes a number within a range of numbers.
-	 * 
-	 * @param range
-	 *            A String representing a range between two numbers, formated as two integers separated by a hyphen.
-	 *            E.g., "3-6".
-	 * @return A String representing a single random number value.
-	 */
+     * Randomizes a number within a range of numbers.
+     * 
+     * @param range
+     *            A String representing a range between two numbers, formated as two integers separated by a hyphen.
+     *            E.g., "3-6".
+     * @return A String representing a single random number value.
+     */
 	private String randomaizeRange(String range) {
 		// Do only if this is indeed a range
-		if (range.contains("-") && range.indexOf("-") != 0){
+		if (range.contains("-") && range.indexOf("-") != 0) {
 			String[] edges = range.split("-");
 			int min = Integer.parseInt(edges[0]);
 			int max = Integer.parseInt(edges[1]);
@@ -163,8 +164,8 @@ public class StoryTeller {
 	}
 
 	/**
-	 * Writes the story XML file.
-	 */
+     * Writes the story XML file.
+     */
 	public void write() {
 		// Instance of a DocumentBuilderFactory
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -190,14 +191,14 @@ public class StoryTeller {
 			try {
 				Transformer tr = TransformerFactory.newInstance().newTransformer();
 				tr.setOutputProperty(OutputKeys.INDENT, "yes");
-				//tr.setOutputProperty(OutputKeys.METHOD, "xml"); NOT NEEDED
-				//tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8"); NOT NEEDED
+				// tr.setOutputProperty(OutputKeys.METHOD, "xml"); NOT NEEDED
+				// tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8"); NOT NEEDED
 				tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 				tr.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes"); // Remove XML Header
 
 				// Send DOM to file
-				tr.transform(new DOMSource(docWrite), new StreamResult(new FileOutputStream(Main.xmlFileDir
-				        + "/new_story.xml")));
+				tr.transform(new DOMSource(docWrite), new StreamResult(new FileOutputStream(Main.xmlFileDir + "/story_"
+				        + seed + ".xml")));
 
 			} catch (TransformerException te) {
 				System.out.println("[ERROR] " + te.getMessage());
@@ -210,11 +211,11 @@ public class StoryTeller {
 	}
 
 	/**
-	 * Generates the story tag in the story XML file.
-	 * 
-	 * @param rootEle
-	 *            The root DOM element of the file.
-	 */
+     * Generates the story tag in the story XML file.
+     * 
+     * @param rootEle
+     *            The root DOM element of the file.
+     */
 	private void generateStoryTag(Element rootEle) {
 		Element e, sub_e;
 		// Generate story
@@ -238,13 +239,13 @@ public class StoryTeller {
 	}
 
 	/**
-	 * Generates a character's amount tag under the story XML file.
-	 * 
-	 * @param e
-	 *            A DOM element in the file.
-	 * @param tag
-	 *            The character type in single form.
-	 */
+     * Generates a character's amount tag under the story XML file.
+     * 
+     * @param e
+     *            A DOM element in the file.
+     * @param tag
+     *            The character type in single form.
+     */
 	private void generateNumberTag(Element e, String tag) {
 		String value = docRead.getElementsByTagName(tag).item(0).getAttributes().getNamedItem("value").getNodeValue();
 		String randomValue = randomizeValueByProbability(value);
@@ -257,15 +258,15 @@ public class StoryTeller {
 	}
 
 	/**
-	 * Generates a character's tags.
-	 * 
-	 * @param rootEle
-	 *            A DOM element in the file.
-	 * @param mainCharacter
-	 *            The character for whom a tag is created.
-	 * @param numOccurrences
-	 *            The number of repeated occurrences needed to be create for the given character.
-	 */
+     * Generates a character's tags.
+     * 
+     * @param rootEle
+     *            A DOM element in the file.
+     * @param mainCharacter
+     *            The character for whom a tag is created.
+     * @param numOccurrences
+     *            The number of repeated occurrences needed to be create for the given character.
+     */
 	private void generateTag(Element rootEle, Character mainCharacter, int numOccurrences) {
 
 		Element e, single_e, sub_e;
@@ -316,8 +317,9 @@ public class StoryTeller {
 				}
 				// Generate inner tags
 				for (Character supportingCharacter : mainCharacter.getSupportingCharacters()) {
-					String occurrences = supportingCharacter.getAttribute(Story.singleFromPlural(docRead, supportingCharacter
-					        .getCharacterType()) + "_amount");
+					String occurrences = supportingCharacter.getAttribute(Story.singleFromPlural(docRead,
+					        supportingCharacter.getCharacterType())
+					        + "_amount");
 					// Check if amount is configured
 					if (occurrences != null) {
 						occurrences = randomizeValueByProbability(occurrences);

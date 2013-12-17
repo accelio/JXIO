@@ -16,7 +16,7 @@
 		<tout>1500</tout>
 		<cmd>
 			<params>
-				<static_args>--ip_address_client 36.0.0.121 --port_client 6464 --ip_address_server 36.0.0.121 --port_server 6464 </static_args>
+				<static_args>--ip_address_client 36.0.0.121 --port_client 6465 --ip_address_server 36.0.0.121 --port_server 6465 </static_args>
 			</params>
 		</cmd>
 	</case>

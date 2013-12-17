@@ -17,7 +17,6 @@
 package com.mellanox.jxio.tests.random;
 
 import java.io.File;
-import java.util.Random;
 
 import com.mellanox.jxio.tests.random.storyrunner.JXIOStoryRunner;
 import com.mellanox.jxio.tests.random.storyrunner.StoryRunner;
@@ -25,20 +24,20 @@ import com.mellanox.jxio.tests.random.storyteller.StoryTeller;
 
 public class Main {
 
-	public static final int    ITERATIONS = 1;
+	public static final int    ITERATIONS  = 1;
 	public static String       xmlFileDir;
 	private static String      xmlFileName;
-	private static String      tellstory;
 	private static StoryTeller storyTeller;
-	private static StoryRunner storyRunner;
+	private static StoryRunner storyRunner = new JXIOStoryRunner();
+	private static File        storyFile;
 	private static long        seed;
 
 	/**
-	 * The main program that runs the probability XML file through the StoryTeller in order to produce a story XML file.
-	 * 
-	 * @param args
-	 *            The command line arguments.
-	 */
+     * The main program that runs the probability XML file through the StoryTeller in order to produce a story XML file.
+     * 
+     * @param args
+     *            The command line arguments.
+     */
 	public static void main(String[] args) {
 
 		// Check for valid arguments
@@ -49,26 +48,29 @@ public class Main {
 				// Handle the XML file
 				xmlFileDir = args[0];
 				xmlFileName = args[1];
-				tellstory = args[2];
 				// Get input seed or randomize one
-				seed = (args.length < 4 || args[3].equals("0")) ? System.nanoTime() : Long.valueOf(args[3]);
-				System.out.println("**********************************");
-				System.out.println("Story Random Seed: " + seed);
-				System.out.println("**********************************");
-				// Create a new StoryTeller Instance
-				File probabiltyFile = new File(xmlFileDir + "/" + xmlFileName);
-				storyTeller = new StoryTeller(probabiltyFile, seed);
-				if (tellstory.equalsIgnoreCase("YES")) {
+				if (xmlFileName.contains("probability")) {
+					seed = (args.length < 3 || args[2].equals("0")) ? System.nanoTime() : Long.valueOf(args[2]);
+					print("**********************************\nStory Random Seed: " + seed
+					        + "\n**********************************");
+					// Create a new StoryTeller Instance
+					File probabiltyFile = new File(xmlFileDir + "/" + xmlFileName);
+					storyTeller = new StoryTeller(probabiltyFile, seed);
 					// Tell Story
 					storyTeller.read();
 					storyTeller.write();
-					System.out.println("Finised reading probability file.");
+					print("Finised reading probability file.");
+					// Define story file
+					String storyFileName = "story_" + seed + ".xml";
+					storyFile = new File(xmlFileDir + "/" + storyFileName);
+				} else if (xmlFileName.contains("story")) {
+					// Define story file
+					storyFile = new File(xmlFileDir + "/" + xmlFileName);
+				} else {
+					print("[ERROR] Invalid file name. File name must contain 'probability' or 'story'.");
+					return;
 				}
-				// Create a new StoryRunner Instance
-				storyRunner = new JXIOStoryRunner();
 				// Read story
-				String storyFileName = "new_story.xml";
-				File storyFile = new File(xmlFileDir + "/" + storyFileName);
 				storyRunner.read(storyFile);
 				// Run story
 				storyRunner.run();
@@ -77,28 +79,28 @@ public class Main {
 	}
 
 	/**
-	 * Checks to is if the number of arguments passed is valid.
-	 * 
-	 * @param args
-	 *            The command line arguments.
-	 * @return True if number of arguments is valid.
-	 */
+     * Checks to is if the number of arguments passed is valid.
+     * 
+     * @param args
+     *            The command line arguments.
+     * @return True if number of arguments is valid.
+     */
 	private static boolean argsCheck(String[] args) {
-		if (args.length < 3) {
-			print("[ERROR] Missing argument!\nFirst arugment needs to be the directory of the tests XML file." +
-					"\nSecond arugment needs to be the file name of the tests XML file." +
-					"\nThird arugment needs to be YES/NO on telling a story." +
-					"\nA forth arugment MAY be added as a seed (for random selections).");
+		if (args.length < 2) {
+			print("[ERROR] Missing argument!\nFirst arugment needs to be the directory of the tests XML file."
+			        + "\nSecond arugment needs to be the file name of the test XML file."
+			        + "\nThis must be a file containing the word 'probability' or 'story'."
+			        + "\nA Third arugment MAY be added as a seed (for random selections).");
 			return false;
 		}
 		return true;
 	}
 
 	/**
-	 * Prints the given message to the screen.
-	 * 
-	 * @param str
-	 */
+     * Prints the given message to the screen.
+     * 
+     * @param str
+     */
 	public static void print(String str) {
 		System.out.println("\n" + str + "\n");
 	}

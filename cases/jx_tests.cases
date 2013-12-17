@@ -1,0 +1,24 @@
+<CASEDEF>
+	<global>
+		<Test>
+			<info>test</info>
+			<name>jx tests</name>
+			<owner>AlonGr</owner>
+		</Test>
+		<Case>
+			<wrapper>./jx_tests_wrapper.py</wrapper>
+			<tout>300</tout>
+		</Case>
+	</global>
+	<case>
+		<info>jx test</info>
+		<name>run break event loop test</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args></static_args>
+			</params>
+		</cmd>
+	</case>
+</CASEDEF>
+

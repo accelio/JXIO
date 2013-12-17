@@ -19,9 +19,8 @@ class JxWrapper(ClientServerWrapper):
         # Arguments
         self.add_client_cmd_argument('--path', help='The path to the probability file.', type=str, value_only=True, priority=1)
         self.add_client_cmd_argument('--filename', help='The probabilty file name.', type=str, value_only=True, priority=2)
-        self.add_client_cmd_argument('--tellstory', help='YES/NO on telling a new story.', type=str, value_only=True, priority=3)
-        self.add_client_cmd_argument('--random_seed', help='The fixed random seed. Set to 0 to randimize a seed.', type=str, value_only=True, priority=4)
-        self.add_client_cmd_argument('--timeout', help='The timeout in seconds for the entire run.', type=str, value_only=True, priority=5)
+        self.add_client_cmd_argument('--random_seed', help='The fixed random seed. Set to 0 to randimize a seed.', type=str, value_only=True, priority=3)
+        self.add_client_cmd_argument('--timeout', help='The timeout in seconds for the entire run.', type=str, value_only=True, priority=4)
 
 
 #     def get_server_manage_ip(self):
