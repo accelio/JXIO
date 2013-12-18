@@ -28,12 +28,16 @@ import com.mellanox.jxio.impl.Bridge;
 public class MsgPool {
 	private static final Log LOG     = LogFactory.getLog(MsgPool.class.getCanonicalName());
 	private final int        capacity;
+	private final int        inSize;
+	private final int        outSize;
 	private final ByteBuffer buffer;
 	private final long       refToCObject;
 	List<Msg>                listMsg = new ArrayList<Msg>();
 
 	public MsgPool(int capacity, int inSize, int outSize) {
 		this.capacity = capacity;
+		this.inSize = inSize;
+		this.outSize = outSize;
 		long refToCObjects[] = new long[capacity + 1]; // the first element represents the id of MsgPool
 		buffer = Bridge.createMsgPool(capacity, inSize, outSize, refToCObjects);
 		if (buffer == null) {
@@ -52,6 +56,15 @@ public class MsgPool {
 			Msg m = new Msg(partialBuffer, inSize, outSize, refToCObjects[i + 1], this);
 			listMsg.add(m);
 		}
+	}
+
+	public String toString() {
+		return getClass().getName() 
+				+ "[count=" + count() 
+				+ ", capacity=" + capacity 
+				+ ", inSize=" + inSize 
+				+ ", outSize=" + outSize
+				+ "]";		
 	}
 
 	// Returns true if this MsgPool contains no elements.
