@@ -38,13 +38,14 @@ public class Msg {
 		this.in = createSubBuffer(0, inSize, buffer);
 		this.out = createSubBuffer(inSize, inSize+outSize, buffer);
 		resetPositions();
-		// if(LOG.isDebugEnabled()) {
-		// LOG.debug("IN: capacity is " + in.capacity() + " limit " + in.limit()+ " position "+ in.position()+
-		// " remaining is "+ in.remaining());
-		// LOG.debug("OUT: capacity is " + out.capacity() + " limit " + out.limit()+ " position "+ out.position()+
-		// " remaining is "+ out.remaining());
-		// }
+		//if (LOG.isTraceEnabled()) {
+		//	LOG.trace(this);
+		//}
 	}
+
+	public String toString() {
+	    return "msgIn=" + this.in + ", msgOut=" + this.out + ", msgPool=" + this.msgPool;
+    }
 
 	public void returnToParentPool() {
 		msgPool.releaseMsg(this);
