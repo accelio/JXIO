@@ -27,28 +27,11 @@ import com.mellanox.jxio.*;
 
 public class HelloClient {
 
-	public int                      exitStatus = 1;
-
-	private final static Log        LOG   = LogFactory.getLog(HelloClient.class.getCanonicalName());
-	private final MsgPool           mp;
-	private final ClientSession     client;
+	private final static Log LOG = LogFactory.getLog(HelloClient.class.getCanonicalName());
+	private final MsgPool mp;
 	private final EventQueueHandler eqh;
-	
-	HelloClient(URI uri) {
-		this.eqh = new EventQueueHandler();
-		this.mp = new MsgPool(256, 100, 100);
-		LOG.info("Try to establish a new session to '" + uri + "'");
-		this.client = new ClientSession(eqh, uri, new MyClientCallbacks(this));
-
-		Msg msg = this.mp.getMsg();
-		try {
-			msg.getOut().put("Hello Server".getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-        	// Just suppress the exception handling in this demo code
-        }
-
-		client.sendMessage(msg);
-	}
+	private ClientSession client;
+	public int exitStatus = 1;
 
 	public static void main(String[] args) {
 		if (args.length < 2) {
@@ -67,12 +50,31 @@ public class HelloClient {
 			return;
 		}
 
-		HelloClient client = new HelloClient(uri);
+		HelloClient client = new HelloClient();
+		client.connect(uri);
 		client.run();
 
 		LOG.info("Client is releasing JXIO resources and exiting");
 		client.releaseResources();
 		System.exit(client.exitStatus);
+	}
+
+	HelloClient() {
+		this.eqh = new EventQueueHandler();
+		this.mp = new MsgPool(256, 100, 100);
+	}
+
+	public void connect(URI uri) {
+		LOG.info("Try to establish a new session to '" + uri + "'");
+		this.client = new ClientSession(eqh, uri, new MyClientCallbacks(this));
+
+		Msg msg = this.mp.getMsg();
+		try {
+			msg.getOut().put("Hello Server".getBytes("UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			// Just suppress the exception handling in this demo code
+		}
+		client.sendMessage(msg);
 	}
 
 	public void run() {
@@ -107,8 +109,8 @@ public class HelloClient {
 			byte ch;
 			StringBuffer buffer = new StringBuffer();
 			while (msg.getIn().hasRemaining() && ((ch = msg.getIn().get()) > -1)) {
-	            buffer.append((char)ch);
-	        }
+				buffer.append((char) ch);
+			}
 			LOG.info("msg is: '" + buffer.toString() + "'");
 
 			msg.returnToParentPool();
