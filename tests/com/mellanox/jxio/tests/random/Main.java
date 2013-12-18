@@ -90,7 +90,8 @@ public class Main {
 			print("[ERROR] Missing argument!\nFirst arugment needs to be the directory of the tests XML file."
 			        + "\nSecond arugment needs to be the file name of the test XML file."
 			        + "\nThis must be a file containing the word 'probability' or 'story'."
-			        + "\nA Third arugment MAY be added as a seed (for random selections).");
+			        + "\nA Third arugment MAY be added as a seed (for random selections)."
+			        + "\n\nparameters: 'XML_DIR_PATH XML_FILE [SEED [TIMEOUT]]'");
 			return false;
 		}
 		return true;
