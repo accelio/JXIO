@@ -43,6 +43,7 @@ public class ClientPlayer extends GeneralPlayer {
 	private ClientSession     client;
 	private MsgPool           mp;
 	private long              startSessionTime;
+	private int               counterEstablished; // count connect responses: established or rejected
 	private int               counterSentMsgs;
 	private int               counterReceivedMsgs;
 	private boolean           isClosing = false;
@@ -168,6 +169,15 @@ public class ClientPlayer extends GeneralPlayer {
 		if (!this.isClosing)
 			this.client.close();
 		this.isClosing = true;
+		if (this.counterEstablished != 1) {
+			LOG.error(this.toString() + ": FAILURE: session did not get established/rejected as expected");
+			System.exit(1); // Failure in test - eject!			
+		}
+		if (this.mp.count() != this.mp.capacity()) {
+			LOG.error(this.toString() + ": FAILURE: not all Msgs returned to MSgPoll: " + mp);
+			System.exit(1); // Failure in test - eject!
+		}
+		this.mp.deleteMsgPool();
 	}
 
 	class JXIOCallbacks implements ClientSession.Callbacks {
@@ -182,9 +192,10 @@ public class ClientPlayer extends GeneralPlayer {
 		}
 
 		public void onSessionEstablished() {
+			this.c.counterEstablished++;
 			final long timeSessionEstablished = System.nanoTime() - c.startSessionTime;
 			if (timeSessionEstablished > 100000000) { // 100 msec
-				LOG.error(c.toString() + ": FAILURE, session establish took " + timeSessionEstablished / 1000 + " usec");
+				LOG.error(c.toString() + ": FAILURE: session establish took " + timeSessionEstablished / 1000 + " usec");
 				System.exit(1); // Failure in test - eject!
 			}
 			LOG.info(c.toString() + ": onSessionEstablished. took " + timeSessionEstablished / 1000 + " usec");
@@ -202,7 +213,6 @@ public class ClientPlayer extends GeneralPlayer {
 						} else {
 							LOG.info(c.toString() + ": SUCCESSFULLY received all sent msgs (" + c.counterReceivedMsgs + ")");
 						}
-						c.mp.deleteMsgPool();
 						return;
 					}
 					break;
@@ -210,6 +220,7 @@ public class ClientPlayer extends GeneralPlayer {
 					if (uri.getQuery().contains("reject=1")) {
 						// Reject test completed SUCCESSFULLY
 						LOG.info(c.toString() + ": SUCCESSFULLY got rejected as expected");
+						this.c.counterEstablished++;
 						this.c.isClosing = true;
 						return;
 					}
@@ -217,20 +228,20 @@ public class ClientPlayer extends GeneralPlayer {
 				default:
 					break;
 			}
-			LOG.error(c.toString() + ": FAILURE, onSessionError: event='" + session_event.toString() + "', reason='" + reason.toString() + "'");
+			LOG.error(c.toString() + ": FAILURE: onSessionError: event='" + session_event.toString() + "', reason='" + reason.toString() + "'");
 			System.exit(1); // Failure in test - eject!
 		}
 
 		public void onReply(Msg msg) {
 			counterReceivedMsgs++;
 			if (!Utils.checkIntegrity(msg)) {
-				LOG.error(c.toString() + ": FAILURE, checksums for message #" + counterReceivedMsgs + " does not match");
+				LOG.error(c.toString() + ": FAILURE: checksums for message #" + counterReceivedMsgs + " does not match");
 				System.exit(1); // Failure in test - eject!
 			}
 
 			final long roundTrip = roundTrip(msg);
 			if (roundTrip > 100000000) { // 100 milisec
-				LOG.error(c.toString() + ": FAILURE, msg round trip took " + roundTrip / 1000 + " usec");
+				LOG.error(c.toString() + ": FAILURE: msg round trip took " + roundTrip / 1000 + " usec");
 				System.exit(1); // Failure in test - eject!
 			}
 			if (LOG.isTraceEnabled()) {
