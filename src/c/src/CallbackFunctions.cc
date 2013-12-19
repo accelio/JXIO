@@ -37,10 +37,8 @@ int on_new_session_callback(struct xio_session *session,
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
 	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnNewSessionEvent(buf, cntxbl, session,
-			req);
+	int sizeWritten = ctx->events->writeOnNewSessionEvent(buf, cntxbl, session, req);
 	done_event_creating(ctx, sizeWritten);
-
 	return 0;
 }
 

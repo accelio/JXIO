@@ -82,8 +82,8 @@ int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, struct xio_sessi
 			sizeof((struct event_new_session *)0)->ptr_session + sizeof((struct event_new_session *)0)->uri_len;
 
 	//copy first string
-	strcpy(buf +this->size,req->uri);
-	size+=req->uri_len;
+	strcpy(buf + this->size, req->uri);
+	size += req->uri_len;
 
 	//calculate ip address
 	int len;
@@ -92,30 +92,29 @@ int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, struct xio_sessi
 	struct sockaddr *ipStruct = (struct sockaddr *)&req->src_addr;
 
 	if (ipStruct->sa_family == AF_INET) {
-				static char addr[INET_ADDRSTRLEN];
-				struct sockaddr_in *v4 = (struct sockaddr_in *)ipStruct;
-				ip = (char *)inet_ntop(AF_INET, &(v4->sin_addr),
-							 addr, INET_ADDRSTRLEN);
-				len = strlen(ip);
-
-	} else if (ipStruct->sa_family == AF_INET6) {
-			static char addr[INET6_ADDRSTRLEN];
-			struct sockaddr_in6 *v6 = (struct sockaddr_in6 *)ipStruct;
-			ip = (char *)inet_ntop(AF_INET6, &(v6->sin6_addr),
-						 addr, INET6_ADDRSTRLEN);
-			len = INET6_ADDRSTRLEN;
-	} else {
-			log(lsERROR, "can not get src ip\n");
-			return 0;
+		static char addr[INET_ADDRSTRLEN];
+		struct sockaddr_in *v4 = (struct sockaddr_in *) ipStruct;
+		ip = (char *) inet_ntop(AF_INET, &(v4->sin_addr), addr, INET_ADDRSTRLEN);
+		len = strlen(ip);
+	}
+	else if (ipStruct->sa_family == AF_INET6) {
+		static char addr[INET6_ADDRSTRLEN];
+		struct sockaddr_in6 *v6 = (struct sockaddr_in6 *) ipStruct;
+		ip = (char *) inet_ntop(AF_INET6, &(v6->sin6_addr), addr, INET6_ADDRSTRLEN);
+		len = INET6_ADDRSTRLEN;
+	}
+	else {
+		log(lsERROR, "can not get src ip\n");
+		return 0;
 	}
 
-	int32_t ip_len = htonl (len);
+	int32_t ip_len = htonl(len);
 	memcpy(buf + this->size, &ip_len, sizeof(int32_t));
 
-	this->size += sizeof((struct event_new_session *)0)->ip_len;
-	strcpy(buf + this->size,ip);
+	this->size += sizeof((struct event_new_session *) 0)->ip_len;
+	strcpy(buf + this->size, ip);
 
-	this->size += len ;
+	this->size += len;
 	return this->size;
 }
 

@@ -86,8 +86,8 @@ public class HelloServer {
 			this.server = server;
 		}
 
-		public void onSessionNew(long sessionKey, String uriSrc, String srcIP) {
-			LOG.info("[SUCCESS] Got event onSessionNew from " + srcIP + ", URI='" + uriSrc + "'");
+		public void onSessionNew(long sessionKey, String uri, String srcIP) {
+			LOG.info("[SUCCESS] Got event onSessionNew from " + srcIP + ", URI='" + uri + "'");
 			this.server.session = new ServerSession(sessionKey, new MySessionCallbacks(server));
 			this.server.server.accept(session);
 		}

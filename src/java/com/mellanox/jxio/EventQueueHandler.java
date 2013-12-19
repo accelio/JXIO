@@ -398,11 +398,9 @@ public class EventQueueHandler implements Runnable {
 
 	private String readString(ByteBuffer buf) {
 		int len = buf.getInt();
-		byte b[] = new byte[len + 1];
-
+		byte b[] = new byte[len];
 		buf.get(b, 0, len);
 		String s1 = new String(b, Charset.forName("US-ASCII"));
-
 		return s1;
 	}
 
