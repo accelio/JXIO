@@ -292,6 +292,10 @@ public class EventQueueHandler implements Runnable {
 				synchronized (eventables) {
 					eventable = eventables.get(id);
 				}
+				if (eventable == null){
+					LOG.warn(this.toString() + " eventable with id " + id + " was not found in map");
+					break;
+				}
 				eventable.onEvent(evSes);
 			}
 				break;
@@ -302,6 +306,10 @@ public class EventQueueHandler implements Runnable {
 				synchronized (eventables) {
 					eventable = eventables.get(id);
 				}
+				if (eventable == null){
+					LOG.warn(this.toString() + " eventable with id " + id + " was not found in map");
+					break;
+				}
 				eventable.onEvent(evMsgErr);
 			}
 				break;
@@ -310,6 +318,10 @@ public class EventQueueHandler implements Runnable {
 			{
 				EventSessionEstablished evSesEstab = new EventSessionEstablished(eventType, id);
 				eventable = eventables.get(id);
+				if (eventable == null){
+					LOG.warn(this.toString() + " eventable with id " + id + " was not found in map");
+					break;
+				}
 				eventable.onEvent(evSesEstab);
 			}
 				break;
@@ -324,6 +336,10 @@ public class EventQueueHandler implements Runnable {
 					LOG.trace("session refToCObject" + session_id);
 				}
 				eventable = eventables.get(session_id);
+				if (eventable == null){
+					LOG.warn(this.toString() + " eventable with id " + session_id + " was not found in map");
+					break;
+				}
 				EventNewMsg evMsg = new EventNewMsg(eventType, id, msg);
 				eventable.onEvent(evMsg);
 			}
@@ -354,6 +370,10 @@ public class EventQueueHandler implements Runnable {
 
 				synchronized (eventables) {
 					eventable = eventables.get(id);
+				}
+				if (eventable == null){
+					LOG.warn(this.toString() + " eventable with id " + id + " was not found in map");
+					break;
 				}
 				EventNewSession evNewSes = new EventNewSession(eventType, id, ptrSes, uri, srcIP);
 				eventable.onEvent(evNewSes);
