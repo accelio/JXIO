@@ -173,7 +173,7 @@ public class ClientPlayer extends GeneralPlayer {
 			LOG.error(this.toString() + ": FAILURE: session did not get established/rejected as expected");
 			System.exit(1); // Failure in test - eject!			
 		}
-		if (this.mp.count() != this.mp.capacity()) {
+		if (this.mp.count() + (this.counterSentMsgs - this.counterReceivedMsgs) != this.mp.capacity()) {
 			LOG.error(this.toString() + ": FAILURE: not all Msgs returned to MSgPoll: " + mp);
 			System.exit(1); // Failure in test - eject!
 		}
