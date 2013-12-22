@@ -412,9 +412,9 @@ public class JXIOStoryRunner implements StoryRunner {
 				MsgPoolData server_pool = chooseServersMsgPool(clientServers);
 				// Get client msgs by factoring the servers msg_pool
 				// and crossing in/out sizes
-				int count = server_pool.getCount() * Integer.valueOf(client.getAttribute("msg_count_factor")) / 100;
-				int in = server_pool.getOutSize() * Integer.valueOf(client.getAttribute("msg_size_in_factor")) / 100;
-				int out = server_pool.getInSize() * Integer.valueOf(client.getAttribute("msg_size_out_factor")) / 100;
+				int count = server_pool.getCount() * Integer.valueOf(client.getAttribute("msg_count_factor_perc")) / 100;
+				int in = server_pool.getOutSize() * Integer.valueOf(client.getAttribute("msg_size_in_factor_perc")) / 100;
+				int out = server_pool.getInSize() * Integer.valueOf(client.getAttribute("msg_size_out_factor_perc")) / 100;
 				MsgPoolData pool = new MsgPoolData(count, in, out);
 
 				if (batch > count)
