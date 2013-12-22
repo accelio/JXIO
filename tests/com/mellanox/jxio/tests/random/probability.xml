@@ -1,6 +1,6 @@
 <root>
 	<machines>
-		<machine_amount value="1"/>
+		<machine_amount value="2"/>
 		<machine>
 			<name value="zorro010"/>
 			<address value="36.0.0.120"/>
@@ -17,8 +17,8 @@
 
 	<!-- JXIO process parameters -->
 	<processes>
-		<process_amount value="[100]:1"/>
-		<machine value="[100]:1"/>
+		<process_amount value="[100]:2"/>
+		<machine value="[50]:1, [50]:2"/>
 		<num_eqhs value="[90]:3, [10]:4-5"/>
 		<timeout value="[100]:60"/>
 		<log_level value="[0]:OFF, [5]:FATAL, [5]:ERROR, [5]:WARN, [50]:INFO, [20]:DEBUG, [10]:TRACE, [5]:ALL"/>
