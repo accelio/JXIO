@@ -23,6 +23,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
@@ -183,6 +184,7 @@ public class JXIOStoryRunner implements StoryRunner {
 			System.out.println("No process found for your machine!");
 			return null;
 		}
+		System.out.println("Your have " + myChapter.myProcesses.size() + " processes to run.");
 
 		// Map
 		// Map servers To Processes
@@ -361,6 +363,9 @@ public class JXIOStoryRunner implements StoryRunner {
 		for (Character client : myClients) {
 			try {
 				String uriQueryStr = "";
+				List<Character> clientServers = new ArrayList<Character>(); // Will store all the servers the client
+				// goes throght. Used for throght. Used for
+				// chosing a msg_pool.
 
 				// Get client parameters
 				int id = Integer.valueOf(client.getAttribute("id"));
@@ -371,36 +376,45 @@ public class JXIOStoryRunner implements StoryRunner {
 				int tps = Integer.valueOf(client.getAttribute("tps"));
 				int batch = Integer.valueOf(client.getAttribute("batch"));
 
-				// Get client hoops
+				// Update client's servers list
+				clientServers.add(server);
+
+				// Get client hops
 				List<Character> supportingCharacters = client.getSupportingCharacters();
-				List<Character> hoops = null;
-				for (Character charcter : supportingCharacters) {
-					if (charcter.getCharacterType().equals("hoops")) {
-						hoops = charcter.getSupportingCharacters();
+				List<Character> hops = null;
+				for (Character character : supportingCharacters) {
+					if (character.getCharacterType().equals("hops")) {
+						hops = character.getSupportingCharacters();
 						break;
 					}
 				}
 
-				// Updated URI with hoops
-				for (Character hoop : hoops) {
-					String serverHoopID = hoop.getAttribute("server");
-					Character serverHoop = getCharacterFromListByAttribute(servers, "id", serverHoopID);
-					String processHoopID = serverHoop.getAttribute("process");
-					Character processHoop = getCharacterFromListByAttribute(processes, "id", processHoopID);
-					String machineHoopID = processHoop.getAttribute("machine");
-					Character machineHoop = getCharacterFromListByAttribute(machines, "id", machineHoopID);
-					String hostnameHoop = machineHoop.getAttribute("address");
-					String portHoop = serverHoop.getAttribute("port");
+				// Updated URI with hops
+				for (Character hop : hops) {
+					String serverHopID = hop.getAttribute("server");
+					Character serverHop = getCharacterFromListByAttribute(servers, "id", serverHopID);
+					String processHopID = serverHop.getAttribute("process");
+					Character processHop = getCharacterFromListByAttribute(processes, "id", processHopID);
+					String machineHopID = processHop.getAttribute("machine");
+					Character machineHop = getCharacterFromListByAttribute(machines, "id", machineHopID);
+					String hostnameHop = machineHop.getAttribute("address");
+					String portHop = serverHop.getAttribute("port");
 
-					// Add hoop to URI suffix
+					// Add hop to URI suffix
 					uriQueryStr += uriQueryStr.isEmpty() ? "?" : "&";
-					uriQueryStr += "nextHoop=" + hostnameHoop + ":" + portHoop;
+					uriQueryStr += "nextHop=" + hostnameHop + ":" + portHop;
+
+					// Update client's servers list
+					clientServers.add(serverHop);
 				}
 
-				// Get client msgs
-				int count = Integer.valueOf(client.getAttribute("msg_count_factor"));
-				int in = Integer.valueOf(client.getAttribute("msg_size_in_factor"));
-				int out = Integer.valueOf(client.getAttribute("msg_size_out_factor"));
+				// Choose msg_pool
+				MsgPoolData server_pool = chooseServersMsgPool(clientServers);
+				// Get client msgs by factoring the servers msg_pool
+				// and crossing in/out sizes
+				int count = server_pool.getCount() * Integer.valueOf(client.getAttribute("msg_count_factor")) / 100;
+				int in = server_pool.getOutSize() * Integer.valueOf(client.getAttribute("msg_size_in_factor")) / 100;
+				int out = server_pool.getInSize() * Integer.valueOf(client.getAttribute("msg_size_out_factor")) / 100;
 				MsgPoolData pool = new MsgPoolData(count, in, out);
 
 				if (batch > count)
@@ -437,6 +451,57 @@ public class JXIOStoryRunner implements StoryRunner {
 		// Set process' ClientPlayers
 		chapter.processClientPlayers.put(myProcess, clientPlayers);
 		return maxDuration;
+	}
+
+	/**
+     * Chooses a random miniaml msg_pool from a list a servers.
+     * 
+     * @param clientServers
+     *            The servers the client goes through.
+     * @return MsgPoolData of the choosen server.
+     */
+	private MsgPoolData chooseServersMsgPool(List<Character> clientServers) {
+		MsgPoolData data;
+		// Randomize a msg_pool from your server
+		Character server = clientServers.get(0);
+		List<Character> serverSupportingCharacters = server.getSupportingCharacters();
+		List<Character> msgPoolsList = null;
+		for (Character character : serverSupportingCharacters) {
+			if (character.getCharacterType().equals("msg_pools")) {
+				msgPoolsList = character.getSupportingCharacters();
+			}
+		}
+		int randIndex = new Random().nextInt(msgPoolsList.size());
+		Character msgPool = msgPoolsList.get(randIndex);
+		int count = Integer.valueOf(msgPool.getAttribute("msg_pool_count"));
+		int in = Integer.valueOf(msgPool.getAttribute("msg_pool_size_in"));
+		int out = Integer.valueOf(msgPool.getAttribute("msg_pool_size_out"));
+		data = new MsgPoolData(count, in, out);
+		// TODO [This need to change in the future]
+		// Check for a smaller msg_pool in a hoop along the way
+		// If there is a possibilty for a smaller msg_pool, use that msg_pool
+		for (Character hop : clientServers.subList(1, clientServers.size())) {
+			// Get msg_pools
+			serverSupportingCharacters = hop.getSupportingCharacters();
+			msgPoolsList = null;
+			for (Character character : serverSupportingCharacters) {
+				if (character.getCharacterType().equals("msg_pools")) {
+					msgPoolsList = character.getSupportingCharacters();
+				}
+			}
+			// Check msg_pools
+			for (Character pool : msgPoolsList) {
+				int pool_count = Integer.valueOf(pool.getAttribute("msg_pool_count"));
+				int pool_in = Integer.valueOf(pool.getAttribute("msg_pool_size_in"));
+				int pool_out = Integer.valueOf(pool.getAttribute("msg_pool_size_out"));
+				// Check for a smaller msg_pool
+				if (data.getCount() >= pool_count && data.getInSize() >= pool_in
+				        && data.getOutSize() >= data.getOutSize()) {
+					data = new MsgPoolData(pool_count, pool_in, pool_out);
+				}
+			}
+		}
+		return data;
 	}
 
 	/**

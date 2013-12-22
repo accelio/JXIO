@@ -51,8 +51,8 @@ public class Main {
 				// Get input seed or randomize one
 				if (xmlFileName.contains("probability")) {
 					seed = (args.length < 3 || args[2].equals("0")) ? System.nanoTime() : Long.valueOf(args[2]);
-					print("**********************************\nStory Random Seed: " + seed
-					        + "\n**********************************");
+					print("***********************************\nStory Random Seed: " + seed
+					        + "\n***********************************");
 					// Create a new StoryTeller Instance
 					File probabiltyFile = new File(xmlFileDir + "/" + xmlFileName);
 					storyTeller = new StoryTeller(probabiltyFile, seed);
