@@ -50,7 +50,9 @@ public class EventQueueHandler implements Runnable {
 	private Map<Long, Msg>         msgsPendingNewRequest = new HashMap<Long, Msg>();
 	private volatile boolean       breakLoop             = false;
 	private volatile boolean       stopLoop              = false;
-	private static final Log       LOG                   = LogFactory.getLog(EventQueueHandler.class.getCanonicalName());
+	private volatile boolean       inRunLoop             = false;
+	private static final Log       LOG                   = LogFactory
+	                                                             .getLog(EventQueueHandler.class.getCanonicalName());
 
 	// ctor
 	public EventQueueHandler() {
@@ -99,6 +101,11 @@ public class EventQueueHandler implements Runnable {
 			LOG.error("no context opened on C side. can not run event loop");
 			return 0;
 		}
+		if (this.inRunLoop){
+			LOG.error(this.toString() + " event loop is already running");
+			return 0;
+		}
+		this.inRunLoop = true;
 
 		boolean is_forever = (timeOutMicroSec == -1) ? true : false;
 		boolean is_infinite_events = (maxEvents == -1) ? true : false;
@@ -110,10 +117,20 @@ public class EventQueueHandler implements Runnable {
 		        && ((is_forever) || (!this.elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("[" + getId() + "] in loop with " + eventsWaitingInQ + " events in Q. handled " + eventsHandled 
-				        + " events out of " + maxEvents + ", " + "elapsed time is " + this.elapsedTime.getElapsedTimeMicro() + " usec (blocking for "
+				LOG.debug("["
+				        + getId()
+				        + "] in loop with "
+				        + eventsWaitingInQ
+				        + " events in Q. handled "
+				        + eventsHandled
+				        + " events out of "
+				        + maxEvents
+				        + ", "
+				        + "elapsed time is "
+				        + this.elapsedTime.getElapsedTimeMicro()
+				        + " usec (blocking for "
 				        + ((is_forever) ? "infinite duration)" : "a max duration of " + timeOutMicroSec / 1000
-		                + " msec.)"));
+				                + " msec.)"));
 			}
 
 			if (eventsWaitingInQ <= 0) { // the event queue is empty now, get more events from libxio
@@ -134,6 +151,7 @@ public class EventQueueHandler implements Runnable {
 			LOG.debug("[" + getId() + "] returning with " + eventsWaitingInQ + " events in Q. handled " + eventsHandled
 			        + " events, elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec.");
 		}
+		this.inRunLoop = false;
 		return eventsHandled;
 	}
 
@@ -167,8 +185,12 @@ public class EventQueueHandler implements Runnable {
 			LOG.error("no context opened on C side. can not close event loop");
 			return;
 		}
+		if (this.inRunLoop){
+			LOG.error(this.toString() + " can not close EQH from within runEventLoop");
+			return;
+		}
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("[" + getId() + "] closing EQH " );
+			LOG.debug("[" + getId() + "] closing EQH ");
 		}
 		while (!this.eventables.isEmpty()) {
 			int waitForEvent = 0;
@@ -189,8 +211,7 @@ public class EventQueueHandler implements Runnable {
 			if (waitForEvent != 0) {
 				runEventLoop(waitForEvent, -1);
 			}
-			LOG.warn("attempting to close EQH while objects " + this.eventables.keySet()
-			        + " are still listening.");
+			LOG.warn("attempting to close EQH while objects " + this.eventables.keySet() + " are still listening.");
 		}
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("[" + getId() + "] no more objects listening");
@@ -198,7 +219,7 @@ public class EventQueueHandler implements Runnable {
 		Bridge.closeCtx(getId());
 		this.stopLoop = true;
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("[" + getId() + "] closing EQH is finished" );
+			LOG.debug("[" + getId() + "] closing EQH is finished");
 		}
 	}
 
@@ -292,7 +313,7 @@ public class EventQueueHandler implements Runnable {
 				synchronized (eventables) {
 					eventable = eventables.get(id);
 				}
-				if (eventable == null){
+				if (eventable == null) {
 					LOG.warn(this.toString() + " eventable with id " + id + " was not found in map");
 					break;
 				}
@@ -306,7 +327,7 @@ public class EventQueueHandler implements Runnable {
 				synchronized (eventables) {
 					eventable = eventables.get(id);
 				}
-				if (eventable == null){
+				if (eventable == null) {
 					LOG.warn(this.toString() + " eventable with id " + id + " was not found in map");
 					break;
 				}
@@ -318,7 +339,7 @@ public class EventQueueHandler implements Runnable {
 			{
 				EventSessionEstablished evSesEstab = new EventSessionEstablished(eventType, id);
 				eventable = eventables.get(id);
-				if (eventable == null){
+				if (eventable == null) {
 					LOG.warn(this.toString() + " eventable with id " + id + " was not found in map");
 					break;
 				}
@@ -336,7 +357,7 @@ public class EventQueueHandler implements Runnable {
 					LOG.trace("session refToCObject" + session_id);
 				}
 				eventable = eventables.get(session_id);
-				if (eventable == null){
+				if (eventable == null) {
 					LOG.warn(this.toString() + " eventable with id " + session_id + " was not found in map");
 					break;
 				}
@@ -371,7 +392,7 @@ public class EventQueueHandler implements Runnable {
 				synchronized (eventables) {
 					eventable = eventables.get(id);
 				}
-				if (eventable == null){
+				if (eventable == null) {
 					LOG.warn(this.toString() + " eventable with id " + id + " was not found in map");
 					break;
 				}
