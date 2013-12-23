@@ -247,7 +247,7 @@ public class EventQueueHandler implements Runnable {
 
 		public abstract boolean close();
 
-		boolean getIsClosing() {
+		public boolean getIsClosing() {
 			return isClosing;
 		}
 
