@@ -43,7 +43,7 @@ public class ServerSessionPlayer {
 		this.spp = spp;
 		this.sk = newSessionKey;
 		this.srcIP = srcIP;
-		this.server = new ServerSession(sk, new JXIOServerCallbacks(this));
+		this.server = new ServerSession(sk, new JXIOServerCallbacks());
 		LOG.debug("new " + this.toString() + " done");
 	}
 
@@ -60,40 +60,35 @@ public class ServerSessionPlayer {
 	}
 
 	class JXIOServerCallbacks implements ServerSession.Callbacks {
-		private final ServerSessionPlayer ssp;
-
-		public JXIOServerCallbacks(ServerSessionPlayer ssp) {
-			this.ssp = ssp;
-		}
+		private final ServerSessionPlayer outer = ServerSessionPlayer.this;
 
 		public void onRequest(Msg msg) {
 			counterReceivedMsgs++;
 
 			if (!Utils.checkIntegrity(msg)) {
-				LOG.error(ssp.toString() + ": FAILURE, checksums for message #" + counterReceivedMsgs + " does not match");
+				LOG.error(outer.toString() + ": FAILURE, checksums for message #" + counterReceivedMsgs + " does not match");
 				System.exit(1);
 			}
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(ssp.toString() + ": onRequest: msg = " + msg.toString() + "#" + counterReceivedMsgs);
+				LOG.trace(outer.toString() + ": onRequest: msg = " + msg + "#" + counterReceivedMsgs);
 			}
-			String str = "Server " + ssp.toString() + " received " + counterReceivedMsgs + " msgs";
+			String str = "Server " + outer.toString() + " received " + counterReceivedMsgs + " msgs";
 			Utils.writeMsg(msg, str, 0);
-			ssp.server.sendResponce(msg);
+			outer.server.sendResponce(msg);
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
 			if (session_event == EventName.SESSION_TEARDOWN) {
-				LOG.info(ssp.toString() + ": SESSION_TEARDOWN. reason='" + reason.toString() + "'");
-				LOG.info(ssp.toString() + ": received " + counterReceivedMsgs + " msgs");
+				LOG.info(outer.toString() + ": SESSION_TEARDOWN. reason='" + reason + "'");
+				LOG.info(outer.toString() + ": received " + counterReceivedMsgs + " msgs");
 			} else {
-				LOG.error(ssp.toString() + ": FAILURE, onSessionError: event='" + session_event.toString() + "', reason='"
-				        + reason.toString() + "'");
+				LOG.error(outer.toString() + ": FAILURE, onSessionError: event='" + session_event + "', reason='" + reason + "'");
 				System.exit(1);
 			}
 		}
 
 		public void onMsgError() {
-			LOG.info(ssp.toString() + ": onMsgError");
+			LOG.info(outer.toString() + ": onMsgError");
 		}
 	}
 }

@@ -29,15 +29,11 @@ public abstract class GeneralPlayer {
 	protected abstract void terminate();
 
 	public AttachAction getAttachAction() {
-		return new AttachAction(this);
+		return new AttachAction();
 	}
 
 	protected class AttachAction implements WorkerThread.QueueAction {
-		private final GeneralPlayer player;
-
-		public AttachAction(GeneralPlayer player) {
-			this.player = player;
-		}
+		private final GeneralPlayer player = GeneralPlayer.this;
 
 		public void doAction(WorkerThread workerThread) {
 			this.player.attach(workerThread);
@@ -45,11 +41,10 @@ public abstract class GeneralPlayer {
 	}
 
 	protected class InitializeTimer extends TimerList.Timer {
-		private final GeneralPlayer player;
+		private final GeneralPlayer player = GeneralPlayer.this;
 
-		public InitializeTimer(GeneralPlayer player, long durationMicroSec) {
+		public InitializeTimer(long durationMicroSec) {
 			super(durationMicroSec);
-			this.player = player;
 		}
 
 		@Override
@@ -59,11 +54,10 @@ public abstract class GeneralPlayer {
 	}
 
 	protected class TerminateTimer extends TimerList.Timer {
-		private final GeneralPlayer player;
+		private final GeneralPlayer player = GeneralPlayer.this;
 
-		public TerminateTimer(GeneralPlayer player, long durationMicroSec) {
+		public TerminateTimer(long durationMicroSec) {
 			super(durationMicroSec);
-			this.player = player;
 		}
 
 		@Override

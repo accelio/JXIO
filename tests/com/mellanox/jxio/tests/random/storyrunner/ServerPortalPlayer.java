@@ -79,7 +79,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		}
 
 		// register initialize timer
-		TimerList.Timer tInitialize = new InitializeTimer(this, this.startDelaySec * 1000000);
+		TimerList.Timer tInitialize = new InitializeTimer(this.startDelaySec * 1000000);
 		this.workerThread.start(tInitialize);
 	}
 
@@ -93,14 +93,14 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 		// start server listener
 		LOG.info(this.toString() + ": starting server listener on '" + uri.getHost() + ":" + uri.getPort() + "'");
-		this.listener = new ServerPortal(this.workerThread.getEQH(), uri, new JXIOPortalCallbacks(this));
+		this.listener = new ServerPortal(this.workerThread.getEQH(), uri, new JXIOPortalCallbacks());
 		LOG.debug(this.toString() + ": server listening on '" + this.listener.getUriForServer() + "'");
 
 		// register server in available list of portals
 		this.workerThreads.addPortal(this.id, this);
 
 		// register terminate timer
-		TimerList.Timer tTerminate = new TerminateTimer(this, this.runDurationSec * 1000000);
+		TimerList.Timer tTerminate = new TerminateTimer(this.runDurationSec * 1000000);
 		this.workerThread.start(tTerminate);
 
 		// workers
@@ -144,34 +144,29 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	}
 
 	class JXIOPortalCallbacks implements ServerPortal.Callbacks {
-		private final ServerPortalPlayer spp;
+		private final ServerPortalPlayer outer = ServerPortalPlayer.this;
 
-		public JXIOPortalCallbacks(ServerPortalPlayer spp) {
-			this.spp = spp;
-		}
-
-		public void onSessionNew(long newSessionKey, String uriSrc, String srcIP) {
-			LOG.info(spp.toString() + ": onSessionNew: uri=" + uriSrc + ", srcaddr=" + srcIP);
-			String clientName = uriSrc.substring(uriSrc.indexOf("name=") + 5);
-			if (uriSrc.contains("reject=1")) {
+		public void onSessionNew(long newSessionKey, String srcUri, String srcIP) {
+			LOG.info(outer.toString() + ": onSessionNew: uri=" + srcUri + ", srcaddr=" + srcIP);
+			String clientName = srcUri.substring(srcUri.indexOf("name=") + 5);
+			if (srcUri.contains("reject=1")) {
 
 				LOG.info("Rejecting session from '" + clientName + "'");
-				this.spp.listener.reject(newSessionKey, EventReason.NOT_SUPPORTED, "");
+				outer.listener.reject(newSessionKey, EventReason.NOT_SUPPORTED, "");
 				return;
 			}
 
-			LOG.info("Establishing new session from '" + clientName + "'");
-			ServerPortalPlayer sp = workerThreads.getPortal(this.spp.id);
+			LOG.info(outer.toString() + ": Establishing new session from '" + clientName + "'");
+			ServerPortalPlayer sp = workerThreads.getPortal(outer.id);
 			ServerSessionPlayer ss = new ServerSessionPlayer(sp, newSessionKey, srcIP);
-			this.spp.listener.forward(sp.listener, ss.getServerSession());
+			outer.listener.forward(sp.listener, ss.getServerSession());
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
 			if (session_event == EventName.SESSION_TEARDOWN) {
-				LOG.info(spp.toString() + ": SESSION_TEARDOWN. reason='" + reason.toString() + "'");
+				LOG.info(outer.toString() + ": SESSION_TEARDOWN. reason='" + reason + "'");
 			} else {
-				LOG.error(spp.toString() + ": FAILURE, onSessionError: event='" + session_event.toString() + "', reason='"
-				        + reason.toString() + "'");
+				LOG.error(outer.toString() + ": FAILURE, onSessionError: event='" + session_event + "', reason='" + reason + "'");
 				System.exit(1);
 			}
 		}
