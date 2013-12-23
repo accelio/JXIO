@@ -77,6 +77,9 @@ Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xi
 	case XIO_SESSION_TEARDOWN_EVENT:
 		log(lsDEBUG, "got XIO_SESSION_TEARDOWN_EVENT.\n");
 		//the event should also be written to buffer to let user know that the session was closed
+		if (xio_session_close(session)) {
+			log(lsERROR, "Error xio_session_close failed. server=%p\n", this);
+		}
 		return delete_ctx_for_session(session);
 	default:
 		log(lsWARN, "UNHANDLED event: got '%s' event (%d). \n", xio_session_event_str(eventType), eventType);
