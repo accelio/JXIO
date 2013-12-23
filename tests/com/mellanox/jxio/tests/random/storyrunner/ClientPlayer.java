@@ -61,10 +61,12 @@ public class ClientPlayer extends GeneralPlayer {
 		// count number of nextHop
 		int numHops = 0;
 		String query = uri.getQuery();
-		String[] queryParams = Utils.getQueryPairs(query);
-		for (String param : queryParams) {
-			if (Utils.getQueryPairKey(param).equals("nextHop")) {
-				numHops++;
+		if (query != null && !query.isEmpty()) {
+			String[] queryParams = Utils.getQueryPairs(query);
+			for (String param : queryParams) {
+				if (Utils.getQueryPairKey(param).equals("nextHop")) {
+					numHops++;
+				}
 			}
 		}
 		this.numHops = numHops;

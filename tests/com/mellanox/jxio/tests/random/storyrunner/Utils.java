@@ -70,14 +70,20 @@ public final class Utils {
 	}
 
 	public static String[] getQueryPairs(String query) {
-		return query.split("&");
+		if (query != null)
+			return query.split("&");
+		return new String[0];
 	}
 
 	public static String getQueryPairKey(String queryParam) {
-		return queryParam.split("=")[0];
+		if (queryParam != null)
+			return queryParam.split("=")[0];
+		return new String();
 	}
 
 	public static String getQueryPairValue(String queryParam) {
-		return queryParam.split("=")[1];
+		if (queryParam != null)
+			return queryParam.split("=")[1];
+		return new String();
 	}
 }
