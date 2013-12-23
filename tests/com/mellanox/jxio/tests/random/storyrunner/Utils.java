@@ -18,6 +18,11 @@ package com.mellanox.jxio.tests.random.storyrunner;
 
 import com.mellanox.jxio.Msg;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.zip.CRC32;
 
 public final class Utils {
@@ -52,5 +57,27 @@ public final class Utils {
 			return false;
 		}
 		return true;
+	}
+
+	public static String getQuery(String strUri) {
+		URI uri = null;
+		try {
+			uri = new URI(strUri.trim());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		return uri.getQuery();
+	}
+
+	public static String[] getQueryPairs(String query) {
+		return query.split("&");
+	}
+
+	public static String getQueryPairKey(String queryParam) {
+		return queryParam.split("=")[0];
+	}
+
+	public static String getQueryPairValue(String queryParam) {
+		return queryParam.split("=")[1];
 	}
 }

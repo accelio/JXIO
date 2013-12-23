@@ -158,7 +158,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 			LOG.info(outer.toString() + ": Establishing new session from '" + clientName + "'");
 			ServerPortalPlayer sp = workerThreads.getPortal(outer.id);
-			ServerSessionPlayer ss = new ServerSessionPlayer(sp, newSessionKey, srcIP);
+			ServerSessionPlayer ss = new ServerSessionPlayer(sp, newSessionKey, srcUri, srcIP);
 			outer.listener.forward(sp.listener, ss.getServerSession());
 		}
 

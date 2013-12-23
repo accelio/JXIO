@@ -34,6 +34,7 @@ public class ClientPlayer extends GeneralPlayer {
 
 	private final String      name;
 	private final URI         uri;
+	private final int         numHops;
 	private final long        runDurationSec;
 	private final long        startDelaySec;
 	private final int         msgBatchSize;
@@ -56,6 +57,17 @@ public class ClientPlayer extends GeneralPlayer {
 		this.msgDelayMicroSec = (msgRate > 0) ? (1000000 / msgRate) : 0;
 		this.poolData = pool;
 		this.msgBatchSize = msgBatch;
+		
+		// count number of nextHop
+		int numHops = 0;
+		String query = uri.getQuery();
+		String[] queryParams = Utils.getQueryPairs(query);
+		for (String param : queryParams) {
+			if (Utils.getQueryPairKey(param).equals("nextHop")) {
+				numHops++;
+			}
+		}
+		this.numHops = numHops;
 		LOG.debug("new " + this.toString() + " done");
 	}
 
@@ -146,6 +158,13 @@ public class ClientPlayer extends GeneralPlayer {
 		String struri = this.uri.toString();
 		struri += (this.uri.getQuery() == null) ? "?" : "&";
 		struri += "name=" + toString();
+
+		// add ClientPlayer's MsgPool details
+		struri += (this.uri.getQuery() == null) ? "?" : "&";
+		struri += "mpcount=" + this.mp.capacity();
+		struri += "&msginsize=" + this.poolData.getInSize();
+		struri += "&msgoutsize=" + this.poolData.getOutSize();
+
 		URI connecturi = null;
 		try {
 			connecturi = new URI(struri);
@@ -229,19 +248,21 @@ public class ClientPlayer extends GeneralPlayer {
 		}
 
 		public void onReply(Msg msg) {
-			counterReceivedMsgs++;
+			outer.counterReceivedMsgs++;
 			if (!Utils.checkIntegrity(msg)) {
-				LOG.error(outer.toString() + ": FAILURE: checksums for message #" + counterReceivedMsgs + " does not match");
+				LOG.error(outer.toString() + ": FAILURE: checksums for message #" + outer.counterReceivedMsgs + " does not match");
 				System.exit(1); // Failure in test - eject!
 			}
 
 			final long roundTrip = roundTrip(msg);
 			if (roundTrip > 100000000) { // 100 milli-sec
-				LOG.error(outer.toString() + ": FAILURE: msg round trip took " + roundTrip / 1000 + " usec");
-				System.exit(1); // Failure in test - eject!
+				if (outer.counterReceivedMsgs != 1 || outer.numHops <= 0) {
+					LOG.error(outer.toString() + ": FAILURE: msg(#" + outer.counterReceivedMsgs + ") round trip took " + roundTrip / 1000 + " usec");
+					System.exit(1); // Failure in test - eject!
+				}
 			}
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(outer.toString() + ": onReply: msg = " + msg + "#" + counterReceivedMsgs);
+				LOG.trace(outer.toString() + ": onReply: msg = " + msg + "#" + outer.counterReceivedMsgs);
 			}
 			msg.returnToParentPool();
 		}
@@ -251,7 +272,7 @@ public class ClientPlayer extends GeneralPlayer {
 			final long sendTime = m.getOut().getLong(0);
 			final long rTrip = recTime - sendTime;
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(outer.toString() + ": roundTrip for message " + counterReceivedMsgs + " took " + rTrip / 1000
+				LOG.trace(outer.toString() + ": roundTrip for message " + outer.counterReceivedMsgs + " took " + rTrip / 1000
 				        + " usec");
 			}
 			return rTrip;

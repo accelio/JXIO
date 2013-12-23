@@ -1,12 +1,6 @@
 # Root logger option
 log4j.rootLogger=INFO, file, CONSOLE
 
-#log4j.logger.TimerList=DEBUG, CONSOLE
-
-#log4j.logger.com.mellanox.jxio=file
-#change log threshold of ServerManager Logger to DEBUG
-#log4j.logger.com.mellanox.jxio.ServerManager=DEBUG
-
 #change log threshold and appender of Bridge logger
 log4j.logger.LogFromNative=INFO, Clog
 #Bridge logger will be printed only to bridge appender.

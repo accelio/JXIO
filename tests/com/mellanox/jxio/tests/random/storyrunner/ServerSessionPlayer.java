@@ -16,14 +16,18 @@
  */
 package com.mellanox.jxio.tests.random.storyrunner;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
-import com.mellanox.jxio.ServerSession;
 import com.mellanox.jxio.EventName;
 import com.mellanox.jxio.EventReason;
+import com.mellanox.jxio.ServerSession;
+import com.mellanox.jxio.ClientSession;
 
 public class ServerSessionPlayer {
 
@@ -31,18 +35,20 @@ public class ServerSessionPlayer {
 
 	private static int               id  = 0;
 	private final String             name;
-	private final String             srcIP;
 	private final long               sk;
 	private final ServerPortalPlayer spp;
-	private WorkerThread             workerThread;
-	private ServerSession            server;
+	private final ServerSession      server;
+	private String                   nextHop = new String();
+	private String                   nextHopQuery = new String();
+	private ClientSession            nextHopClient;
+	private MsgPool                  nextHopMP;
 	private int                      counterReceivedMsgs;
 
-	public ServerSessionPlayer(ServerPortalPlayer spp, long newSessionKey, String srcIP) {
+	public ServerSessionPlayer(ServerPortalPlayer spp, long newSessionKey, String srcUri, String srcIP) {
 		this.name = "SSP[" + id++ + "]";
 		this.spp = spp;
 		this.sk = newSessionKey;
-		this.srcIP = srcIP;
+		prepareForNextHop(srcUri);
 		this.server = new ServerSession(sk, new JXIOServerCallbacks());
 		LOG.debug("new " + this.toString() + " done");
 	}
@@ -58,29 +64,88 @@ public class ServerSessionPlayer {
 	protected ServerSession getServerSession() {
 		return server;
 	}
+	
+	private void prepareForNextHop(String uri) {
+		int mpcount = 0;
+		int msginsize = 0;
+		int msgoutsize = 0;
+		// build and prepare nextHop strings
+		String query = Utils.getQuery(uri);
+		String[] queryParams = Utils.getQueryPairs(query);
+		for (String param : queryParams) {
+			if (this.nextHop.isEmpty() && Utils.getQueryPairKey(param).equals("nextHop")) {
+				this.nextHop = Utils.getQueryPairValue(param);
+			} else {
+				if (Utils.getQueryPairKey(param).equals("name")) {
+					String origName = Utils.getQueryPairValue(param);
+					param = "name=" + this + ":" + origName;
+				}
+				if (Utils.getQueryPairKey(param).equals("mpcount")) {
+					mpcount = Integer.valueOf(Utils.getQueryPairValue(param));
+					mpcount += 16; // to overcome accelio's internal server batching 
+				}
+				if (Utils.getQueryPairKey(param).equals("msginsize")) {
+					msginsize = Integer.valueOf(Utils.getQueryPairValue(param));
+				}
+				if (Utils.getQueryPairKey(param).equals("msgoutsize")) {
+					msgoutsize = Integer.valueOf(Utils.getQueryPairValue(param));
+				}
+				this.nextHopQuery += nextHopQuery.isEmpty() ? "?" : "&";
+				this.nextHopQuery += param;
+			}
+		}
+		
+		if (!this.nextHop.isEmpty() && mpcount > 0 && (msgoutsize + msginsize) > 0) {
+			this.nextHopMP = new MsgPool(mpcount, msgoutsize, msginsize);
+			LOG.info(this.toString() + ": new MsgPool:" + this.nextHopMP);
+		}
+	}
 
 	class JXIOServerCallbacks implements ServerSession.Callbacks {
 		private final ServerSessionPlayer outer = ServerSessionPlayer.this;
 
 		public void onRequest(Msg msg) {
-			counterReceivedMsgs++;
+			if (LOG.isDebugEnabled())
+				LOG.debug(outer.toString() + ": onRequest(" + msg + ")");
+
+			outer.counterReceivedMsgs++;
 
 			if (!Utils.checkIntegrity(msg)) {
-				LOG.error(outer.toString() + ": FAILURE, checksums for message #" + counterReceivedMsgs + " does not match");
+				LOG.error(outer.toString() + ": FAILURE, checksums for msg (#" + outer.counterReceivedMsgs + ") does not match");
 				System.exit(1);
 			}
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(outer.toString() + ": onRequest: msg = " + msg + "#" + counterReceivedMsgs);
+				LOG.trace(outer.toString() + ": onRequest: msg (#" + outer.counterReceivedMsgs +") = " + msg);
 			}
-			String str = "Server " + outer.toString() + " received " + counterReceivedMsgs + " msgs";
+			String str = "Server " + outer.toString() + " received " + outer.counterReceivedMsgs + " msgs";
 			Utils.writeMsg(msg, str, 0);
-			outer.server.sendResponce(msg);
+
+			if (outer.nextHop.isEmpty()) {
+				if (LOG.isDebugEnabled())
+					LOG.debug(outer.toString() + ": sendResponce(" + msg + ")");
+				outer.server.sendResponce(msg);
+			} else {
+				// server session is in proxy mode (nextHopClient), check if client need to be connected
+				if (outer.nextHopClient == null) {
+					outer.nextHopClient = prepareNextHopClient();
+				}
+
+				// send mirror msg to next hoop server
+				Msg nextHopMsg = prepareNextHopMsg(msg);
+				if (LOG.isDebugEnabled())
+					LOG.debug(outer.toString() + ": sendMessage(" + nextHopMsg + ")");
+				outer.nextHopClient.sendMessage(nextHopMsg);
+			}
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
 			if (session_event == EventName.SESSION_TEARDOWN) {
 				LOG.info(outer.toString() + ": SESSION_TEARDOWN. reason='" + reason + "'");
 				LOG.info(outer.toString() + ": received " + counterReceivedMsgs + " msgs");
+				if (!outer.nextHop.isEmpty()) {
+					LOG.info(outer.toString() + ": closing nextHopClient");
+					outer.nextHopClient.close();
+				}
 			} else {
 				LOG.error(outer.toString() + ": FAILURE, onSessionError: event='" + session_event + "', reason='" + reason + "'");
 				System.exit(1);
@@ -89,6 +154,66 @@ public class ServerSessionPlayer {
 
 		public void onMsgError() {
 			LOG.info(outer.toString() + ": onMsgError");
+		}
+		
+		private ClientSession prepareNextHopClient() {
+			URI connectUri = null;
+			try {
+				connectUri = new URI("rdma://" + outer.nextHop + "/" + outer.nextHopQuery);
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
+			LOG.info(outer.toString() + ": connecting proxy to '" + connectUri + "'");
+			return new ClientSession(outer.spp.getWorkerThread().getEQH(), connectUri, new JXIOProxyCallbacks());
+		}
+
+		private Msg prepareNextHopMsg(Msg msg) {
+			Msg nextHopMsg = outer.nextHopMP.getMsg();
+			if (nextHopMsg != null) {
+				msg.getIn().position(0);
+    			nextHopMsg.getOut().put(msg.getIn());
+    			nextHopMsg.setUserContext(msg);
+			}
+			return nextHopMsg;
+		}
+	}
+	
+	class JXIOProxyCallbacks implements ClientSession.Callbacks {
+		private final ServerSessionPlayer outer = ServerSessionPlayer.this;
+
+		public void onMsgError() {
+			LOG.info(outer.toString() + ": onMsgErrorCallback");
+		}
+
+		public void onSessionEstablished() {
+			LOG.debug(outer.toString() + ": onSessionEstablished");
+		}
+
+		public void onSessionEvent(EventName session_event, EventReason reason) {
+			switch (session_event) {
+				case SESSION_TEARDOWN:
+					LOG.debug(outer.toString() + ": onSESSION_TEARDOWN, reason='" + reason + "'");
+					break;
+				case SESSION_REJECT:
+					LOG.debug(outer.toString() + ": onSESSION_TEARDOWN, reason='" + reason + "'");
+					break;
+				default:
+					break;
+			}
+			LOG.error(outer.toString() + ": FAILURE: onSessionError: event='" + session_event + "', reason='" + reason + "'");
+			System.exit(1); // Failure in test - eject!
+		}
+
+		public void onReply(Msg msg) {
+			if (LOG.isDebugEnabled())
+				LOG.debug(outer.toString() + ": onReply(" + msg + ")");
+			Msg returnHoopMsg = (Msg)msg.getUserContext();
+			msg.getIn().position(0);
+			returnHoopMsg.getOut().put(msg.getIn());
+			if (LOG.isDebugEnabled())
+				LOG.debug(outer.toString() + ": sendResponce(" + returnHoopMsg + ")");
+			outer.server.sendResponce(returnHoopMsg);
+			msg.returnToParentPool();
 		}
 	}
 }
