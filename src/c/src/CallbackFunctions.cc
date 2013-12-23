@@ -57,6 +57,9 @@ int on_msg_send_complete_callback(struct xio_session *session,
 int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 		int more_in_batch, void *cb_prv_data) {
 	log(lsTRACE, "on_msg_callback is %p. num_iov = %d, len is %d msg is %p\n", msg->user_context, msg->in.data_iovlen, msg->in.data_iov[0].iov_len, msg);
+	if (msg->status){
+		log(lsERROR, "xio_msg=%p completed with error.[%s]\n", msg, xio_strerror(msg->status));
+	}
 
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
