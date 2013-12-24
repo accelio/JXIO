@@ -23,33 +23,34 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-
 public class Story {
 
 	private List<Character> charactersList = new ArrayList<Character>();
 
 	/**
-	 * Add a character to the story.
-	 * @param character
-	 */
+     * Add a character to the story.
+     * 
+     * @param character
+     */
 	public void addCharacter(Character character) {
 		charactersList.add(character);
 	}
-	
+
 	/**
-	 * @return A list of all the characters in the story.
-	 */
+     * @return A list of all the characters in the story.
+     */
 	public List<Character> getCharacters() {
 		return this.charactersList;
 	}
-	
+
 	/**
-	 * Retrieves all story characters in the probability file.
-	 * 
-	 * @param docRead A Document of an XML file to read.
-	 * 
-	 * @return A list of all the story characters.
-	 */
+     * Retrieves all story characters in the probability file.
+     * 
+     * @param docRead
+     *            A Document of an XML file to read.
+     * 
+     * @return A list of all the story characters.
+     */
 	public static List<String> getStoryCharacters(Document docRead) {
 		List<String> characterTypes = new ArrayList<String>();
 		// Read root tag
@@ -73,15 +74,15 @@ public class Story {
 		}
 		return characterTypes;
 	}
-	
+
 	/**
-	 * Reads all occurrences of a specific tag and creates corresponding characters in the story.
-	 * 
-	 * @param docRead 
-	 *            A Document of an XML file to read.
-	 * @param tag
-	 *            A specific tag to read for the XML file.         
-	 */
+     * Reads all occurrences of a specific tag and creates corresponding characters in the story.
+     * 
+     * @param docRead
+     *            A Document of an XML file to read.
+     * @param tag
+     *            A specific tag to read for the XML file.
+     */
 	public static Character readCharacter(Document docRead, String characterTag) {
 		Character character = new Character();
 		// Read given tag
@@ -101,15 +102,15 @@ public class Story {
 		}
 		return character;
 	}
-	
+
 	/**
-	 * Reads all sub-tags of a given element and and sets them as attributes to the given character.
-	 * 
-	 * @param element
-	 *            The DOM element of the character.
-	 * @param mainCharacter
-	 *            The character to whom the attributes are assigned.
-	 */
+     * Reads all sub-tags of a given element and and sets them as attributes to the given character.
+     * 
+     * @param element
+     *            The DOM element of the character.
+     * @param mainCharacter
+     *            The character to whom the attributes are assigned.
+     */
 	private static void updateAttributes(Element element, Character mainCharacter) {
 		// Iterate over all sub-tags
 		for (int j = 1; j < element.getChildNodes().getLength(); j++) {
@@ -137,17 +138,17 @@ public class Story {
 			}
 		}
 	}
-	
+
 	/**
-	 * Converts a word in plural form to it's single form. This is used based on the assumption that there exists a
-	 * field under the plural name tag called "single_amount".
-	 * 
-	 * @param docRead 
-	 *            A Document of an XML file to read.
-	 * @param plural
-	 *            A string representing a word in plural form.
-	 * @return A string representing the given word in single form.
-	 */
+     * Converts a word in plural form to it's single form. This is used based on the assumption that there exists a
+     * field under the plural name tag called "single_amount".
+     * 
+     * @param docRead
+     *            A Document of an XML file to read.
+     * @param plural
+     *            A string representing a word in plural form.
+     * @return A string representing the given word in single form.
+     */
 	public static String singleFromPlural(Document docRead, String plural) {
 		// Read the plural tag and get it's singular form from the amount tag
 		String single = null;
@@ -169,5 +170,25 @@ public class Story {
 			}
 		}
 		return single;
+	}
+
+	/**
+     * Retrieve the random seed of a XML file.
+     * 
+     * @param docRead
+     *            docRead A Document of a XML file to read.
+     * @return The seed. Random long if not found.
+     */
+	public static long getSeed(Document docRead) {
+		long seed;
+		String seedStr = docRead.getElementsByTagName("seed").item(0).getAttributes().getNamedItem("value")
+		        .getNodeValue();
+		if (seedStr != null){
+			seed = Long.valueOf(seedStr);
+		} else {
+			System.out.println("[WARNING] No seed is found in the given XML file.\n Seed is randomized.");
+			seed = System.nanoTime();
+		}
+		return seed;
 	}
 }

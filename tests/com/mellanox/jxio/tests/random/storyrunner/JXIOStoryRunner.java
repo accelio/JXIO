@@ -52,6 +52,7 @@ public class JXIOStoryRunner implements StoryRunner {
 
 	private Document         docRead;
 	private Story            story;
+	private long             seed;
 	private Chapter          chapter;
 	private List<String>     characterTypes;
 	private List<Character>  machines;
@@ -92,6 +93,8 @@ public class JXIOStoryRunner implements StoryRunner {
 			docRead = dBuilder.parse(storyFile);
 			docRead.getDocumentElement().normalize();
 
+			// Get Seed
+			seed = Story.getSeed(docRead);
 			// Get characters
 			characterTypes = Story.getStoryCharacters(docRead);
 			// Remove the "story" character
@@ -651,10 +654,10 @@ public class JXIOStoryRunner implements StoryRunner {
 
 			// Run
 			if (serverPlayers.size() == 0 && clientPlayers.size() == 0) {
-					System.out.println("=> Process " + process.getAttribute("id") + " has no clients nor servers.");
-					System.out.println("=====");
-					System.out.println("Done!");
-					System.out.println("=====");
+				System.out.println("=> Process " + process.getAttribute("id") + " has no clients nor servers.");
+				System.out.println("=====");
+				System.out.println("Done!");
+				System.out.println("=====");
 			} else {
 				System.out.println("=> Process " + process.getAttribute("id") + ": " + serverPlayers.size()
 				        + " servers " + clientPlayers.size() + " clients\n");
