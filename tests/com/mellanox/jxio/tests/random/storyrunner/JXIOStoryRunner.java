@@ -142,19 +142,19 @@ public class JXIOStoryRunner implements StoryRunner {
 		if (chapter == null) {
 			System.out.println("[ERROR] Failed to read chapter.");
 			return;
+		} else if (chapter.myProcesses.size() != 0) {
+			// Run
+			// Create Tasks
+			ForkJoinPool f = new ForkJoinPool();
+			List<JXIOProcessTask> tasks = new ArrayList<JXIOProcessTask>();
+			for (Character process : chapter.myProcesses) {
+				tasks.add(new JXIOProcessTask(chapter.myMachine, process, chapter.processServerPlayers.get(process),
+				        chapter.processClientPlayers.get(process), chapter.processWorkerThreads.get(process),
+				        chapter.processMaxDuration.get(process)));
+			}
+			// Run Tasks
+			f.invokeAll(tasks);
 		}
-
-		// Run
-		// Create Tasks
-		ForkJoinPool f = new ForkJoinPool();
-		List<JXIOProcessTask> tasks = new ArrayList<JXIOProcessTask>();
-		for (Character process : chapter.myProcesses) {
-			tasks.add(new JXIOProcessTask(chapter.myMachine, process, chapter.processServerPlayers.get(process),
-			        chapter.processClientPlayers.get(process), chapter.processWorkerThreads.get(process),
-			        chapter.processMaxDuration.get(process)));
-		}
-		// Run Tasks
-		f.invokeAll(tasks);
 	}
 
 	private Chapter readChapter() {
@@ -182,20 +182,20 @@ public class JXIOStoryRunner implements StoryRunner {
 		        .getAttribute("id"));
 		if (myChapter.myProcesses.size() == 0) {
 			System.out.println("No process found for your machine!");
-			return null;
-		}
-		System.out.println("Your have " + myChapter.myProcesses.size() + " processes to run.");
+		} else {
+			System.out.println("Your have " + myChapter.myProcesses.size() + " processes to run.");
 
-		// Map
-		// Map servers To Processes
-		myChapter.processServers = mapCharactersByCharacter(servers, "process", processes);
-		// Map clients To Processes
-		myChapter.processClients = mapCharactersByCharacter(clients, "process", processes);
-		// Map ServersPlayers, ClientsPlayers, Max Duration Per Process and Worker Theards
-		int errorCheck = mapPlayers(myChapter);
-		if (errorCheck == -1) {
-			// An error occurred. Story should not be run.
-			return null;
+			// Map
+			// Map servers To Processes
+			myChapter.processServers = mapCharactersByCharacter(servers, "process", processes);
+			// Map clients To Processes
+			myChapter.processClients = mapCharactersByCharacter(clients, "process", processes);
+			// Map ServersPlayers, ClientsPlayers, Max Duration Per Process and Worker Theards
+			int errorCheck = mapPlayers(myChapter);
+			if (errorCheck == -1) {
+				// An error occurred. Story should not be run.
+				return null;
+			}
 		}
 		return myChapter;
 	}
@@ -412,9 +412,12 @@ public class JXIOStoryRunner implements StoryRunner {
 				MsgPoolData server_pool = chooseServersMsgPool(clientServers);
 				// Get client msgs by factoring the servers msg_pool
 				// and crossing in/out sizes
-				int count = server_pool.getCount() * Integer.valueOf(client.getAttribute("msg_count_factor_perc")) / 100;
-				int in = server_pool.getOutSize() * Integer.valueOf(client.getAttribute("msg_size_in_factor_perc")) / 100;
-				int out = server_pool.getInSize() * Integer.valueOf(client.getAttribute("msg_size_out_factor_perc")) / 100;
+				int count = server_pool.getCount() * Integer.valueOf(client.getAttribute("msg_count_factor_perc"))
+				        / 100;
+				int in = server_pool.getOutSize() * Integer.valueOf(client.getAttribute("msg_size_in_factor_perc"))
+				        / 100;
+				int out = server_pool.getInSize() * Integer.valueOf(client.getAttribute("msg_size_out_factor_perc"))
+				        / 100;
 				MsgPoolData pool = new MsgPoolData(count, in, out);
 
 				if (batch > count)
@@ -644,47 +647,53 @@ public class JXIOStoryRunner implements StoryRunner {
 		protected Integer compute() {
 
 			// Set starting time
-			int startTime = 0;
+			long startTime = System.nanoTime();
 
 			// Run
-			System.out.println("=> Process " + process.getAttribute("id") + ": " + serverPlayers.size() + " servers "
-			        + clientPlayers.size() + " clients\n");
-			int numWorkerThreads = Integer.valueOf(this.process.getAttribute("num_eqhs"));
-			LOG.info("There are " + numWorkerThreads + " working threads");
+			if (serverPlayers.size() == 0 && clientPlayers.size() == 0) {
+					System.out.println("=> Process " + process.getAttribute("id") + " has no clients nor servers.");
+					System.out.println("=====");
+					System.out.println("Done!");
+					System.out.println("=====");
+			} else {
+				System.out.println("=> Process " + process.getAttribute("id") + ": " + serverPlayers.size()
+				        + " servers " + clientPlayers.size() + " clients\n");
+				int numWorkerThreads = Integer.valueOf(this.process.getAttribute("num_eqhs"));
+				LOG.info("There are " + numWorkerThreads + " working threads");
 
-			// Run Server Players
-			for (ServerPortalPlayer sp : this.serverPlayers) {
-				workers.getWorkerThread().addWorkAction(sp.getAttachAction());
+				// Run Server Players
+				for (ServerPortalPlayer sp : this.serverPlayers) {
+					workers.getWorkerThread().addWorkAction(sp.getAttachAction());
+				}
+				// Run Client Players
+				for (ClientPlayer cp : this.clientPlayers) {
+					workers.getWorkerThread().addWorkAction(cp.getAttachAction());
+				}
+
+				// Sleeping for max_duration + 2 extra sec
+				LOG.info("max duration of all threads is " + maxDuration + " seconds");
+				try {
+
+					Thread.sleep((maxDuration + 2) * 1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+
+				System.out.println("=====================================");
+				System.out.println("Done sleeping! Must kill all threads!");
+				System.out.println("=====================================");
+
+				workers.close();
+
+				System.out.println("=============");
+				System.out.println("Done killing!");
+				System.out.println("=============");
 			}
-			// Run Client Players
-			for (ClientPlayer cp : this.clientPlayers) {
-				workers.getWorkerThread().addWorkAction(cp.getAttachAction());
-			}
-
-			// Sleeping for max_duration + 2 extra sec
-			LOG.info("max duration of all threads is " + maxDuration + " seconds");
-			try {
-
-				Thread.sleep((maxDuration + 2) * 1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-
-			System.out.println("=====================================");
-			System.out.println("Done sleeping! Must kill all threads!");
-			System.out.println("=====================================");
-
-			workers.close();
-
-			System.out.println("=============");
-			System.out.println("Done killing!");
-			System.out.println("=============");
-
 			// Set ending time
-			int endTime = 0;
+			long endTime = System.nanoTime();
 
 			// return running time
-			int runningTime = endTime - startTime;
+			int runningTime = (int) ((endTime - startTime) / 1000000000);
 			return runningTime;
 		}
 
