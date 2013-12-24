@@ -67,7 +67,7 @@ int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 	const int msg_size = (msg->in.data_iovlen > 0) ? msg->in.data_iov[0].iov_len : 0;
 
 	if (msg->user_context == NULL) { //it's a request with a small buffer on server side
-		Msg* msg_from_pool = ctx->msg_pool->get_msg_from_pool();
+		Msg* msg_from_pool = ctx->msg_pools.get_msg_from_pool(msg->in.data_iov[0].iov_len, msg->out.data_iov[0].iov_len);
 		if (msg_size > 0)
 			memcpy(msg_from_pool->get_buf(), msg->in.data_iov[0].iov_base, msg_size);
 		msg->user_context = msg_from_pool;
@@ -152,7 +152,7 @@ int on_buffer_request_callback(struct xio_msg *msg, void *cb_user_context) {
 
 	Contexable *cntxbl = (Contexable*) cb_user_context;
 	Context *ctx = cntxbl->get_ctx_class();
-	Msg* msg_from_pool = ctx->msg_pool->get_msg_from_pool();
+	Msg* msg_from_pool = ctx->msg_pools.get_msg_from_pool(msg->in.data_iovlen, msg->out.data_iovlen);
 	msg_from_pool->set_xio_msg_fields_for_assign(msg);
 
 	return 0;

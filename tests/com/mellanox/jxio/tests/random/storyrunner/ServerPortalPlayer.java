@@ -76,6 +76,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 			MsgPool pool = new MsgPool(p.getCount(), p.getInSize(), p.getOutSize());
 			msgPools.add(pool);
 			workerThread.getEQH().bindMsgPool(pool);
+			workerThread.updateMsgPoolSize(p.getInSize(), p.getOutSize());
 		}
 
 		// register initialize timer

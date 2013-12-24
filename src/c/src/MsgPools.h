@@ -14,8 +14,8 @@
 ** governing permissions and  limitations under the License.
 **
 */
-#ifndef MsgPool__H___
-#define MsgPool__H___
+#ifndef MsgPools__H___
+#define MsgPools__H___
 
 
 #include <stdlib.h>
@@ -23,35 +23,28 @@
 #include <list>
 
 #include "Utils.h"
-#include <libxio.h>
-#include "Msg.h"
-#include "Bridge.h"
+#include "MsgPool.h"
 
+class Context;
 
-class MsgPool {
+typedef std::list<MsgPool*> list_pools;
+
+class MsgPools {
 public:
-	MsgPool (int msg_num, int in_size, int out_size);
-	~MsgPool();
-
-	Msg * get_msg_from_pool ();
-	void add_msg_to_pool(Msg * msg);
-	bool is_empty() {return msg_list->empty();}
-	int get_in_size(){return in_size;}
-	int get_out_size(){return out_size;}
-
-	bool error_creating;
-	char   			*buf;
-	long 			buf_size;
-	Msg** 			msg_ptrs;
+	MsgPools ();
+	~MsgPools();
+	//returns true if msg was allocated successfully and false otherwise
+	bool add_msg_pool(MsgPool *p);
+	Msg * get_msg_from_pool(int in_size, int out_size);
+	list_pools msg_pool_list;
+	void setCtx(Context* ctx);
 
 private:
-	struct xio_mr	*xio_mr;
-	struct xio_buf  *x_buf;
-	int 			msg_num;
-	int 			in_size;
-	int 			out_size;
-	std::list<Msg*> *msg_list;
+	int in_size;
+	int out_size;
+	bool first_time;
+	Context* ctx;
 
 };
 
-#endif // ! MsgPool__H___
+#endif // ! MsgPools__H___

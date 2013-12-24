@@ -41,6 +41,7 @@ static jfieldID fidPtr;
 static jfieldID fidBuf;
 static jfieldID fidError;
 static jmethodID jmethodID_logToJava; // handle to java cb method
+static jmethodID jmethodID_requestForBoundMsgPool;
 
 // JNI inner functions implementations
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
@@ -92,6 +93,13 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 	jmethodID_logToJava = env->GetStaticMethodID(jclassBridge, "logToJava", "(Ljava/lang/String;I)V");
 	if (jmethodID_logToJava == NULL) {
 		printf("-->> In C++ java Bridge.logToJava() callback method was NOT found\n");
+		return JNI_ERR;
+	}
+
+	// requestForBoundMsgPool callback
+	jmethodID_requestForBoundMsgPool = env->GetStaticMethodID(jclassBridge, "requestForBoundMsgPool", "(JII)V");
+	if (jmethodID_requestForBoundMsgPool == NULL) {
+		printf("-->> In C++ java Bridge.requestForBoundMsgPool() callback method was NOT found\n");
 		return JNI_ERR;
 	}
 
@@ -149,6 +157,17 @@ void Bridge_invoke_logToJava_callback(const char* log_message, const int severit
 	jstring j_message = env->NewStringUTF(log_message);
 	env->CallStaticVoidMethod(jclassBridge, jmethodID_logToJava, j_message, severity);
 	env->DeleteLocalRef(j_message);
+}
+
+void Bridge_invoke_requestForBoundMsgPool_callback (Context* ctx, int inSize, int outSize)
+{
+	JNIEnv *env;
+	if (cached_jvm->GetEnv((void **) &env, JNI_VERSION_1_4)) {
+		printf("-->> Error getting JNIEnv In C++ Bridge_invoke_requestForBoundMsgPool when trying to request for more buffers\n");
+		return;
+	}
+	long ptrEQH = (jlong)(intptr_t)ctx;
+	env->CallStaticLongMethod(jclassBridge, jmethodID_requestForBoundMsgPool, ptrEQH, inSize, outSize);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_setLogLevelNative(JNIEnv *env, jclass cls, jint logLevel)

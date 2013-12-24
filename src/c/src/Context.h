@@ -23,6 +23,7 @@
 #include "Event_queue.h"
 #include "Events.h"
 #include "Utils.h"
+#include "MsgPools.h"
 
 class Client;
 class MsgPool;
@@ -46,7 +47,7 @@ public:
 	void *ev_loop;
 	struct xio_context *ctx;
 	int events_num;
-	MsgPool * msg_pool;
+	MsgPools msg_pools;
 };
 
 #endif // ! Context__H___

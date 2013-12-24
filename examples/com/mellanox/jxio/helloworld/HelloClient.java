@@ -60,7 +60,7 @@ public class HelloClient {
 	}
 
 	HelloClient() {
-		this.eqh = new EventQueueHandler();
+		this.eqh = new EventQueueHandler(null);
 		this.mp = new MsgPool(256, 100, 100);
 	}
 

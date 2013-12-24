@@ -19,7 +19,7 @@ AM_LDFLAGS = -lxio -lrdmacm -libverbs -lrt -ldl \
 bin_PROGRAMS = libjxio.so
 
 # the sources to add to the library and to add to the source distribution
-libjxio_so_SOURCES = Utils.cc Event_queue.cc Events.cc CallbackFunctions.cc ServerPortal.cc Client.cc Context.cc Msg.cc MsgPool.cc Bridge.cc
+libjxio_so_SOURCES = Utils.cc Event_queue.cc Events.cc CallbackFunctions.cc ServerPortal.cc Client.cc Context.cc Msg.cc MsgPool.cc MsgPools.cc Bridge.cc
 
 
 libjxio_so_LDFLAGS = -shared -rdynamic -L$(topdir)accelio/src/usr/.libs -lxio -lrdmacm -libverbs -lrt -ldl

@@ -41,7 +41,9 @@ import com.mellanox.jxio.impl.EventSessionEstablished;
 public class EventQueueHandler implements Runnable {
 
 	private final long             refToCObject;
-	private final int              eventQueueSize        = 15000; // size of byteBuffer
+	private final int              eventQueueSize        = 15000;                                                    // size
+																													  // of
+																													  // byteBuffer
 	private int                    eventsWaitingInQ      = 0;
 	private ByteBuffer             eventQueue            = null;
 	private ElapsedTimeMeasurement elapsedTime           = null;
@@ -50,20 +52,27 @@ public class EventQueueHandler implements Runnable {
 	private Map<Long, Msg>         msgsPendingNewRequest = new HashMap<Long, Msg>();
 	private volatile boolean       breakLoop             = false;
 	private volatile boolean       stopLoop              = false;
-	private volatile boolean       inRunLoop             = false;
 	private static final Log       LOG                   = LogFactory
 	                                                             .getLog(EventQueueHandler.class.getCanonicalName());
+	private volatile boolean       inRunLoop             = false;
+	private final Callbacks        callbacks;
+
+	public static interface Callbacks {
+		//this method should return an unbinded MsgPool.  
+		public MsgPool getAdditionalMsgPool(int inSize, int outSize);
+	}
 
 	// ctor
-	public EventQueueHandler() {
+	public EventQueueHandler(Callbacks callbacks) {
 		DataFromC dataFromC = new DataFromC();
-		boolean statusError = Bridge.createCtx(eventQueueSize, dataFromC);
+		boolean statusError = Bridge.createCtx(this, eventQueueSize, dataFromC);
 		if (statusError) {
 			LOG.error("there was an error creating ctx on c side!");
 		}
 		this.eventQueue = dataFromC.eventQueue;
-		this.refToCObject = dataFromC.ptrCtx;
+		this.refToCObject = dataFromC.getPtrCtx();
 		this.elapsedTime = new ElapsedTimeMeasurement();
+		this.callbacks = callbacks;
 	}
 
 	/**
@@ -425,13 +434,17 @@ public class EventQueueHandler implements Runnable {
 		return s1;
 	}
 
-	static private class DataFromC {
-		long       ptrCtx;
-		ByteBuffer eventQueue;
+	public static class DataFromC {
+		private long ptrCtx;
+		ByteBuffer   eventQueue;
 
 		DataFromC() {
 			ptrCtx = 0;
 			eventQueue = null;
+		}
+
+		public long getPtrCtx() {
+			return ptrCtx;
 		}
 	}
 
@@ -440,13 +453,25 @@ public class EventQueueHandler implements Runnable {
 			LOG.error("no context opened on C side. can not bind msg pool");
 			return false;
 		}
+		if (msgPool == null){
+			LOG.error("msgPool provided is null. Can not bind");
+			return false;
+		}
+		if (msgPool.isBounded()){
+			LOG.warn("trying to bind MsgPool " + msgPool.toString() + " to EQH" + this.toString() + ", but it's already bound");
+			return false;
+		}
 		// the messages inside the pool must be added to hashmap, so that the appropraite msg can be tracked
 		// once a request arrives
 		List<Msg> msgArray = msgPool.getAllMsg();
 		for (Msg msg : msgArray) {
 			msgsPendingNewRequest.put(msg.getId(), msg);
 		}
-		return Bridge.bindMsgPool(msgPool.getId(), this.getId());
+		boolean retVal = Bridge.bindMsgPool(msgPool.getId(), this.getId());
+		if (retVal){
+			msgPool.setIsBounded(true);
+		}
+		return retVal;
 	}
 
 	void releaseMsgBackToPool(Msg msg) {
@@ -457,4 +482,17 @@ public class EventQueueHandler implements Runnable {
 	public void releaseMsgPool(MsgPool msgPool) {
 		// TODO implement!
 	}
+
+	public void getAdditionalMsgPool(int inSize, int outSize) {
+	    if (callbacks == null){
+	    	LOG.fatal(this.toString() + ": user did not provide callback for providing additional buffers. aborting");
+	    	System.exit(1);
+	    }
+	    MsgPool pool = this.callbacks.getAdditionalMsgPool(inSize, outSize);
+	    if (pool == null){
+	    	LOG.fatal("user failed to provide buffer. aborting");
+	    	System.exit(1);
+	    }
+	    this.bindMsgPool(pool);
+    }
 }

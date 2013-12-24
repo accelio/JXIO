@@ -33,6 +33,7 @@ public class MsgPool {
 	private final ByteBuffer buffer;
 	private final long       refToCObject;
 	List<Msg>                listMsg = new ArrayList<Msg>();
+	private boolean          already_bound; //this flag indicated if this pool is already bound to eqh
 
 	public MsgPool(int capacity, int inSize, int outSize) {
 		this.capacity = capacity;
@@ -59,17 +60,13 @@ public class MsgPool {
 	}
 
 	public String toString() {
-		return getClass().getName() 
-				+ "[count=" + count() 
-				+ ", capacity=" + capacity 
-				+ ", inSize=" + inSize 
-				+ ", outSize=" + outSize
-				+ "]";		
+		return getClass().getName() + "[count=" + count() + ", capacity=" + capacity + ", inSize=" + inSize
+		        + ", outSize=" + outSize + "]";
 	}
 
 	// Returns true if this MsgPool contains no elements.
 	public boolean isEmpty() {
-		return listMsg.size() == 0;		
+		return listMsg.size() == 0;
 	}
 
 	// Returns the number of Msgs this MsgPool was created with.
@@ -104,11 +101,19 @@ public class MsgPool {
 		return refToCObject;
 	}
 
-	public void deleteMsgPool(){
+	public void deleteMsgPool() {
 		Bridge.deleteMsgPool(refToCObject);
 	}
 
 	List<Msg> getAllMsg() {
 		return listMsg;
 	}
+
+	boolean isBounded() {
+	    return already_bound;
+    }
+
+	void setIsBounded(boolean already_bound) {
+	    this.already_bound = already_bound;
+    }
 }

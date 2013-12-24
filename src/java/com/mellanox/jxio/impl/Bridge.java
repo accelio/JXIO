@@ -9,13 +9,21 @@
 package com.mellanox.jxio.impl;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.mellanox.jxio.EventQueueHandler;
+import com.mellanox.jxio.MsgPool;
+
 public class Bridge {
 
-	private static final Log LogFromNative = LogFactory.getLog("LogFromNative");
+	private static final Log  LogFromNative  = LogFactory.getLog("LogFromNative");
+	private static final Log  LOGBridge      = LogFactory.getLog(Bridge.class.getCanonicalName());
+	                                                                             
+	private static ConcurrentMap<Long, EventQueueHandler> mapIdEQHObject = new ConcurrentHashMap<Long, EventQueueHandler>();
 
 	static {
 		LoadLibrary.loadLibrary("libxio.so"); // Accelio library
@@ -39,8 +47,11 @@ public class Bridge {
 
 	private static native boolean createCtxNative(int eventQueueSize, Object dataFromC);
 
-	public static boolean createCtx(int eventQueueSize, Object dataFromC) {
+	public static boolean createCtx(EventQueueHandler eqh, int eventQueueSize, EventQueueHandler.DataFromC dataFromC) {
 		boolean ret = createCtxNative(eventQueueSize, dataFromC);
+		if (ret) {
+			Bridge.mapIdEQHObject.put(dataFromC.getPtrCtx(), eqh);
+		}
 		return ret;
 	}
 
@@ -48,6 +59,8 @@ public class Bridge {
 
 	public static void closeCtx(final long ptrCtx) {
 		closeCtxNative(ptrCtx);
+		Bridge.mapIdEQHObject.remove(ptrCtx);
+
 	}
 
 	private static native int runEventLoopNative(long ptr, long timeOutMicroSec);
@@ -124,14 +137,14 @@ public class Bridge {
 		long ptr = acceptSessionNative(ptrSes, ptrCtx);
 		return ptr;
 	}
-	
+
 	private static native long rejectSessionNative(long ptrSes, int reason, String data, int length);
-	
+
 	public static long rejectSession(final long ptrSes, final int reason, final String data, final int length) {
 		long ptr = rejectSessionNative(ptrSes, reason, data, length);
 		return ptr;
 	}
-	
+
 	private static native ByteBuffer createMsgPoolNative(int count, int inSize, int outSize, long[] ptrMsg);
 
 	public static ByteBuffer createMsgPool(final int count, final int inSize, final int outSize, long[] ptrMsg) {
@@ -144,7 +157,7 @@ public class Bridge {
 	public static void deleteMsgPool(final long ptrMsgPool) {
 		deleteMsgPoolNative(ptrMsgPool);
 	}
-	
+
 	private static native boolean clientSendReqNative(long ptrSession, long ptrMsg, int size);
 
 	public static boolean clientSendReq(final long ptrSession, final long ptrMsg, final int size) {
@@ -164,6 +177,16 @@ public class Bridge {
 	public static boolean bindMsgPool(final long ptrMsgPool, final long ptrEQH) {
 		boolean ret = bindMsgPoolNative(ptrMsgPool, ptrEQH);
 		return ret;
+	}
+
+	// callback from C++
+	static public void requestForBoundMsgPool(long ptrEQH, int inSize, int outSize) {
+		EventQueueHandler eqh = mapIdEQHObject.get(ptrEQH);
+		if (eqh == null) {
+			LOGBridge.fatal("no EventQueueHandler with id " + ptrEQH + " is found. Aborting");
+			System.exit(1);
+		}
+		eqh.getAdditionalMsgPool(inSize, outSize);
 	}
 
 	// this method is called by JNI in order to log messages to JXIO log

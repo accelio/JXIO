@@ -16,7 +16,6 @@
  */
 package com.mellanox.jxio.tests.random.storyrunner;
 
-import com.mellanox.jxio.Msg;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -25,12 +24,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.zip.CRC32;
 
+import com.mellanox.jxio.Msg;
 public final class Utils {
 
 	// private c-tor to avoid instantiation of the class
 	private Utils() {
 	}
-
+	
 	public static void writeMsg(Msg m, String str, long time) {
 		CRC32 checksum = new CRC32();
 		int size = str.length();

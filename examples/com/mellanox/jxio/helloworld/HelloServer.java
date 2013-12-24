@@ -34,7 +34,7 @@ public class HelloServer {
 	private ServerSession           session;
 
 	HelloServer(URI uri) {
-		this.eqh = new EventQueueHandler();
+		this.eqh = new EventQueueHandler(null);
 		this.mp = new MsgPool(256, 100, 100);
 		eqh.bindMsgPool(mp);
 		this.server = new ServerPortal(eqh, uri, new MyPortalCallbacks(this));
