@@ -1,0 +1,8 @@
+<FindBugsFilter>
+     <Match>
+	<Class name="com.mellanox.jxio.EventQueueHandler$DataFromC" />
+        <Field name="eventQueue" />
+        <Field type="java.nio.ByteBuffer" />
+	<Bug code="UwF" />
+     </Match>
+</FindBugsFilter>

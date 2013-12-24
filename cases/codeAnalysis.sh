@@ -14,6 +14,9 @@ REPORTS_STORAGE="/.autodirect/acclgwork/jxio/static_code_analysis/"
 JAVA_REPORT_FILE="java_analysis_report.txt"
 C_REPORT_FILE="c_analysis_report.html"
 
+# Configure analysis filters
+JAVA_FILTER="java_analysis_filter.xml"
+
 ######################
 # Java Code Analysis #
 ######################
@@ -41,7 +44,7 @@ cd $RUNNING_DIR
 
 # Run findbugs
 echo -e "\nRunning findbugs...!\n"
-findbugs/findbugs-2.0.2/bin/findbugs -auxclasspath ../src/lib/commons-logging.jar -low  ../bin/jxio.jar > $JAVA_REPORT_FILE
+findbugs/findbugs-2.0.2/bin/findbugs -exclude $JAVA_FILTER -auxclasspath ../src/lib/commons-logging.jar -low  ../bin/jxio.jar > $JAVA_REPORT_FILE
 if [ $? != 0 ]; then
 	echo -e "\n[ERROR] Exeption occurred while running findbugs!"
 	echo -e "It is possible that the .jar file needed doesn't exist."
@@ -122,7 +125,7 @@ cd $RUNNING_DIR
 TOTAL_ERRORS=$(($JAVA_ERRORS + $C_ERRORS))
 
 # Define report parameters
-attachment="$JAVA_REPORT_FILE $C_REPORT_FILE"
+attachment=""
 subject="JXIO Code Analysis Report"
 if ([ $TOTAL_ERRORS == 0 ]); then
 	subject="${subject} - no issues found"
@@ -134,9 +137,15 @@ MAIL_MESSAGE=mail.html
 MAIL_MESSAGE_HTML="<h1>JXIO Code Analysis Report</h1><br>Attached are the JXIO Java and C code analysis for `date +%d/%m/%y`.<br><br>"
 if [ $JAVA_ERRORS != 0 ]; then
 	MAIL_MESSAGE_HTML="${MAIL_MESSAGE_HTML} Found $JAVA_ERRORS JAVA Errors/Warnings.<br>"
+	attachment="$attachment $JAVA_REPORT_FILE"
+else
+	MAIL_MESSAGE_HTML="${MAIL_MESSAGE_HTML} No JAVA Errors/Warnings Found.<br>"
 fi
 if [ $C_ERRORS != 0 ]; then
 	MAIL_MESSAGE_HTML="${MAIL_MESSAGE_HTML} Found $C_ERRORS C Errors/Warnings.<br>"
+	attachment="$attachment $C_REPORT_FILE"
+else
+	MAIL_MESSAGE_HTML="${MAIL_MESSAGE_HTML} No C Errors/Warnings Found.<br>"
 fi
 
 # Configure report
