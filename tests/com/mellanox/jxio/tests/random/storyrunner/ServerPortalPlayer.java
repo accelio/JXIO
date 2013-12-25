@@ -42,9 +42,10 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	private ServerPortal                 listener;
 	private final ArrayList<MsgPoolData> msgPoolsData;
 	private ArrayList<MsgPool>           msgPools;
+	private long                         seed;
 
 	public ServerPortalPlayer(int numWorkers, int id, int instance, URI uri, long startDelaySec, long runDurationSec,
-	        WorkerThreads workerThreads, ArrayList<MsgPoolData> msgPoolsData) {
+	        WorkerThreads workerThreads, ArrayList<MsgPoolData> msgPoolsData, long seed) {
 		this.name = new String("SPP[" + id + ":" + instance + "]");
 		this.id = id;
 		this.uri = uri;
@@ -54,6 +55,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		this.workerThreads = workerThreads;
 		this.msgPoolsData = msgPoolsData;
 		msgPools = new ArrayList<MsgPool>();
+		this.seed = seed;
 		LOG.debug("new " + this.toString() + " done");
 	}
 
@@ -108,7 +110,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		// workers
 		for (int i = 0; i < numWorkers; i++) {
 			ServerPortalPlayer spp = new ServerPortalPlayer(0, this.id, i + 1, this.listener.getUriForServer(), 0,
-			        runDurationSec, workerThreads, msgPoolsData);
+			        runDurationSec, workerThreads, msgPoolsData, seed + (i*47));
 			workerThreads.getWorkerThread().addWorkAction(spp.getAttachAction());
 		}
 	}
@@ -160,7 +162,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 			LOG.info(outer.toString() + ": Establishing new session from '" + clientName + "'");
 			ServerPortalPlayer sp = workerThreads.getPortal(outer.id);
-			ServerSessionPlayer ss = new ServerSessionPlayer(sp, newSessionKey, srcUri, srcIP);
+			ServerSessionPlayer ss = new ServerSessionPlayer(sp, newSessionKey, srcUri, srcIP, seed);
 			outer.listener.forward(sp.listener, ss.getServerSession());
 		}
 
@@ -168,7 +170,8 @@ public class ServerPortalPlayer extends GeneralPlayer {
 			if (session_event == EventName.SESSION_TEARDOWN) {
 				LOG.info(outer.toString() + ": SESSION_TEARDOWN. reason='" + reason + "'");
 			} else {
-				LOG.error(outer.toString() + ": FAILURE, onSessionError: event='" + session_event + "', reason='" + reason + "'");
+				LOG.error(outer.toString() + ": FAILURE, onSessionError: event='" + session_event + "', reason='"
+				        + reason + "'");
 				System.exit(1);
 			}
 		}

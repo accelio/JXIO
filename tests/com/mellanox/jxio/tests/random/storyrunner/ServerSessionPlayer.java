@@ -18,6 +18,7 @@ package com.mellanox.jxio.tests.random.storyrunner;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,25 +32,28 @@ import com.mellanox.jxio.ClientSession;
 
 public class ServerSessionPlayer {
 
-	private final static Log         LOG = LogFactory.getLog(ServerSessionPlayer.class.getSimpleName());
+	private final static Log         LOG          = LogFactory.getLog(ServerSessionPlayer.class.getSimpleName());
 
-	private static int               id  = 0;
+	private static int               id           = 0;
 	private final String             name;
 	private final long               sk;
 	private final ServerPortalPlayer spp;
 	private final ServerSession      server;
-	private String                   nextHop = new String();
+	private String                   nextHop      = new String();
 	private String                   nextHopQuery = new String();
 	private ClientSession            nextHopClient;
 	private MsgPool                  nextHopMP;
 	private int                      counterReceivedMsgs;
+	private int                      counterSentMsgs;
+	private Random                   random;
 
-	public ServerSessionPlayer(ServerPortalPlayer spp, long newSessionKey, String srcUri, String srcIP) {
+	public ServerSessionPlayer(ServerPortalPlayer spp, long newSessionKey, String srcUri, String srcIP, long seed) {
 		this.name = "SSP[" + id++ + "]";
 		this.spp = spp;
 		this.sk = newSessionKey;
 		prepareForNextHop(srcUri);
 		this.server = new ServerSession(sk, new JXIOServerCallbacks());
+		this.random = new Random(seed);
 		LOG.debug("new " + this.toString() + " done");
 	}
 
@@ -64,7 +68,7 @@ public class ServerSessionPlayer {
 	protected ServerSession getServerSession() {
 		return server;
 	}
-	
+
 	private void prepareForNextHop(String uri) {
 		int mpcount = 0;
 		int msginsize = 0;
@@ -82,7 +86,7 @@ public class ServerSessionPlayer {
 				}
 				if (Utils.getQueryPairKey(param).equals("mpcount")) {
 					mpcount = Integer.valueOf(Utils.getQueryPairValue(param));
-					mpcount += 16; // to overcome accelio's internal server batching 
+					mpcount += 16; // to overcome accelio's internal server batching
 				}
 				if (Utils.getQueryPairKey(param).equals("msginsize")) {
 					msginsize = Integer.valueOf(Utils.getQueryPairValue(param));
@@ -94,7 +98,7 @@ public class ServerSessionPlayer {
 				this.nextHopQuery += param;
 			}
 		}
-		
+
 		if (!this.nextHop.isEmpty() && mpcount > 0 && (msgoutsize + msginsize) > 0) {
 			this.nextHopMP = new MsgPool(mpcount, msgoutsize, msginsize);
 			LOG.info(this.toString() + ": new MsgPool: " + this.nextHopMP);
@@ -108,17 +112,20 @@ public class ServerSessionPlayer {
 			if (LOG.isDebugEnabled())
 				LOG.debug(outer.toString() + ": onRequest(" + msg + ")");
 
-			outer.counterReceivedMsgs++;
-
-			if (!Utils.checkIntegrity(msg)) {
-				LOG.error(outer.toString() + ": FAILURE, checksums for msg (#" + outer.counterReceivedMsgs + ") does not match");
+			if (!Utils.checkIntegrity(msg, outer.counterReceivedMsgs)) {
+				LOG.error(outer.toString() + "FAILURE: Message did not arrive ok!");
 				System.exit(1);
 			}
+
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(outer.toString() + ": onRequest: msg (#" + outer.counterReceivedMsgs +") = " + msg);
+				LOG.trace(outer.toString() + ": onRequest: msg (#" + outer.counterReceivedMsgs + ") = " + msg);
 			}
-			String str = "Server " + outer.toString() + " received " + outer.counterReceivedMsgs + " msgs";
-			Utils.writeMsg(msg, str, 0);
+			int position = Utils.randIntInRange(random, 0, msg.getOut().limit() - 24);
+			// 24=time(long)+checksum(long)+serialNumber(int)+size(int)
+
+			Utils.writeMsg(msg, position, 0, outer.counterSentMsgs);
+			outer.counterSentMsgs++;
+			outer.counterReceivedMsgs++;
 
 			if (outer.nextHop.isEmpty()) {
 				if (LOG.isDebugEnabled())
@@ -136,6 +143,7 @@ public class ServerSessionPlayer {
 					LOG.debug(outer.toString() + ": sendMessage(" + nextHopMsg + ")");
 				outer.nextHopClient.sendMessage(nextHopMsg);
 			}
+
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
@@ -147,7 +155,8 @@ public class ServerSessionPlayer {
 					outer.nextHopClient.close();
 				}
 			} else {
-				LOG.error(outer.toString() + ": FAILURE, onSessionError: event='" + session_event + "', reason='" + reason + "'");
+				LOG.error(outer.toString() + ": FAILURE, onSessionError: event='" + session_event + "', reason='"
+				        + reason + "'");
 				System.exit(1);
 			}
 		}
@@ -155,7 +164,7 @@ public class ServerSessionPlayer {
 		public void onMsgError() {
 			LOG.info(outer.toString() + ": onMsgError");
 		}
-		
+
 		private ClientSession prepareNextHopClient() {
 			URI connectUri = null;
 			try {
@@ -171,13 +180,13 @@ public class ServerSessionPlayer {
 			Msg nextHopMsg = outer.nextHopMP.getMsg();
 			if (nextHopMsg != null) {
 				msg.getIn().position(0);
-    			nextHopMsg.getOut().put(msg.getIn());
-    			nextHopMsg.setUserContext(msg);
+				nextHopMsg.getOut().put(msg.getIn());
+				nextHopMsg.setUserContext(msg);
 			}
 			return nextHopMsg;
 		}
 	}
-	
+
 	class JXIOProxyCallbacks implements ClientSession.Callbacks {
 		private final ServerSessionPlayer outer = ServerSessionPlayer.this;
 
@@ -200,14 +209,15 @@ public class ServerSessionPlayer {
 				default:
 					break;
 			}
-			LOG.error(outer.toString() + ": FAILURE: onSessionError: event='" + session_event + "', reason='" + reason + "'");
+			LOG.error(outer.toString() + ": FAILURE: onSessionError: event='" + session_event + "', reason='" + reason
+			        + "'");
 			System.exit(1); // Failure in test - eject!
 		}
 
 		public void onReply(Msg msg) {
 			if (LOG.isDebugEnabled())
 				LOG.debug(outer.toString() + ": onReply(" + msg + ")");
-			Msg returnHoopMsg = (Msg)msg.getUserContext();
+			Msg returnHoopMsg = (Msg) msg.getUserContext();
 			msg.getIn().position(0);
 			returnHoopMsg.getOut().put(msg.getIn());
 			if (LOG.isDebugEnabled())

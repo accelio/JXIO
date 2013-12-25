@@ -364,6 +364,7 @@ public class JXIOStoryRunner implements StoryRunner {
 		List<Character> myClients = chapter.processClients.get(myProcess);
 		List<ClientPlayer> clientPlayers = new ArrayList<ClientPlayer>();
 		for (Character client : myClients) {
+			int counter = 1;
 			try {
 				String uriQueryStr = "";
 				List<Character> clientServers = new ArrayList<Character>(); // Will store all the servers the client
@@ -448,11 +449,13 @@ public class JXIOStoryRunner implements StoryRunner {
 				}
 
 				// Add client
-				ClientPlayer cp = new ClientPlayer(id, uri, startDelay, duration, pool, tps, batch);
+				//each client will have a his own seed which is a derivative of the story's seed
+				ClientPlayer cp = new ClientPlayer(id, uri, startDelay, duration, pool, tps, batch, seed + counter * 17);
 				clientPlayers.add(cp);
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
+			counter ++;
 		}
 		// Set process' ClientPlayers
 		chapter.processClientPlayers.put(myProcess, clientPlayers);
@@ -523,6 +526,7 @@ public class JXIOStoryRunner implements StoryRunner {
 		List<Character> myServers = chapter.processServers.get(myProcess);
 		List<ServerPortalPlayer> serverPlayers = new ArrayList<ServerPortalPlayer>();
 		for (Character server : myServers) {
+			int counter = 1;
 			try {
 				// Get server parameters
 				int id = Integer.valueOf(server.getAttribute("id"));
@@ -567,11 +571,12 @@ public class JXIOStoryRunner implements StoryRunner {
 
 				// Add server
 				ServerPortalPlayer sp = new ServerPortalPlayer(numWorkers, id, 0, uri, startDelay, duration,
-				        chapter.processWorkerThreads.get(myProcess), msgPools);
+				        chapter.processWorkerThreads.get(myProcess), msgPools, seed + counter * 3);
 				serverPlayers.add(sp);
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
+			counter ++;
 		}
 		// Set process' ServerPlayers
 		chapter.processServerPlayers.put(myProcess, serverPlayers);

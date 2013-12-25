@@ -18,6 +18,7 @@ package com.mellanox.jxio.tests.random.storyrunner;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,12 +45,15 @@ public class ClientPlayer extends GeneralPlayer {
 	private ClientSession     client;
 	private MsgPool           mp;
 	private long              startSessionTime;
-	private int               counterEstablished; // count connect responses: established or rejected
+	// count connect responses: established or rejected
+	private int               counterEstablished;
 	private int               counterSentMsgs;
 	private int               counterReceivedMsgs;
 	private boolean           isClosing = false;
+	private Random            random;
 
-	public ClientPlayer(int id, URI uri, long startDelaySec, long runDurationSec, MsgPoolData pool, int msgRate, int msgBatch) {
+	public ClientPlayer(int id, URI uri, long startDelaySec, long runDurationSec, MsgPoolData pool, int msgRate,
+	        int msgBatch, long seed) {
 		this.name = new String("CP[" + id + "]");
 		this.uri = uri;
 		this.runDurationSec = runDurationSec;
@@ -57,7 +61,7 @@ public class ClientPlayer extends GeneralPlayer {
 		this.msgDelayMicroSec = (msgRate > 0) ? (1000000 / msgRate) : 0;
 		this.poolData = pool;
 		this.msgBatchSize = msgBatch;
-		
+
 		// count number of nextHop
 		int numHops = 0;
 		String query = uri.getQuery();
@@ -70,6 +74,7 @@ public class ClientPlayer extends GeneralPlayer {
 			}
 		}
 		this.numHops = numHops;
+		this.random = new Random(seed);
 		LOG.debug("new " + this.toString() + " done");
 	}
 
@@ -80,7 +85,8 @@ public class ClientPlayer extends GeneralPlayer {
 	@Override
 	public void attach(WorkerThread workerThread) {
 		LOG.info(this.toString() + ": attaching to WorkerThread '" + workerThread.toString() + "'" + ", startDelay="
-		        + startDelaySec + "sec, runDuration=" + runDurationSec + "sec, msgRate=" + 1000000/msgDelayMicroSec + "pps");
+		        + startDelaySec + "sec, runDuration=" + runDurationSec + "sec, msgRate=" + 1000000 / msgDelayMicroSec
+		        + "pps");
 
 		this.workerThread = workerThread;
 		this.mp = new MsgPool(poolData.getCount(), poolData.getInSize(), poolData.getOutSize());
@@ -140,9 +146,10 @@ public class ClientPlayer extends GeneralPlayer {
 					}
 					return;
 				}
-				String str = "Client " + this.toString() + " sending msg # " + this.player.counterSentMsgs;
+				int position = Utils.randIntInRange(random, 0, m.getOut().limit() - 24);
+				// 24=time(long)+checksum(long)+serialNumber(int)+size(int)
 				final long sendTime = System.nanoTime();
-				Utils.writeMsg(m, str, sendTime);
+				Utils.writeMsg(m, position, sendTime, counterSentMsgs);
 				if (this.player.client.sendMessage(m)) {
 					this.player.counterSentMsgs++;
 				} else {
@@ -193,7 +200,7 @@ public class ClientPlayer extends GeneralPlayer {
 		this.isClosing = true;
 		if (this.counterEstablished != 1) {
 			LOG.error(this.toString() + ": FAILURE: session did not get established/rejected as expected");
-			System.exit(1); // Failure in test - eject!			
+			System.exit(1); // Failure in test - eject!
 		}
 		if (this.mp.count() + (this.counterSentMsgs - this.counterReceivedMsgs) != this.mp.capacity()) {
 			LOG.error(this.toString() + ": FAILURE: not all Msgs returned to MSgPoll: " + mp);
@@ -204,7 +211,7 @@ public class ClientPlayer extends GeneralPlayer {
 
 	class JXIOCallbacks implements ClientSession.Callbacks {
 		private final ClientPlayer outer = ClientPlayer.this;
-		
+
 		public void onMsgError() {
 			LOG.info(outer.toString() + ": onMsgErrorCallback");
 		}
@@ -213,7 +220,8 @@ public class ClientPlayer extends GeneralPlayer {
 			counterEstablished++;
 			final long timeSessionEstablished = System.nanoTime() - outer.startSessionTime;
 			if (timeSessionEstablished > 100000000) { // 100 milli-sec
-				LOG.error(outer.toString() + ": FAILURE: session establish took " + timeSessionEstablished / 1000 + " usec");
+				LOG.error(outer.toString() + ": FAILURE: session establish took " + timeSessionEstablished / 1000
+				        + " usec");
 				System.exit(1); // Failure in test - eject!
 			}
 			LOG.info(outer.toString() + ": onSessionEstablished. took " + timeSessionEstablished / 1000 + " usec");
@@ -229,7 +237,8 @@ public class ClientPlayer extends GeneralPlayer {
 							LOG.error(outer.toString() + ": there were " + outer.counterSentMsgs + " sent and "
 							        + outer.counterReceivedMsgs + " received");
 						} else {
-							LOG.info(outer.toString() + ": SUCCESSFULLY received all sent msgs (" + counterReceivedMsgs + ")");
+							LOG.info(outer.toString() + ": SUCCESSFULLY received all sent msgs (" + counterReceivedMsgs
+							        + ")");
 						}
 						return;
 					}
@@ -246,21 +255,23 @@ public class ClientPlayer extends GeneralPlayer {
 				default:
 					break;
 			}
-			LOG.error(outer.toString() + ": FAILURE: onSessionError: event='" + session_event + "', reason='" + reason + "'");
+			LOG.error(outer.toString() + ": FAILURE: onSessionError: event='" + session_event + "', reason='" + reason
+			        + "'");
 			System.exit(1); // Failure in test - eject!
 		}
 
 		public void onReply(Msg msg) {
-			outer.counterReceivedMsgs++;
-			if (!Utils.checkIntegrity(msg)) {
-				LOG.error(outer.toString() + ": FAILURE: checksums for message #" + outer.counterReceivedMsgs + " does not match");
+			if (!Utils.checkIntegrity(msg, outer.counterReceivedMsgs)) {
+				LOG.error(outer.toString() + ": FAILURE: Message " + msg.toString() + " did not arrive ok!");
 				System.exit(1); // Failure in test - eject!
 			}
+			outer.counterReceivedMsgs++;
 
 			final long roundTrip = roundTrip(msg);
 			if (roundTrip > 100000000) { // 100 milli-sec
 				if (outer.counterReceivedMsgs != 1 || outer.numHops <= 0) {
-					LOG.error(outer.toString() + ": FAILURE: msg(#" + outer.counterReceivedMsgs + ") round trip took " + roundTrip / 1000 + " usec");
+					LOG.error(outer.toString() + ": FAILURE: msg(#" + outer.counterReceivedMsgs + ") round trip took "
+					        + roundTrip / 1000 + " usec");
 					System.exit(1); // Failure in test - eject!
 				}
 			}
@@ -275,8 +286,8 @@ public class ClientPlayer extends GeneralPlayer {
 			final long sendTime = m.getOut().getLong(0);
 			final long rTrip = recTime - sendTime;
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(outer.toString() + ": roundTrip for message " + outer.counterReceivedMsgs + " took " + rTrip / 1000
-				        + " usec");
+				LOG.trace(outer.toString() + ": roundTrip for message " + outer.counterReceivedMsgs + " took " + rTrip
+				        / 1000 + " usec");
 			}
 			return rTrip;
 		}
