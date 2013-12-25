@@ -8,7 +8,7 @@
 			<manag_interface value="192.168.1.242"/>
 		</machine>
 		<machine>
-                        <name value="B"/>
+                        <name value="zorro011"/>
                         <address value="36.0.0.121"/>
                         <type value="Eth"/>
                         <manag_interface value="192.168.1.243"/>
