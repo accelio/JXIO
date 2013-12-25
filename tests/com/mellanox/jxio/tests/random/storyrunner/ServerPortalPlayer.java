@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.ServerPortal;
 import com.mellanox.jxio.EventName;
 import com.mellanox.jxio.EventReason;
@@ -127,23 +128,22 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	}
 
 	public void notifyReadyforWork(ServerSessionPlayer ss, long newSessionKey) {
-		CompleteOnNewSessionForward action = new CompleteOnNewSessionForward(this, ss, newSessionKey);
+		CompleteOnNewSessionForward action = new CompleteOnNewSessionForward(ss, newSessionKey);
 		this.workerThread.addWorkAction(action);
 	}
 
 	public class CompleteOnNewSessionForward implements WorkerThread.QueueAction {
-		private final ServerPortalPlayer  spp;
+		private final ServerPortalPlayer  outer = ServerPortalPlayer.this;
 		private final ServerSessionPlayer ssp;
 		private final long                newSessionKey;
 
-		public CompleteOnNewSessionForward(ServerPortalPlayer spp, ServerSessionPlayer ssp, long newSessionKey) {
-			this.spp = spp;
+		public CompleteOnNewSessionForward(ServerSessionPlayer ssp, long newSessionKey) {
 			this.ssp = ssp;
 			this.newSessionKey = newSessionKey;
 		}
 
 		public void doAction(WorkerThread workerThread) {
-			this.spp.listener.forward(this.ssp.getServerPortalPlayer().listener, this.ssp.getServerSession());
+			outer.listener.forward(this.ssp.getServerPortalPlayer().listener, this.ssp.getServerSession());
 		}
 	}
 

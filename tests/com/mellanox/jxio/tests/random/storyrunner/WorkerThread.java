@@ -108,46 +108,41 @@ public class WorkerThread implements Runnable {
 	}
 
 	public void notifyClose() {
-		CloseEQH action = new CloseEQH(this, this.getEQH());
+		CloseEQH action = new CloseEQH();
 		this.addWorkAction(action);
 	}
 
-	public class CloseEQH implements WorkerThread.QueueAction {
-		EventQueueHandler eqh;
-		WorkerThread      wt;
+	// this is temporary method. needed in order to allocated pool of the same size
+	public void updateMsgPoolSize(int inSize, int outSize) {
+		this.inSize = inSize;
+		this.outSize = outSize;
+	}
 
-		public CloseEQH(WorkerThread wt, EventQueueHandler eqh) {
-			this.eqh = eqh;
-			this.wt = wt;
-		}
+	public class CloseEQH implements WorkerThread.QueueAction {
+		private final WorkerThread outer = WorkerThread.this;
+		EventQueueHandler eqh;
 
 		public void doAction(WorkerThread workerThread) {
-			wt.stopThread = true;
+			outer.stopThread = true;
 			// eqh.close();
-			for (MsgPool pool : msgPools) {
-				eqh.releaseMsgPool(pool);
-				pool.deleteMsgPool();
+			for (MsgPool mp : msgPools) {
+				outer.eqh.releaseMsgPool(mp);
+				mp.deleteMsgPool();
 			}
 		}
 	}
 
 	class JXIOCallbacks implements EventQueueHandler.Callbacks {
+		private final WorkerThread outer = WorkerThread.this;
 
 		public MsgPool getAdditionalMsgPool(int in, int out) {
-			
-			MsgPool mp = new MsgPool(1, inSize, outSize);
-			LOG.info(toString() + ": new MsgPool: " + mp);
+			MsgPool mp = new MsgPool(100, inSize, outSize);
+			LOG.info(outer.toString() + ": new MsgPool: " + mp);
 
-			msgPools.add(mp);
-			LOG.debug(toString() + " finished allocating MsgPool " + mp);
+			outer.msgPools.add(mp);
+			LOG.debug(outer.toString() + " finished allocating MsgPool " + mp);
 			return mp;
 		}
 
 	}
-
-	//this is temprary method. needed in order to allocated pool of the same size
-	public void updateMsgPoolSize(int inSize, int outSize) {
-	    this.inSize = inSize;
-	    this.outSize = outSize;
-    }
 }

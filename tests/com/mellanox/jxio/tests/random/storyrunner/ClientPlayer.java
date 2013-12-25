@@ -102,26 +102,25 @@ public class ClientPlayer extends GeneralPlayer {
 			if (LOG.isTraceEnabled()) {
 				LOG.trace(this.toString() + ": starting send timer for " + this.msgDelayMicroSec + " usec");
 			}
-			TimerList.Timer tSendMsg = new SendMsgTimer(this.msgDelayMicroSec, this);
+			TimerList.Timer tSendMsg = new SendMsgTimer(this.msgDelayMicroSec);
 			this.workerThread.start(tSendMsg);
 		}
 	}
 
 	private class SendMsgTimer extends TimerList.Timer {
-		private final ClientPlayer player;
+		private final ClientPlayer outer = ClientPlayer.this;
 
-		public SendMsgTimer(long durationMicroSec, ClientPlayer player) {
+		public SendMsgTimer(long durationMicroSec) {
 			super(durationMicroSec);
-			this.player = player;
 		}
 
 		@Override
 		public void onTimeOut() {
 			if (LOG.isTraceEnabled()) {
-				LOG.trace("SendMsgTimer: " + this.player.toString());
+				LOG.trace("SendMsgTimer: " + outer.toString());
 			}
 
-			if (this.player.isClosing) {
+			if (outer.isClosing) {
 				return;
 			}
 
@@ -129,20 +128,20 @@ public class ClientPlayer extends GeneralPlayer {
 			sendMsgTimerStart();
 
 			// check if we have for full batch of buffers ready for sending
-			if (this.player.mp.count() < this.player.msgBatchSize) {
+			if (outer.mp.count() < outer.msgBatchSize) {
 				return;
 			}
 
 			// send msgs
-			int numMsgToSend = this.player.msgBatchSize;
+			int numMsgToSend = outer.msgBatchSize;
 			while (numMsgToSend > 0) {
 				numMsgToSend--;
-				Msg m = this.player.mp.getMsg();
+				Msg m = outer.mp.getMsg();
 				if (m == null) {
 					// MsgPool is empty (client used up all the msgs and
 					// or they didn't return from server yet
 					if (LOG.isDebugEnabled()) {
-						LOG.debug(this.toString() + ": no more messages in pool: skipping a timer");
+						LOG.debug(outer.toString() + ": no more messages in pool: skipping a timer");
 					}
 					return;
 				}
@@ -150,11 +149,12 @@ public class ClientPlayer extends GeneralPlayer {
 				// 24=time(long)+checksum(long)+serialNumber(int)+size(int)
 				final long sendTime = System.nanoTime();
 				Utils.writeMsg(m, position, sendTime, counterSentMsgs);
-				if (this.player.client.sendMessage(m)) {
-					this.player.counterSentMsgs++;
+				if (outer.client.sendMessage(m)) {
+					outer.counterSentMsgs++;
 				} else {
-					LOG.error(this.toString() + " failed to send a message = " + m);
+					LOG.error(outer.toString() + ": FAILURE while sending a message = " + m);
 					m.returnToParentPool();
+					System.exit(1); // Failure in test - eject!
 				}
 			}
 		}
@@ -234,8 +234,8 @@ public class ClientPlayer extends GeneralPlayer {
 					if (outer.isClosing == true) {
 						LOG.info(outer.toString() + ": onSESSION_TEARDOWN, reason='" + reason + "'");
 						if (outer.counterReceivedMsgs != outer.counterSentMsgs) {
-							LOG.error(outer.toString() + ": there were " + outer.counterSentMsgs + " sent and "
-							        + outer.counterReceivedMsgs + " received");
+							LOG.error(outer.toString() + ": there were " + outer.counterSentMsgs + " sent and " + outer.counterReceivedMsgs
+							        + " received");
 						} else {
 							LOG.info(outer.toString() + ": SUCCESSFULLY received all sent msgs (" + counterReceivedMsgs
 							        + ")");
@@ -286,8 +286,7 @@ public class ClientPlayer extends GeneralPlayer {
 			final long sendTime = m.getOut().getLong(0);
 			final long rTrip = recTime - sendTime;
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(outer.toString() + ": roundTrip for message " + outer.counterReceivedMsgs + " took " + rTrip
-				        / 1000 + " usec");
+				LOG.trace(outer.toString() + ": roundTrip for message " + outer.counterReceivedMsgs + " took " + rTrip / 1000 + " usec");
 			}
 			return rTrip;
 		}

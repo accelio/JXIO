@@ -100,7 +100,7 @@ public class ServerSessionPlayer {
 		}
 
 		if (!this.nextHop.isEmpty() && mpcount > 0 && (msgoutsize + msginsize) > 0) {
-			this.nextHopMP = new MsgPool(mpcount, msgoutsize, msginsize);
+			this.nextHopMP = new MsgPool(mpcount, msginsize, msgoutsize);
 			LOG.info(this.toString() + ": new MsgPool: " + this.nextHopMP);
 		}
 	}
@@ -120,16 +120,15 @@ public class ServerSessionPlayer {
 			if (LOG.isTraceEnabled()) {
 				LOG.trace(outer.toString() + ": onRequest: msg (#" + outer.counterReceivedMsgs + ") = " + msg);
 			}
-			int position = Utils.randIntInRange(random, 0, msg.getOut().limit() - 24);
-			// 24=time(long)+checksum(long)+serialNumber(int)+size(int)
-
-			Utils.writeMsg(msg, position, 0, outer.counterSentMsgs);
-			outer.counterSentMsgs++;
-			outer.counterReceivedMsgs++;
 
 			if (outer.nextHop.isEmpty()) {
 				if (LOG.isDebugEnabled())
 					LOG.debug(outer.toString() + ": sendResponce(" + msg + ")");
+				int position = Utils.randIntInRange(random, 0, msg.getOut().limit() - 24);
+				// 24=time(long)+checksum(long)+serialNumber(int)+size(int)
+				Utils.writeMsg(msg, position, 0, outer.counterSentMsgs);
+				outer.counterSentMsgs++;
+				outer.counterReceivedMsgs++;
 				outer.server.sendResponce(msg);
 			} else {
 				// server session is in proxy mode (nextHopClient), check if client need to be connected
@@ -217,12 +216,11 @@ public class ServerSessionPlayer {
 		public void onReply(Msg msg) {
 			if (LOG.isDebugEnabled())
 				LOG.debug(outer.toString() + ": onReply(" + msg + ")");
-			Msg returnHoopMsg = (Msg) msg.getUserContext();
-			msg.getIn().position(0);
-			returnHoopMsg.getOut().put(msg.getIn());
+			Msg returnHopMsg = (Msg)msg.getUserContext();
+			returnHopMsg.getOut().put(msg.getIn());
 			if (LOG.isDebugEnabled())
-				LOG.debug(outer.toString() + ": sendResponce(" + returnHoopMsg + ")");
-			outer.server.sendResponce(returnHoopMsg);
+				LOG.debug(outer.toString() + ": sendResponce(" + returnHopMsg + ")");
+			outer.server.sendResponce(returnHopMsg);
 			msg.returnToParentPool();
 		}
 	}
