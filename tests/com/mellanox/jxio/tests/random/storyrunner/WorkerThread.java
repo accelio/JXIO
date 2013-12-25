@@ -34,9 +34,9 @@ public class WorkerThread implements Runnable {
 	private volatile boolean                 stopThread = false;
 	// those are the MsgPools that were dynamically allocated using callback to user
 	private ArrayList<MsgPool>               msgPools;
-	//temporary: needed for the user to alloate pool of the same size
-	private int inSize;
-	private int outSize;          
+	// temporary: needed for the user to allocate pool of the same size
+	private int                              inSize;
+	private int                              outSize;
 																 
 	public WorkerThread() {
 		super();
@@ -135,11 +135,12 @@ public class WorkerThread implements Runnable {
 
 		public MsgPool getAdditionalMsgPool(int in, int out) {
 			
-			MsgPool p = new MsgPool(1, inSize, outSize);
+			MsgPool mp = new MsgPool(1, inSize, outSize);
+			LOG.info(toString() + ": new MsgPool: " + mp);
 
-			msgPools.add(p);
-			LOG.debug(toString() + " finished allocating pool " + p.toString());
-			return p;
+			msgPools.add(mp);
+			LOG.debug(toString() + " finished allocating MsgPool " + mp);
+			return mp;
 		}
 
 	}

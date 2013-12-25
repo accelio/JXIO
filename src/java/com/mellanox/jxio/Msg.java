@@ -44,8 +44,13 @@ public class Msg {
 	}
 
 	public String toString() {
-	    return "msgIn=" + this.in + ", msgOut=" + this.out + ", msgPool=" + this.msgPool;
-    }
+		StringBuffer sb = new StringBuffer();
+		sb.append("jxio.Msg(" + hashCode() + ")");
+		sb.append("[msgIn=" + toStringBB(this.in));
+		sb.append(", msgOut=" + toStringBB(this.out));
+		sb.append(", msgPool=" + this.msgPool + "]");
+		return sb.toString();
+	}
 
 	public void returnToParentPool() {
 		msgPool.releaseMsg(this);
@@ -94,5 +99,17 @@ public class Msg {
 		buf.limit(limit);
 		sub = buf.slice();
 		return sub;
+	}
+	
+	private String toStringBB(ByteBuffer bb) {
+		StringBuffer sb = new StringBuffer();
+		sb.append("[pos=");
+		sb.append(bb.position());
+		sb.append(" lim=");
+		sb.append(bb.limit());
+		sb.append(" cap=");
+		sb.append(bb.capacity());
+		sb.append("]");
+		return sb.toString();
 	}
 }

@@ -60,8 +60,13 @@ public class MsgPool {
 	}
 
 	public String toString() {
-		return getClass().getName() + "[count=" + count() + ", capacity=" + capacity + ", inSize=" + inSize
-		        + ", outSize=" + outSize + "]";
+		StringBuffer sb = new StringBuffer();
+		sb.append("jxio.MsgPool(" + hashCode() + ")");
+		sb.append("[count=" + count());
+		sb.append(", capacity=" + capacity);
+		sb.append(", inSize=" + inSize);
+		sb.append(", outSize=" + outSize + "]");
+		return sb.toString();
 	}
 
 	// Returns true if this MsgPool contains no elements.

@@ -97,7 +97,7 @@ public class ServerSessionPlayer {
 		
 		if (!this.nextHop.isEmpty() && mpcount > 0 && (msgoutsize + msginsize) > 0) {
 			this.nextHopMP = new MsgPool(mpcount, msgoutsize, msginsize);
-			LOG.info(this.toString() + ": new MsgPool:" + this.nextHopMP);
+			LOG.info(this.toString() + ": new MsgPool: " + this.nextHopMP);
 		}
 	}
 

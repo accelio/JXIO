@@ -74,6 +74,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 		for (MsgPoolData p : msgPoolsData) {
 			MsgPool pool = new MsgPool(p.getCount(), p.getInSize(), p.getOutSize());
+			LOG.info(this.toString() + ": new MsgPool: " + pool);
 			msgPools.add(pool);
 			workerThread.getEQH().bindMsgPool(pool);
 			workerThread.updateMsgPoolSize(p.getInSize(), p.getOutSize());
