@@ -29,7 +29,7 @@ public class BreakEventLoopTests implements Runnable {
 		
 		public void run() {
 			print("----- Setting up a event queue handler...");
-			eqh = new EventQueueHandler();
+			eqh = new EventQueueHandler(null);
 			
 			checkEQHBreakFromOtherThread();
 			checkEQHBreakFromSelfThread();
