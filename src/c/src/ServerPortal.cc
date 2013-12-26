@@ -62,8 +62,8 @@ Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xi
 		log(lsDEBUG, "got XIO_SESSION_CONNECTION_CLOSED_EVENT. \n");
 		return NULL;
 
-	case XIO_SESSION_CONNECTION_ERROR_EVENT:
-		log(lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
+	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
+		log(lsDEBUG, "got XIO_SESSION_CONNECTION_TEARDOWN_EVENT. \n");
 		return NULL;
 
 	case XIO_SESSION_NEW_CONNECTION_EVENT:
@@ -81,6 +81,11 @@ Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xi
 			log(lsERROR, "Error xio_session_close failed. server=%p\n", this);
 		}
 		return delete_ctx_for_session(session);
+
+	case XIO_SESSION_CONNECTION_ERROR_EVENT:
+			log(lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
+			return NULL;
+
 	default:
 		log(lsWARN, "UNHANDLED event: got '%s' event (%d). \n", xio_session_event_str(eventType), eventType);
 		return delete_ctx_for_session(session);

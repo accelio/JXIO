@@ -90,9 +90,8 @@ Context* Client::ctxForSessionEvent(xio_session_event eventType, struct xio_sess
 		log(lsDEBUG, "got XIO_SESSION_CONNECTION_CLOSED_EVENT in client=%p\n", this);
 		return NULL;
 
-	case XIO_SESSION_CONNECTION_ERROR_EVENT:
-		log(lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT in client=%p\n", this);
-		close_connection();
+	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
+		log(lsDEBUG, "got XIO_SESSION_CONNECTION_TEARDOWN_EVENT. \n");
 		return NULL;
 
 	case XIO_SESSION_NEW_CONNECTION_EVENT:
@@ -114,6 +113,11 @@ Context* Client::ctxForSessionEvent(xio_session_event eventType, struct xio_sess
 	case XIO_SESSION_REJECT_EVENT:
 		log(lsDEBUG, "got XIO_SESSION_REJECT_EVENT. must delete session class in client=%p\n", this);
 		return this->get_ctx_class();
+
+	case XIO_SESSION_CONNECTION_ERROR_EVENT:
+		log(lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT in client=%p\n", this);
+		close_connection();
+		return NULL;
 
 	case XIO_SESSION_ERROR_EVENT:
 	default:
