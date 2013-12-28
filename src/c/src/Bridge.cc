@@ -214,7 +214,7 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_runEventLoo
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_breakEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
 {
 	Context *ctx = (Context *)ptrCtx;
-	ctx->break_event_loop();
+	ctx->break_event_loop(0); // not sure about thread context so play it safe and 'self_thread = false'
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)

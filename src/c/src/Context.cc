@@ -99,11 +99,11 @@ int Context::run_event_loop(long timeout_micro_sec)
 	return this->events_num;
 }
 
-void Context::break_event_loop()
+void Context::break_event_loop(int is_self_thread)
 {
-	log(lsDEBUG, "[%p] before break event loop\n", this);
-	xio_ev_loop_stop(this->ev_loop);
-	log(lsDEBUG, "[%p] after break event loop\n", this);
+	log(lsDEBUG, "[%p] before break event loop (is_self_thread=%d)\n", this, is_self_thread);
+	xio_ev_loop_stop(this->ev_loop, is_self_thread);
+	log(lsDEBUG, "[%p] after break event loop (is_self_thread=%d)\n", this, is_self_thread);
 }
 
 int Context::add_event_loop_fd(int fd, int events, void *priv_data)

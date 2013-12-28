@@ -24,7 +24,7 @@ void done_event_creating(Context *ctx, int sizeWritten) {
 	//need to stop the event queue only if this is the first callback
 	if (!ctx->events_num) {
 		log(lsDEBUG, "inside a callback - stopping the event queue\n");
-		ctx->break_event_loop();
+		ctx->break_event_loop(1); // always 'self thread = true' since JXIO break from within callback
 	}
 	ctx->events_num++;
 }

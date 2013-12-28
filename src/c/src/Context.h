@@ -35,7 +35,7 @@ public:
 	~Context();
 
 	int run_event_loop(long timeout_micro_sec);
-	void break_event_loop();
+	void break_event_loop(int is_self_thread);
 	int add_event_loop_fd(int fd, int events, void *priv_data);
 	int del_event_loop_fd(int fd);
 	void add_msg_pool(MsgPool* msg_pool);
