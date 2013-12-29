@@ -124,6 +124,7 @@ if((not in1 and out1) or (not out1 and in1)):
 
 if(not in1):    
 	if(test_type == "server"):
+		out1 = 0
 		in1 = 64
 	else:
 		in1 = 0
