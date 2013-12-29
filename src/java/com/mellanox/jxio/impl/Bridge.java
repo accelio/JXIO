@@ -49,7 +49,7 @@ public class Bridge {
 
 	public static boolean createCtx(EventQueueHandler eqh, int eventQueueSize, EventQueueHandler.DataFromC dataFromC) {
 		boolean ret = createCtxNative(eventQueueSize, dataFromC);
-		if (ret) {
+		if (!ret) {
 			Bridge.mapIdEQHObject.put(dataFromC.getPtrCtx(), eqh);
 		}
 		return ret;

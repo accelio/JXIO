@@ -39,6 +39,8 @@ Context::Context(int eventQSize)
 		goto cleanupEvLoop;
 	}
 
+	this->msg_pools.setCtx(this);
+
 	this->event_queue = new Event_queue(eventQSize);
 	if (this->event_queue == NULL || this->event_queue->error_creating) {
 		log(lsDEBUG, "ERROR, fail in create of EventQueue object\n");

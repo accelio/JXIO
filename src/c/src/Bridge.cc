@@ -182,7 +182,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_createC
 	Context *ctx = new Context (size);
 	if (ctx == NULL) {
 		log(lsERROR, "memory allocation failed\n");
-		return false;
+		return true;
 	}
 	if (ctx->error_creating) {
 		delete (ctx);
