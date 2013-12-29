@@ -100,6 +100,7 @@ Context* delete_ctx_for_session(xio_session* session){
 	it=map_sessions.find(session);
 	if (it == map_sessions.end()){
 		log(lsERROR, "session=%p in map\n", session);
+		pthread_mutex_unlock(&mutex_for_map);
 		return NULL;
 	}
 	Context *ctx = it->second;
