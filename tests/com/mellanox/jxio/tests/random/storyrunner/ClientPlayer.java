@@ -206,7 +206,6 @@ public class ClientPlayer extends GeneralPlayer {
 			LOG.error(this.toString() + ": FAILURE: not all Msgs returned to MSgPoll: " + mp);
 			System.exit(1); // Failure in test - eject!
 		}
-		this.mp.deleteMsgPool();
 	}
 
 	class JXIOCallbacks implements ClientSession.Callbacks {
@@ -242,6 +241,7 @@ public class ClientPlayer extends GeneralPlayer {
 						}
 						return;
 					}
+					mp.deleteMsgPool();
 					break;
 				case SESSION_REJECT:
 					if (uri.getQuery().contains("reject=1")) {
