@@ -129,7 +129,8 @@ bool close_xio_connection(struct xio_session *session, struct xio_context *ctx)
 		return false;
 	}
 	if (xio_disconnect(con)) {
-		log(lsDEBUG, "ERROR, xio_disconnect failed (xio_session=%p, xio_context=%p, conn=%p)\n", session, ctx, con);
+		log(lsDEBUG, "ERROR, xio_disconnect failed with error '%s' (%d) (xio_session=%p, xio_context=%p, conn=%p)\n",
+				xio_strerror(xio_errno()), xio_errno(), session, ctx, con);
 		return false;
 	}
 	log (lsDEBUG, "successfully closed connection=%p, for session=%p, context=%p\n", con, session, ctx);
@@ -141,7 +142,7 @@ bool forward_session(struct xio_session *session, const char * url, Context* con
 
 	int retVal = xio_accept(session, &url, 1, NULL, 0);
 	if (retVal) {
-		log(lsDEBUG, "ERROR, accepting session=%p. error %d\n", session, retVal);
+		log(lsDEBUG, "ERROR, accepting session=%p. error '%s' (%d)\n", session, xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
 	add_ctx_for_session(session, context);
@@ -154,7 +155,7 @@ bool accept_session(struct xio_session *session, Context* context) {
 
 	int retVal = xio_accept(session, NULL, 0, NULL, 0);
 	if (retVal) {
-		log(lsDEBUG, "ERROR, accepting session=%p. error %d\n",session, retVal);
+		log(lsDEBUG, "ERROR, accepting session=%p. error '%s' (%d)\n",session, xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
 	add_ctx_for_session(session, context);
@@ -171,7 +172,7 @@ bool reject_session(struct xio_session *session, int reason,
 
 	int retVal = xio_reject(session, s, user_context, user_context_len);
 	if (retVal) {
-		log(lsDEBUG, "ERROR, rejecting session=%p. error %d\n",session, retVal);
+		log(lsDEBUG, "ERROR, rejecting session=%p. error '%s' (%d)\n",session, xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
 	return true;

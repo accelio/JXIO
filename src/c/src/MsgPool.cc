@@ -91,7 +91,7 @@ cleanup_buffer:
 	}
 	else { //memory was allocated using malloc and xio_reg_mr
 		if (xio_dereg_mr(&this->xio_mr)) {
-			log(lsERROR, "Error xio_dereg_mr failed\n");
+			log(lsERROR, "Error '%s' (%d) in xio_dereg_mr\n", xio_strerror(xio_errno()), xio_errno());
 		}
 		free(this->buf);
 	}
@@ -120,7 +120,7 @@ MsgPool::~MsgPool()
 	}
 	else { //memory was allocated using malloc and xio_reg_mr
 		if (xio_dereg_mr(&this->xio_mr)) {
-			log(lsERROR, "Error xio_dereg_mr failed\n");
+			log(lsERROR, "Error '%s' (%d) in xio_dereg_mr\n", xio_strerror(xio_errno()), xio_errno());
 		}
 		free(this->buf);
 	}

@@ -49,7 +49,7 @@ ServerPortal::~ServerPortal() {
 	}
 
 	if (xio_unbind(this->server)) {
-		log(lsERROR, "ERROR xio_unbind failed\n");
+		log(lsERROR, "ERROR '%s' (%d) in xio_unbind\n", xio_strerror(xio_errno()), xio_errno());
 	}
 	log(lsDEBUG, "done deleting ServerPortal=%p.\n", this);
 }
@@ -78,7 +78,7 @@ Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xi
 		log(lsDEBUG, "got XIO_SESSION_TEARDOWN_EVENT.\n");
 		//the event should also be written to buffer to let user know that the session was closed
 		if (xio_session_close(session)) {
-			log(lsERROR, "Error xio_session_close failed. server=%p\n", this);
+			log(lsERROR, "Error '%s' (%d) in xio_session_close server=%p\n", xio_strerror(xio_errno()), xio_errno(), this);
 		}
 		return delete_ctx_for_session(session);
 

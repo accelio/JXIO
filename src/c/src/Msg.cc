@@ -117,7 +117,7 @@ bool Msg::send_reply(const int size) {
 	set_xio_msg_out_size(size);
 	int ret_val = xio_send_response(this->get_xio_msg());
 	if (ret_val) {
-		log(lsERROR, "Got error %d while sending xio_msg\n", ret_val);
+		log(lsERROR, "Got error '%s' (%d) while sending xio_msg\n", xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
 	return true;

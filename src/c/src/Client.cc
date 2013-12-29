@@ -68,14 +68,14 @@ Client::Client(const char* url, long ptrCtx) {
 
 Client::~Client() {
 	if (xio_session_close(session)) {
-		log(lsERROR, "Error xio_session_close failed. client=%p\n", this);
+		log(lsERROR, "Error '%s' (%d) xio_session_close failed. client=%p\n", xio_strerror(xio_errno()), xio_errno(), this);
 	}
 	log(lsDEBUG, "done deleting Client=%p.\n", this);
 }
 
 bool Client::close_connection() {
 	if (xio_disconnect(this->con)) {
-		log(lsERROR, "xio_disconnect failed. client=%p\n", this);
+		log(lsERROR, "xio_disconnect failed with error '%s' (%d). client=%p\n", xio_strerror(xio_errno()), xio_errno(), this);
 		return false;
 	}
 
@@ -132,7 +132,7 @@ bool Client::send_msg(Msg *msg, const int size) {
 	msg->reset_xio_msg_in_size();
 	int ret_val = xio_send_request(this->con, msg->get_xio_msg());
 	if (ret_val) {
-		log(lsERROR, "Got error %d while sending xio_msg in client=%p\n", ret_val, this);
+		log(lsERROR, "Got error '%s' (%d) while sending xio_msg in client=%p\n", xio_strerror(xio_errno()), xio_errno(), this);
 		return false;
 	}
 	return true;
