@@ -19,7 +19,10 @@
 
 MsgPools::MsgPools()
 {
+	this->in_size = 0;
+	this->out_size = 0;
 	this->first_time = true;
+	this->ctx = NULL;
 }
 
 void MsgPools::setCtx(Context* ctx)
