@@ -39,9 +39,9 @@ def usage():
     print "\t-a  | --address			Server's address"
     print "\t-p  | --port			Server's port (default is 2222)"
     print "\t-t  | --thread			number of threads (default is 1)"
-    print "\t-i  | --in			in message size (default is 64/0 for server/client)"  
-    print "\t-o  | --out			out message size (default is 0/64 for server/client)"   
-    print "\t-m  | --memory			max memory to use (default is 1 MB)"
+    print "\t-i  | --in			in message size in Bytes (default is 64/0 for server/client)"  
+    print "\t-o  | --out			out message size In Bytes(default is 0/64 for server/client)"   
+    print "\t-m  | --memory			max memory to use in MB (default is 1 MB)"
     print "\t-u  | --cpu			core number or range of cores to run the threads on (default is 1)"  
     print "\t-f  | --file			path to results file (client only, default is no file for writing)"  
     print "\t-r  | --runs			number of runs of the test (client only, default is 100)"
@@ -80,9 +80,15 @@ for opt, arg in options:
             usage()
             sys.exit(0)
         elif opt in ('-c', '--option'):
-            test_type = "client"
+			if (test_type):
+				print "\nPlease supply ONE test type (server OR client)"
+				sys.exit(1)	
+			test_type = "client"
         elif opt in ('-s', '--option'):
-            test_type = "server"          
+			if (test_type):
+				print "\nPlease supply ONE test type (server OR client)"
+				sys.exit(1)	
+			test_type = "server"          
         elif opt in ('-a', '--address'):
             address = arg
         elif opt in ('-p', '--port'):
@@ -112,10 +118,13 @@ if(not address):
 	print "\nPlease supply server address"
 	sys.exit(1)
 
+if((not in1 and out1) or (not out1 and in1)):
+	print "\nPlease supply either both in and out Message sizes or none of them"
+	sys.exit(1)		 
+
 if(not in1):    
 	if(test_type == "server"):
 		in1 = 64
-		out1 = 0    
 	else:
 		in1 = 0
 		out1 = 64
