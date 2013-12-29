@@ -111,7 +111,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					int errorType = ((EventSession) ev).getErrorType();
 					int reason = ((EventSession) ev).getReason();
 					EventName eventName = EventName.getEventByIndex(errorType);
-					if (eventName == EventName.SESSION_TEARDOWN) {
+					if (eventName == EventName.SESSION_TEARDOWN || eventName == EventName.SESSION_REJECT) {
 						eventQHandler.removeEventable(this); // now we are officially done with this session and it can
 						this.setIsClosing(true);   // be deleted from the EQH
 					}
