@@ -130,17 +130,29 @@ if(not in1):
 		in1 = 0
 		out1 = 64
 		
+		
+# for MARS usage
+cov_command=""
+if os.getenv('CODE_COVERAGE_ON') is not None:
+	cov_command = '-D' + str(os.getenv('COBERTURA_COVFILE_PATH_PROP_NAME')) + '=' + str(os.getenv('COBERTURA_COVFILE'))
+
+cob_jar_path = os.getenv('COBERTURA_JAR_PATH')
+if not cob_jar_path:
+	cob_jar_path = ""
+
+
 print "\nCompiling JAVA files...."
 cmd = 'javac -cp "../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." com/mellanox/jxio/tests/benchmarks/ServerSessionHandle.java com/mellanox/jxio/tests/benchmarks/ServerPortalWorker.java com/mellanox/jxio/tests/benchmarks/DataPathTestServer.java com/mellanox/jxio/tests/benchmarks/DataPathTestClient.java com/mellanox/jxio/tests/benchmarks/ClientWorker.java com/mellanox/jxio/tests/benchmarks/DataPathTest.java'
 os.system(cmd)
-            
+         
+
 if(test_type == "server"):
 	print "\n------ Running Server Test Application -----"
-	cmd = 'taskset -c %s java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.benchmarks.DataPathTestServer  %s %s %s %s %s %s' % (core, address, port, thread, in1, out1, memory)
+	cmd = 'taskset -c %s java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "%s:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." %s com.mellanox.jxio.tests.benchmarks.DataPathTestServer  %s %s %s %s %s %s' % (core, cob_jar_path, cov_command, address, port, thread, in1, out1, memory)
 	os.system(cmd)
 else:
 	print "\n------ Running Client Test Application -----"
-	cmd = 'taskset -c %s java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.benchmarks.DataPathTestClient  %s %s %s %s %s %s %s %s' % (core, address, port, thread, in1, out1, memory, file, runs)
+	cmd = 'taskset -c %s java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "%s:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." %s com.mellanox.jxio.tests.benchmarks.DataPathTestClient  %s %s %s %s %s %s %s %s' % (core, cob_jar_path, cov_command, address, port, thread, in1, out1, memory, file, runs)
 	os.system(cmd)
    
 sys.exit(0)
