@@ -5,4 +5,17 @@
         <Field type="java.nio.ByteBuffer" />
 	<Bug code="UwF" />
      </Match>
+
+     <Match>
+	<Class name="com.mellanox.jxio.EventQueueHandler" />
+	<Method name="getAdditionalMsgPool" params="int,int" returns="void"/>
+	<Bug code="Dm" />
+     </Match>
+
+     <Match>
+	<Class name="com.mellanox.jxio.impl.Bridge" />
+	<Method name="requestForBoundMsgPool" params="long,int,int" returns="void"/>
+	<Bug code="Dm" />
+     </Match>
 </FindBugsFilter>
+
