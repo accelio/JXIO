@@ -53,7 +53,7 @@ public class ClientWorker implements Callable<double[]> {
 
 	// cTor
 	public ClientWorker(int inMsg_size, int outMsg_size, URI uri, int num_of_buffers, double[] res) {
-		eqh = new EventQueueHandler();
+		eqh = new EventQueueHandler(new ClientEQHCallbacks());
 		pool = new MsgPool(num_of_buffers, inMsg_size, outMsg_size);
 		results = res;
 		cs = new ClientSession(eqh, uri, new ClientWorkerCallbacks());
@@ -91,6 +91,15 @@ public class ClientWorker implements Callable<double[]> {
 		LOG.debug("deleting message pool");
 		pool.deleteMsgPool();
 		return results;
+	}
+	
+	// callbacks for the Client's event queue handler
+	public class ClientEQHCallbacks implements EventQueueHandler.Callbacks {
+		//this method should return an unbinded MsgPool.  
+			public MsgPool getAdditionalMsgPool(int inSize, int outSize){
+				System.out.println("Messages in Client's message pool ran out, Aborting test");
+				return null;
+			}
 	}
 
 	class ClientWorkerCallbacks implements ClientSession.Callbacks {

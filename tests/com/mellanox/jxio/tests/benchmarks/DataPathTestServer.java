@@ -42,7 +42,7 @@ public class DataPathTestServer extends DataPathTest {
 	// cTor
 	public DataPathTestServer(String args[]) {
 		super(args);
-		listen_eqh = new EventQueueHandler();
+		listen_eqh = new EventQueueHandler(null);
 		tsc = new TestServerCallbacks();
 		listener = new ServerPortal(listen_eqh, uri, tsc);
 		SPWorkers = new PriorityQueue<ServerPortalWorker>(num_of_threads);
@@ -90,7 +90,7 @@ public class DataPathTestServer extends DataPathTest {
 			LOG.debug("GOT EVENT " + session_event.toString() + "because of " + reason.toString());
 		}
 	}
-
+	
 	// main
 	public static void main(String[] args) {
 		DataPathTestServer test = new DataPathTestServer(args);

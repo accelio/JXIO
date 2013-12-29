@@ -41,7 +41,7 @@ public class ServerPortalWorker extends Thread implements Comparable<ServerPorta
 	// cTor
 	public ServerPortalWorker(int index, int inMsg_size, int outMsg_size, URI uri, int num_of_buffers) {
 		portal_index = index;
-		eqh = new EventQueueHandler();
+		eqh = new EventQueueHandler(new ServerEQHCallbacks());
 		pool = new MsgPool(num_of_buffers, inMsg_size, outMsg_size);
 		eqh.bindMsgPool(pool);
 		sp = new ServerPortal(eqh, uri);
@@ -74,6 +74,15 @@ public class ServerPortalWorker extends Thread implements Comparable<ServerPorta
 	public void sessionClosed() {
 		decrNumOfSessions();
 	}
+	
+	// callbacks for the Server's event queue handler
+	public class ServerEQHCallbacks implements EventQueueHandler.Callbacks {
+		//this method should return an unbinded MsgPool.  
+			public MsgPool getAdditionalMsgPool(int inSize, int outSize){
+				System.out.println("Messages in Client's message pool ran out, Aborting test");
+				return null;
+			}
+	}	
 	
 	
 	@Override
