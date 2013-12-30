@@ -58,7 +58,7 @@ public class DataPathTestClient extends DataPathTest {
 		super(args);
 		test_iterations = Integer.parseInt(args[7]);
 		file_path = args[6];
-		results = new double[num_of_threads][test_iterations * 2];
+		results = new double[num_of_threads][test_iterations * 3];
 		workers = new ArrayList<FutureTask<double[]>>(num_of_threads);
 		executor = Executors.newFixedThreadPool(num_of_threads);
 
@@ -104,30 +104,38 @@ public class DataPathTestClient extends DataPathTest {
 
 	private void processResults() {
 		try {
-
 			System.out.println("processing results");
 			double totalTPS[] = new double[test_iterations];
-			double totalBW[] = new double[test_iterations];
+			double totalOutBW[] = new double[test_iterations];
+			double totalInBW[] = new double[test_iterations];
 			double av_TPS = 0;
-			double av_BW = 0;
-			for (int j = 0; j < (test_iterations * 2) - 1; j += 2) {
+			double av_OutBW = 0;
+			double av_InBW = 0;
+			//for(int i=0; i<results.length; i++){
+			//	System.out.println(Arrays.toString(results[i]));
+			//}
+			for (int j = 0; j < (test_iterations * 3) - 1; j += 3) {
 				for (int i = 0; i < workers.size(); i++) {
-					totalTPS[j / 2] += results[i][j];
-					totalBW[j / 2] += results[i][j + 1];
+					totalTPS[j / 3] += results[i][j];
+					totalOutBW[j / 3] += results[i][j + 1];
+					totalInBW[j / 3] += results[i][j + 2];
 				}
 			}
+			
 			for (int i = 0; i < test_iterations; i++) {
 				av_TPS += totalTPS[i];
-				av_BW += totalBW[i];
+				av_OutBW += totalOutBW[i];
+				av_InBW += totalInBW[i];
 			}
 
 			av_TPS = av_TPS / test_iterations;
-			av_BW = av_BW / test_iterations;
+			av_OutBW = av_OutBW / test_iterations;
+			av_InBW = av_InBW / test_iterations;
 
-			System.out.println("average TPS = " + av_TPS + " average BW = " + av_BW + " msg_size = "
-			        + ((inMsg_size > outMsg_size) ? inMsg_size : outMsg_size));
+			System.out.println("average_TPS = " + av_TPS + ",  average_RX_BW = " + av_InBW + " MB,  average_TX_BW = " + av_OutBW + " MB,  in_msg_size = "
+			        + inMsg_size + " Bytes,  out_msg_size = " + outMsg_size + " Bytes");
 			// write results to file
-			this.writeResultsToFile(av_TPS, av_BW);
+			this.writeResultsToFile(av_TPS, av_OutBW, av_InBW);
 
 		} catch (Exception e) {
 			LOG.error("error in calculation, no results available");
@@ -136,10 +144,10 @@ public class DataPathTestClient extends DataPathTest {
 	}
 
 	// writes test results into file path given in command line
-	private void writeResultsToFile(double av_TPS, double av_BW) {
+	private void writeResultsToFile(double av_TPS, double av_OutBW, double av_InBW) {
 		if(write_to_file){
     		try {
-    			out.write(inMsg_size + "," + outMsg_size + "," + av_TPS + "," + av_BW + "\n");
+    			out.write(inMsg_size + "," + outMsg_size + "," + av_TPS + "," + av_OutBW + "," + av_InBW + "\n");
     			out.close();
     		} catch (IOException e) {
     			LOG.error("error in writing results to file : " + file_path);

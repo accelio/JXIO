@@ -44,7 +44,7 @@ def usage():
     print "\t-m  | --memory			max memory to use in MB (default is 1 MB)"
     print "\t-u  | --cpu			core number or range of cores to run the threads on (default is 1)"  
     print "\t-f  | --file			path to results file (client only, default is no file for writing)"  
-    print "\t-r  | --runs			number of runs of the test (client only, default is 100)"
+    print "\t-r  | --runs			number of runs of the test (client only, default is 50)"
     print "examples :"
     print "\ttests/runJBenchmarkTest.py -c -a 1.1.1.1 -p 2222 -t 2 -i 0 -o 64 -m 2 -u 12 -f /tmp/results.csv -r 10"  
     print "\ttests/runJBenchmarkTest.py -s -a 1.1.1.1 -p 2222 -t 2 -i 64 -o 0 -m 2 -u 12"   
@@ -69,7 +69,7 @@ thread = 1
 memory = 2
 core = 1
 file = "no_file"
-runs = 20
+runs = 50
 
 in1 = None
 out1 = None

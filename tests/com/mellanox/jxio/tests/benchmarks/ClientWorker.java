@@ -34,7 +34,8 @@ public class ClientWorker implements Callable<double[]> {
 	private final ClientSession cs;
 	private final EventQueueHandler eqh;
 	private final MsgPool pool;
-	private final int msgSize;
+	private final int in_msgSize;
+	private final int out_msgSize;
 	// calculation members
 	private boolean firstTime;
 	private long startTime;
@@ -57,8 +58,9 @@ public class ClientWorker implements Callable<double[]> {
 		pool = new MsgPool(num_of_buffers, inMsg_size, outMsg_size);
 		results = res;
 		cs = new ClientSession(eqh, uri, new ClientWorkerCallbacks());
-		msgSize = (inMsg_size > outMsg_size) ? inMsg_size : outMsg_size;
-		int msgKSize = msgSize / 1024;
+		in_msgSize = inMsg_size;
+		out_msgSize = outMsg_size;
+		int msgKSize = ((inMsg_size > outMsg_size) ? inMsg_size : outMsg_size) / 1024;
 		if (msgKSize == 0) {
 			sample_cnt = 40000;
 		} else {
@@ -131,10 +133,12 @@ public class ClientWorker implements Callable<double[]> {
 				// multiply by 10^9 because result is in seconds
 				long pps = (cnt * 1000000000) / delta;
 				// divide by (1024*1024) in order to get BW in MB
-				double bw = (1.0 * pps * msgSize / (1024 * 1024));
+				double out_bw = (1.0 * pps * out_msgSize / (1024 * 1024));
+				double in_bw = (1.0 * pps * in_msgSize / (1024 * 1024));
 				results[res_array_index] = pps;
-				results[res_array_index + 1] = bw;
-				res_array_index += 2;
+				results[res_array_index + 1] = out_bw;
+				results[res_array_index + 2] = in_bw;
+				res_array_index += 3;
 				if (res_array_index == results.length) {
 					ClientWorker.this.close();
 					return;
