@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <execinfo.h>  // for backtrace
 #include <map>
+#include "ServerSession.h"
 
 class Context;
 struct xio_session;
@@ -60,19 +61,19 @@ void logs_from_xio_callback_register();
 void logs_from_xio_callback_unregister();
 void logs_from_xio_set_threshold(log_severity_t threshold);
 
-typedef std::pair<xio_session*, Context*> pair_ses_ctx_t;
-typedef std::map<xio_session*, Context*> map_ses_ctx_t;
+typedef std::pair<xio_session*, ServerSession*> pair_ses_ctx_t;
+typedef std::map<xio_session*, ServerSession*> map_ses_ctx_t;
 
-static map_ses_ctx_t map_sessions;//maps xio_session to appopriate ctx
+static map_ses_ctx_t map_sessions;//maps xio_session to appopriate ServerSession
 
 static pthread_mutex_t mutex_for_map = PTHREAD_MUTEX_INITIALIZER;
 
-Context* delete_ctx_for_session(xio_session*);
-void add_ctx_for_session(xio_session * s, Context* c);
+ServerSession* delete_ses_server_for_session(xio_session*);
+void add_ses_server_for_session(xio_session *, ServerSession*);
 
 bool close_xio_connection(struct xio_session *session, struct xio_context *ctx);
-bool forward_session(struct xio_session *session, const char * url, Context* context);
-bool accept_session(struct xio_session *session, Context* context);
+bool forward_session(struct xio_session *xio_session, ServerSession* jxio_session, const char * url);
+bool accept_session(struct xio_session *xio_session,  ServerSession* jxio_session);
 bool reject_session(struct xio_session *session, int reason,
 		char *user_context, size_t user_context_len);
 

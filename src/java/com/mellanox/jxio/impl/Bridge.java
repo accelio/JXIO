@@ -165,10 +165,10 @@ public class Bridge {
 		return ret;
 	}
 
-	private static native boolean serverSendResponceNative(long ptrMsg, int size);
+	private static native boolean serverSendResponceNative(long ptrMsg, int size, long ptrSesServer);
 
-	public static boolean serverSendResponce(final long ptrMsg, final int size) {
-		boolean ret = serverSendResponceNative(ptrMsg, size);
+	public static boolean serverSendResponce(final long ptrMsg, final int size, final long ptrSesServer) {
+		boolean ret = serverSendResponceNative(ptrMsg, size, ptrSesServer);
 		return ret;
 	}
 
@@ -179,6 +179,12 @@ public class Bridge {
 		return ret;
 	}
 
+	private static native void deleteSessionServerNative(long ptrSessionServer);
+
+	public static void deleteSessionServer(final long ptrSessionServer) {
+		deleteSessionServerNative(ptrSessionServer);
+	}	
+	
 	// callback from C++
 	static public void requestForBoundMsgPool(long ptrEQH, int inSize, int outSize) {
 		EventQueueHandler eqh = mapIdEQHObject.get(ptrEQH);

@@ -14,14 +14,29 @@
  ** governing permissions and  limitations under the License.
  **
  */
-#ifndef Bridge__H___
-#define Bridge__H___
 
-class MsgPool;
+#ifndef ServerSession__H___
+#define ServerSession__H___
+
+#include <errno.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#include <libxio.h>
+
 class Context;
 
-void Bridge_invoke_logToJava_callback(const char* log_message,
-		const int severity);
-void Bridge_invoke_requestForBoundMsgPool_callback (Context* ctx, int inSize, int outSize);
+
+class ServerSession {
+public:
+	ServerSession(xio_session * session, Context* ctx);
+	~ServerSession();
+
+	bool is_closing;
+	Context* getCtx() {return ctx;}
+private:
+	struct xio_session* session;
+	Context* ctx;
+};
 
 #endif

@@ -34,7 +34,8 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	 */
 	private EventQueueHandler eventQHandlerMsg;
 	private EventQueueHandler eventQHandlerSession;
-	private static final Log  LOG           = LogFactory.getLog(ServerSession.class.getCanonicalName());
+	private long              ptrSesServer;
+	private static final Log  LOG = LogFactory.getLog(ServerSession.class.getCanonicalName());
 
 	public static interface Callbacks {
 		public void onRequest(Msg msg);
@@ -64,7 +65,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		setIsClosing(true);
 		removeFromEQHs();
 		Bridge.closeServerSession(getId(), this.eventQHandlerSession.getId());
-		
+
 		return true;
 	}
 
@@ -77,7 +78,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 			LOG.warn("Trying to send message while session is closing");
 			return false;
 		}
-		boolean ret = Bridge.serverSendResponce(msg.getId(), msg.getOut().position());
+		boolean ret = Bridge.serverSendResponce(msg.getId(), msg.getOut().position(), ptrSesServer);
 		if (!ret) {
 			LOG.error("there was an error sending the message");
 		}
@@ -95,7 +96,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		this.eventQHandlerMsg.addEventable(this);
 		this.eventQHandlerSession = eqhS;
 		this.eventQHandlerSession.addEventable(this); // if eqhS==eqhM, EventQueueHandler.eventables will contain only
-													  // one value
+		                                              // one value
 	}
 
 	void onEvent(Event ev) {
@@ -107,8 +108,10 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					int reason = ((EventSession) ev).getReason();
 					EventName eventName = EventName.getEventByIndex(errorType);
 					if (eventName == EventName.SESSION_TEARDOWN) {
-						removeFromEQHs();    // now we are officially done with this session and it can
+						removeFromEQHs(); // now we are officially done with this session and it can
 						this.setIsClosing(true);// be deleted from the EQH
+						//now that the user knows session is closed, object holding session state can be deleted
+						Bridge.deleteSessionServer(this.ptrSesServer);
 					}
 					callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
 
@@ -151,5 +154,10 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		if (eventQHandlerSession != eventQHandlerMsg) {
 			eventQHandlerMsg.removeEventable(this);
 		}
+	}
+
+	void setPtrServerSession(long ptrSesServer) {
+		this.ptrSesServer = ptrSesServer;
+
 	}
 }

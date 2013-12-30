@@ -94,7 +94,7 @@ void logs_from_xio_set_threshold(log_severity_t threshold)
 	xio_set_opt(NULL, XIO_OPTLEVEL_ACCELIO, XIO_OPTNAME_LOG_LEVEL, &xio_log_level, sizeof(enum xio_log_level));
 }
 
-Context* delete_ctx_for_session(xio_session* session){
+ServerSession* delete_ses_server_for_session(xio_session* session){
 	map_ses_ctx_t::iterator it;
 	pthread_mutex_lock(&mutex_for_map);
 	it=map_sessions.find(session);
@@ -103,18 +103,18 @@ Context* delete_ctx_for_session(xio_session* session){
 		pthread_mutex_unlock(&mutex_for_map);
 		return NULL;
 	}
-	Context *ctx = it->second;
+	ServerSession *jxio_session = it->second;
 	map_sessions.erase(it);
 	pthread_mutex_unlock(&mutex_for_map);
-	log(lsDEBUG, "deleting pair <ctx=%p, session=%p>\n", ctx, session);
+	log(lsDEBUG, "deleting pair <jxio_session=%p, xio_session=%p>\n", jxio_session, session);
 
-	return ctx;
+	return jxio_session;
 }
 
-void add_ctx_for_session(xio_session * session, Context* ctx){
-	log (lsDEBUG, "adding pair<ses=%p, ctx=%p>\n", session, ctx);
+void add_ses_server_for_session(xio_session * xio_session, ServerSession* jxio_session){
+	log (lsDEBUG, "adding pair<xio_session=%p, jxio_session=%p>\n", xio_session, jxio_session);
 	pthread_mutex_lock(&mutex_for_map);
-	map_sessions.insert(pair_ses_ctx_t(session, ctx));
+	map_sessions.insert(pair_ses_ctx_t(xio_session, jxio_session));
 	pthread_mutex_unlock(&mutex_for_map);
 }
 
@@ -137,28 +137,28 @@ bool close_xio_connection(struct xio_session *session, struct xio_context *ctx)
 	return true;
 }
 
-bool forward_session(struct xio_session *session, const char * url, Context* context) {
-	log(lsDEBUG, "url before forward is %s. xio_session is %p\n", url, session);
+bool forward_session(struct xio_session *xio_session, ServerSession* jxio_session, const char * url) {
+	log(lsDEBUG, "url before forward is %s. xio_session is %p\n", url, xio_session);
 
-	int retVal = xio_accept(session, &url, 1, NULL, 0);
+	int retVal = xio_accept(xio_session, &url, 1, NULL, 0);
 	if (retVal) {
-		log(lsDEBUG, "ERROR, accepting session=%p. error '%s' (%d)\n", session, xio_strerror(xio_errno()), xio_errno());
+		log(lsDEBUG, "ERROR, accepting session=%p. error '%s' (%d)\n", xio_session, xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
-	add_ctx_for_session(session, context);
+	add_ses_server_for_session(xio_session, jxio_session);
 	return true;
 }
 
-bool accept_session(struct xio_session *session, Context* context) {
+bool accept_session(struct xio_session *xio_session, ServerSession* jxio_session) {
 
-	log(lsDEBUG, "before accept xio_session is %p\n", session);
+	log(lsDEBUG, "before accept xio_session is %p\n", xio_session);
 
-	int retVal = xio_accept(session, NULL, 0, NULL, 0);
+	int retVal = xio_accept(xio_session, NULL, 0, NULL, 0);
 	if (retVal) {
-		log(lsDEBUG, "ERROR, accepting session=%p. error '%s' (%d)\n",session, xio_strerror(xio_errno()), xio_errno());
+		log(lsDEBUG, "ERROR, accepting session=%p. error '%s' (%d)\n",xio_session, xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
-	add_ctx_for_session(session, context);
+	add_ses_server_for_session(xio_session, jxio_session);
 	return true;
 }
 

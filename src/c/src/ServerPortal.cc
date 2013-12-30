@@ -57,6 +57,7 @@ ServerPortal::~ServerPortal() {
 
 Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xio_session *session) {
 
+	ServerSession* ses;
 	switch (eventType) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
 		log(lsDEBUG, "got XIO_SESSION_CONNECTION_CLOSED_EVENT. \n");
@@ -80,15 +81,20 @@ Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xi
 		if (xio_session_close(session)) {
 			log(lsERROR, "Error '%s' (%d) in xio_session_close server=%p\n", xio_strerror(xio_errno()), xio_errno(), this);
 		}
-		return delete_ctx_for_session(session);
+		//last event for this session EVER: ses can be deleted from the map, but not deleted
+		ses = delete_ses_server_for_session(session);
+		ses->is_closing = true;
+		return ses->getCtx();
 
 	case XIO_SESSION_CONNECTION_ERROR_EVENT:
-			log(lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
-			return NULL;
+		log(lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
+		return NULL;
 
 	default:
 		log(lsWARN, "UNHANDLED event: got '%s' event (%d). \n", xio_session_event_str(eventType), eventType);
-		return delete_ctx_for_session(session);
+		ses = delete_ses_server_for_session(session);
+		ses->is_closing = true;
+		return ses->getCtx();
 	}
 }
 
