@@ -36,6 +36,24 @@
 class Context;
 struct xio_session;
 
+#define LOG_FATAL(log_fmt, log_args...)	LOG_BY_FILE(lsFATAL, log_fmt, ##log_args)
+#define LOG_ERR(log_fmt, log_args...)	LOG_BY_FILE(lsERROR, log_fmt, ##log_args)
+#define LOG_WARN(log_fmt, log_args...)	LOG_BY_FILE(lsWARN, log_fmt, ##log_args)
+#define LOG_INFO(log_fmt, log_args...)	LOG_BY_FILE(lsINFO, log_fmt, ##log_args)
+#define LOG_DBG(log_fmt, log_args...)	LOG_BY_FILE(lsDEBUG, log_fmt, ##log_args)
+#define LOG_TRACE(log_fmt, log_args...)	LOG_BY_FILE(lsTRACE, log_fmt, ##log_args)
+
+
+
+#define MODULE_INFO		this
+#define MODULE_HDR_INFO 	MODULE_NAME "[%p]:%d:%s() "
+#define MODULE_FILE_INFO	"%s:%d:%s() "
+
+// THE 'log()' macros that should be used everywhere...
+#define LOG_BY_MODULE(severity, log_fmt, log_args...) 	do { if (severity <= g_log_threshold)  log_func(severity, MODULE_HDR_INFO  log_fmt "\n", MODULE_INFO, __LINE__, __FUNCTION__, ##log_args);} while(0)
+#define LOG_BY_FILE(severity, log_fmt, log_args...) 	do { if (severity <= g_log_threshold)  log_func(severity, MODULE_FILE_INFO  log_fmt "\n", __FILE__, __LINE__, __FUNCTION__, ##log_args);} while(0)
+
+
 enum log_severity_t {
 	lsNONE,
 	lsFATAL,
@@ -46,15 +64,13 @@ enum log_severity_t {
 	lsTRACE,
 };
 
-// THE 'log()' macro that should be used everywhere...
-#define log(severity, ...) do { if (severity <= g_log_threshold)  log_func(__FILE__, __LINE__, __FUNCTION__, severity, __VA_ARGS__);} while(0)
 
 extern log_severity_t g_log_threshold;
 const log_severity_t DEFAULT_LOG_THRESHOLD = lsINFO;
 
 void log_set_threshold(log_severity_t _threshold);
 
-void log_func(const char* file, const int line, const char* func, log_severity_t severity, const char *fmt, ...); // should not be called directly
+void log_func(log_severity_t severity, const char *log_fmt, ...);
 
 // helper functions to setup log collection from AccelIO into JXIO's logging
 void logs_from_xio_callback_register();

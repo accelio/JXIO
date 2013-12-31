@@ -78,11 +78,11 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 	public boolean close() {
 		if (this.getIsClosing()) {
-			LOG.warn("attempting to close client that is already closed or being closed");
+			LOG.warn(this.toString() + ": attempting to close client that is already closed or being closed");
 			return false;
 		}
 		if (getId() == 0) {
-			LOG.error("closing Session with empty id");
+			LOG.error(this.toString() + ": closing Session with empty id");
 			return false;
 		}
 		setIsClosing(true);
@@ -90,7 +90,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		Bridge.closeSessionClient(getId());
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("at the end of SessionClientClose" + this.toString());
+			LOG.debug(this.toString() + ": at the end of SessionClient:close()");
 		}
 		return true;
 	}

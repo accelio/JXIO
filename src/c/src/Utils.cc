@@ -26,35 +26,37 @@ void log_set_threshold(log_severity_t _threshold)
 	g_log_threshold = (lsNONE <= _threshold && _threshold <= lsTRACE) ? _threshold : DEFAULT_LOG_THRESHOLD;
 }
 
-#define log_formating_and_output(_file_, _line_, _func_, _severity_, _fmt_) \
-		const int SIZE = 2048; \
-		char __str[SIZE]; \
-		int n = snprintf(__str, SIZE, "%s:%d:%s() ", _file_, _line_, _func_); \
-		if (n < 0) { \
-			return; /*error*/ \
-		} \
-		if (n < SIZE) { \
-			va_list ap; \
-			va_start(ap, _fmt_); \
-			int m = vsnprintf(__str+n, SIZE-n, _fmt_, ap); \
-			va_end(ap); \
-			if (m < 0) { \
-				return; /*error*/ \
-			} \
-		} \
-		__str[SIZE-1] = '\0'; \
-		Bridge_invoke_logToJava_callback(__str, _severity_);
-
-
-void log_func(const char* file, const int line, const char* func, log_severity_t severity, const char *fmt, ...)
+void log_func(log_severity_t severity, const char *log_fmt, ...)
 {
-	log_formating_and_output(file, line, func, severity, fmt);
+	const int SIZE = 2048;
+	char _str_[SIZE];
+	va_list ap;
+	va_start(ap, log_fmt);
+	int m = vsnprintf(_str_, SIZE, log_fmt, ap);
+	va_end(ap);
+	if (m < 0) {
+		return; /*error*/
+	}
+	_str_[SIZE-1] = '\0';
+	Bridge_invoke_logToJava_callback(severity, _str_);
 }
 
-void logs_from_xio_callback(const char *file, unsigned line, const char *func, unsigned level, const char *fmt, ...)
+void logs_from_xio_callback(const char *file, unsigned line, const char *func, unsigned level, const char *log_fmt, ...)
 {
 	log_severity_t severity = g_xio_log_level_to_jxio_severity[level];
-	log_formating_and_output(file, line, func, severity, fmt);
+	if (severity > g_log_threshold)
+		return;
+	const int SIZE = 2048;
+	char _str_[SIZE];
+	va_list ap;
+	va_start(ap, log_fmt);
+	int m = vsnprintf(_str_, SIZE, log_fmt, ap);
+	va_end(ap);
+	if (m < 0) {
+		return; /*error*/
+	}
+	_str_[SIZE-1] = '\0';
+	Bridge_invoke_logToJava_callback(severity, _str_);
 }
 
 void logs_from_xio_callback_register()
@@ -94,68 +96,69 @@ void logs_from_xio_set_threshold(log_severity_t threshold)
 	xio_set_opt(NULL, XIO_OPTLEVEL_ACCELIO, XIO_OPTNAME_LOG_LEVEL, &xio_log_level, sizeof(enum xio_log_level));
 }
 
-ServerSession* delete_ses_server_for_session(xio_session* session){
+ServerSession* delete_ses_server_for_session(xio_session* session)
+{
 	map_ses_ctx_t::iterator it;
 	pthread_mutex_lock(&mutex_for_map);
 	it=map_sessions.find(session);
 	if (it == map_sessions.end()){
-		log(lsERROR, "session=%p in map\n", session);
+		LOG_ERR("session=%p in map", session);
 		pthread_mutex_unlock(&mutex_for_map);
 		return NULL;
 	}
 	ServerSession *jxio_session = it->second;
 	map_sessions.erase(it);
 	pthread_mutex_unlock(&mutex_for_map);
-	log(lsDEBUG, "deleting pair <jxio_session=%p, xio_session=%p>\n", jxio_session, session);
+	LOG_DBG("deleting pair <jxio_session=%p, xio_session=%p>", jxio_session, session);
 
 	return jxio_session;
 }
 
-void add_ses_server_for_session(xio_session * xio_session, ServerSession* jxio_session){
-	log (lsDEBUG, "adding pair<xio_session=%p, jxio_session=%p>\n", xio_session, jxio_session);
+void add_ses_server_for_session(xio_session * xio_session, ServerSession* jxio_session)
+{
+	LOG_DBG("adding pair<jxio_session=%p, xio_session=%p>", jxio_session, xio_session);
 	pthread_mutex_lock(&mutex_for_map);
 	map_sessions.insert(pair_ses_ctx_t(xio_session, jxio_session));
 	pthread_mutex_unlock(&mutex_for_map);
 }
 
-
-
 bool close_xio_connection(struct xio_session *session, struct xio_context *ctx)
 {
-	log (lsDEBUG, "closing connection for session=%p, context=%p\n", session, ctx);
+	LOG_DBG("closing connection for session=%p, context=%p", session, ctx);
 	xio_connection * con = xio_get_connection(session, ctx);
 	if (con == NULL) {
-		log(lsDEBUG, "ERROR, no connection found (xio_session=%p, xio_context=%p)\n", session, ctx);
+		LOG_DBG("ERROR, no connection found (xio_session=%p, xio_context=%p)", session, ctx);
 		return false;
 	}
 	if (xio_disconnect(con)) {
-		log(lsDEBUG, "ERROR, xio_disconnect failed with error '%s' (%d) (xio_session=%p, xio_context=%p, conn=%p)\n",
+		LOG_DBG("ERROR, xio_disconnect failed with error '%s' (%d) (xio_session=%p, xio_context=%p, conn=%p)",
 				xio_strerror(xio_errno()), xio_errno(), session, ctx, con);
 		return false;
 	}
-	log (lsDEBUG, "successfully closed connection=%p, for session=%p, context=%p\n", con, session, ctx);
+	LOG_DBG("successfully closed connection=%p, for session=%p, context=%p", con, session, ctx);
 	return true;
 }
 
-bool forward_session(struct xio_session *xio_session, ServerSession* jxio_session, const char * url) {
-	log(lsDEBUG, "url before forward is %s. xio_session is %p\n", url, xio_session);
+bool forward_session(struct xio_session *xio_session, ServerSession* jxio_session, const char * url)
+{
+	LOG_DBG("url before forward is %s. xio_session is %p", url, xio_session);
 
 	int retVal = xio_accept(xio_session, &url, 1, NULL, 0);
 	if (retVal) {
-		log(lsDEBUG, "ERROR, accepting session=%p. error '%s' (%d)\n", xio_session, xio_strerror(xio_errno()), xio_errno());
+		LOG_DBG("ERROR, accepting session=%p. error '%s' (%d)", xio_session, xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
 	add_ses_server_for_session(xio_session, jxio_session);
 	return true;
 }
 
-bool accept_session(struct xio_session *xio_session, ServerSession* jxio_session) {
-
-	log(lsDEBUG, "before accept xio_session is %p\n", xio_session);
+bool accept_session(struct xio_session *xio_session, ServerSession* jxio_session)
+{
+	LOG_DBG("before accept xio_session is %p", xio_session);
 
 	int retVal = xio_accept(xio_session, NULL, 0, NULL, 0);
 	if (retVal) {
-		log(lsDEBUG, "ERROR, accepting session=%p. error '%s' (%d)\n",xio_session, xio_strerror(xio_errno()), xio_errno());
+		LOG_DBG("ERROR, accepting session=%p. error '%s' (%d)",xio_session, xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
 	add_ses_server_for_session(xio_session, jxio_session);
@@ -164,19 +167,16 @@ bool accept_session(struct xio_session *xio_session, ServerSession* jxio_session
 
 
 bool reject_session(struct xio_session *session, int reason,
-		char *user_context, size_t user_context_len) {
-
-	log(lsDEBUG, "before reject xio_session=%p. reason is %d\n", session, reason);
+		char *user_context, size_t user_context_len)
+{
+	LOG_DBG("before reject xio_session=%p. reason is %d", session, reason);
 
 	enum xio_status s = (enum xio_status)(reason + XIO_BASE_STATUS -1);
 
 	int retVal = xio_reject(session, s, user_context, user_context_len);
 	if (retVal) {
-		log(lsDEBUG, "ERROR, rejecting session=%p. error '%s' (%d)\n",session, xio_strerror(xio_errno()), xio_errno());
+		LOG_DBG("ERROR, rejecting session=%p. error '%s' (%d)",session, xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
 	return true;
 }
-
-
-

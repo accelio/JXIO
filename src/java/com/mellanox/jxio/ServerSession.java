@@ -80,7 +80,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		}
 		boolean ret = Bridge.serverSendResponce(msg.getId(), msg.getOut().position(), ptrSesServer);
 		if (!ret) {
-			LOG.error("there was an error sending the message");
+			LOG.debug("there was an error sending the message");
 		}
 		this.eventQHandlerMsg.releaseMsgBackToPool(msg);
 		/*

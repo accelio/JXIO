@@ -15,9 +15,17 @@
 **
 */
 
+#include "Utils.h"
 #include "MsgPool.h"
 
 //TODO: make sure that in and out size are aligned to 64!!!!
+
+#define MODULE_NAME		"MsgPool"
+#define MSGPOOL_LOG_ERR(log_fmt, log_args...)  LOG_BY_MODULE(lsERROR, log_fmt, ##log_args)
+#define MSGPOOL_LOG_WARN(log_fmt, log_args...) LOG_BY_MODULE(lsWARN, log_fmt, ##log_args)
+#define MSGPOOL_LOG_DBG(log_fmt, log_args...)  LOG_BY_MODULE(lsDEBUG, log_fmt, ##log_args)
+
+
 MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 {
 	error_creating = false;
@@ -32,18 +40,18 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 
 	this->x_buf = xio_alloc(buf_size);
 	if (this->x_buf == NULL) {
-		log(lsWARN, "there was an error while allocating&registering memory via huge pages. \n");
-		log(lsWARN, "You should work with Mellanox Ofed 2.0\n");
-		log(lsWARN, "attempting to allocate&registering memory. THIS COULD HURT PERFORMANCE!!!!!\n");
+		MSGPOOL_LOG_WARN("there was an error while allocating & registering memory via huge pages");
+		MSGPOOL_LOG_WARN("You should work with Mellanox Ofed 2.0 ow newer");
+		MSGPOOL_LOG_WARN("attempting to allocate&registering memory. THIS COULD HURT PERFORMANCE!!!!!");
 		this->buf = (char*) malloc(this->buf_size);
 		if (this->buf == NULL) {
-			log(lsERROR, "allocating memory of size %ld failed. aborting\n", this->buf_size);
+			MSGPOOL_LOG_ERR("allocating memory of size %ld failed. aborting", this->buf_size);
 			goto mark_error;
 		}
 		this->xio_mr = xio_reg_mr(this->buf, this->buf_size);
 		if (this->xio_mr == NULL) {
 			free(this->buf);
-			log(lsERROR, "registering memory failed. aborting\n");
+			MSGPOOL_LOG_WARN("registering memory failed. aborting");
 			goto mark_error;
 		}
 	}
@@ -70,8 +78,7 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 		msg_list->push_front(m);
 		msg_ptrs[i] = m;
 	}
-	log(lsDEBUG, "finished allocating msg pool. this=%p, msg_num=%d,  in_size=%d, out_size=%d\n", this, msg_num, in_size, out_size);
-
+	MSGPOOL_LOG_DBG("CTOR done. allocated msg pool: num_msgs=%d, in_size=%d, out_size=%d", msg_num, in_size, out_size);
 	return;
 
 cleanup_list:
@@ -86,12 +93,12 @@ cleanup_array:
 cleanup_buffer:
 	if (this->x_buf) { //memory was allocated using xio_alloc
 		if (xio_free(&this->x_buf)) {
-			log(lsERROR, "Error xio_free failed\n");
+			MSGPOOL_LOG_ERR("Error xio_free failed");
 		}
 	}
 	else { //memory was allocated using malloc and xio_reg_mr
 		if (xio_dereg_mr(&this->xio_mr)) {
-			log(lsERROR, "Error '%s' (%d) in xio_dereg_mr\n", xio_strerror(xio_errno()), xio_errno());
+			MSGPOOL_LOG_ERR("Error in xio_dereg_mr: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		}
 		free(this->buf);
 	}
@@ -115,17 +122,18 @@ MsgPool::~MsgPool()
 
 	if (this->x_buf) { //memory was allocated using xio_alloc
 		if (xio_free(&this->x_buf)) {
-			log(lsERROR, "Error xio_free failed\n");
+			MSGPOOL_LOG_DBG("Error xio_free failed: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		}
 	}
 	else { //memory was allocated using malloc and xio_reg_mr
 		if (xio_dereg_mr(&this->xio_mr)) {
-			log(lsERROR, "Error '%s' (%d) in xio_dereg_mr\n", xio_strerror(xio_errno()), xio_errno());
+			MSGPOOL_LOG_DBG("Error in xio_dereg_mr: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		}
 		free(this->buf);
 	}
 
 	free (msg_ptrs);
+	MSGPOOL_LOG_DBG("DTOR done");
 }
 
 Msg* MsgPool::get_msg_from_pool()
@@ -135,7 +143,6 @@ Msg* MsgPool::get_msg_from_pool()
 	}
 	Msg * msg = msg_list->front();
 	msg_list->pop_front();
-
 	return msg;
 }
 

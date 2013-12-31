@@ -30,8 +30,6 @@ void MsgPools::setCtx(Context* ctx)
 	this->ctx = ctx;
 }
 
-
-
 MsgPools::~MsgPools()
 {
 }
@@ -42,8 +40,8 @@ bool MsgPools::add_msg_pool(MsgPool* pool)
 		this->in_size = pool->get_in_size();
 		this->out_size = pool->get_out_size();
 	}else{
-		if (this->in_size != pool->get_in_size() || this->out_size != pool->get_out_size()){
-			log(lsFATAL, "New pool is not of the same size!!! should be in=%d, out=%d\n", this->in_size, this->out_size);
+		if (this->in_size != pool->get_in_size() || this->out_size != pool->get_out_size()) {
+			LOG_FATAL("New pool is not of the same size!!! should be in=%d, out=%d", this->in_size, this->out_size);
 			exit(1);
 		}
 	}
@@ -51,7 +49,8 @@ bool MsgPools::add_msg_pool(MsgPool* pool)
 	return true;
 }
 
-Msg * MsgPools::get_msg_from_pool(int in_size, int out_size){
+Msg * MsgPools::get_msg_from_pool(int in_size, int out_size)
+{
 	//currently all msgPools have the same message sizes
 	while (true){
 		list_pools::iterator it = msg_pool_list.begin();
@@ -62,7 +61,7 @@ Msg * MsgPools::get_msg_from_pool(int in_size, int out_size){
 			}
 			it++;
 		}
-		log(lsDEBUG, "there are no more buffers in MsgPools. calling the user to allocate pool with in_size=%d, out_size=%d\n", in_size, out_size);
+		LOG_DBG("there are no more buffers in MsgPools. calling the user to allocate pool with in_size=%d, out_size=%d", in_size, out_size);
 		Bridge_invoke_requestForBoundMsgPool_callback(this->ctx, in_size, out_size);
 	}
 }

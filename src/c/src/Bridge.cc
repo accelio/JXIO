@@ -120,7 +120,7 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 		fprintf(stderr, "in JXIO/c/Bridge - failed to disable AccelIO's internal memory pool buffers\n");
 	}
 
-	log(lsDEBUG,"in JXIO/c/Bridge - java callback methods were found and cached\n");
+	LOG_DBG("in JXIO/c/Bridge - java callback methods were found and cached");
 
 	return JNI_VERSION_1_4;  //direct buffer requires java 1.4
 }
@@ -142,12 +142,12 @@ extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *jvm, void* reserved)
 	if (jweakBridge != NULL) {
 		env->DeleteWeakGlobalRef(jweakBridge);
 		jweakBridge = NULL;
-		log(lsDEBUG, "after env->DeleteWeakGlobalRef(jweaBridge)");
+		LOG_DBG("after env->DeleteWeakGlobalRef(jweaBridge)");
 	}
 	return;
 }
 
-void Bridge_invoke_logToJava_callback(const char* log_message, const int severity) {
+void Bridge_invoke_logToJava_callback(const int severity, const char* log_message) {
 	JNIEnv *env;
 	if (cached_jvm->GetEnv((void **) &env, JNI_VERSION_1_4)) {
 		printf("-->> Error getting JNIEnv In C++ JNI_logToJava when trying to log message: '%s'\n", log_message);
@@ -181,7 +181,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_createC
 	int size = eventQueueSize;
 	Context *ctx = new Context (size);
 	if (ctx == NULL) {
-		log(lsERROR, "memory allocation failed\n");
+		LOG_ERR("memory allocation failed");
 		return true;
 	}
 	if (ctx->error_creating) {
@@ -202,7 +202,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeCtxNat
 {
 	Context *ctx = (Context *)ptrCtx;
 	delete (ctx);
-	log(lsDEBUG, "end of closeCTX\n");
+	LOG_DBG("end of closeCTX");
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx, jlong timeOutMicroSec)
@@ -220,7 +220,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_breakEventL
 extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
 {
 	if (ptrCtx == 0){
-		log(lsERROR, "eqh does not exist\n");
+		LOG_ERR("eqh does not exist");
 		return 0;
 	}
 	const char *url = env->GetStringUTFChars(jurl, NULL);
@@ -228,7 +228,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_startSessi
 	env->ReleaseStringUTFChars(jurl, url);
 
 	if (ses == NULL) {
-		log(lsERROR, "memory allocation failed\n");
+		LOG_ERR("memory allocation failed");
 		return 0;
 	}
 	if (ses->error_creating) {
@@ -265,7 +265,7 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_jxio_impl_Bridge_start
 	env->ReleaseStringUTFChars(jurl, url);
 
 	if (server == NULL) {
-		log(lsERROR, "memory allocation failed\n");
+		LOG_ERR("memory allocation failed");
 		return NULL;
 	}
 	if (server->error_creating) {
@@ -302,7 +302,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSes
 	Context * ctx = (Context *) ptr_ctx;
 	ServerSession *jxio_ses = new ServerSession(xio_session, ctx);
 	if (jxio_ses == NULL){
-		log(lsERROR, "memory allocation failed\n");
+		LOG_ERR("memory allocation failed");
 		return 0;
 	}
 	bool ret_val = forward_session(xio_session, jxio_ses, url);
@@ -320,7 +320,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSess
 	Context * ctx = (Context *) ptr_ctx;
 	ServerSession *jxio_ses = new ServerSession(xio_session, ctx);
 	if (jxio_ses == NULL){
-		log(lsERROR, "memory allocation failed\n");
+		LOG_ERR("memory allocation failed");
 		return NULL;
 	}
 	bool ret_val = accept_session(xio_session, jxio_ses);
@@ -338,7 +338,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_rejectS
 	const char *data = env->GetStringUTFChars(jdata, NULL);
 	char * data_copy = (char*)malloc (length + 1);
 	if(data_copy == NULL){
-		log(lsERROR, "memory allocation failed\n");
+		LOG_ERR("memory allocation failed");
 		env->ReleaseStringUTFChars(jdata, data);
 		return false;
 	}
@@ -357,11 +357,11 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMs
 	jlong temp[msg_num+1];
 	MsgPool *pool = new MsgPool(msg_num, in_size, out_size);
 	if (pool == NULL) {
-		log(lsERROR, "memory allocation failed\n");
+		LOG_ERR("memory allocation failed");
 		return NULL;
 	}
 	if (pool->error_creating) {
-		log(lsERROR, "there was an error creating MsgPool\n");
+		LOG_ERR("there was an error creating MsgPool");
 		delete (pool);
 		return NULL;
 	}
@@ -388,7 +388,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_serverS
 	ServerSession *ses = (ServerSession*) ptr_ses_server;
 	Msg * msg = (Msg*) ptr_msg;
 	if (ses->is_closing){
-		log(lsDEBUG, "trying to send message while session is closing. Releasing msg back to pool\n");
+		LOG_DBG("trying to send message while session is closing. Releasing msg back to pool");
 		msg->release_to_pool();
 		return false;
 	}
@@ -440,7 +440,7 @@ JNIEnv *JX_attachNativeThread()
 	if (ret < 0) {
 		printf("cached_jvm->AttachCurrentThread failed ret=%d", ret);
 	}
-	log(lsDEBUG, "completed successfully env=%p", env);
+	LOG_DBG("completed successfully env=%p", env);
 	return env; // note: this handler is valid for all functions in this thread
 }
 

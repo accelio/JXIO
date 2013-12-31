@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include "Event_queue.h"
 #include "Events.h"
-#include "Utils.h"
 #include "MsgPools.h"
 
 class Client;

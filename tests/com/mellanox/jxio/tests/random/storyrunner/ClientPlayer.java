@@ -90,7 +90,7 @@ public class ClientPlayer extends GeneralPlayer {
 
 		this.workerThread = workerThread;
 		this.mp = new MsgPool(poolData.getCount(), poolData.getInSize(), poolData.getOutSize());
-		LOG.info(this.toString() + ": new MsgPool:  " + this.mp);
+		LOG.info(this.toString() + ": new MsgPool: " + this.mp);
 
 		// register initialize timer
 		TimerList.Timer tInitialize = new InitializeTimer(this.startDelaySec * 1000000);

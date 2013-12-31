@@ -28,11 +28,10 @@ Event_queue::Event_queue(int size)
 	error_creating = false;
 	this->buf = (char*)malloc(size * sizeof(char));
 	if (this->buf== NULL){
-		log(lsDEBUG, "ERROR, could not allocate memory for Event Queue buffer\n");
+		LOG_DBG("ERROR, could not allocate memory for Event Queue buffer");
 		error_creating = true;
 		return;
 	}
-
 }
 
 Event_queue::~Event_queue()

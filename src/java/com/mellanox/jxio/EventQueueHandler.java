@@ -40,10 +40,10 @@ import com.mellanox.jxio.impl.EventSessionEstablished;
  */
 public class EventQueueHandler implements Runnable {
 
+	private static final Log       LOG                   = LogFactory.getLog(EventQueueHandler.class.getCanonicalName());
 	private final long             refToCObject;
 	private final int              eventQueueSize        = 15000;                                                    // size
-																													  // of
-																													  // byteBuffer
+	private final Callbacks        callbacks;
 	private int                    eventsWaitingInQ      = 0;
 	private ByteBuffer             eventQueue            = null;
 	private ElapsedTimeMeasurement elapsedTime           = null;
@@ -52,10 +52,7 @@ public class EventQueueHandler implements Runnable {
 	private Map<Long, Msg>         msgsPendingNewRequest = new HashMap<Long, Msg>();
 	private volatile boolean       breakLoop             = false;
 	private volatile boolean       stopLoop              = false;
-	private static final Log       LOG                   = LogFactory
-	                                                             .getLog(EventQueueHandler.class.getCanonicalName());
 	private volatile boolean       inRunLoop             = false;
-	private final Callbacks        callbacks;
 
 	public static interface Callbacks {
 		//this method should return an unbinded MsgPool.  
@@ -110,7 +107,7 @@ public class EventQueueHandler implements Runnable {
 			LOG.error("no context opened on C side. can not run event loop");
 			return 0;
 		}
-		if (this.inRunLoop){
+		if (this.inRunLoop) {
 			LOG.error(this.toString() + " event loop is already running");
 			return 0;
 		}
@@ -126,20 +123,9 @@ public class EventQueueHandler implements Runnable {
 		        && ((is_forever) || (!this.elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("["
-				        + getId()
-				        + "] in loop with "
-				        + eventsWaitingInQ
-				        + " events in Q. handled "
-				        + eventsHandled
-				        + " events out of "
-				        + maxEvents
-				        + ", "
-				        + "elapsed time is "
-				        + this.elapsedTime.getElapsedTimeMicro()
-				        + " usec (blocking for "
-				        + ((is_forever) ? "infinite duration)" : "a max duration of " + timeOutMicroSec / 1000
-				                + " msec.)"));
+				LOG.debug("[" + getId() + "] in loop with " + eventsWaitingInQ + " events in Q. handled " + eventsHandled + " events out of "
+				        + maxEvents + ", " + "elapsed time is " + this.elapsedTime.getElapsedTimeMicro() + " usec (blocking for "
+				        + ((is_forever) ? "infinite duration)" : "a max duration of " + timeOutMicroSec / 1000 + " msec.)"));
 			}
 
 			if (eventsWaitingInQ <= 0) { // the event queue is empty now, get more events from libxio

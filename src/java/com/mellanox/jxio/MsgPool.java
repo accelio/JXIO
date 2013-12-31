@@ -61,7 +61,7 @@ public class MsgPool {
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append("jxio.MsgPool(" + hashCode() + ")");
+		sb.append("jxio.MsgPool(" + Long.toHexString(refToCObject) + ")");
 		sb.append("[count=" + count());
 		sb.append(", capacity=" + capacity);
 		sb.append(", inSize=" + inSize);

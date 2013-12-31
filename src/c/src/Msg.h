@@ -21,8 +21,6 @@
 #include <stdio.h>
 #include <libxio.h>
 
-#include "Utils.h"
-
 class MsgPool;
 
 class Msg {

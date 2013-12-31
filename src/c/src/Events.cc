@@ -104,7 +104,7 @@ int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, struct xio_sessi
 		len = INET6_ADDRSTRLEN;
 	}
 	else {
-		log(lsERROR, "can not get src ip\n");
+		LOG_ERR("can not get src ip");
 		return 0;
 	}
 

@@ -45,7 +45,7 @@ public class Msg {
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append("jxio.Msg(" + hashCode() + ")");
+		sb.append("jxio.Msg(" + Long.toHexString(refToCObject) + ")");
 		sb.append("[msgIn=" + toStringBB(this.in));
 		sb.append(", msgOut=" + toStringBB(this.out));
 		sb.append(", msgPool=" + this.msgPool + "]");

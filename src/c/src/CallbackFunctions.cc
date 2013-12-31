@@ -18,12 +18,13 @@
 #include <map>
 #include "CallbackFunctions.h"
 
-void done_event_creating(Context *ctx, int sizeWritten) {
+void done_event_creating(Context *ctx, int sizeWritten)
+{
 	ctx->event_queue->increase_offset(sizeWritten);
 
 	//need to stop the event queue only if this is the first callback
 	if (!ctx->events_num) {
-		log(lsDEBUG, "inside a callback - stopping the event queue\n");
+		LOG_DBG("inside a callback - stopping the event queue");
 		ctx->break_event_loop(1); // always 'self thread = true' since JXIO break from within callback
 	}
 	ctx->events_num++;
@@ -31,8 +32,9 @@ void done_event_creating(Context *ctx, int sizeWritten) {
 
 // implementation of the XIO callbacks
 int on_new_session_callback(struct xio_session *session,
-		struct xio_new_session_req *req, void *cb_prv_data) {
-	log(lsDEBUG, "got on_new_session_callback for session=%p\n", session);
+		struct xio_new_session_req *req, void *cb_prv_data)
+{
+	LOG_DBG("got on_new_session_callback for session=%p", session);
 
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
@@ -43,22 +45,24 @@ int on_new_session_callback(struct xio_session *session,
 }
 
 int on_msg_send_complete_callback(struct xio_session *session,
-		struct xio_msg *msg, void *cb_prv_data) {
-	log(lsTRACE, "got on_msg_send_complete_callback for msg=%p\n", msg->user_context);
+		struct xio_msg *msg, void *cb_prv_data)
+{
+	LOG_TRACE("got on_msg_send_complete_callback for msg=%p", msg->user_context);
 
 	//must release the message
 	Msg *msg_from_pool = (Msg*) msg->user_context;
 	msg_from_pool->release_to_pool();
 
-	log(lsTRACE, "finished on_msg_send_complete_callback for msg=%p\n", msg->user_context);
+	LOG_TRACE("finished on_msg_send_complete_callback for msg=%p", msg->user_context);
 	return 0;
 }
 
 int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
-		int more_in_batch, void *cb_prv_data) {
-	log(lsTRACE, "on_msg_callback is %p. num_iov = %d, len is %d msg is %p\n", msg->user_context, msg->in.data_iovlen, msg->in.data_iov[0].iov_len, msg);
+		int more_in_batch, void *cb_prv_data)
+{
+	LOG_TRACE("on_msg_callback is %p. num_iov = %d, len is %d msg is %p", msg->user_context, msg->in.data_iovlen, msg->in.data_iov[0].iov_len, msg);
 	if (msg->status){
-		log(lsERROR, "xio_msg=%p completed with error.[%s]\n", msg, xio_strerror(msg->status));
+		LOG_ERR("xio_msg=%p completed with error.[%s]", msg, xio_strerror(msg->status));
 	}
 
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
@@ -72,7 +76,7 @@ int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 			memcpy(msg_from_pool->get_buf(), msg->in.data_iov[0].iov_base, msg_size);
 		msg->user_context = msg_from_pool;
 		msg_from_pool->set_xio_msg_req(msg);
-		log(lsTRACE, "!!!!!!!!!!!!!! xio_msg is %p\n", msg);
+		LOG_TRACE("!!!!!!!!!!!!!! xio_msg is %p", msg);
 	}
 
 	char* buf = ctx->event_queue->get_buffer();
@@ -95,8 +99,9 @@ int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 }
 
 int on_msg_error_callback(struct xio_session *session, enum xio_status error,
-		struct xio_msg *msg, void *cb_prv_data) {
-	log(lsDEBUG, "got on_msg_error_callback\n");
+		struct xio_msg *msg, void *cb_prv_data)
+{
+	LOG_DBG("got on_msg_error_callback");
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
 
@@ -109,9 +114,10 @@ int on_msg_error_callback(struct xio_session *session, enum xio_status error,
 }
 
 int on_session_established_callback(struct xio_session *session,
-		struct xio_new_session_rsp *rsp, void *cb_prv_data) {
+		struct xio_new_session_rsp *rsp, void *cb_prv_data)
+{
 
-	log(lsDEBUG, "got on_session_established_callback\n");
+	LOG_DBG("got on_session_established_callback");
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
 
@@ -124,9 +130,10 @@ int on_session_established_callback(struct xio_session *session,
 }
 
 int on_session_event_callback(struct xio_session *session,
-		struct xio_session_event_data *event_data, void *cb_prv_data) {
+		struct xio_session_event_data *event_data, void *cb_prv_data)
+{
 
-	log(lsDEBUG, "got on_session_event_callback. event=%d, cb_prv_data=%p, session=%p, conn=%p\n",
+	LOG_DBG("got on_session_event_callback. event=%d, cb_prv_data=%p, session=%p, conn=%p",
 			event_data->event, cb_prv_data, session, event_data->conn);
 
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
@@ -135,7 +142,7 @@ int on_session_event_callback(struct xio_session *session,
 	Context *ctx = cntxbl->ctxForSessionEvent(event_data->event, session);
 
 	if (ctx) {
-		log(lsDEBUG, "event will be written to ctx=%p\n", ctx);
+		LOG_DBG("event will be written to ctx=%p", ctx);
 
 		char* buf = ctx->event_queue->get_buffer();
 		/*in case it is a client, the java object is represented by cb_prv_data
@@ -147,9 +154,9 @@ int on_session_event_callback(struct xio_session *session,
 	return 0;
 }
 
-int on_buffer_request_callback(struct xio_msg *msg, void *cb_user_context) {
-	log(lsDEBUG, "got on_buffer_request_callback\n");
-
+int on_buffer_request_callback(struct xio_msg *msg, void *cb_user_context)
+{
+	LOG_DBG("got on_buffer_request_callback");
 	Contexable *cntxbl = (Contexable*) cb_user_context;
 	Context *ctx = cntxbl->get_ctx_class();
 	Msg* msg_from_pool = ctx->msg_pools.get_msg_from_pool(msg->in.data_iovlen, msg->out.data_iovlen);
@@ -158,9 +165,9 @@ int on_buffer_request_callback(struct xio_msg *msg, void *cb_user_context) {
 	return 0;
 }
 
-void on_fd_ready_event_callback(Context *ctx, int fd, int events) {
-	log(lsDEBUG, "got on_fd_ready_event_callback\n");
-
+void on_fd_ready_event_callback(Context *ctx, int fd, int events)
+{
+	LOG_DBG("got on_fd_ready_event_callback");
 	char* buf = ctx->event_queue->get_buffer();
 	int sizeWritten = ctx->events->writeOnFdReadyEvent(buf, fd, events);
 	done_event_creating(ctx, sizeWritten);

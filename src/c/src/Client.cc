@@ -15,9 +15,20 @@
  **
  */
 
+#include "Utils.h"
 #include "Client.h"
 
-Client::Client(const char* url, long ptrCtx) {
+#define MODULE_NAME		"Client"
+#define CLIENT_LOG_ERR(log_fmt, log_args...)	LOG_BY_MODULE(lsERROR, log_fmt, ##log_args)
+#define CLIENT_LOG_WARN(log_fmt, log_args...)	LOG_BY_MODULE(lsWARN, log_fmt, ##log_args)
+#define CLIENT_LOG_DBG(log_fmt, log_args...)	LOG_BY_MODULE(lsDEBUG, log_fmt, ##log_args)
+#define CLIENT_LOG_TRACE(log_fmt, log_args...)	LOG_BY_MODULE(lsTRACE, log_fmt, ##log_args)
+
+
+Client::Client(const char* url, long ptrCtx)
+{
+	CLIENT_LOG_DBG("CTOR start");
+
 	struct xio_session_ops ses_ops;
 	struct xio_session_attr attr;
 	this->error_creating = false;
@@ -41,7 +52,7 @@ Client::Client(const char* url, long ptrCtx) {
 	this->session = xio_session_open(XIO_SESSION_REQ, &attr, url, 0, 0, this);
 
 	if (session == NULL) {
-		log(lsERROR, "Error in creating session of Client=%p, ctxClass=%p\n", this, ctxClass);
+		CLIENT_LOG_ERR("Error in creating session for Context=%p", ctxClass);
 		error_creating = true;
 		return;
 	}
@@ -50,13 +61,12 @@ Client::Client(const char* url, long ptrCtx) {
 	this->con = xio_connect(session, ctxClass->ctx, 0, NULL, this);
 
 	if (con == NULL) {
-		log(lsERROR, "Error in creating connection in Client=%p. ctxClass=%p\n", this, ctxClass);
+		CLIENT_LOG_ERR("Error in creating connection for Context=%p", ctxClass);
 		goto cleanupSes;
 
 	}
 
-	log(lsDEBUG, "c-tor of Client %p finished.\n", this);
-
+	CLIENT_LOG_DBG("CTOR done");
 	return;
 
 //cleanupCon:
@@ -67,82 +77,89 @@ Client::Client(const char* url, long ptrCtx) {
 	return;
 }
 
-Client::~Client() {}
+Client::~Client()
+{
+	CLIENT_LOG_DBG("DTOR done");
+}
 
-bool Client::close_session() {
+bool Client::close_session() 
+{
 	if (xio_session_close(session)) {
-		log(lsERROR, "Error '%s' (%d) xio_session_close failed. client=%p\n", xio_strerror(xio_errno()), xio_errno(), this);
+		CLIENT_LOG_ERR("Error xio_session_close failure: '%s' (%d) ", xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
 
-	log(lsDEBUG, "session closed successfully. client=%p\n", this);
+	CLIENT_LOG_DBG("session closed successfully");
 	return true;
 }
 
-bool Client::close_connection() {
+bool Client::close_connection()
+{
 	if (xio_disconnect(this->con)) {
-		log(lsERROR, "xio_disconnect failed with error '%s' (%d). client=%p\n", xio_strerror(xio_errno()), xio_errno(), this);
+		CLIENT_LOG_ERR("Error xio_disconnect failure: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
 
-	log(lsDEBUG, "connection closed successfully. client=%p\n", this);
+	CLIENT_LOG_DBG("connection closed successfully");
 	return true;
 }
 
-Context* Client::ctxForSessionEvent(xio_session_event eventType, struct xio_session *session) {
+Context* Client::ctxForSessionEvent(xio_session_event eventType, struct xio_session *session)
+{
 	Context *ctx;
 	switch (eventType) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
-		log(lsDEBUG, "got XIO_SESSION_CONNECTION_CLOSED_EVENT in client=%p\n", this);
+		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT");
 		return NULL;
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
-		log(lsDEBUG, "got XIO_SESSION_CONNECTION_TEARDOWN_EVENT. \n");
+		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT");
 		return NULL;
 
 	case XIO_SESSION_NEW_CONNECTION_EVENT:
-		log(lsDEBUG, "got XIO_SESSION_NEW_CONNECTION_EVENT in client=%p\n", this);
+		CLIENT_LOG_DBG("got XIO_SESSION_NEW_CONNECTION_EVENT");
 		return NULL;
 
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
-		log(lsDEBUG, "got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT in client=%p\n", this);
+		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT");
 		close_connection();
 		return NULL;
 
 	case XIO_SESSION_TEARDOWN_EVENT:
-		log(lsDEBUG, "got XIO_SESSION_TEARDOWN_EVENT. must delete session class in client=%p\n", this);
+		CLIENT_LOG_DBG("got XIO_SESSION_TEARDOWN_EVENT. must delete session");
 		this->is_closing = true;
 		//the event should also be written to buffer to let user know that the session was closed
 		close_session();
 		return this->get_ctx_class();
 
 	case XIO_SESSION_REJECT_EVENT:
-		log(lsDEBUG, "got XIO_SESSION_REJECT_EVENT. must delete session class in client=%p\n", this);
+		CLIENT_LOG_DBG("got XIO_SESSION_REJECT_EVENT. must delete session");
 		return this->get_ctx_class();
 
 	case XIO_SESSION_CONNECTION_ERROR_EVENT:
-		log(lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT in client=%p\n", this);
+		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_ERROR_EVENT");
 		close_connection();
 		return NULL;
 
 	case XIO_SESSION_ERROR_EVENT:
 	default:
-		log(lsWARN, "UNHANDLED event: got '%s' event (%d).in client=%p\n",  xio_session_event_str(eventType), eventType, this);
+		CLIENT_LOG_WARN("UNHANDLED event: got event '%s' (%d)",  xio_session_event_str(eventType), eventType);
 		return this->get_ctx_class();
 	}
 }
 
-bool Client::send_msg(Msg *msg, const int size) {
-	if (this->is_closing){
-		log(lsDEBUG, "attempting to send a message while client session is closing.\n");
+bool Client::send_msg(Msg *msg, const int size)
+{
+	if (this->is_closing) {
+		CLIENT_LOG_DBG("attempting to send a message while client session is closing");
 		return false;
 	}
-	log(lsTRACE, "##################### sending msg=%p, size=%d in client=%p\n", msg, size, this);
+	CLIENT_LOG_TRACE("##################### sending msg=%p, size=%d", msg, size);
 	msg->set_xio_msg_out_size(size);
 	msg->reset_xio_msg_in_size();
 	int ret_val = xio_send_request(this->con, msg->get_xio_msg());
 	if (ret_val) {
-		log(lsERROR, "Got error '%s' (%d) while sending xio_msg in client=%p\n", xio_strerror(xio_errno()), xio_errno(), this);
+		CLIENT_LOG_ERR("Error in sending xio_msg: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
 	return true;

@@ -15,11 +15,19 @@
 **
 */
 
+#include "Utils.h"
 #include "Context.h"
 #include "CallbackFunctions.h"
 
+#define MODULE_NAME		"Context"
+#define CONTEXT_LOG_ERR(log_fmt, log_args...)  LOG_BY_MODULE(lsERROR, log_fmt, ##log_args)
+#define CONTEXT_LOG_DBG(log_fmt, log_args...)  LOG_BY_MODULE(lsDEBUG, log_fmt, ##log_args)
+
+
 Context::Context(int eventQSize)
 {
+	CONTEXT_LOG_DBG("CTOR start");
+
 	error_creating = false;
 	this->ctx = NULL;
 	this->event_queue = NULL;
@@ -28,14 +36,14 @@ Context::Context(int eventQSize)
 
 	ev_loop = xio_ev_loop_init();
 	if (ev_loop == NULL) {
-		log(lsDEBUG, "ERROR, xio_ev_loop_init failed\n");
+		CONTEXT_LOG_ERR("ERROR, xio_ev_loop_init failed");
 		error_creating = true;
 		return;
 	}
 
 	ctx = xio_ctx_open(NULL, ev_loop, 0);
 	if (ctx == NULL) {
-		log(lsDEBUG, "ERROR, xio_ctx_open failed\n");
+		CONTEXT_LOG_ERR("ERROR, xio_ctx_open failed");
 		goto cleanupEvLoop;
 	}
 
@@ -43,22 +51,23 @@ Context::Context(int eventQSize)
 
 	this->event_queue = new Event_queue(eventQSize);
 	if (this->event_queue == NULL || this->event_queue->error_creating) {
-		log(lsDEBUG, "ERROR, fail in create of EventQueue object\n");
+		CONTEXT_LOG_ERR("ERROR, fail in create of EventQueue object");
 		goto cleanupCtx;
 	}
 	this->events = new Events();
-	if (this->events == NULL){
+	if (this->events == NULL) {
 		goto cleanupEventQueue;
 	}
 
+	CONTEXT_LOG_DBG("CTOR done");
 	return;
 
 cleanupEventQueue:
-	delete (this->event_queue);
+	delete(this->event_queue);
 
 cleanupCtx:
 	xio_ctx_close(ctx);
-	delete (this->event_queue);
+	delete(this->event_queue);
 
 cleanupEvLoop:
 	xio_ev_loop_destroy(&ev_loop);
@@ -71,12 +80,14 @@ Context::~Context()
 		return;
 	}
 
-	delete (this->event_queue);
-	delete (this->events);
+	delete(this->event_queue);
+	delete(this->events);
 
 	xio_ctx_close(ctx);
 	// destroy the event loop
 	xio_ev_loop_destroy(&ev_loop);
+
+	CONTEXT_LOG_DBG("DTOR done");
 }
 
 int Context::run_event_loop(long timeout_micro_sec)
@@ -87,25 +98,25 @@ int Context::run_event_loop(long timeout_micro_sec)
 
 	int timeout_msec = -1; // infinite timeout as default
 	if (timeout_micro_sec == -1) {
-		log(lsDEBUG, "[%p] before ev_loop_run. requested infinite timeout\n", this);
+		CONTEXT_LOG_DBG("before ev_loop_run. requested infinite timeout");
 	} else {
 		timeout_msec = timeout_micro_sec/1000;
-		log(lsDEBUG, "[%p] before ev_loop_run. requested timeout is %d msec\n", this, timeout_msec);
+		CONTEXT_LOG_DBG("before ev_loop_run. requested timeout is %d msec", timeout_msec);
 	}
 
 	// enter Accelio's event loop
 	xio_ev_loop_run_timeout(this->ev_loop, timeout_msec);
 
-	log(lsDEBUG, "[%p] after ev_loop_run. there are %d events\n", this, this->events_num);
+	CONTEXT_LOG_DBG("after ev_loop_run. there are %d events", this->events_num);
 
 	return this->events_num;
 }
 
 void Context::break_event_loop(int is_self_thread)
 {
-	log(lsDEBUG, "[%p] before break event loop (is_self_thread=%d)\n", this, is_self_thread);
+	CONTEXT_LOG_DBG("before break event loop (is_self_thread=%d)", is_self_thread);
 	xio_ev_loop_stop(this->ev_loop, is_self_thread);
-	log(lsDEBUG, "[%p] after break event loop (is_self_thread=%d)\n", this, is_self_thread);
+	CONTEXT_LOG_DBG("after break event loop (is_self_thread=%d)", is_self_thread);
 }
 
 int Context::add_event_loop_fd(int fd, int events, void *priv_data)
@@ -128,6 +139,6 @@ void Context::on_event_loop_handler(int fd, int events, void *data)
 
 void Context::add_msg_pool (MsgPool* msg_pool)
 {
-	log(lsDEBUG, "[%p] adding msg pool=%p\n", this, msg_pool);
+	CONTEXT_LOG_DBG("adding msg pool=%p", msg_pool);
 	this->msg_pools.add_msg_pool(msg_pool);
 }

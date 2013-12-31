@@ -15,10 +15,18 @@
  **
  */
 
+#include "Utils.h"
 #include "ServerPortal.h"
 
-ServerPortal::ServerPortal(const char *url, long ptrCtx) {
-	log(lsDEBUG, "inside startServerNative method\n");
+#define MODULE_NAME		"ServerPortal"
+#define SRVPORTAL_LOG_ERR(log_fmt, log_args...)  LOG_BY_MODULE(lsERROR, log_fmt, ##log_args)
+#define SRVPORTAL_LOG_WARN(log_fmt, log_args...)  LOG_BY_MODULE(lsWARN, log_fmt, ##log_args)
+#define SRVPORTAL_LOG_DBG(log_fmt, log_args...)  LOG_BY_MODULE(lsDEBUG, log_fmt, ##log_args)
+
+
+ServerPortal::ServerPortal(const char *url, long ptrCtx)
+{
+	SRVPORTAL_LOG_DBG("CTOR start");
 
 	error_creating = false;
 
@@ -37,49 +45,49 @@ ServerPortal::ServerPortal(const char *url, long ptrCtx) {
 	this->server = xio_bind(ctxClass->ctx, &server_ops, url, &this->port, 0, this);
 
 	if (this->server == NULL) {
-		log(lsDEBUG, "ERROR in binding server\n");
+		SRVPORTAL_LOG_DBG("ERROR in binding server");
 		error_creating = true;
 	}
-	log(lsDEBUG, "c-tor of ServerPortal %p finished. port=%d\n", this, this->port);
+	SRVPORTAL_LOG_DBG("CTOR done (on port=%d)", this->port);
 }
 
-ServerPortal::~ServerPortal() {
+ServerPortal::~ServerPortal()
+{
 	if (error_creating) {
 		return;
 	}
 
 	if (xio_unbind(this->server)) {
-		log(lsERROR, "ERROR '%s' (%d) in xio_unbind\n", xio_strerror(xio_errno()), xio_errno());
+		SRVPORTAL_LOG_ERR("ERROR in xio_unbind: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 	}
-	log(lsDEBUG, "done deleting ServerPortal=%p.\n", this);
+	SRVPORTAL_LOG_DBG("DTOR done");
 }
 
-
-Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xio_session *session) {
-
-	ServerSession* ses;
+Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xio_session *session)
+{
+	ServerSession* ses = NULL;
 	switch (eventType) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
-		log(lsDEBUG, "got XIO_SESSION_CONNECTION_CLOSED_EVENT. \n");
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT");
 		return NULL;
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
-		log(lsDEBUG, "got XIO_SESSION_CONNECTION_TEARDOWN_EVENT. \n");
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT");
 		return NULL;
 
 	case XIO_SESSION_NEW_CONNECTION_EVENT:
-		log(lsDEBUG, "got XIO_SESSION_NEW_CONNECTION_EVENT\n");
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_NEW_CONNECTION_EVENT");
 		return NULL;
 
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
-		log(lsDEBUG, "got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT\n");
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT");
 		return NULL;
 
 	case XIO_SESSION_TEARDOWN_EVENT:
-		log(lsDEBUG, "got XIO_SESSION_TEARDOWN_EVENT.\n");
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_TEARDOWN_EVENT");
 		//the event should also be written to buffer to let user know that the session was closed
 		if (xio_session_close(session)) {
-			log(lsERROR, "Error '%s' (%d) in xio_session_close server=%p\n", xio_strerror(xio_errno()), xio_errno(), this);
+			SRVPORTAL_LOG_ERR("Error in xio_session_close: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		}
 		//last event for this session EVER: ses can be deleted from the map, but not deleted
 		ses = delete_ses_server_for_session(session);
@@ -87,15 +95,13 @@ Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xi
 		return ses->getCtx();
 
 	case XIO_SESSION_CONNECTION_ERROR_EVENT:
-		log(lsDEBUG, "got XIO_SESSION_CONNECTION_ERROR_EVENT\n");
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_ERROR_EVENT");
 		return NULL;
 
 	default:
-		log(lsWARN, "UNHANDLED event: got '%s' event (%d). \n", xio_session_event_str(eventType), eventType);
+		SRVPORTAL_LOG_WARN("UNHANDLED event: got event '%s' (%d)", xio_session_event_str(eventType), eventType);
 		ses = delete_ses_server_for_session(session);
 		ses->is_closing = true;
 		return ses->getCtx();
 	}
 }
-
-
