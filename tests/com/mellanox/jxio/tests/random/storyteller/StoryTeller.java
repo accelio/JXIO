@@ -156,7 +156,7 @@ public class StoryTeller {
 			int min = Integer.parseInt(edges[0]);
 			int max = Integer.parseInt(edges[1]);
 			int remainder = max - min;
-			int rand = (remainder <= 0) ? max : random.nextInt(remainder) + min;
+			int rand = (remainder <= 0) ? max : random.nextInt(remainder + 1) + min;
 			return String.valueOf(rand);
 		}
 		// Return the simple value
