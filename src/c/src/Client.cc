@@ -20,7 +20,8 @@
 Client::Client(const char* url, long ptrCtx) {
 	struct xio_session_ops ses_ops;
 	struct xio_session_attr attr;
-	error_creating = false;
+	this->error_creating = false;
+	this->is_closing = false;
 
 	struct xio_msg *req;
 
@@ -66,11 +67,16 @@ Client::Client(const char* url, long ptrCtx) {
 	return;
 }
 
-Client::~Client() {
+Client::~Client() {}
+
+bool Client::close_session() {
 	if (xio_session_close(session)) {
 		log(lsERROR, "Error '%s' (%d) xio_session_close failed. client=%p\n", xio_strerror(xio_errno()), xio_errno(), this);
+		return false;
 	}
-	log(lsDEBUG, "done deleting Client=%p.\n", this);
+
+	log(lsDEBUG, "session closed successfully. client=%p\n", this);
+	return true;
 }
 
 bool Client::close_connection() {
@@ -105,10 +111,10 @@ Context* Client::ctxForSessionEvent(xio_session_event eventType, struct xio_sess
 
 	case XIO_SESSION_TEARDOWN_EVENT:
 		log(lsDEBUG, "got XIO_SESSION_TEARDOWN_EVENT. must delete session class in client=%p\n", this);
-		ctx = this->get_ctx_class();
-		delete (this);
+		this->is_closing = true;
 		//the event should also be written to buffer to let user know that the session was closed
-		return ctx;
+		close_session();
+		return this->get_ctx_class();
 
 	case XIO_SESSION_REJECT_EVENT:
 		log(lsDEBUG, "got XIO_SESSION_REJECT_EVENT. must delete session class in client=%p\n", this);
@@ -127,6 +133,10 @@ Context* Client::ctxForSessionEvent(xio_session_event eventType, struct xio_sess
 }
 
 bool Client::send_msg(Msg *msg, const int size) {
+	if (this->is_closing){
+		log(lsDEBUG, "attempting to send a message while client session is closing.\n");
+		return false;
+	}
 	log(lsTRACE, "##################### sending msg=%p, size=%d in client=%p\n", msg, size, this);
 	msg->set_xio_msg_out_size(size);
 	msg->reset_xio_msg_in_size();

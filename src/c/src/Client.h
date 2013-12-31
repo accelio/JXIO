@@ -32,11 +32,13 @@ public:
 	struct xio_connection* con;
 
 	bool error_creating;
+	bool is_closing;
 
 	//to move some to private?
 	Client(const char* url, long ptrCtx);
 	~Client();
 	bool close_connection();
+	bool close_session();
 	bool send_msg(Msg *msg, const int size);
 
 	Context* ctxForSessionEvent(xio_session_event eventType,

@@ -102,7 +102,13 @@ public class Bridge {
 	public static void closeSessionClient(final long ptrSes) {
 		closeSessionClientNative(ptrSes);
 	}
+	
+	private static native void deleteClientNative(long ptrSes);
 
+	public static void deleteClient(final long ptrSes) {
+		deleteClientNative(ptrSes);
+	}
+	
 	private static native long[] startServerPortalNative(String url, long ptrCtx);
 
 	public static long[] startServerPortal(final String url, final long ptrCtx) {

@@ -66,14 +66,14 @@ public class ClientSession extends EventQueueHandler.Eventable {
 			LOG.warn("Trying to send message while session is closing");
 			return false;
 		}
-
-		msg.setClientSession(this);
-		eventQHandler.addMsgInUse(msg);
-		boolean ret = Bridge.clientSendReq(this.getId(), msg.getId(), msg.getOut().position());
-		if (!ret) {
+		if (!Bridge.clientSendReq(this.getId(), msg.getId(), msg.getOut().position())) {
 			LOG.error("there was an error sending the message");
+			return false;
 		}
-		return ret;
+		msg.setClientSession(this);
+		//only if the send was successful the msg needs to be added to the "pending reply" list
+		eventQHandler.addMsgInUse(msg);
+		return true;
 	}
 
 	public boolean close() {
@@ -114,6 +114,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					if (eventName == EventName.SESSION_TEARDOWN || eventName == EventName.SESSION_REJECT) {
 						eventQHandler.removeEventable(this); // now we are officially done with this session and it can
 						this.setIsClosing(true);   // be deleted from the EQH
+						Bridge.deleteClient(this.getId());
 					}
 					callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
 				}

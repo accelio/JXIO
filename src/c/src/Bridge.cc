@@ -244,6 +244,12 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSe
 	return ses->close_connection();
 }
 
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_deleteClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
+{
+	Client *ses = (Client*)ptrSes;
+	delete (ses);
+}
+
 extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_jxio_impl_Bridge_startServerPortalNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
 {
 	jlong temp[2];
