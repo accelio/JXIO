@@ -124,8 +124,7 @@ public class ServerSessionPlayer {
 			if (outer.nextHop.isEmpty()) {
 				if (LOG.isDebugEnabled())
 					LOG.debug(outer.toString() + ": sendResponce(" + msg + ")");
-				int position = Utils.randIntInRange(random, 0, msg.getOut().limit() - 24);
-				// 24=time(long)+checksum(long)+serialNumber(int)+size(int)
+				int position = Utils.randIntInRange(random, 0, msg.getOut().limit() - Utils.HEADER_SIZE);
 				Utils.writeMsg(msg, position, 0, outer.counterSentMsgs);
 				outer.counterSentMsgs++;
 				outer.counterReceivedMsgs++;
@@ -216,7 +215,7 @@ public class ServerSessionPlayer {
 		public void onReply(Msg msg) {
 			if (LOG.isDebugEnabled())
 				LOG.debug(outer.toString() + ": onReply(" + msg + ")");
-			Msg returnHopMsg = (Msg)msg.getUserContext();
+			Msg returnHopMsg = (Msg) msg.getUserContext();
 			returnHopMsg.getOut().put(msg.getIn());
 			if (LOG.isDebugEnabled())
 				LOG.debug(outer.toString() + ": sendResponce(" + returnHopMsg + ")");

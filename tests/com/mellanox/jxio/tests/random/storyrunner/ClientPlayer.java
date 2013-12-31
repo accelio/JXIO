@@ -145,8 +145,7 @@ public class ClientPlayer extends GeneralPlayer {
 					}
 					return;
 				}
-				int position = Utils.randIntInRange(random, 0, m.getOut().limit() - 24);
-				// 24=time(long)+checksum(long)+serialNumber(int)+size(int)
+				int position = Utils.randIntInRange(random, 0, m.getOut().limit() - Utils.HEADER_SIZE);
 				final long sendTime = System.nanoTime();
 				Utils.writeMsg(m, position, sendTime, counterSentMsgs);
 				if (outer.client.sendMessage(m)) {

@@ -368,8 +368,8 @@ public class JXIOStoryRunner implements StoryRunner {
 			try {
 				String uriQueryStr = "";
 				List<Character> clientServers = new ArrayList<Character>(); // Will store all the servers the client
-				// goes throght. Used for throght. Used for
-				// chosing a msg_pool.
+                                                                            // goes throght. Used for throght. Used for
+                                                                            // chosing a msg_pool.
 
 				// Get client parameters
 				int id = Integer.valueOf(client.getAttribute("id"));
@@ -422,6 +422,10 @@ public class JXIOStoryRunner implements StoryRunner {
 				        / 100;
 				int out = server_pool.getInSize() * Integer.valueOf(client.getAttribute("msg_size_out_factor_perc"))
 				        / 100;
+				// Check for minimal size
+				in = (in > Utils.HEADER_SIZE) ? in : Utils.HEADER_SIZE;
+				out = (out > Utils.HEADER_SIZE) ? out : Utils.HEADER_SIZE;
+
 				MsgPoolData pool = new MsgPoolData(count, in, out);
 
 				if (batch > count)
@@ -449,13 +453,13 @@ public class JXIOStoryRunner implements StoryRunner {
 				}
 
 				// Add client
-				//each client will have a his own seed which is a derivative of the story's seed
+				// each client will have a his own seed which is a derivative of the story's seed
 				ClientPlayer cp = new ClientPlayer(id, uri, startDelay, duration, pool, tps, batch, seed + counter * 17);
 				clientPlayers.add(cp);
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
-			counter ++;
+			counter++;
 		}
 		// Set process' ClientPlayers
 		chapter.processClientPlayers.put(myProcess, clientPlayers);
@@ -576,7 +580,7 @@ public class JXIOStoryRunner implements StoryRunner {
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
-			counter ++;
+			counter++;
 		}
 		// Set process' ServerPlayers
 		chapter.processServerPlayers.put(myProcess, serverPlayers);
@@ -612,6 +616,7 @@ public class JXIOStoryRunner implements StoryRunner {
 	/**
      * A JXIO Process to be run as a forked task.
      */
+	@SuppressWarnings("serial")
 	static public class JXIOProcessTask extends RecursiveTask<Integer> implements Callable<Integer> {
 
 		private final Character                machine;
@@ -659,13 +664,15 @@ public class JXIOStoryRunner implements StoryRunner {
 
 			// Run
 			if (serverPlayers.size() == 0 && clientPlayers.size() == 0) {
-				System.out.println("=> Process " + process.getAttribute("id") + " has no clients nor servers.");
+				System.out.println("=> [Machine: " + machine.getAttribute("name") + "] Process "
+				        + process.getAttribute("id") + " has no clients nor servers.");
 				System.out.println("=====");
 				System.out.println("Done!");
 				System.out.println("=====");
 			} else {
-				System.out.println("=> Process " + process.getAttribute("id") + ": " + serverPlayers.size()
-				        + " servers " + clientPlayers.size() + " clients\n");
+				System.out.println("=> [Machine: " + machine.getAttribute("name") + "] Process "
+				        + process.getAttribute("id") + ": " + serverPlayers.size() + " servers " + clientPlayers.size()
+				        + " clients\n");
 				int numWorkerThreads = Integer.valueOf(this.process.getAttribute("num_eqhs"));
 				LOG.info("There are " + numWorkerThreads + " working threads");
 

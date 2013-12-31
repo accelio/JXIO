@@ -18,9 +18,6 @@ package com.mellanox.jxio.tests.random.storyrunner;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
 import java.util.zip.CRC32;
 
@@ -30,7 +27,9 @@ import org.apache.commons.logging.LogFactory;
 
 public final class Utils {
 
-	private final static Log LOG = LogFactory.getLog(Utils.class.getSimpleName());
+	public final static int  HEADER_SIZE = 24;
+	// 24=time(long)+checksum(long)+serialNumber(int)+size(int)
+	private final static Log LOG         = LogFactory.getLog(Utils.class.getSimpleName());
 
 	// private c-tor to avoid instantiation of the class
 	private Utils() {

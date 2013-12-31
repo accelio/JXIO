@@ -15,7 +15,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.mellanox.jxio.ClientSession;
 import com.mellanox.jxio.EventQueueHandler;
 import com.mellanox.jxio.MsgPool;
 import com.mellanox.jxio.tests.random.storyrunner.TimerList.Timer;
@@ -37,7 +36,7 @@ public class WorkerThread implements Runnable {
 	// temporary: needed for the user to allocate pool of the same size
 	private int                              inSize;
 	private int                              outSize;
-																 
+
 	public WorkerThread() {
 		super();
 		this.eqh = new EventQueueHandler(new JXIOCallbacks());
@@ -120,7 +119,7 @@ public class WorkerThread implements Runnable {
 
 	public class CloseEQH implements WorkerThread.QueueAction {
 		private final WorkerThread outer = WorkerThread.this;
-		EventQueueHandler eqh;
+		EventQueueHandler          eqh;
 
 		public void doAction(WorkerThread workerThread) {
 			outer.stopThread = true;
