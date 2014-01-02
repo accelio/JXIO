@@ -69,8 +69,9 @@ void logs_from_xio_callback_register()
 	g_xio_log_level_to_jxio_severity[XIO_LOG_LEVEL_DEBUG] = lsDEBUG;
 	g_xio_log_level_to_jxio_severity[XIO_LOG_LEVEL_TRACE] = lsTRACE;
 
-
-	xio_set_opt(NULL, XIO_OPTLEVEL_ACCELIO, XIO_OPTNAME_LOG_FN, (const void *)logs_from_xio_callback, sizeof(xio_log_fn));
+	int optlen = sizeof(xio_log_fn);
+	const void* optval = (const void *)logs_from_xio_callback;
+	xio_set_opt(NULL, XIO_OPTLEVEL_ACCELIO, XIO_OPTNAME_LOG_FN, optval, optlen);
 }
 
 void logs_from_xio_callback_unregister()
