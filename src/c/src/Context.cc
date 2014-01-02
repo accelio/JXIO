@@ -34,14 +34,14 @@ Context::Context(int eventQSize)
 	this->events = NULL;
 	this->events_num = 0;
 
-	ev_loop = xio_ev_loop_init();
+	ev_loop = xio_ev_loop_create();
 	if (ev_loop == NULL) {
 		CONTEXT_LOG_ERR("ERROR, xio_ev_loop_init failed");
 		error_creating = true;
 		return;
 	}
 
-	ctx = xio_ctx_open(NULL, ev_loop, 0);
+	ctx = xio_ctx_create(NULL, ev_loop, 0);
 	if (ctx == NULL) {
 		CONTEXT_LOG_ERR("ERROR, xio_ctx_open failed");
 		goto cleanupEvLoop;
@@ -66,7 +66,7 @@ cleanupEventQueue:
 	delete(this->event_queue);
 
 cleanupCtx:
-	xio_ctx_close(ctx);
+	xio_ctx_destroy(ctx);
 	delete(this->event_queue);
 
 cleanupEvLoop:
@@ -83,7 +83,7 @@ Context::~Context()
 	delete(this->event_queue);
 	delete(this->events);
 
-	xio_ctx_close(ctx);
+	xio_ctx_destroy(ctx);
 	// destroy the event loop
 	xio_ev_loop_destroy(&ev_loop);
 

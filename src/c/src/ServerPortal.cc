@@ -86,7 +86,7 @@ Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xi
 	case XIO_SESSION_TEARDOWN_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_TEARDOWN_EVENT");
 		//the event should also be written to buffer to let user know that the session was closed
-		if (xio_session_close(session)) {
+		if (xio_session_destroy(session)) {
 			SRVPORTAL_LOG_ERR("Error in xio_session_close: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		}
 		//last event for this session EVER: ses can be deleted from the map, but not deleted

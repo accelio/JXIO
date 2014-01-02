@@ -49,7 +49,7 @@ Client::Client(const char* url, long ptrCtx)
 	attr.user_context = NULL; /* no need to pass the server private data */
 	attr.user_context_len = 0;
 
-	this->session = xio_session_open(XIO_SESSION_REQ, &attr, url, 0, 0, this);
+	this->session = xio_session_create(XIO_SESSION_REQ, &attr, url, 0, 0, this);
 
 	if (session == NULL) {
 		CLIENT_LOG_ERR("Error in creating session for Context=%p", ctxClass);
@@ -72,7 +72,7 @@ Client::Client(const char* url, long ptrCtx)
 //cleanupCon:
 //	xio_disconnect(this->con);
 
-	cleanupSes: xio_session_close(this->session);
+	cleanupSes: xio_session_destroy(this->session);
 	error_creating = true;
 	return;
 }
@@ -84,7 +84,7 @@ Client::~Client()
 
 bool Client::close_session() 
 {
-	if (xio_session_close(session)) {
+	if (xio_session_destroy(session)) {
 		CLIENT_LOG_ERR("Error xio_session_close failure: '%s' (%d) ", xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}

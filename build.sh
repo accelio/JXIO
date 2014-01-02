@@ -25,7 +25,7 @@ mkdir -p $BIN_FOLDER
 echo "Build Accelio....(libxio c code)"
 cd $TOP_DIR
 git submodule update --init
-cd src/accelio/ && ./autogen.sh && ./configure --disable-raio-build --enable-silent-rules && make && cp -f src/usr/.libs/libxio.so $BIN_FOLDER
+cd src/accelio/ && make distclean && ./autogen.sh && ./configure --disable-raio-build --enable-silent-rules && make && cp -f src/usr/.libs/libxio.so $BIN_FOLDER
 if [[ $? != 0 ]] ; then
     exit 1
 fi
