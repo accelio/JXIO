@@ -123,10 +123,10 @@ public class Bridge {
 		return ret;
 	}
 
-	private static native boolean closeSessionServerNative(long ptr, long ptrCtx);
+	private static native boolean closeSessionServerNative(long ptrSesServer);
 
-	public static boolean closeServerSession(final long ptrSes, final long ptrCtx) {
-		boolean ret = closeSessionServerNative(ptrSes, ptrCtx);
+	public static boolean closeServerSession(final long ptrSesServer) {
+		boolean ret = closeSessionServerNative(ptrSesServer);
 		return ret;
 	}
 

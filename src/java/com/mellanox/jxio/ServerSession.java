@@ -64,7 +64,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		}
 		setIsClosing(true);
 		removeFromEQHs();
-		Bridge.closeServerSession(getId(), this.eventQHandlerSession.getId());
+		Bridge.closeServerSession(ptrSesServer);
 
 		return true;
 	}
@@ -102,16 +102,28 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	void onEvent(Event ev) {
 		switch (ev.getEventType()) {
 			case 0: // session event
-				LOG.debug("received session event");
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("received session event");
+				}
 				if (ev instanceof EventSession) {
 					int errorType = ((EventSession) ev).getErrorType();
 					int reason = ((EventSession) ev).getReason();
 					EventName eventName = EventName.getEventByIndex(errorType);
-					if (eventName == EventName.SESSION_TEARDOWN) {
+					switch(eventName){
+						case SESSION_TEARDOWN:
 						removeFromEQHs(); // now we are officially done with this session and it can
 						this.setIsClosing(true);// be deleted from the EQH
 						//now that the user knows session is closed, object holding session state can be deleted
 						Bridge.deleteSessionServer(this.ptrSesServer);
+						break;
+						
+						case SESSION_CONNECTION_CLOSED:
+						case SESSION_CONNECTION_DISCONNECTED:
+							this.setIsClosing(true);
+						break;
+					
+						default:
+							break;
 					}
 					callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
 

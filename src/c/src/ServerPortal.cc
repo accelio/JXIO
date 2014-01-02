@@ -69,7 +69,14 @@ Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xi
 	switch (eventType) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT");
-		return NULL;
+		//no need to delete session from map since we haven't received session_teardown yet
+		ses = get_ses_server_for_session(session, false);
+		if (ses->ignore_first_disconnect){
+			ses->ignore_first_disconnect = false;
+			return NULL;
+		}
+		ses->set_is_closing(true);
+		return ses->getCtx();
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT");
@@ -81,7 +88,14 @@ Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xi
 
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT");
-		return NULL;
+		//no need to delete session from map since we haven't received session_teardown yet
+		ses = get_ses_server_for_session(session, false);
+		if (ses->ignore_first_disconnect){
+			ses->ignore_first_disconnect = false;
+			return NULL;
+		}
+		ses->set_is_closing(true);
+		return ses->getCtx();
 
 	case XIO_SESSION_TEARDOWN_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_TEARDOWN_EVENT");
@@ -90,8 +104,10 @@ Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xi
 			SRVPORTAL_LOG_ERR("Error in xio_session_close: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		}
 		//last event for this session EVER: ses can be deleted from the map, but not deleted
-		ses = delete_ses_server_for_session(session);
-		ses->is_closing = true;
+		ses = get_ses_server_for_session(session, true);
+		if (!ses->get_is_closing()){
+			SRVPORTAL_LOG_ERR("Got session teardown without getting connection/close/disconnected");
+		}
 		return ses->getCtx();
 
 	case XIO_SESSION_CONNECTION_ERROR_EVENT:
@@ -100,8 +116,8 @@ Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xi
 
 	default:
 		SRVPORTAL_LOG_WARN("UNHANDLED event: got event '%s' (%d)", xio_session_event_str(eventType), eventType);
-		ses = delete_ses_server_for_session(session);
-		ses->is_closing = true;
+		ses = get_ses_server_for_session(session, false);
+		ses->set_is_closing(true);
 		return ses->getCtx();
 	}
 }

@@ -82,19 +82,13 @@ Client::~Client()
 	CLIENT_LOG_DBG("DTOR done");
 }
 
-bool Client::close_session() 
-{
-	if (xio_session_destroy(session)) {
-		CLIENT_LOG_ERR("Error xio_session_close failure: '%s' (%d) ", xio_strerror(xio_errno()), xio_errno());
-		return false;
-	}
-
-	CLIENT_LOG_DBG("session closed successfully");
-	return true;
-}
-
 bool Client::close_connection()
 {
+	if (this->is_closing){
+		CLIENT_LOG_DBG("trying to close connection while already closing");
+		return true;
+	}
+	this->is_closing = true;
 	if (xio_disconnect(this->con)) {
 		CLIENT_LOG_ERR("Error xio_disconnect failure: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		return false;
@@ -110,7 +104,8 @@ Context* Client::ctxForSessionEvent(xio_session_event eventType, struct xio_sess
 	switch (eventType) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
 		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT");
-		return NULL;
+		this->is_closing = true;
+		return this->get_ctx_class();
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT");
@@ -123,13 +118,17 @@ Context* Client::ctxForSessionEvent(xio_session_event eventType, struct xio_sess
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
 		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT");
 		close_connection();
-		return NULL;
+		return this->get_ctx_class();
 
 	case XIO_SESSION_TEARDOWN_EVENT:
 		CLIENT_LOG_DBG("got XIO_SESSION_TEARDOWN_EVENT. must delete session");
-		this->is_closing = true;
+		if (!this->is_closing){
+			CLIENT_LOG_ERR("Got session teardown without getting connection/close/disconnected");
+		}
 		//the event should also be written to buffer to let user know that the session was closed
-		close_session();
+		if (xio_session_destroy(session)) {
+			CLIENT_LOG_ERR("Error xio_session_close failure: '%s' (%d) ", xio_strerror(xio_errno()), xio_errno());
+		}
 		return this->get_ctx_class();
 
 	case XIO_SESSION_REJECT_EVENT:

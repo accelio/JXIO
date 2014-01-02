@@ -84,7 +84,7 @@ static map_ses_ctx_t map_sessions;//maps xio_session to appopriate ServerSession
 
 static pthread_mutex_t mutex_for_map = PTHREAD_MUTEX_INITIALIZER;
 
-ServerSession* delete_ses_server_for_session(xio_session*);
+ServerSession* get_ses_server_for_session(xio_session*, bool to_delete);
 void add_ses_server_for_session(xio_session *, ServerSession*);
 
 bool close_xio_connection(struct xio_session *session, struct xio_context *ctx);

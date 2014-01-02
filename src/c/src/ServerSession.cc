@@ -16,13 +16,19 @@
  */
 
 #include "ServerSession.h"
+#include "Utils.h"
+
+#define MODULE_NAME		"ServerSession"
+#define SRVSESSION_LOG_ERR(log_fmt, log_args...)  LOG_BY_MODULE(lsERROR, log_fmt, ##log_args)
+#define SRVSESSION_LOG_DBG(log_fmt, log_args...)  LOG_BY_MODULE(lsDEBUG, log_fmt, ##log_args)
 
 ServerSession::ServerSession(xio_session * session, Context* ctx) {
 	this->is_closing = false;
 	this->session = session;
 	this->ctx = ctx;
+	this->ignore_first_disconnect = false;
 }
 
-ServerSession::~ServerSession() {
-}
+ServerSession::~ServerSession() {}
+
 

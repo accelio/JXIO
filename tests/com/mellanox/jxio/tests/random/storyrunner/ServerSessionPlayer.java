@@ -145,17 +145,24 @@ public class ServerSessionPlayer {
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
-			if (session_event == EventName.SESSION_TEARDOWN) {
+			switch (session_event) {
+				case SESSION_TEARDOWN:
 				LOG.info(outer.toString() + ": SESSION_TEARDOWN. reason='" + reason + "'");
 				LOG.info(outer.toString() + ": received " + counterReceivedMsgs + " msgs");
 				if (!outer.nextHop.isEmpty()) {
 					LOG.info(outer.toString() + ": closing nextHopClient");
 					outer.nextHopClient.close();
 				}
-			} else {
+					break;
+				case SESSION_CONNECTION_CLOSED:
+				case SESSION_CONNECTION_DISCONNECTED:
+					LOG.debug(outer.toString() + ": on" + session_event.toString() + ", reason='" + reason + "'");
+					break;
+				default:
 				LOG.error(outer.toString() + ": FAILURE, onSessionError: event='" + session_event + "', reason='"
 				        + reason + "'");
 				System.exit(1);
+					break;
 			}
 		}
 
@@ -199,17 +206,18 @@ public class ServerSessionPlayer {
 		public void onSessionEvent(EventName session_event, EventReason reason) {
 			switch (session_event) {
 				case SESSION_TEARDOWN:
-					LOG.debug(outer.toString() + ": onSESSION_TEARDOWN, reason='" + reason + "'");
-					break;
 				case SESSION_REJECT:
-					LOG.debug(outer.toString() + ": onSESSION_TEARDOWN, reason='" + reason + "'");
+				case SESSION_CONNECTION_CLOSED:
+				case SESSION_CONNECTION_DISCONNECTED:
+					LOG.debug(outer.toString() + ": on" + session_event.toString() + ", reason='" + reason + "'");
 					break;
 				default:
-					break;
-			}
 			LOG.error(outer.toString() + ": FAILURE: onSessionError: event='" + session_event + "', reason='" + reason
 			        + "'");
 			System.exit(1); // Failure in test - eject!
+					break;
+			}
+			
 		}
 
 		public void onReply(Msg msg) {

@@ -288,11 +288,16 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_stopServerP
 	delete (server);
 }
 
-extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSessionServerNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_ctx)
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSessionServerNative(JNIEnv *env, jclass cls, jlong ptr_ses_server)
 {
-	struct xio_session *session = (struct xio_session *)ptr_session;
-	Context * context = (Context *) ptr_ctx;
-	close_xio_connection(session, context->ctx);
+	ServerSession *jxio_session = (ServerSession*) ptr_ses_server;
+	if (jxio_session->get_is_closing()){
+		LOG_DBG("trying to close session while already closing");
+		return;
+	}
+	struct xio_session *xio_session = jxio_session->get_xio_session();
+	Context * context = jxio_session->getCtx();
+	close_xio_connection(xio_session, context->ctx);
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_ctx)
@@ -310,7 +315,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSes
 	if (ret_val){
 		return (jlong)(intptr_t) jxio_ses;
 	}else{
-		return NULL;
+		return 0;
 	}
 }
 
@@ -321,13 +326,13 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSess
 	ServerSession *jxio_ses = new ServerSession(xio_session, ctx);
 	if (jxio_ses == NULL){
 		LOG_ERR("memory allocation failed");
-		return NULL;
+		return 0;
 	}
 	bool ret_val = accept_session(xio_session, jxio_ses);
 	if (ret_val){
 		return (jlong)(intptr_t) jxio_ses;
 	}else{
-		return NULL;
+		return 0;
 	}
 }
 
@@ -387,7 +392,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_serverS
 {
 	ServerSession *ses = (ServerSession*) ptr_ses_server;
 	Msg * msg = (Msg*) ptr_msg;
-	if (ses->is_closing){
+	if (ses->get_is_closing()){
 		LOG_DBG("trying to send message while session is closing. Releasing msg back to pool");
 		msg->release_to_pool();
 		return false;

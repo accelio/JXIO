@@ -32,11 +32,16 @@ public:
 	ServerSession(xio_session * session, Context* ctx);
 	~ServerSession();
 
-	bool is_closing;
 	Context* getCtx() {return ctx;}
+	struct xio_session* get_xio_session() {return session;}
+	bool get_is_closing() {return is_closing;}
+	void set_is_closing(bool b) {is_closing = b;}
+	//when user chooses to forward the session, connection_disconnected event is received
+	bool ignore_first_disconnect;
 private:
 	struct xio_session* session;
 	Context* ctx;
+	bool is_closing;
 };
 
 #endif

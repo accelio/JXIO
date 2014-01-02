@@ -251,6 +251,10 @@ public class ClientPlayer extends GeneralPlayer {
 						return;
 					}
 					break;
+				case SESSION_CONNECTION_CLOSED:
+				case SESSION_CONNECTION_DISCONNECTED:
+					LOG.debug(outer.toString() + ": got" + session_event.toString() + " : reason='" + reason + "'");
+					return;
 				default:
 					break;
 			}

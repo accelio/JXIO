@@ -104,20 +104,25 @@ void logs_from_xio_set_threshold(log_severity_t threshold)
 	xio_set_opt(NULL, XIO_OPTLEVEL_ACCELIO, XIO_OPTNAME_LOG_LEVEL, &xio_log_level, sizeof(enum xio_log_level));
 }
 
-ServerSession* delete_ses_server_for_session(xio_session* session)
+ServerSession* get_ses_server_for_session(xio_session* session, bool to_delete)
 {
 	map_ses_ctx_t::iterator it;
 	pthread_mutex_lock(&mutex_for_map);
 	it=map_sessions.find(session);
 	if (it == map_sessions.end()){
-		LOG_ERR("session=%p in map", session);
+		LOG_ERR("session=%p not in map", session);
 		pthread_mutex_unlock(&mutex_for_map);
 		return NULL;
 	}
 	ServerSession *jxio_session = it->second;
-	map_sessions.erase(it);
+	if (to_delete){
+		map_sessions.erase(it);
+	}
 	pthread_mutex_unlock(&mutex_for_map);
-	LOG_DBG("deleting pair <jxio_session=%p, xio_session=%p>", jxio_session, session);
+	if (to_delete)
+		LOG_DBG("deleting pair <jxio_session=%p, xio_session=%p>", jxio_session, session);
+	else
+		LOG_DBG("returning pair <jxio_session=%p, xio_session=%p>", jxio_session, session);
 
 	return jxio_session;
 }
@@ -157,6 +162,7 @@ bool forward_session(struct xio_session *xio_session, ServerSession* jxio_sessio
 		return false;
 	}
 	add_ses_server_for_session(xio_session, jxio_session);
+	jxio_session->ignore_first_disconnect = true;
 	return true;
 }
 

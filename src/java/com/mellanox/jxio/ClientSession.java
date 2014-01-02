@@ -111,10 +111,25 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					int errorType = ((EventSession) ev).getErrorType();
 					int reason = ((EventSession) ev).getReason();
 					EventName eventName = EventName.getEventByIndex(errorType);
-					if (eventName == EventName.SESSION_TEARDOWN || eventName == EventName.SESSION_REJECT) {
+					
+					switch(eventName){
+						case SESSION_TEARDOWN:
+						case SESSION_REJECT:
 						eventQHandler.removeEventable(this); // now we are officially done with this session and it can
 						this.setIsClosing(true);   // be deleted from the EQH
 						Bridge.deleteClient(this.getId());
+						break;
+						
+						case SESSION_CONNECTION_CLOSED:
+						case SESSION_CONNECTION_DISCONNECTED:
+							if (LOG.isDebugEnabled()) {
+								LOG.debug("connection is closed/disconnected");
+							}
+							this.setIsClosing(true);
+						break;
+					
+						default:
+							break;
 					}
 					callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
 				}
