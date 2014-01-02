@@ -210,4 +210,17 @@
 			</params>
 		</cmd>
 	</case>
+	 <case>
+	        <info>jx test</info>
+		<name>run story long duration</name>
+		<tout>5000</tout>
+		 <cmd>
+		        <params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename story_long_dur_client_long.xml --timeout 4000</static_args>
+			</params>
+		</cmd>
+	</case>
+
+
+
 </CASEDEF>
