@@ -440,7 +440,7 @@ public class EventQueueHandler implements Runnable {
 			return false;
 		}
 		if (msgPool == null || msgPool.getId() == 0){
-			LOG.error("msgPool provided is null or id + " + msgPool.getId() + " is wrong. Can not bind");
+			LOG.error("msgPool provided is null or id is wrong. Can not bind");
 			return false;
 		}
 		if (msgPool.isBounded()){

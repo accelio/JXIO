@@ -148,14 +148,18 @@ else
 	MAIL_MESSAGE_HTML="${MAIL_MESSAGE_HTML} No C Errors/Warnings Found.<br>"
 fi
 
+if [ $JAVA_ERRORS != 0 ] || [ $C_ERRORS != 0 ]; then
+	attachment="-a $attachment"
+fi
+
 # Configure report
 MAIL_MESSAGE_HTML="<html><body><font face=""Calibri"" size=3>"${MAIL_MESSAGE_HTML}"</font></body></html>"
 echo $MAIL_MESSAGE_HTML > $MAIL_MESSAGE
 
 # Send report
-mutt -e "set content_type=text/html" -a $attachment -s "${subject}" -- ${recipients} < $MAIL_MESSAGE > /dev/null 2>&1
+mutt -e "set content_type=text/html" $attachment -s "${subject}" -- ${recipients} < $MAIL_MESSAGE > /dev/null 2>&1
 while [ $? != 0 ]; do
-        mutt -e "set content_type=text/html" -a $attachment -s "${subject}" -- ${recipients} < $MAIL_MESSAGE > /dev/null 2>&1
+        mutt -e "set content_type=text/html" $attachment -s "${subject}" -- ${recipients} < $MAIL_MESSAGE > /dev/null 2>&1
 done
 echo -e  "\nSent!\n"
 
