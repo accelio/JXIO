@@ -439,8 +439,8 @@ public class EventQueueHandler implements Runnable {
 			LOG.error("no context opened on C side. can not bind msg pool");
 			return false;
 		}
-		if (msgPool == null){
-			LOG.error("msgPool provided is null. Can not bind");
+		if (msgPool == null || msgPool.getId() == 0){
+			LOG.error("msgPool provided is null or id + " + msgPool.getId() + " is wrong. Can not bind");
 			return false;
 		}
 		if (msgPool.isBounded()){
