@@ -46,16 +46,23 @@ void logs_from_xio_callback(const char *file, unsigned line, const char *func, u
 	log_severity_t severity = g_xio_log_level_to_jxio_severity[level];
 	if (severity > g_log_threshold)
 		return;
+
 	const int SIZE = 2048;
 	char _str_[SIZE];
-	va_list ap;
-	va_start(ap, log_fmt);
-	int m = vsnprintf(_str_, SIZE, log_fmt, ap);
-	va_end(ap);
-	if (m < 0) {
+	int n = snprintf(_str_, SIZE, MODULE_FILE_INFO, file, line, func);
+	if (n < 0) {
 		return; /*error*/
 	}
-	_str_[SIZE-1] = '\0';
+	if (n < SIZE) {
+		va_list ap;
+		va_start(ap, log_fmt);
+		int m = vsnprintf(_str_ + n, SIZE - n, log_fmt, ap);
+		va_end(ap);
+		if (m < 0) {
+			return; /*error*/
+		}
+	}
+	_str_[SIZE - 1] = '\0';
 	Bridge_invoke_logToJava_callback(severity, _str_);
 }
 
