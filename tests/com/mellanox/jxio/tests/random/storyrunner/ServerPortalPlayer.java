@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.ServerPortal;
 import com.mellanox.jxio.EventName;
 import com.mellanox.jxio.EventReason;
@@ -111,7 +110,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		// workers
 		for (int i = 0; i < numWorkers; i++) {
 			ServerPortalPlayer spp = new ServerPortalPlayer(0, this.id, i + 1, this.listener.getUriForServer(), 0,
-			        runDurationSec, workerThreads, msgPoolsData, seed + (i*47));
+			        runDurationSec, workerThreads, msgPoolsData, seed + (i * 47));
 			workerThreads.getWorkerThread().addWorkAction(spp.getAttachAction());
 		}
 	}

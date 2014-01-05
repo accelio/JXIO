@@ -17,6 +17,8 @@
 package com.mellanox.jxio.tests.random.storyrunner;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,7 +35,10 @@ public class WorkerThreads {
 	private final int                       num_workers;
 	private int                             next_worker_index = -1;
 	private ArrayList<ServerPortalPlayer>[] listPortalPlayers;
-	private int                             actualWorkersNumber; // represents worker threads that were created
+	private int                             index             = 0;
+	private Map<Integer, Integer>           idToIndex         = new HashMap<Integer, Integer>();
+	// represents worker threads that were created
+	private int                             actualWorkersNumber;
 
 	@SuppressWarnings("unchecked")
 	public WorkerThreads(int numEQHs, int numListners) {
@@ -55,8 +60,8 @@ public class WorkerThreads {
 	}
 
 	public void close() {
-		
-		for (int i = 0; i<actualWorkersNumber; i++){
+
+		for (int i = 0; i < actualWorkersNumber; i++) {
 			workers[i].notifyClose();
 		}
 		executor.shutdown();
@@ -65,16 +70,20 @@ public class WorkerThreads {
 	}
 
 	public void addPortal(int id, ServerPortalPlayer spp) {
-		synchronized (listPortalPlayers[id-1]) {
-			this.listPortalPlayers[id-1].add(spp);
+		if (!idToIndex.containsKey(id)){
+			synchronized (listPortalPlayers[index]) {
+				this.listPortalPlayers[index].add(spp);
+				idToIndex.put(id, index);
+				index++;
+			}
 		}
 	}
 
 	public ServerPortalPlayer getPortal(int id) {
 		ServerPortalPlayer spp = null;
-		synchronized (listPortalPlayers[id-1]) {
-			int index = this.rand.nextInt(listPortalPlayers[id-1].size());
-			spp = listPortalPlayers[id-1].get(index);
+		synchronized (listPortalPlayers[idToIndex.get(id)]) {
+			int index = this.rand.nextInt(listPortalPlayers[idToIndex.get(id)].size());
+			spp = listPortalPlayers[idToIndex.get(id)].get(index);
 			LOG.debug("chosen index is " + index);
 		}
 		return spp;
@@ -113,7 +122,6 @@ public class WorkerThreads {
 		try {
 			Thread.sleep(10);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		actualWorkersNumber++;
