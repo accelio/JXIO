@@ -1,10 +1,10 @@
-# this is example-file: src/Makefile.am
-
 JDK = $(JAVA_HOME)
 topdir=../../
 
+GIT_VERSION = $(shell git describe --long --always)
+
 # additi-onal include paths necessary to compile the C library
-AM_CPPFLAGS = -fPIC -DPIC -Werror 				\
+AM_CPPFLAGS = -fPIC -DPIC -DGIT_VERSION=\"$(GIT_VERSION)\" -Werror 				\
 		-I$(JDK)/include -I$(JDK)/include/linux \
 		-I$(topdir)/accelio/include
 	    @AM_CFLAGS@

@@ -1,9 +1,5 @@
-# this is example-file: configure.ac
-
 # initial information about the project
 AC_INIT([libjxio],[1.0],[])
-
-
 
 # check if the source folder is correct
 

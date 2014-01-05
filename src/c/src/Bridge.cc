@@ -120,6 +120,7 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 		fprintf(stderr, "in JXIO/c/Bridge - failed to disable AccelIO's internal memory pool buffers\n");
 	}
 
+	LOG_DBG("Version: %s", GIT_VERSION);
 	LOG_DBG("in JXIO/c/Bridge - java callback methods were found and cached");
 
 	return JNI_VERSION_1_4;  //direct buffer requires java 1.4
