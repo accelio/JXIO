@@ -16,13 +16,13 @@ all: $(TARGET)
 
 $(TARGET):$(SRC_JAVA_FILES)
 	rm -rf $(BIN_FOLDER)/*
-	(cd src/accelio/; make)
+	(cd src/accelio/; make -s)
 	cp src/accelio/src/usr/.libs/libxio.so $(BIN_FOLDER)
-	(cd src/c; make)
+	(cd src/c; make -s)
 	cp src/c/src/libjxio.so $(BIN_FOLDER)
 	javac -cp $(LIB_FOLDER)/commons-logging.jar -d $(BIN_FOLDER) $(SRC_JAVA_FILES)
 	(cd $(BIN_FOLDER); jar -cfm $(TARGET) ../manifest.txt com $(NATIVE_LIBS))
 
 clean:
-	(cd src/c; make clean)
+	(cd src/c; make clean -s)
 	rm -rf $(BIN_FOLDER)/*

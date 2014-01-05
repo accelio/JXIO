@@ -21,11 +21,16 @@ command -v $BULLSEYE_CMD >/dev/null 2>&1 && $BULLSEYE_CMD --off
 rm -fr $BIN_FOLDER
 mkdir -p $BIN_FOLDER
 
+## Prepare VERSION file
+GIT_VERSION=`git describe --long --tags --always`
+echo "git version is: $GIT_VERSION"
+echo "$GIT_VERSION" > version
+
 ## Build Accelio
 echo "Build Accelio....(libxio c code)"
 cd $TOP_DIR
 git submodule update --init
-cd src/accelio/ && make distclean && ./autogen.sh && ./configure --disable-raio-build --enable-silent-rules && make && cp -f src/usr/.libs/libxio.so $BIN_FOLDER
+cd src/accelio/ && make distclean -s && ./autogen.sh && ./configure --silent --disable-raio-build --enable-silent-rules && make -s && cp -f src/usr/.libs/libxio.so $BIN_FOLDER
 if [[ $? != 0 ]] ; then
     exit 1
 fi
@@ -38,7 +43,7 @@ if [[ -n "$CODE_COVERAGE_ON" ]];then
 	cov01 --on
 	cov01 --status
 fi
-cd src/c/ && ./autogen.sh && ./configure && make clean && make && cp -f src/libjxio.so $BIN_FOLDER
+cd src/c/ && ./autogen.sh && ./configure --silent && make clean -s && make -s && cp -f src/libjxio.so $BIN_FOLDER
 if [[ $? != 0 ]] ; then
     exit 1
 fi
