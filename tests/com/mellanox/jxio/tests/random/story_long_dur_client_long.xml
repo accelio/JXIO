@@ -10,16 +10,16 @@
     <machines>
         <machine>
             <id value="1"/>
-            <manag_interface value="192.168.1.242"/>
-            <address value="36.0.0.122"/>
-            <name value="zorro012"/>
+            <manag_interface value="192.168.1.240"/>
+            <address value="36.0.0.120"/>
+            <name value="zorro010"/>
             <type value="Eth"/>
         </machine>
         <machine>
             <id value="2"/>
-            <manag_interface value="192.168.1.243"/>
-            <address value="36.0.0.123"/>
-            <name value="zorro013"/>
+            <manag_interface value="192.168.1.241"/>
+            <address value="36.0.0.121"/>
+            <name value="zorro011"/>
             <type value="Eth"/>
         </machine>
     </machines>
