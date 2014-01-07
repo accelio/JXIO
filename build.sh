@@ -30,7 +30,8 @@ echo "$GIT_VERSION" > version
 echo "Build Accelio....(libxio c code)"
 cd $TOP_DIR
 git submodule update --init
-cd src/accelio/ && make distclean -s && ./autogen.sh && ./configure --silent --disable-raio-build --enable-silent-rules && make -s && cp -f src/usr/.libs/libxio.so $BIN_FOLDER
+cd src/accelio/ && make distclean -si > /dev/null 2>&1;
+./autogen.sh && ./configure --silent --disable-raio-build --enable-silent-rules && make -s && cp -f src/usr/.libs/libxio.so $BIN_FOLDER
 if [[ $? != 0 ]] ; then
     exit 1
 fi
