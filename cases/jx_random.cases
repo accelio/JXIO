@@ -12,6 +12,56 @@
 	</global>
 	<case>
 		<info>jx test</info>
+		<name>run simple story 1</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability_simple.xml --timeout 300</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run simple story 2</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability_simple.xml --timeout 300</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run simple story 3</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability_simple.xml --timeout 300</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run simple story 4</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability_simple.xml --timeout 300</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run simple story 5</name>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability_simple.xml --timeout 300</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
 		<name>run story 1</name>
 		<tout>1500</tout>
 		<cmd>
@@ -153,56 +203,6 @@
 	<case>
 		<info>jx test</info>
 		<name>run story 15</name>
-		<tout>1500</tout>
-		<cmd>
-			<params>
-				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --timeout 300</static_args>
-			</params>
-		</cmd>
-	</case>
-	<case>
-		<info>jx test</info>
-		<name>run story 16</name>
-		<tout>1500</tout>
-		<cmd>
-			<params>
-				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --timeout 300</static_args>
-			</params>
-		</cmd>
-	</case>
-	<case>
-		<info>jx test</info>
-		<name>run story 17</name>
-		<tout>1500</tout>
-		<cmd>
-			<params>
-				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --timeout 300</static_args>
-			</params>
-		</cmd>
-	</case>
-	<case>
-		<info>jx test</info>
-		<name>run story 18</name>
-		<tout>1500</tout>
-		<cmd>
-			<params>
-				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --timeout 300</static_args>
-			</params>
-		</cmd>
-	</case>
-	<case>
-		<info>jx test</info>
-		<name>run story 19</name>
-		<tout>1500</tout>
-		<cmd>
-			<params>
-				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability.xml --timeout 300</static_args>
-			</params>
-		</cmd>
-	</case>
-	<case>
-		<info>jx test</info>
-		<name>run story 20</name>
 		<tout>1500</tout>
 		<cmd>
 			<params>
