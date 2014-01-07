@@ -105,7 +105,7 @@ Context* Client::ctxForSessionEvent(xio_session_event eventType, struct xio_sess
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
 		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT");
 		this->is_closing = true;
-		return this->get_ctx_class();
+		return NULL;
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT");
@@ -118,7 +118,7 @@ Context* Client::ctxForSessionEvent(xio_session_event eventType, struct xio_sess
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
 		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT");
 		close_connection();
-		return this->get_ctx_class();
+		return NULL;
 
 	case XIO_SESSION_TEARDOWN_EVENT:
 		CLIENT_LOG_DBG("got XIO_SESSION_TEARDOWN_EVENT. must delete session");

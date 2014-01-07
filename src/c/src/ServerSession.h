@@ -37,11 +37,13 @@ public:
 	bool get_is_closing() {return is_closing;}
 	void set_is_closing(bool b) {is_closing = b;}
 	//when user chooses to forward the session, connection_disconnected event is received
-	bool ignore_first_disconnect;
+	bool ignore_first_disconnect();
+	void set_ignore_first_disconnect(){to_ignore_first_disconnect = true;}
 private:
 	struct xio_session* session;
 	Context* ctx;
 	bool is_closing;
+	bool to_ignore_first_disconnect;
 };
 
 #endif

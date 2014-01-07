@@ -71,12 +71,10 @@ Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xi
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT");
 		//no need to delete session from map since we haven't received session_teardown yet
 		ses = get_ses_server_for_session(session, false);
-		if (ses->ignore_first_disconnect){
-			ses->ignore_first_disconnect = false;
-			return NULL;
+		if (!ses->ignore_first_disconnect()){
+			ses->set_is_closing(true);
 		}
-		ses->set_is_closing(true);
-		return ses->getCtx();
+		return NULL;
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT");
@@ -90,12 +88,10 @@ Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xi
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT");
 		//no need to delete session from map since we haven't received session_teardown yet
 		ses = get_ses_server_for_session(session, false);
-		if (ses->ignore_first_disconnect){
-			ses->ignore_first_disconnect = false;
-			return NULL;
+		if (!ses->ignore_first_disconnect()){
+			ses->set_is_closing(true);
 		}
-		ses->set_is_closing(true);
-		return ses->getCtx();
+		return NULL;
 
 	case XIO_SESSION_TEARDOWN_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_TEARDOWN_EVENT");

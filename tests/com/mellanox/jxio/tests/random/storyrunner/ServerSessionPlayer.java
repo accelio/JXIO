@@ -147,7 +147,7 @@ public class ServerSessionPlayer {
 		public void onSessionEvent(EventName session_event, EventReason reason) {
 			switch (session_event){
 				case SESSION_CLOSED:
-					LOG.info(outer.toString() + ": SESSION_TEARDOWN. reason='" + reason + "'");
+					LOG.info(outer.toString() + ": SESSION_CLOSED. reason='" + reason + "'");
 					LOG.info(outer.toString() + ": received " + counterReceivedMsgs + " msgs");
 					if (!outer.nextHop.isEmpty()) {
 						LOG.info(outer.toString() + ": closing nextHopClient");

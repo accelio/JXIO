@@ -162,7 +162,7 @@ bool forward_session(struct xio_session *xio_session, ServerSession* jxio_sessio
 		return false;
 	}
 	add_ses_server_for_session(xio_session, jxio_session);
-	jxio_session->ignore_first_disconnect = true;
+	jxio_session->set_ignore_first_disconnect();
 	return true;
 }
 

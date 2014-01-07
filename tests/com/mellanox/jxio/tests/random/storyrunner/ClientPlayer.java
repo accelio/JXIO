@@ -230,7 +230,7 @@ public class ClientPlayer extends GeneralPlayer {
 			switch (session_event) {
 				case SESSION_CLOSED:
 					if (outer.isClosing == true) {
-						LOG.info(outer.toString() + ": onSESSION_TEARDOWN, reason='" + reason + "'");
+						LOG.info(outer.toString() + ": onSESSION_CLOSED, reason='" + reason + "'");
 						if (outer.counterReceivedMsgs != outer.counterSentMsgs) {
 							LOG.error(outer.toString() + ": there were " + outer.counterSentMsgs + " sent and " + outer.counterReceivedMsgs
 							        + " received");

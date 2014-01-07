@@ -26,9 +26,15 @@ ServerSession::ServerSession(xio_session * session, Context* ctx) {
 	this->is_closing = false;
 	this->session = session;
 	this->ctx = ctx;
-	this->ignore_first_disconnect = false;
+	this->to_ignore_first_disconnect = false;
 }
 
 ServerSession::~ServerSession() {}
 
-
+bool ServerSession::ignore_first_disconnect(){
+	if (this->to_ignore_first_disconnect){
+		this->to_ignore_first_disconnect = false;
+		return true;
+	}
+	return false;
+}
