@@ -166,7 +166,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
-			if (session_event == EventName.SESSION_TEARDOWN) {
+			if (session_event == EventName.SESSION_CLOSED) {
 				LOG.info(outer.toString() + ": SESSION_TEARDOWN. reason='" + reason + "'");
 			} else {
 				LOG.error(outer.toString() + ": FAILURE, onSessionError: event='" + session_event + "', reason='"

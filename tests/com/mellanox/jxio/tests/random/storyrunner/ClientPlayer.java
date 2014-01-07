@@ -228,7 +228,7 @@ public class ClientPlayer extends GeneralPlayer {
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
 			switch (session_event) {
-				case SESSION_TEARDOWN:
+				case SESSION_CLOSED:
 					if (outer.isClosing == true) {
 						LOG.info(outer.toString() + ": onSESSION_TEARDOWN, reason='" + reason + "'");
 						if (outer.counterReceivedMsgs != outer.counterSentMsgs) {
@@ -251,10 +251,6 @@ public class ClientPlayer extends GeneralPlayer {
 						return;
 					}
 					break;
-				case SESSION_CONNECTION_CLOSED:
-				case SESSION_CONNECTION_DISCONNECTED:
-					LOG.debug(outer.toString() + ": got" + session_event.toString() + " : reason='" + reason + "'");
-					return;
 				default:
 					break;
 			}

@@ -130,7 +130,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 					int errorType = ((EventSession) ev).getErrorType();
 					int reason = ((EventSession) ev).getReason();
 					EventName eventName = EventName.getEventByIndex(errorType);
-					if (eventName == EventName.SESSION_TEARDOWN) {
+					if (eventName == EventName.SESSION_CLOSED) {
 						this.eventQHndl.removeEventable(this); // now we are officially done with this session and it
 						                                       // can be deleted from the EQH
 					}
