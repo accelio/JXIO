@@ -21,12 +21,12 @@ if [ ! -z "$1" ]; then
                 sleep 1
                 let "timeout+=1"
                 # Check if test process ended
-                if [ `ps -ef | grep java | grep random | tr -s ' ' | cut -d " " -f 2 | wc -l` -eq 0 ]; then
+                if [ `ps -ef | grep java | grep $2 | tr -s ' ' | cut -d " " -f 2 | wc -l` -eq 0 ]; then
                         exit 0
                 fi
         done
-        echo -e "\n[TIMEOUT ERROR] Random test timed out!\n"
+        echo -e "\n[TIMEOUT ERROR] Test timed out!\n"
         # Kill All
-        bash $DIR/killall.sh
+        bash $DIR/killall.sh $2
         exit 1
 fi
