@@ -101,6 +101,11 @@ Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xi
 		}
 		//last event for this session EVER: ses can be deleted from the map, but not deleted
 		ses = get_ses_server_for_session(session, true);
+		//this teardown is after user did reject. He does not need to get this event
+		if (ses->delete_after_teardown){
+			delete ses;
+			return NULL;
+		}
 		if (!ses->get_is_closing()){
 			SRVPORTAL_LOG_ERR("Got session teardown without getting connection/close/disconnected");
 		}

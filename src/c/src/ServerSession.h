@@ -39,6 +39,9 @@ public:
 	//when user chooses to forward the session, connection_disconnected event is received
 	bool ignore_first_disconnect();
 	void set_ignore_first_disconnect(){to_ignore_first_disconnect = true;}
+	//when user chooses to reject the session, the event is not passed to Java, therefore after
+	//session teardown the ServerSession needs to be deleted
+	bool delete_after_teardown;
 private:
 	struct xio_session* session;
 	Context* ctx;

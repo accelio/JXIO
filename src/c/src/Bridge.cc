@@ -306,15 +306,15 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSes
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	struct xio_session *xio_session = (struct xio_session *)ptr_session;
 	Context * ctx = (Context *) ptr_ctx;
-	ServerSession *jxio_ses = new ServerSession(xio_session, ctx);
-	if (jxio_ses == NULL){
+	ServerSession *jxio_session = new ServerSession(xio_session, ctx);
+	if (jxio_session == NULL){
 		LOG_ERR("memory allocation failed");
 		return 0;
 	}
-	bool ret_val = forward_session(xio_session, jxio_ses, url);
+	bool ret_val = forward_session(jxio_session, url);
 	env->ReleaseStringUTFChars(jurl, url);
 	if (ret_val){
-		return (jlong)(intptr_t) jxio_ses;
+		return (jlong)(intptr_t) jxio_session;
 	}else{
 		return 0;
 	}
@@ -324,14 +324,14 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSess
 {
 	struct xio_session *xio_session = (struct xio_session *)ptr_session;
 	Context * ctx = (Context *) ptr_ctx;
-	ServerSession *jxio_ses = new ServerSession(xio_session, ctx);
-	if (jxio_ses == NULL){
+	ServerSession *jxio_session = new ServerSession(xio_session, ctx);
+	if (jxio_session == NULL){
 		LOG_ERR("memory allocation failed");
 		return 0;
 	}
-	bool ret_val = accept_session(xio_session, jxio_ses);
+	bool ret_val = accept_session(jxio_session);
 	if (ret_val){
-		return (jlong)(intptr_t) jxio_ses;
+		return (jlong)(intptr_t) jxio_session;
 	}else{
 		return 0;
 	}
@@ -339,9 +339,14 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSess
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_rejectSessionNative(JNIEnv *env, jclass cls, jlong ptr_session, jint reason, jstring jdata, jint length)
 {
-	struct xio_session *session = (struct xio_session *)ptr_session;
+	struct xio_session *xio_session = (struct xio_session *)ptr_session;
 
 	const char *data = env->GetStringUTFChars(jdata, NULL);
+	ServerSession *jxio_session = new ServerSession(xio_session, NULL);
+	if (jxio_session == NULL){
+		LOG_ERR("memory allocation failed");
+		return false;
+	}
 	char * data_copy = (char*)malloc (length + 1);
 	if(data_copy == NULL){
 		LOG_ERR("memory allocation failed");
@@ -350,7 +355,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_rejectS
 	}
 
 	strcpy(data_copy, data);
-	bool retVal = reject_session(session, reason, data_copy, length);
+	bool retVal = reject_session(jxio_session, reason, data_copy, length);
 
 	env->ReleaseStringUTFChars(jdata, data);
 	free (data_copy);

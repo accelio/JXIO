@@ -152,8 +152,9 @@ bool close_xio_connection(struct xio_session *session, struct xio_context *ctx)
 	return true;
 }
 
-bool forward_session(struct xio_session *xio_session, ServerSession* jxio_session, const char * url)
+bool forward_session(ServerSession* jxio_session, const char * url)
 {
+	struct xio_session *xio_session = jxio_session->get_xio_session();
 	LOG_DBG("url before forward is %s. xio_session is %p", url, xio_session);
 
 	int retVal = xio_accept(xio_session, &url, 1, NULL, 0);
@@ -166,8 +167,9 @@ bool forward_session(struct xio_session *xio_session, ServerSession* jxio_sessio
 	return true;
 }
 
-bool accept_session(struct xio_session *xio_session, ServerSession* jxio_session)
+bool accept_session(ServerSession* jxio_session)
 {
+	struct xio_session *xio_session = jxio_session->get_xio_session();
 	LOG_DBG("before accept xio_session is %p", xio_session);
 
 	int retVal = xio_accept(xio_session, NULL, 0, NULL, 0);
@@ -180,17 +182,20 @@ bool accept_session(struct xio_session *xio_session, ServerSession* jxio_session
 }
 
 
-bool reject_session(struct xio_session *session, int reason,
+bool reject_session(ServerSession* jxio_session, int reason,
 		char *user_context, size_t user_context_len)
 {
-	LOG_DBG("before reject xio_session=%p. reason is %d", session, reason);
+	struct xio_session *xio_session = jxio_session->get_xio_session();
+	LOG_DBG("before reject xio_session=%p. reason is %d", xio_session, reason);
 
 	enum xio_status s = (enum xio_status)(reason + XIO_BASE_STATUS -1);
 
-	int retVal = xio_reject(session, s, user_context, user_context_len);
+	int retVal = xio_reject(xio_session, s, user_context, user_context_len);
 	if (retVal) {
-		LOG_DBG("ERROR, rejecting session=%p. error '%s' (%d)",session, xio_strerror(xio_errno()), xio_errno());
+		LOG_DBG("ERROR, rejecting session=%p. error '%s' (%d)",xio_session, xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
+	add_ses_server_for_session(xio_session, jxio_session);
+	jxio_session->delete_after_teardown = true;
 	return true;
 }

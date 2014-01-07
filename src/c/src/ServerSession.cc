@@ -27,6 +27,7 @@ ServerSession::ServerSession(xio_session * session, Context* ctx) {
 	this->session = session;
 	this->ctx = ctx;
 	this->to_ignore_first_disconnect = false;
+	this->delete_after_teardown = false;
 }
 
 ServerSession::~ServerSession() {}
