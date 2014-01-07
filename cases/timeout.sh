@@ -13,7 +13,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Check for timeout
-if [ ! -z "$1" ]; then
+if [ ! -z "$1" ] && [ ! -z "$2" ]; then
 	echo "[TIMEOUT ENABLED] $1 seconds."
         # Handle timeout
         let "timeout=0"
