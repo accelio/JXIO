@@ -33,7 +33,7 @@ public class BreakEventLoopTests implements Runnable {
 			
 			checkEQHBreakFromOtherThread();
 			checkEQHBreakFromSelfThread();
-			checkEQHTimeout();
+			checkEQHTimeout(10000);  // 10 msec
 
 			print("----- Closing the event queue handler...");
 			eqh.close();
@@ -73,19 +73,18 @@ public class BreakEventLoopTests implements Runnable {
 			blockOnEQH();
 		}
 
-		private void checkEQHTimeout() {
-			long timeout = 10000; // 10 msec
-			print("--- Testing EQH (" + timeout/1000 + " msec sleep)...");
+		private void checkEQHTimeout(long timeOutUSec) {
+			print("--- Testing EQH (" + timeOutUSec/1000 + " msec sleep)...");
 			long start = System.nanoTime()/1000;
-			eqh.runEventLoop(1, timeout); // Blocking with Timeout!
+			eqh.runEventLoop(1, timeOutUSec); // Blocking with Timeout!
 			long duration = System.nanoTime()/1000 - start;
-			long delta = duration - timeout;
+			long delta = duration - timeOutUSec;
 			long abs_delta = (delta < 0) ? -delta : delta;
 			if (abs_delta > 1000) {
 				printFailureAndExit("(it took too much time to wake up from EQH (blocked for " + delta + " usec more then requested)");
 			} 
 			else {
-				print("----- Woken by timeout correctly after " + timeout/1000 + " msec (with " + delta + " usec offset) ...");
+				print("----- Woken by timeout correctly after " + timeOutUSec/1000 + " msec (with " + delta + " usec offset) ...");
 			}
 		}	
 	}
