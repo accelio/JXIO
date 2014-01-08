@@ -119,19 +119,21 @@ public class EventQueueHandler implements Runnable {
 		this.elapsedTime.resetStartTime();
 		int eventsHandled = 0;
 
+		long remainingTimeOutMicroSec = timeOutMicroSec;
 		while (!this.breakLoop && ((is_infinite_events) || (maxEvents > eventsHandled))
 		        && ((is_forever) || (!this.elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
 
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("[" + getId() + "] in loop with " + eventsWaitingInQ + " events in Q. handled " + eventsHandled + " events out of "
 				        + maxEvents + ", " + "elapsed time is " + this.elapsedTime.getElapsedTimeMicro() + " usec (blocking for "
-				        + ((is_forever) ? "infinite duration)" : "a max duration of " + timeOutMicroSec / 1000 + " msec.)"));
+				        + ((is_forever) ? "infinite duration)" : "a max duration of " + remainingTimeOutMicroSec / 1000 + " msec.)"));
 			}
 
 			if (eventsWaitingInQ <= 0) { // the event queue is empty now, get more events from libxio
 				eventQueue.rewind();
-				eventsWaitingInQ = Bridge.runEventLoop(getId(), timeOutMicroSec);
+				eventsWaitingInQ = Bridge.runEventLoop(getId(), remainingTimeOutMicroSec);
 			}
+			remainingTimeOutMicroSec = timeOutMicroSec - this.elapsedTime.getElapsedTimeMicro();
 
 			// process in eventQueue pending events
 			if (eventsWaitingInQ > 0) {
