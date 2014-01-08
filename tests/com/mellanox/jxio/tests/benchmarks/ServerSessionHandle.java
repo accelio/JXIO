@@ -60,7 +60,7 @@ public class ServerSessionHandle {
 		public void onSessionEvent(EventName session_event, EventReason reason) {
 			LOG.debug("got event " + session_event.toString() + ", the reason is " + reason.toString());
 			System.out.println("got event " + session_event.toString() + ", the reason is " + reason.toString());
-			if (session_event == EventName.SESSION_TEARDOWN) {
+			if (session_event == EventName.SESSION_CLOSED) {
 				spw.sessionClosed();
 			}
 		}

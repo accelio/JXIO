@@ -122,8 +122,8 @@ public class HelloClient {
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
-			if (session_event == EventName.SESSION_TEARDOWN) { // normal exit
-				LOG.info("[EVENT] Got event SESSION_TEARDOWN");
+			if (session_event == EventName.SESSION_CLOSED) { // normal exit
+				LOG.info("[EVENT] Got event SESSION_CLOSED");
 			} else {
 				this.client.exitStatus = 1; // Failure on any kind of error
 				LOG.error("");

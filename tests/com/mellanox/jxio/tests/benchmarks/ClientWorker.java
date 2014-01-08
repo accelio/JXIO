@@ -1,5 +1,5 @@
 /*
- ** Copyright (C) 2013 Mellanox Technologies
+cd te	 ** Copyright (C) 2013 Mellanox Technologies
  **
  ** Licensed under the Apache License, Version 2.0 (the "License");
  ** you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ public class ClientWorker implements Callable<double[]> {
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
-			if (session_event == EventName.SESSION_TEARDOWN) {
+			if (session_event == EventName.SESSION_CLOSED) {
 				LOG.debug("closing eqh");
 				eqh.stop();
 			}

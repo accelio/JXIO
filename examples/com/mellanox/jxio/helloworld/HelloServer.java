@@ -131,8 +131,8 @@ public class HelloServer {
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
-			if (session_event == EventName.SESSION_TEARDOWN) { // normal exit
-				LOG.info("[EVENT] Got event SESSION_TEARDOWN");
+			if (session_event == EventName.SESSION_CLOSED) { // normal exit
+				LOG.info("[EVENT] Got event SESSION_CLOSED");
 			} else {
 				LOG.error("");
 			}
