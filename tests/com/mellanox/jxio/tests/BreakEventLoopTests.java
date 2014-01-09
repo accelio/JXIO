@@ -33,8 +33,15 @@ public class BreakEventLoopTests implements Runnable {
 			
 			checkEQHBreakFromOtherThread();
 			checkEQHBreakFromSelfThread();
-			checkEQHTimeout(10000);  // 10 msec
-
+			checkEQHTimeout(10000);    //    10 msec
+			checkEQHTimeout(100000);   //   100 msec
+			checkEQHTimeout(1000000);  //  1000 msec (1 sec)
+			checkEQHTimeout(500000);   //   500 msec
+			checkEQHTimeout(2000000);  //  2     sec
+			checkEQHTimeout(4000000);  //  4     sec
+			checkEQHTimeout(300000);   //   300 msec
+			checkEQHTimeout(12000000); // 12     sec
+			
 			print("----- Closing the event queue handler...");
 			eqh.close();
 			print("----- Exiting up a event queue handler...");
@@ -80,7 +87,8 @@ public class BreakEventLoopTests implements Runnable {
 			long duration = System.nanoTime()/1000 - start;
 			long delta = duration - timeOutUSec;
 			long abs_delta = (delta < 0) ? -delta : delta;
-			if (abs_delta > 1000) {
+			// event_loop epoll_wait() sleep accuracy is dependent on requested timeout period (about 0,1%)
+			if ((abs_delta > 500) && (timeOutUSec/800 < abs_delta)) {
 				printFailureAndExit("(it took too much time to wake up from EQH (blocked for " + delta + " usec more then requested)");
 			} 
 			else {
@@ -114,8 +122,8 @@ public class BreakEventLoopTests implements Runnable {
 			Thread.sleep(1000);
 
 			eqh1.stop();
-
-			// Wait for thread to end
+			
+			// Wait for thread to end (while it is running some 'timeout' checks)
 			t1.join();
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
