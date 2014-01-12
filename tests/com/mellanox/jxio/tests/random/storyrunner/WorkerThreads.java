@@ -89,7 +89,7 @@ public class WorkerThreads {
 		return spp;
 	}
 
-	public WorkerThread getWorkerThread() {
+	public synchronized WorkerThread getWorkerThread() {
 
 		WorkerThread worker = getWorkerThreadByIndex(this.next_worker_index);
 
