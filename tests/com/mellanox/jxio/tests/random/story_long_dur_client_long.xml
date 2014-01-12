@@ -72,6 +72,8 @@
             <start_delay value="3"/>
             <tps value="100"/>
             <msg_size_in_factor_perc value="100"/>
+            <repeats value="0"/>
+            <repeat_delay value="0"/>
             <hops/>
         </client>
     </clients>

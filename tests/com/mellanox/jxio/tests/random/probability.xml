@@ -59,5 +59,7 @@
 		<msg_size_out_factor_perc value="[80]:80, [10]:20, [10]:30"/>
 		<tps value="[30]:100, [25]:100-500, [0]:500-50000, [0]:100000"/>
 		<batch value="[50]:1, [50]:2-10000"/>
+		<repeats value="[100]:0"/>
+		<repeat_delay value="[100]:0"/>
 	</clients>
 </root>

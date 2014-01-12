@@ -379,6 +379,8 @@ public class JXIOStoryRunner implements StoryRunner {
 				int startDelay = Integer.valueOf(client.getAttribute("start_delay"));
 				int tps = Integer.valueOf(client.getAttribute("tps"));
 				int batch = Integer.valueOf(client.getAttribute("batch"));
+				int repeats = Integer.valueOf(client.getAttribute("repeats"));
+				int repeatDelay = Integer.valueOf(client.getAttribute("repeat_delay"));
 
 				// Update client's servers list
 				clientServers.add(server);
@@ -453,9 +455,14 @@ public class JXIOStoryRunner implements StoryRunner {
 				}
 
 				// Add client
-				// each client will have a his own seed which is a derivative of the story's seed
-				ClientPlayer cp = new ClientPlayer(id, uri, startDelay, duration, pool, tps, batch, seed + counter * 17);
-				clientPlayers.add(cp);
+				// each client will have a his own seed which is a derivative of the story's seed.
+				// repeating client will be added as sevreal sequential clients.
+				int clientStartDelay;
+				for (int i = 0; i < repeats + 1; i++){
+					clientStartDelay = (duration + repeatDelay) * i + startDelay;
+					ClientPlayer cp = new ClientPlayer(id, uri, clientStartDelay, duration, pool, tps, batch, seed + counter * 17);
+					clientPlayers.add(cp);
+				}
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
