@@ -21,6 +21,7 @@
 #include <map>
 #include <jni.h>
 
+#include <infiniband/verbs.h>
 #include <libxio.h>
 
 #include "CallbackFunctions.h"
@@ -43,6 +44,11 @@ static jfieldID fidError;
 static jmethodID jmethodID_logToJava; // handle to java cb method
 static jmethodID jmethodID_requestForBoundMsgPool;
 
+extern "C" void bridge_print_error(const char* logmsg)
+{
+	fprintf(stderr, "in JXIO/c/Bridge: %s\n", logmsg);
+}
+
 // JNI inner functions implementations
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 {
@@ -50,13 +56,16 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 
 	cached_jvm = jvm;
 	JNIEnv *env;
-	if (jvm->GetEnv((void **)&env, JNI_VERSION_1_4)) { //direct buffer requires java 1.4
-		return JNI_ERR; /* JNI version not supported */
+
+	// direct buffer requires java 1.4
+	if (jvm->GetEnv((void **)&env, JNI_VERSION_1_4)) { 
+		bridge_print_error("JNI version 1.4 and higher requiered");
+		return JNI_ERR;
 	}
 
 	cls = env->FindClass("com/mellanox/jxio/impl/Bridge");
 	if (cls == NULL) {
-		fprintf(stderr, "in JXIO/c/Bridge - java class was NOT found\n");
+		bridge_print_error("java class was NOT found");
 		return JNI_ERR;
 	}
 
@@ -64,43 +73,48 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 	// for allowing GC to unload & re-load the class and handles
 	jweakBridge = env->NewWeakGlobalRef(cls);
 	if (jweakBridge == NULL) {
-		printf("-->> In C++ weak global ref to java class was NOT found\n");
+		bridge_print_error("C++ weak global ref to java class was NOT found");
 		return JNI_ERR;
 	}
 	jclassBridge = (jclass)jweakBridge;
 
 	cls_data = env->FindClass("com/mellanox/jxio/EventQueueHandler$DataFromC");
 	if (cls_data == NULL) {
-		fprintf(stderr, "in JXIO/c/Bridge - java class was NOT found\n");
+		bridge_print_error("java class was NOT found");
 		return JNI_ERR;
 	}
 
 	if (fidPtr == NULL) {
 		fidPtr = env->GetFieldID(cls_data, "ptrCtx", "J");
 		if (fidPtr == NULL) {
-			fprintf(stderr, "in JXIO/c/Bridge - could not get field ptrCtx\n");
+			bridge_print_error("could not get field ptrCtx");
 		}
 	}
 
 	if (fidBuf == NULL) {
 		fidBuf = env->GetFieldID(cls_data, "eventQueue","Ljava/nio/ByteBuffer;");
 		if (fidBuf == NULL) {
-			fprintf(stderr, "in JXIO/c/Bridge - could not get field fidBuf\n");
+			bridge_print_error("could not get field fidBuf");
 		}
 	}
 
 	// logToJava callback
 	jmethodID_logToJava = env->GetStaticMethodID(jclassBridge, "logToJava", "(Ljava/lang/String;I)V");
 	if (jmethodID_logToJava == NULL) {
-		printf("-->> In C++ java Bridge.logToJava() callback method was NOT found\n");
+		bridge_print_error("C++ java Bridge.logToJava() callback method was NOT found");
 		return JNI_ERR;
 	}
 
 	// requestForBoundMsgPool callback
 	jmethodID_requestForBoundMsgPool = env->GetStaticMethodID(jclassBridge, "requestForBoundMsgPool", "(JII)V");
 	if (jmethodID_requestForBoundMsgPool == NULL) {
-		printf("-->> In C++ java Bridge.requestForBoundMsgPool() callback method was NOT found\n");
+		bridge_print_error("C++ java Bridge.requestForBoundMsgPool() callback method was NOT found");
 		return JNI_ERR;
+	}
+
+	// prepare IB resources to support fork-ing (prevent COW for the RDMA registered memroy)
+	if (ibv_fork_init()) {
+		bridge_print_error("failed in ibv_fork_init()");
 	}
 
 	// setup log collection from AccelIO into JXIO's logging
@@ -110,18 +124,18 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 	// disable Accelio's HugeTbl memory allocation scheme
 	int opt = 1;
 	if (xio_set_opt(NULL, XIO_OPTLEVEL_ACCELIO, XIO_OPTNAME_DISABLE_HUGETBL, &opt, sizeof(opt))) {
-		fprintf(stderr, "in JXIO/c/Bridge - failed to disable AccelIO's HugeTbl memory allocation scheme\n");
+		bridge_print_error("failed to disable AccelIO's HugeTbl memory allocation scheme");
 	}
 
 	// disable Accelio's internal mem pool
 	// JXIO requiers Java user application to allocate our memory pool
 	opt = 0;
 	if (xio_set_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_ENABLE_MEM_POOL, &opt, sizeof(opt))) {
-		fprintf(stderr, "in JXIO/c/Bridge - failed to disable AccelIO's internal memory pool buffers\n");
+		bridge_print_error("failed to disable AccelIO's internal memory pool buffers");
 	}
 
 	LOG_DBG("Version: %s", GIT_VERSION);
-	LOG_DBG("in JXIO/c/Bridge - java callback methods were found and cached");
+	LOG_DBG("JXIO/c/Bridge & AccelIO ready, java callback methods were found and cached");
 
 	return JNI_VERSION_1_4;  //direct buffer requires java 1.4
 }
@@ -151,7 +165,7 @@ extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *jvm, void* reserved)
 void Bridge_invoke_logToJava_callback(const int severity, const char* log_message) {
 	JNIEnv *env;
 	if (cached_jvm->GetEnv((void **) &env, JNI_VERSION_1_4)) {
-		printf("-->> Error getting JNIEnv In C++ JNI_logToJava when trying to log message: '%s'\n", log_message);
+		fprintf(stderr, "-->> Error getting JNIEnv when trying to log message: '%s'\n", log_message);
 		return;
 	}
 
@@ -444,12 +458,12 @@ JNIEnv *JX_attachNativeThread()
 {
 	JNIEnv *env;
 	if (!cached_jvm) {
-		printf("cached_jvm is NULL");
+		printf("cached_jvm is NULL\n");
 	}
 	jint ret = cached_jvm->AttachCurrentThread((void **) &env, NULL);
 
 	if (ret < 0) {
-		printf("cached_jvm->AttachCurrentThread failed ret=%d", ret);
+		printf("cached_jvm->AttachCurrentThread failed ret=%d\n", ret);
 	}
 	LOG_DBG("completed successfully env=%p", env);
 	return env; // note: this handler is valid for all functions in this thread
