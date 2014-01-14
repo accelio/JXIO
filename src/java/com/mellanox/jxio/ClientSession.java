@@ -40,6 +40,16 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 		public void onMsgError();
 	}
+	
+	/** ClientSession is the object that connects to the Server. The application sends requests to the server
+	 * and receives responses. 
+	 * 
+	 * @param eventQHandler on which the events (onReply, onSessionEstablished etc) of this client will arrive
+	 * @param uri of the server
+	 * @param callbacks .The following methods must be implemented: onReply(Msg msg), onSessionEstablished(), 
+	 * onSessionEvent(EventName session_event, EventReason reason), onMsgError()
+	 * 
+	 */
 
 	public ClientSession(EventQueueHandler eventQHandler, URI uri, Callbacks callbacks) {
 		this.eventQHandler = eventQHandler;
@@ -60,6 +70,16 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 		this.eventQHandler.addEventable(this);
 	}
+	
+	/** This method sends the request to server. 
+	 * <p>
+	 * The send is asynchronous, therefore even
+	 * if the function returns, this does not mean that the msg reached the server or even was
+	 * sent to the server.
+	 * 
+	 * @param msg
+	 * @return boolean that indicated whether or not the queuing of the msg was successful. 
+	 */
 
 	public boolean sendMessage(Msg msg) {
 		if (this.getIsClosing()) {
@@ -76,6 +96,13 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		return true;
 	}
 
+	/** This method closes the ClientSession.
+	 * <p>
+	 * The method is asynchronous: the ClientSession will be closed only when
+	 * it receives event SESSION_CLOSED
+	 * 
+	 * @return boolean that indicates whether there was a successful call to close of the Client object on C side
+	 */
 	public boolean close() {
 		if (this.getIsClosing()) {
 			LOG.warn(this.toString() + ": attempting to close client that is already closed or being closed");

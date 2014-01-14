@@ -34,7 +34,24 @@ public class MsgPool {
 	private final long       refToCObject;
 	List<Msg>                listMsg = new ArrayList<Msg>();
 	private boolean          already_bound; //this flag indicated if this pool is already bound to eqh
+	
 
+	/** Creates MsgPool (including allocating and RDMA registering the memory in C). 
+	 * Each Msg in MsgPool will be zero copied via the RDMA transport to the remote peer.
+	 * <p>
+	 * InSize and outSize for client and server need to be reversed. For example:
+	 * <p>
+	 * Client: MsgPool p1 = new MsgPool(10, 8192, 64)
+	 * <p>
+	 * Server: MsgPool p2 = new MsgPool(10, 64, 8192)
+	 * 
+	 * @param capacity - number of msg that this pool will contain
+	 * @param inSize - size (in bytes) of the receive buffer. For client this will be the response from the server
+	 * and for the server this will be the request from the client
+	 * @param outSize - size (in bytes) of the send buffer. For client this will be the request to the server 
+	 * and for the server this will be the response to the client.
+	 * 
+	 */
 	public MsgPool(int capacity, int inSize, int outSize) {
 		this.capacity = capacity;
 		this.inSize = inSize;
@@ -69,30 +86,40 @@ public class MsgPool {
 		return sb.toString();
 	}
 
-	// Returns true if this MsgPool contains no elements.
+	/** Checks if this MsgPool is empty
+	 */
 	public boolean isEmpty() {
 		return listMsg.size() == 0;
 	}
-
-	// Returns the number of Msgs this MsgPool was created with.
+	
+	/** Returns the number of Msgs this MsgPool was created with.
+	 */
 	public int capacity() {
 		return this.capacity;
 	}
 
-	// Returns the number of Msgs the in this MsgPool.
+	/** Returns the number of Msgs the in this MsgPool.
+	 */
 	public int count() {
 		return listMsg.size();
 	}
 
+	/** Returns a msg from the pool (or null if pool is empty).
+	 * This method should be called on client side.
+	 */
 	public Msg getMsg() {
 		if (listMsg.isEmpty()) {
 			LOG.warn("there are no more messages in pool");
 			return null;
 		}
-		Msg msg = listMsg.remove(0); // 1 is for debugging. should be 0
+		Msg msg = listMsg.remove(0); 
 		return msg;
 	}
 
+	/** Returns msg back to pool. 
+	 * This method should be called on client side, once the application
+	 * finished handling the msg
+	 */
 	public void releaseMsg(Msg msg) {
 		if (msg.getParentPool() == this) {
 			msg.resetPositions();
@@ -102,10 +129,16 @@ public class MsgPool {
 		}
 	}
 
+	/** Returns id of the object. The id is unique and represents pointer
+	 * to the corresponding C object.
+	 */
 	public long getId() {
 		return refToCObject;
 	}
 
+	/** Deletes this MsgPool. This method releases all memory allocated in C
+	 * and therefore this should be the last method called for this MsgPool 
+	 */
 	public void deleteMsgPool() {
 		Bridge.deleteMsgPool(refToCObject);
 	}

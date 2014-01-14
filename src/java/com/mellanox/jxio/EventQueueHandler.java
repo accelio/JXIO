@@ -173,7 +173,7 @@ public class EventQueueHandler implements Runnable {
 
 	/**
 	 * Close (and stops) this EQH and release all corresponding Java and Native resources
-	 * (including closing the related SM, SS & CS)
+	 * (including closing the related ServerSessions, ServerPortal and ClientSession)
 	 * 
 	 * This function Should be called only once no other thread is inside the runEventLoop()
 	 */
@@ -224,13 +224,6 @@ public class EventQueueHandler implements Runnable {
 
 		private long    id        = 0;
 		private boolean isClosing = false; // indicates that this class is in the process of releasing it's resources
-
-		/*
-		 * enum eventType {
-		 * sessionError, msgError, sessionEstablished, msgRecieved,
-		 * newSession
-		 * }
-		 */
 
 		final long getId() {
 			return id;
@@ -435,6 +428,13 @@ public class EventQueueHandler implements Runnable {
 			return ptrCtx;
 		}
 	}
+	
+	/** This method binds MsgPool to this EQH. It is necessary for MsgPool on server side 
+	 * to be binded to server's EQH 
+	 * 
+	 * @param msgPool to be binded to this EQH
+	 * @return bool that indicate if the bind was successful
+	 */
 
 	public boolean bindMsgPool(MsgPool msgPool) {
 		if (getId() == 0) {
@@ -467,6 +467,11 @@ public class EventQueueHandler implements Runnable {
 		this.msgsPendingNewRequest.put(msg.getId(), msg);
 	}
 
+	/** This method releases MsgPool from server's EQH (opposite of bindMsgPool)
+	 * 
+	 * @param msgPool to be released
+	 */
+	
 	public void releaseMsgPool(MsgPool msgPool) {
 		// TODO implement!
 	}
