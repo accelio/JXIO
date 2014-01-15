@@ -221,6 +221,18 @@
 		</cmd>
 	</case>
 
+        <case>
+	        <info>jx test</info>
+		<name>run story long duration client repeats</name>
+		 <tout>5000</tout>
+		<cmd>
+			<params>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability_client_repeats.xml --timeout 4000</static_args>
+			</params>
+		</cmd>
+	</case>
+
+
 
 
 </CASEDEF>
