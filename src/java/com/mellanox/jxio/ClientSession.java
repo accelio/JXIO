@@ -122,10 +122,6 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		return true;
 	}
 
-	boolean getIsExpectingEventAfterClose() {
-		return true;
-	}
-
 	void onEvent(Event ev) {
 		switch (ev.getEventType()) {
 

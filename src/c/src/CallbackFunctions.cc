@@ -30,6 +30,8 @@ void done_event_creating(Context *ctx, int sizeWritten)
 	ctx->events_num++;
 }
 
+
+
 // implementation of the XIO callbacks
 int on_new_session_callback(struct xio_session *session,
 		struct xio_new_session_req *req, void *cb_prv_data)
@@ -129,6 +131,22 @@ int on_session_established_callback(struct xio_session *session,
 	return 0;
 }
 
+void on_session_event(void * ptr_for_java, Context *ctx, struct xio_session_event_data *event_data)
+{
+	char* buf = ctx->event_queue->get_buffer();
+	int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, ptr_for_java, event_data);
+	done_event_creating(ctx, sizeWritten);
+}
+
+void on_session_event_server(ServerPortal* serverPortal, Context *ctx, struct xio_session *session,
+		struct xio_session_event_data *event_data)
+{
+	on_session_event(session, ctx, event_data);
+	/*in case it is a server, the java object is represented by session */
+	if (serverPortal->flag_to_delete)
+		serverPortal->writeEventAndDelete(true);
+}
+
 int on_session_event_callback(struct xio_session *session,
 		struct xio_session_event_data *event_data, void *cb_prv_data)
 {
@@ -138,18 +156,17 @@ int on_session_event_callback(struct xio_session *session,
 
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 
-	bool isClient = cntxbl->isClient();
 	Context *ctx = cntxbl->ctxForSessionEvent(event_data->event, session);
 
 	if (ctx) {
-		LOG_DBG("event will be written to ctx=%p", ctx);
-
-		char* buf = ctx->event_queue->get_buffer();
-		/*in case it is a client, the java object is represented by cb_prv_data
-		/in case it is a server, the java object is represented by xio_session  */
-		void *ptrForJava = isClient ? (void*)cntxbl : (void*)session;
-		int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, ptrForJava, event_data);
-		done_event_creating(ctx, sizeWritten);
+		if (cntxbl->isClient()){
+			Client* client = (Client*)cntxbl;
+			/*in case it is a client, the java object is represented by cb_prv_data */
+			on_session_event(client, ctx, event_data);
+		}else{//it's  a server
+			ServerPortal* serverPortal = (ServerPortal*)cntxbl;
+			on_session_event_server(serverPortal, ctx, session, event_data);
+		}
 	}
 	return 0;
 }

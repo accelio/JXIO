@@ -63,10 +63,10 @@ public class Bridge {
 
 	}
 
-	private static native int runEventLoopNative(long ptr, long timeOutMicroSec);
+	private static native int[] runEventLoopNative(long ptr, long timeOutMicroSec);
 
-	public static int runEventLoop(final long ptrCtx, final long timeOutMicroSec) {
-		int ret = runEventLoopNative(ptrCtx, timeOutMicroSec);
+	public static int[] runEventLoop(final long ptrCtx, final long timeOutMicroSec) {
+		int[] ret = runEventLoopNative(ptrCtx, timeOutMicroSec);
 		return ret;
 	}
 
@@ -116,11 +116,10 @@ public class Bridge {
 		return ptr;
 	}
 
-	private static native boolean stopServerPortalNative(long ptr);
+	private static native void stopServerPortalNative(long ptr);
 
-	public static boolean stopServerPortal(final long ptrSrv) {
-		boolean ret = stopServerPortalNative(ptrSrv);
-		return ret;
+	public static void stopServerPortal(final long ptrSrv) {
+		stopServerPortalNative(ptrSrv);
 	}
 
 	private static native boolean closeSessionServerNative(long ptrSesServer);
@@ -130,17 +129,17 @@ public class Bridge {
 		return ret;
 	}
 
-	private static native long forwardSessionNative(String url, long ptrSes, long ptrCtx);
+	private static native long forwardSessionNative(String url, long ptrSes, long ptrPortal);
 
-	public static long forwardSession(final String url, final long ptrSes, final long ptrCtx) {
-		long ptr = forwardSessionNative(url, ptrSes, ptrCtx);
+	public static long forwardSession(final String url, final long ptrSes, final long ptrPortal) {
+		long ptr = forwardSessionNative(url, ptrSes, ptrPortal);
 		return ptr;
 	}
 
-	private static native long acceptSessionNative(long ptrSes, long ptrCtx);
+	private static native long acceptSessionNative(long ptrSes, long ptrPortal);
 
-	public static long acceptSession(final long ptrSes, final long ptrCtx) {
-		long ptr = acceptSessionNative(ptrSes, ptrCtx);
+	public static long acceptSession(final long ptrSes, final long ptrPortal) {
+		long ptr = acceptSessionNative(ptrSes, ptrPortal);
 		return ptr;
 	}
 

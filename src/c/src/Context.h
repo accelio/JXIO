@@ -39,6 +39,8 @@ public:
 	int del_event_loop_fd(int fd);
 	void add_msg_pool(MsgPool* msg_pool);
 	static void on_event_loop_handler(int fd, int events, void *priv_data);
+	void add_my_event();
+	void reset_counters();
 
 	Event_queue *event_queue;
 	Events *events;
@@ -47,6 +49,8 @@ public:
 	struct xio_context *ctx;
 	int events_num;
 	MsgPools msg_pools;
+	//represents offset from which java will begin to read
+	int offset_read_for_java;
 };
 
 #endif // ! Context__H___

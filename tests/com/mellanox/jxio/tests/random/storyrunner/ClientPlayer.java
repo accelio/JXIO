@@ -240,6 +240,7 @@ public class ClientPlayer extends GeneralPlayer {
 						}
 						return;
 					}
+					outer.isClosing = true;
 					mp.deleteMsgPool();
 					break;
 				case SESSION_REJECT:
@@ -254,9 +255,6 @@ public class ClientPlayer extends GeneralPlayer {
 				default:
 					break;
 			}
-			LOG.error(outer.toString() + ": FAILURE: onSessionError: event='" + session_event + "', reason='" + reason
-			        + "'");
-			System.exit(1); // Failure in test - eject!
 		}
 
 		public void onReply(Msg msg) {

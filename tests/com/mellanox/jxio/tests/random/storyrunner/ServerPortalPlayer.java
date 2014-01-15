@@ -119,10 +119,6 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	protected void terminate() {
 		LOG.info(this.toString() + ": terminating");
 		this.listener.close();
-		for (MsgPool pool : msgPools) {
-			this.workerThread.getEQH().releaseMsgPool(pool);
-			pool.deleteMsgPool();
-		}
 		// isclosing = true?
 	}
 
@@ -166,12 +162,24 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
-			if (session_event == EventName.SESSION_CLOSED) {
-				LOG.info(outer.toString() + ": SESSION_TEARDOWN. reason='" + reason + "'");
-			} else {
-				LOG.error(outer.toString() + ": FAILURE, onSessionError: event='" + session_event + "', reason='"
-				        + reason + "'");
-				System.exit(1);
+			
+			switch (session_event){
+				case SESSION_CLOSED:
+					LOG.info(outer.toString() + ": SESSION_TEARDOWN. reason='" + reason + "'");
+					break;
+				case PORTAL_CLOSED:
+					LOG.info(outer.toString() + ": PORTAL_CLOSED, reason='" + reason + "'");
+					for (MsgPool pool : msgPools){
+						outer.workerThread.getEQH().releaseMsgPool(pool);
+						pool.deleteMsgPool();
+					}
+					break;
+				default:
+					LOG.error(outer.toString() + ": FAILURE, onSessionError: event='" + session_event + "', reason='"
+					        + reason + "'");
+					System.exit(1);
+					break;
+				
 			}
 		}
 	}

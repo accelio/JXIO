@@ -130,8 +130,9 @@ public class EventQueueHandler implements Runnable {
 			}
 
 			if (eventsWaitingInQ <= 0) { // the event queue is empty now, get more events from libxio
-				eventQueue.rewind();
-				eventsWaitingInQ = Bridge.runEventLoop(getId(), remainingTimeOutMicroSec);
+				int[] retVal = Bridge.runEventLoop(getId(), remainingTimeOutMicroSec);
+				eventsWaitingInQ = retVal[0];
+				eventQueue.position(retVal[1]);
 			}
 			remainingTimeOutMicroSec = timeOutMicroSec - this.elapsedTime.getElapsedTimeMicro();
 
@@ -201,9 +202,7 @@ public class EventQueueHandler implements Runnable {
 					ev.close();
 					it = this.eventables.entrySet().iterator();
 				}
-				if (ev.getIsExpectingEventAfterClose()) {
-					waitForEvent++;
-				}
+				waitForEvent++;
 			}
 			if (waitForEvent != 0) {
 				runEventLoop(waitForEvent, -1);
@@ -246,9 +245,7 @@ public class EventQueueHandler implements Runnable {
 		}
 
 		abstract void onEvent(Event ev);
-
-		// indicates that after Eventable.close() an event should arrive on eventloop
-		abstract boolean getIsExpectingEventAfterClose();
+		
 	}
 
 	long getId() {

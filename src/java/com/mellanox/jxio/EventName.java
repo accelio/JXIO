@@ -1,7 +1,7 @@
 package com.mellanox.jxio;
 
 public enum EventName {
-	SESSION_REJECT(0), SESSION_CLOSED(1), SESSION_ERROR(7);
+	SESSION_REJECT(0), SESSION_CLOSED(1), PORTAL_CLOSED(2), SESSION_ERROR(7);
 	
 	private int index;
 	

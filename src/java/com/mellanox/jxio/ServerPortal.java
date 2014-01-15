@@ -26,6 +26,8 @@ import com.mellanox.jxio.impl.EventSession;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ServerPortal extends EventQueueHandler.Eventable {
 
@@ -34,7 +36,8 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	private String                  uri;
 	private URI                     uriPort0;
 	private final int               port;
-	private static final Log        LOG = LogFactory.getLog(ServerPortal.class.getCanonicalName());
+	private Set<ServerSession>      sessions = new HashSet<ServerSession>();
+	private static final Log        LOG      = LogFactory.getLog(ServerPortal.class.getCanonicalName());
 
 	public static interface Callbacks {
 		public void onSessionNew(long ptrSes, String uri, String srcIP);
@@ -82,11 +85,24 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	}
 
 	public boolean close() {
-		this.eventQHndl.removeEventable(this); // TODO: fix this
+		if (this.getIsClosing()) {
+			LOG.warn("attempting to close server portal that is already closed or being closed");
+			return false;
+		}
 		if (getId() == 0) {
 			LOG.error("closing ServerPortal with empty id");
 			return false;
 		}
+		for (ServerSession serverSession : sessions) {
+			if (!serverSession.getIsClosing()) {
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("[" + getId() + "] closing serverSession=" + serverSession.getId()
+					        + " from ServerPortal.close");
+				}
+				serverSession.close();
+			}
+		}
+		
 		Bridge.stopServerPortal(getId());
 		setIsClosing(true);
 		return true;
@@ -94,8 +110,9 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 
 	public void accept(ServerSession serverSession) {
 		serverSession.setEventQueueHandlers(this.eventQHndl, this.eventQHndl);
-		long ptrSesServer = Bridge.acceptSession(serverSession.getId(), this.eventQHndl.getId());
-		serverSession.setPtrServerSession (ptrSesServer);
+		long ptrSesServer = Bridge.acceptSession(serverSession.getId(), this.getId());
+		serverSession.setPtrServerSession(ptrSesServer);
+		this.setSession(serverSession);
 	}
 
 	public void forward(ServerPortal portal, ServerSession serverSession) {
@@ -107,16 +124,18 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 			return;
 		}
 		serverSession.setEventQueueHandlers(this.eventQHndl, portal.eventQHndl);
-		long ptrSesServer = Bridge.forwardSession(portal.getUri(), serverSession.getId(), portal.eventQHndl.getId());
-		serverSession.setPtrServerSession (ptrSesServer);
+		long ptrSesServer = Bridge.forwardSession(portal.getUri(), serverSession.getId(), portal.getId());
+		serverSession.setPtrServerSession(ptrSesServer);
+		portal.setSession(serverSession);
 	}
-	
-	public void reject(long ptrSes, EventReason res, String data){
+
+	public void reject(long ptrSes, EventReason res, String data) {
 		Bridge.rejectSession(ptrSes, res.getIndex(), data, data.length());
 	}
 
-	boolean getIsExpectingEventAfterClose() {
-		return false;
+	private void setSession(ServerSession serverSession) {
+		this.sessions.add(serverSession);
+		serverSession.setPortal(this);
 	}
 
 	void onEvent(Event ev) {
@@ -133,6 +152,12 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 					if (eventName == EventName.SESSION_CLOSED) {
 						this.eventQHndl.removeEventable(this); // now we are officially done with this session and it
 						                                       // can be deleted from the EQH
+					}
+					if (eventName == EventName.PORTAL_CLOSED) {
+						this.eventQHndl.removeEventable(this);
+						if (LOG.isDebugEnabled()) {
+							LOG.debug("[" + this.getId() + "] portal was closed");
+						}
 					}
 					callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
 				}
@@ -155,6 +180,10 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		}
 	}
 
+	void removeSession(ServerSession s) {
+		this.sessions.remove(s);
+	}
+
 	private URI replacePortInsideURI(URI uri, int newPort) {
 		URI newUri = null;
 		try {
@@ -165,7 +194,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 			e.printStackTrace();
 			LOG.error("URISyntaxException occured while trying to create a new URI");
 		}
-		
+
 		return newUri;
 	}
 

@@ -33,6 +33,7 @@ public:
 	char* get_buffer();
 	void reset();
 	void increase_offset(int increase);
+	int get_offset(){return offset;}
 
 	bool error_creating;
 

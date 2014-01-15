@@ -34,6 +34,8 @@ Context::Context(int eventQSize)
 	this->events = NULL;
 	this->events_num = 0;
 
+	this->offset_read_for_java = 0;
+
 	ev_loop = xio_ev_loop_create();
 	if (ev_loop == NULL) {
 		CONTEXT_LOG_ERR("ERROR, xio_ev_loop_init failed");
@@ -92,9 +94,10 @@ Context::~Context()
 
 int Context::run_event_loop(long timeout_micro_sec)
 {
-	//update offset to 0: for indication if this is the first callback called
-	this->event_queue->reset();
-	this->events_num = 0;
+	if (this->events_num !=  0){
+		CONTEXT_LOG_DBG("there are events that were not created by epoll. no need to call ev_loop_run");
+		return this->events_num;
+	}
 
 	int timeout_msec = -1; // infinite timeout as default
 	if (timeout_micro_sec == -1) {
@@ -141,4 +144,19 @@ void Context::add_msg_pool (MsgPool* msg_pool)
 {
 	CONTEXT_LOG_DBG("adding msg pool=%p", msg_pool);
 	this->msg_pools.add_msg_pool(msg_pool);
+}
+
+void Context::add_my_event()
+{
+	if (this->events_num == 0){
+		this->offset_read_for_java = event_queue->get_offset();
+	}
+}
+
+void Context::reset_counters()
+{
+	//update offset to 0: for indication if this is the first callback called
+	this->event_queue->reset();
+	this->events_num = 0;
+	this->offset_read_for_java = 0;
 }

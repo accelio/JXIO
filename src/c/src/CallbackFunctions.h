@@ -22,6 +22,7 @@
 #include <libxio.h>
 #include "Context.h"
 #include "Client.h"
+#include "ServerPortal.h"
 
 
 /*
@@ -87,6 +88,7 @@ int on_buffer_request_callback (struct xio_msg *msg,
  * this callback is called by jxio C library once an external fd has a ready read or write event.
  */
 void on_fd_ready_event_callback(Context *ctx, int fd, int events);
+
 
 
 #endif // ! CallbackFunctions__H___
