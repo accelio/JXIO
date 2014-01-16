@@ -3,13 +3,13 @@
 		<machine_amount value="2"/>
 		<machine>
 			<name value="zorro010"/>
-			<address value="36.0.0.120"/>
+			<address value="11.0.0.120"/>
 			<type value="Eth"/>
 			<manag_interface value="192.168.1.242"/>
 		</machine>
 		<machine>
                         <name value="zorro011"/>
-                        <address value="36.0.0.121"/>
+                        <address value="11.0.0.121"/>
                         <type value="Eth"/>
                         <manag_interface value="192.168.1.243"/>
                 </machine>
