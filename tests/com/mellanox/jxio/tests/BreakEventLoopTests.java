@@ -95,7 +95,7 @@ public class BreakEventLoopTests{
 			long delta = duration - timeOutUSec;
 			long abs_delta = (delta < 0) ? -delta : delta;
 			// event_loop epoll_wait() sleep accuracy is dependent on requested timeout period (about 0,1%)
-			if ((abs_delta > 500) && (timeOutUSec / 800 < abs_delta)) {
+			if ((abs_delta > 500) && (timeOutUSec / 750 < abs_delta)) {
 				printFailureAndExit("(it took too much time to wake up from EQH (blocked for " + delta
 				        + " usec more then requested)");
 			} else {
@@ -118,7 +118,7 @@ public class BreakEventLoopTests{
 			}
 			// event_loop epoll_wait() sleep accuracy is dependent on requested timeout period (about 0,1%)
 			// each ascent from C to Java costs ~1 milli sec
-			if ((abs_delta > 2000) && (timeOutUSec / 800 < abs_delta)) {
+			if ((abs_delta > 2000) && (timeOutUSec / 750 < abs_delta)) {
 				printFailureAndExit("(it took too much time to wake up from EQH with event (blocked for " + delta
 				        + " usec more then requested)");
 			} else {
