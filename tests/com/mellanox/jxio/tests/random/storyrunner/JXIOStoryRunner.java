@@ -214,7 +214,7 @@ public class JXIOStoryRunner implements StoryRunner {
 			Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
 			while (nis.hasMoreElements()) {
 				NetworkInterface ni = nis.nextElement();
-				if (ni.getDisplayName().contains("ib")) {
+				if (ni.getDisplayName().contains("eth4")) {
 					for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
 						if (ia.getNetworkPrefixLength() == 8 || ia.getNetworkPrefixLength() == 16
 						        || ia.getNetworkPrefixLength() == 24) {
