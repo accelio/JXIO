@@ -36,6 +36,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	private EventQueueHandler eventQHandlerSession;
 	private long              ptrSesServer;
 	private ServerPortal      creator;
+	final String              srcUri;
 	private static final Log  LOG = LogFactory.getLog(ServerSession.class.getCanonicalName());
 
 	public static interface Callbacks {
@@ -46,9 +47,10 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		public void onMsgError();
 	}
 
-	public ServerSession(long sessionKey, Callbacks callbacks) {
+	public ServerSession(SessionID sesID, Callbacks callbacks) {
 		this.callbacks = callbacks;
-		setId(sessionKey);
+		setId(sesID.getSessionPtr());
+		this.srcUri = sesID.getUri();
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("id as recieved from C is " + getId());
 		}
@@ -162,6 +164,29 @@ public class ServerSession extends EventQueueHandler.Eventable {
 
 	void setPtrServerSession(long ptrSesServer) {
 		this.ptrSesServer = ptrSesServer;
+
+	}
+
+	/**
+	 * This class holds sessionId. It is passed to user on onNewSession callback and need to be passed back to JXIO
+	 * in forward/accept
+	 */
+	public static class SessionID {
+		private long   sessionPtr;
+		private String uri;
+
+		SessionID(long ptrSes, String uri) {
+			this.sessionPtr = ptrSes;
+			this.uri = uri;
+		}
+
+		public long getSessionPtr() {
+			return sessionPtr;
+		}
+
+		public String getUri() {
+			return uri;
+		}
 
 	}
 }

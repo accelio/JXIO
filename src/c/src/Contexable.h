@@ -32,7 +32,7 @@ public:
 
 	//this method will return ctx if the event should be written to event queue.
 	//Otherwise will return null
-	virtual Context* ctxForSessionEvent(xio_session_event eventType,
+	virtual Context* ctxForSessionEvent(struct xio_session_event_data * event,
 			struct xio_session *session) = 0;
 
 	virtual bool isClient() = 0;

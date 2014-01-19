@@ -156,7 +156,7 @@ int on_session_event_callback(struct xio_session *session,
 
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 
-	Context *ctx = cntxbl->ctxForSessionEvent(event_data->event, session);
+	Context *ctx = cntxbl->ctxForSessionEvent(event_data, session);
 
 	if (ctx) {
 		if (cntxbl->isClient()){
