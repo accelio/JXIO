@@ -36,17 +36,11 @@ Context::Context(int eventQSize)
 
 	this->offset_read_for_java = 0;
 
-	ev_loop = xio_ev_loop_create();
-	if (ev_loop == NULL) {
-		CONTEXT_LOG_ERR("ERROR, xio_ev_loop_init failed");
+	ctx = xio_context_create(NULL, 0);
+	if (ctx == NULL) {
+		CONTEXT_LOG_ERR("ERROR, xio_context_create failed");
 		error_creating = true;
 		return;
-	}
-
-	ctx = xio_ctx_create(NULL, ev_loop, 0);
-	if (ctx == NULL) {
-		CONTEXT_LOG_ERR("ERROR, xio_ctx_open failed");
-		goto cleanupEvLoop;
 	}
 
 	this->msg_pools.setCtx(this);
@@ -68,12 +62,11 @@ cleanupEventQueue:
 	delete(this->event_queue);
 
 cleanupCtx:
-	xio_ctx_destroy(ctx);
-	delete(this->event_queue);
-
-cleanupEvLoop:
-	xio_ev_loop_destroy(&ev_loop);
+	xio_context_destroy(ctx);
+	if (this->event_queue)
+		delete(this->event_queue);
 	error_creating = true;
+
 }
 
 Context::~Context()
@@ -85,9 +78,7 @@ Context::~Context()
 	delete(this->event_queue);
 	delete(this->events);
 
-	xio_ctx_destroy(ctx);
-	// destroy the event loop
-	xio_ev_loop_destroy(&ev_loop);
+	xio_context_destroy(ctx);
 
 	CONTEXT_LOG_DBG("DTOR done");
 }
@@ -108,7 +99,7 @@ int Context::run_event_loop(long timeout_micro_sec)
 	}
 
 	// enter Accelio's event loop
-	xio_ev_loop_run_timeout(this->ev_loop, timeout_msec);
+	xio_context_run_loop(this->ctx, timeout_msec);
 
 	CONTEXT_LOG_DBG("after ev_loop_run. there are %d events", this->events_num);
 
@@ -118,18 +109,18 @@ int Context::run_event_loop(long timeout_micro_sec)
 void Context::break_event_loop(int is_self_thread)
 {
 	CONTEXT_LOG_DBG("before break event loop (is_self_thread=%d)", is_self_thread);
-	xio_ev_loop_stop(this->ev_loop, is_self_thread);
+	xio_context_stop_loop(this->ctx, is_self_thread);
 	CONTEXT_LOG_DBG("after break event loop (is_self_thread=%d)", is_self_thread);
 }
 
 int Context::add_event_loop_fd(int fd, int events, void *priv_data)
 {
-	return xio_ev_loop_add(this->ev_loop, fd, events, Context::on_event_loop_handler, priv_data);
+	return xio_context_add_ev_handler(this->ctx, fd, events, Context::on_event_loop_handler, priv_data);
 }
 
 int Context::del_event_loop_fd(int fd)
 {
-	return xio_ev_loop_del(this->ev_loop, fd);
+	return xio_context_del_ev_handler(this->ctx, fd);
 }
 
 void Context::on_event_loop_handler(int fd, int events, void *data)

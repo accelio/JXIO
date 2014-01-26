@@ -40,7 +40,7 @@ public:
 	bool close_connection();
 	bool send_msg(Msg *msg, const int size);
 
-	Context* ctxForSessionEvent(xio_session_event eventType,
+	Context* ctxForSessionEvent(struct xio_session_event_data * event,
 				struct xio_session *session);
 	bool isClient() {return true;}
 };

@@ -45,7 +45,6 @@ public:
 	Event_queue *event_queue;
 	Events *events;
 	bool error_creating;
-	void *ev_loop;
 	struct xio_context *ctx;
 	int events_num;
 	MsgPools msg_pools;
