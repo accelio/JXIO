@@ -47,12 +47,12 @@ public class ServerSessionPlayer {
 	private int                      counterSentMsgs;
 	private Random                   random;
 
-	public ServerSessionPlayer(ServerPortalPlayer spp, ServerSession.SessionID sesID, String srcIP, long seed) {
+	public ServerSessionPlayer(ServerPortalPlayer spp, long newSessionKey, String srcUri, String srcIP, long seed) {
 		this.name = "SSP[" + id++ + "]";
 		this.spp = spp;
-		this.sk = sesID.getSessionPtr();
-		prepareForNextHop(sesID.getUri());
-		this.server = new ServerSession(sesID, new JXIOServerCallbacks());
+		this.sk = newSessionKey;
+		prepareForNextHop(srcUri);
+		this.server = new ServerSession(sk, new JXIOServerCallbacks());
 		this.random = new Random(seed);
 		LOG.debug("new " + this.toString() + " done");
 	}

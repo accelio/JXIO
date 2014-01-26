@@ -33,14 +33,14 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 
 	private final Callbacks         callbacks;
 	private final EventQueueHandler eventQHndl;
-	private URI                     uri;
+	private String                  uri;
 	private URI                     uriPort0;
 	private final int               port;
 	private Set<ServerSession>      sessions = new HashSet<ServerSession>();
 	private static final Log        LOG      = LogFactory.getLog(ServerPortal.class.getCanonicalName());
 
 	public static interface Callbacks {
-		public void onSessionNew(ServerSession.SessionID sesID, String srcIP);
+		public void onSessionNew(long ptrSes, String uri, String srcIP);
 
 		public void onSessionEvent(EventName session_event, EventReason reason);
 	}
@@ -68,7 +68,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 			LOG.debug("id as recieved from C is " + getId());
 		}
 		this.uriPort0 = replacePortInsideURI(uri, 0);
-		this.uri = replacePortInsideURI(uri, this.port);
+		this.uri = replacePortInsideURI(uri, this.port).toString();
 
 		this.eventQHndl.addEventable(this);
 	}
@@ -104,7 +104,6 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		}
 		
 		Bridge.stopServerPortal(getId());
-
 		setIsClosing(true);
 		return true;
 	}
@@ -125,17 +124,13 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 			return;
 		}
 		serverSession.setEventQueueHandlers(this.eventQHndl, portal.eventQHndl);
-		URI uriForForward = portal.getUri();
-		if (uriForForward.getHost().equals("0.0.0.0")) {
-			uriForForward = this.replaceIPinsideURI(uriForForward, serverSession.srcUri);
-		}
-		long ptrSesServer = Bridge.forwardSession(uriForForward.toString(), serverSession.getId(), portal.getId());
+		long ptrSesServer = Bridge.forwardSession(portal.getUri(), serverSession.getId(), portal.getId());
 		serverSession.setPtrServerSession(ptrSesServer);
 		portal.setSession(serverSession);
 	}
 
-	public void reject(ServerSession.SessionID sesID, EventReason res, String data) {
-		Bridge.rejectSession(sesID.getSessionPtr(), res.getIndex(), data, data.length());
+	public void reject(long ptrSes, EventReason res, String data) {
+		Bridge.rejectSession(ptrSes, res.getIndex(), data, data.length());
 	}
 
 	private void setSession(ServerSession serverSession) {
@@ -176,8 +171,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 					long ptrSes = ((EventNewSession) ev).getPtrSes();
 					String uri = ((EventNewSession) ev).getUri();
 					String srcIP = ((EventNewSession) ev).getSrcIP();
-					ServerSession.SessionID sesID = new ServerSession.SessionID(ptrSes, uri);
-					this.callbacks.onSessionNew(sesID, srcIP);
+					this.callbacks.onSessionNew(ptrSes, uri, srcIP);
 				}
 				break;
 
@@ -195,9 +189,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		try {
 			newUri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), newPort, uri.getPath(), uri.getQuery(),
 			        uri.getFragment());
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("uri with port " + newPort + " is " + newUri.toString());
-			}
+			LOG.debug("uri with port " + newPort + " is " + newUri.toString());
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			LOG.error("URISyntaxException occured while trying to create a new URI");
@@ -206,29 +198,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		return newUri;
 	}
 
-	private URI getUri() {
+	private String getUri() {
 		return uri;
 	}
-	
-	private URI replaceIPinsideURI(URI uriForForward, String srcIPaddress) {
-		URI srcIP = null;
-		try {
-			srcIP = new URI(srcIPaddress);
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-			return null;
-		}
-		URI newUri = null;
-		try {
-			newUri = new URI(uriForForward.getScheme(), uriForForward.getUserInfo(), srcIP.getHost(), 
-					uriForForward.getPort(), uriForForward.getPath(), uriForForward.getQuery(),
-					uriForForward.getFragment());
-			LOG.error("uri with ip is " + newUri.toString());
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-			LOG.error("URISyntaxException occured while trying to create a new URI");
-		}
-
-		return newUri;
-    }
 }

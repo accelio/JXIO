@@ -26,7 +26,6 @@ import com.mellanox.jxio.ServerPortal;
 import com.mellanox.jxio.EventName;
 import com.mellanox.jxio.EventReason;
 import com.mellanox.jxio.MsgPool;
-import com.mellanox.jxio.ServerSession;
 
 public class ServerPortalPlayer extends GeneralPlayer {
 
@@ -146,20 +145,19 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	class JXIOPortalCallbacks implements ServerPortal.Callbacks {
 		private final ServerPortalPlayer outer = ServerPortalPlayer.this;
 
-		public void onSessionNew(ServerSession.SessionID sesID, String srcIP) {
-			String srcUri = sesID.getUri();
+		public void onSessionNew(long newSessionKey, String srcUri, String srcIP) {
 			LOG.info(outer.toString() + ": onSessionNew: uri=" + srcUri + ", srcaddr=" + srcIP);
 			String clientName = srcUri.substring(srcUri.indexOf("name=") + 5);
 			if (srcUri.contains("reject=1")) {
 
 				LOG.info("Rejecting session from '" + clientName + "'");
-				outer.listener.reject(sesID, EventReason.NOT_SUPPORTED, "");
+				outer.listener.reject(newSessionKey, EventReason.NOT_SUPPORTED, "");
 				return;
 			}
 
 			LOG.info(outer.toString() + ": Establishing new session from '" + clientName + "'");
 			ServerPortalPlayer sp = workerThreads.getPortal(outer.id);
-			ServerSessionPlayer ss = new ServerSessionPlayer(sp, sesID, srcIP, seed);
+			ServerSessionPlayer ss = new ServerSessionPlayer(sp, newSessionKey, srcUri, srcIP, seed);
 			outer.listener.forward(sp.listener, ss.getServerSession());
 		}
 

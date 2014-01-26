@@ -26,7 +26,6 @@ import com.mellanox.jxio.EventName;
 import com.mellanox.jxio.EventQueueHandler;
 import com.mellanox.jxio.EventReason;
 import com.mellanox.jxio.ServerPortal;
-import com.mellanox.jxio.ServerSession;
 
 public class DataPathTestServer extends DataPathTest {
 
@@ -80,11 +79,11 @@ public class DataPathTestServer extends DataPathTest {
 	// callbacks for the listener server portal
 	public class TestServerCallbacks implements ServerPortal.Callbacks {
 
-		public void onSessionNew(ServerSession.SessionID sesID, String srcIP) {
+		public void onSessionNew(long ptrSes, String uriSrc, String srcIP) {
 			LOG.debug("New session created, forwarding to the next Server Portal");
 			// forward the created session to the ServerPortal
 			ServerPortalWorker spw = getNextWorker();
-			listener.forward(spw.getPortal(), (new ServerSessionHandle(sesID, spw)).getSession());
+			listener.forward(spw.getPortal(), (new ServerSessionHandle(ptrSes, spw)).getSession());
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {

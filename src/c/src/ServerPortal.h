@@ -36,7 +36,7 @@ public:
 	~ServerPortal();
 
 	//this method will return ctx if the event should be written to event queue. Otherwise will return null
-	Context* ctxForSessionEvent(struct xio_session_event_data * event,
+	Context* ctxForSessionEvent(xio_session_event eventType,
 			struct xio_session *session);
 	bool isClient() {return false;}
 

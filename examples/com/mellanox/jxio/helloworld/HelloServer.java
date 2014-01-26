@@ -86,12 +86,10 @@ public class HelloServer {
 			this.server = server;
 		}
 
-		public void onSessionNew(ServerSession.SessionID sesID, String srcIP) {
-			LOG.info("[SUCCESS] Got event onSessionNew from " + srcIP + ", URI='" + sesID.getUri() + "'");
-			this.server.session = new ServerSession(sesID, new MySessionCallbacks(server));
+		public void onSessionNew(long sessionKey, String uri, String srcIP) {
+			LOG.info("[SUCCESS] Got event onSessionNew from " + srcIP + ", URI='" + uri + "'");
+			this.server.session = new ServerSession(sessionKey, new MySessionCallbacks(server));
 			this.server.server.accept(session);
-			String s = this.server.server.getUriForServer().toString();
-			LOG.info("URI is " + s);
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {

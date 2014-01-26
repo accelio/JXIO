@@ -27,7 +27,7 @@
 
 Client::Client(const char* url, long ptrCtx)
 {
-	CLIENT_LOG_DBG("CTOR start. create client to connect to %s", url);
+	CLIENT_LOG_DBG("CTOR start");
 
 	struct xio_session_ops ses_ops;
 	struct xio_session_attr attr;
@@ -69,7 +69,10 @@ Client::Client(const char* url, long ptrCtx)
 	CLIENT_LOG_DBG("CTOR done");
 	return;
 
-cleanupSes: xio_session_destroy(this->session);
+//cleanupCon:
+//	xio_disconnect(this->con);
+
+	cleanupSes: xio_session_destroy(this->session);
 	error_creating = true;
 	return;
 }
@@ -95,10 +98,10 @@ bool Client::close_connection()
 	return true;
 }
 
-Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struct xio_session *session)
+Context* Client::ctxForSessionEvent(xio_session_event eventType, struct xio_session *session)
 {
 	Context *ctx;
-	switch (event->event) {
+	switch (eventType) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
 		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT");
 		this->is_closing = true;
@@ -106,7 +109,6 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT");
-		xio_connection_destroy(event->conn);
 		return NULL;
 
 	case XIO_SESSION_NEW_CONNECTION_EVENT:
@@ -140,7 +142,7 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 
 	case XIO_SESSION_ERROR_EVENT:
 	default:
-		CLIENT_LOG_WARN("UNHANDLED event: got event '%s' (%d)",  xio_session_event_str(event->event), event->event);
+		CLIENT_LOG_WARN("UNHANDLED event: got event '%s' (%d)",  xio_session_event_str(eventType), eventType);
 		return this->get_ctx_class();
 	}
 }

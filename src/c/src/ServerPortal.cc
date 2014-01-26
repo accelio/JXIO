@@ -84,10 +84,10 @@ void ServerPortal::writeEventAndDelete(bool event_type)
 	delete this;
 }
 
-Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event, struct xio_session *session)
+Context* ServerPortal::ctxForSessionEvent(xio_session_event eventType, struct xio_session *session)
 {
 	ServerSession* ses = NULL;
-	switch (event->event) {
+	switch (eventType) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT");
 		//no need to delete session from map since we haven't received session_teardown yet
@@ -99,7 +99,6 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT");
-		xio_connection_destroy(event->conn);
 		return NULL;
 
 	case XIO_SESSION_NEW_CONNECTION_EVENT:
@@ -144,7 +143,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 		return NULL;
 
 	default:
-		SRVPORTAL_LOG_WARN("UNHANDLED event: got event '%s' (%d)", xio_session_event_str(event->event), event->event);
+		SRVPORTAL_LOG_WARN("UNHANDLED event: got event '%s' (%d)", xio_session_event_str(eventType), eventType);
 		ses = get_ses_server_for_session(session, false);
 		ses->set_is_closing(true);
 		return ses->getCtx();
