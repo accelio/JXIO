@@ -427,7 +427,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_deleteMsgPo
 	delete pool;
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_serverSendResponceNative(JNIEnv *env, jclass cls, jlong ptr_msg, jint size, jlong ptr_ses_server)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_serverSendResponseNative(JNIEnv *env, jclass cls, jlong ptr_msg, jint size, jlong ptr_ses_server)
 {
 	ServerSession *ses = (ServerSession*) ptr_ses_server;
 	Msg * msg = (Msg*) ptr_msg;

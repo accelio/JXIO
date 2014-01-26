@@ -170,10 +170,10 @@ public class Bridge {
 		return ret;
 	}
 
-	private static native boolean serverSendResponceNative(long ptrMsg, int size, long ptrSesServer);
+	private static native boolean serverSendResponseNative(long ptrMsg, int size, long ptrSesServer);
 
-	public static boolean serverSendResponce(final long ptrMsg, final int size, final long ptrSesServer) {
-		boolean ret = serverSendResponceNative(ptrMsg, size, ptrSesServer);
+	public static boolean serverSendResponse(final long ptrMsg, final int size, final long ptrSesServer) {
+		boolean ret = serverSendResponseNative(ptrMsg, size, ptrSesServer);
 		return ret;
 	}
 

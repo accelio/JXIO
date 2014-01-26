@@ -123,7 +123,7 @@ public class HelloServer {
 			}
 
 			// Send the response
-			this.server.session.sendResponce(msg);
+			this.server.session.sendResponse(msg);
 
 			// Un-comment here if case you want to close the connection from Server side...
 			// LOG.info("Closing the session...");

@@ -123,12 +123,12 @@ public class ServerSessionPlayer {
 
 			if (outer.nextHop.isEmpty()) {
 				if (LOG.isDebugEnabled())
-					LOG.debug(outer.toString() + ": sendResponce(" + msg + ")");
+					LOG.debug(outer.toString() + ": sendResponse(" + msg + ")");
 				int position = Utils.randIntInRange(random, 0, msg.getOut().limit() - Utils.HEADER_SIZE);
 				Utils.writeMsg(msg, position, 0, outer.counterSentMsgs);
 				outer.counterSentMsgs++;
 				outer.counterReceivedMsgs++;
-				outer.server.sendResponce(msg);
+				outer.server.sendResponse(msg);
 			} else {
 				// server session is in proxy mode (nextHopClient), check if client need to be connected
 				if (outer.nextHopClient == null) {
@@ -218,8 +218,8 @@ public class ServerSessionPlayer {
 			Msg returnHopMsg = (Msg) msg.getUserContext();
 			returnHopMsg.getOut().put(msg.getIn());
 			if (LOG.isDebugEnabled())
-				LOG.debug(outer.toString() + ": sendResponce(" + returnHopMsg + ")");
-			outer.server.sendResponce(returnHopMsg);
+				LOG.debug(outer.toString() + ": sendResponse(" + returnHopMsg + ")");
+			outer.server.sendResponse(returnHopMsg);
 			msg.returnToParentPool();
 		}
 	}

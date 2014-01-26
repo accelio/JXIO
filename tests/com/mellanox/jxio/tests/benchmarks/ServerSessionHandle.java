@@ -52,7 +52,7 @@ public class ServerSessionHandle {
 		public void onRequest(Msg msg) {
 			// answer back with the same message that was received
 			msg.getOut().position(msg.getOut().capacity()); // simulate 'out_msgSize' was written into buffer
-			if (!ss.sendResponce(msg)) {
+			if (!ss.sendResponse(msg)) {
 				LOG.error("request was not handled");
 			}
 		}
