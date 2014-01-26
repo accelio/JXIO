@@ -47,7 +47,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	private int                          violent_exit;
 
 	public ServerPortalPlayer(int numWorkers, int id, int instance, URI uri, long startDelaySec, long runDurationSec,
-	        WorkerThreads workerThreads, ArrayList<MsgPoolData> msgPoolsData, long seed) {
+	        WorkerThreads workerThreads, ArrayList<MsgPoolData> msgPoolsData, int violent_exit, long seed) {
 		this.name = new String("SPP[" + id + ":" + instance + "]");
 		this.id = id;
 		this.uri = uri;
