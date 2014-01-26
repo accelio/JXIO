@@ -148,7 +148,7 @@ public class ClientPlayer extends GeneralPlayer {
 				int position = Utils.randIntInRange(random, 0, m.getOut().limit() - Utils.HEADER_SIZE);
 				final long sendTime = System.nanoTime();
 				Utils.writeMsg(m, position, sendTime, counterSentMsgs);
-				if (outer.client.sendMessage(m)) {
+				if (outer.client.sendRequest(m)) {
 					outer.counterSentMsgs++;
 				} else {
 					LOG.error(outer.toString() + ": FAILURE while sending a message = " + m);

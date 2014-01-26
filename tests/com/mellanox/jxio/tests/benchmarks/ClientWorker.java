@@ -83,7 +83,7 @@ public class ClientWorker implements Callable<double[]> {
 				break;
 			}
 			msg.getOut().position(msg.getOut().capacity()); // simulate 'out_msgSize' was written into buffer
-			if (!cs.sendMessage(msg)) {
+			if (!cs.sendRequest(msg)) {
 				LOG.error("Error sending");
 				pool.releaseMsg(msg);
 			}
@@ -147,7 +147,7 @@ public class ClientWorker implements Callable<double[]> {
 				startTime = System.nanoTime();
 			}
 			if (!ClientWorker.this.cs.getIsClosing()) {
-				if (!cs.sendMessage(msg)) {
+				if (!cs.sendRequest(msg)) {
 					pool.releaseMsg(msg);
 				}
 			}

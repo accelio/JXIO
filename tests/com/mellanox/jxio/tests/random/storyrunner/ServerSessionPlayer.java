@@ -139,7 +139,7 @@ public class ServerSessionPlayer {
 				Msg nextHopMsg = prepareNextHopMsg(msg);
 				if (LOG.isDebugEnabled())
 					LOG.debug(outer.toString() + ": sendMessage(" + nextHopMsg + ")");
-				outer.nextHopClient.sendMessage(nextHopMsg);
+				outer.nextHopClient.sendRequest(nextHopMsg);
 			}
 
 		}

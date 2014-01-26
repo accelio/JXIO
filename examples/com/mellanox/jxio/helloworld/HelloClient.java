@@ -74,7 +74,7 @@ public class HelloClient {
 		} catch (UnsupportedEncodingException e) {
 			// Just suppress the exception handling in this demo code
 		}
-		client.sendMessage(msg);
+		client.sendRequest(msg);
 	}
 
 	public void run() {

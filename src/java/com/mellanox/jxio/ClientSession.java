@@ -81,7 +81,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	 * @return boolean that indicated whether or not the queuing of the msg was successful. 
 	 */
 
-	public boolean sendMessage(Msg msg) {
+	public boolean sendRequest(Msg msg) {
 		if (this.getIsClosing()) {
 			LOG.warn("Trying to send message while session is closing");
 			return false;
