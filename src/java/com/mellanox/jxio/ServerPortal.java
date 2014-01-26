@@ -33,14 +33,14 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 
 	private final Callbacks         callbacks;
 	private final EventQueueHandler eventQHndl;
-	private String                  uri;
+	private URI                     uri;
 	private URI                     uriPort0;
 	private final int               port;
 	private Set<ServerSession>      sessions = new HashSet<ServerSession>();
 	private static final Log        LOG      = LogFactory.getLog(ServerPortal.class.getCanonicalName());
 
 	public static interface Callbacks {
-		public void onSessionNew(long ptrSes, String uri, String srcIP);
+		public void onSessionNew(ServerSession.SessionKey sesKey, String srcIP);
 
 		public void onSessionEvent(EventName session_event, EventReason reason);
 	}
@@ -67,8 +67,8 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("id as recieved from C is " + getId());
 		}
-		this.uriPort0 = replacePortInsideURI(uri, 0);
-		this.uri = replacePortInsideURI(uri, this.port).toString();
+		this.uriPort0 = replacePortInURI(uri, 0);
+		this.uri = replacePortInURI(uri, this.port);
 
 		this.eventQHndl.addEventable(this);
 	}
@@ -102,7 +102,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 				serverSession.close();
 			}
 		}
-		
+
 		Bridge.stopServerPortal(getId());
 		setIsClosing(true);
 		return true;
@@ -123,14 +123,19 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 			accept(serverSession);
 			return;
 		}
+		URI uriForForward = portal.getUri();
+		if (uriForForward.getHost().equals("0.0.0.0")){
+			uriForForward = this.replaceIPinURI(uriForForward, serverSession.uri);
+		}
+		
 		serverSession.setEventQueueHandlers(this.eventQHndl, portal.eventQHndl);
-		long ptrSesServer = Bridge.forwardSession(portal.getUri(), serverSession.getId(), portal.getId());
+		long ptrSesServer = Bridge.forwardSession(uriForForward.toString(), serverSession.getId(), portal.getId());
 		serverSession.setPtrServerSession(ptrSesServer);
 		portal.setSession(serverSession);
 	}
 
-	public void reject(long ptrSes, EventReason res, String data) {
-		Bridge.rejectSession(ptrSes, res.getIndex(), data, data.length());
+	public void reject(ServerSession.SessionKey sesKey, EventReason res, String data) {
+		Bridge.rejectSession(sesKey.getSessionPtr(), res.getIndex(), data, data.length());
 	}
 
 	private void setSession(ServerSession serverSession) {
@@ -171,7 +176,8 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 					long ptrSes = ((EventNewSession) ev).getPtrSes();
 					String uri = ((EventNewSession) ev).getUri();
 					String srcIP = ((EventNewSession) ev).getSrcIP();
-					this.callbacks.onSessionNew(ptrSes, uri, srcIP);
+					ServerSession.SessionKey sesKey = new ServerSession.SessionKey(ptrSes, uri);
+					this.callbacks.onSessionNew(sesKey, srcIP);
 				}
 				break;
 
@@ -184,12 +190,14 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		this.sessions.remove(s);
 	}
 
-	private URI replacePortInsideURI(URI uri, int newPort) {
+	private URI replacePortInURI(URI uri, int newPort) {
 		URI newUri = null;
 		try {
 			newUri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), newPort, uri.getPath(), uri.getQuery(),
 			        uri.getFragment());
-			LOG.debug("uri with port " + newPort + " is " + newUri.toString());
+			if (LOG.isDebugEnabled()){
+				LOG.debug("uri with port " + newPort + " is " + newUri.toString());
+			}
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			LOG.error("URISyntaxException occured while trying to create a new URI");
@@ -198,7 +206,19 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		return newUri;
 	}
 
-	private String getUri() {
+	private URI replaceIPinURI(URI uriForForward, String uriIPAddress) {
+		URI newUri = null;
+		try{
+		newUri = new URI(uriForForward.getScheme(), uriForForward.getUserInfo(), new URI (uriIPAddress).getHost(),
+				uriForForward.getPort(), uriForForward.getPath(), uriForForward.getQuery(), uriForForward.getFragment());
+		} catch (URISyntaxException e){
+			e.printStackTrace();
+			LOG.error("URISyntaxException occured while trying to create a new URI");
+		}
+	    return newUri;
+    }
+	
+	private URI getUri() {
 		return uri;
 	}
 }

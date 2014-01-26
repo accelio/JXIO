@@ -36,6 +36,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	private EventQueueHandler eventQHandlerSession;
 	private long              ptrSesServer;
 	private ServerPortal      creator;
+	final String uri;
 	private static final Log  LOG = LogFactory.getLog(ServerSession.class.getCanonicalName());
 
 	public static interface Callbacks {
@@ -46,9 +47,10 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		public void onMsgError();
 	}
 
-	public ServerSession(long sessionKey, Callbacks callbacks) {
+	public ServerSession(SessionKey sessionKey, Callbacks callbacks) {
 		this.callbacks = callbacks;
-		setId(sessionKey);
+		setId(sessionKey.getSessionPtr());
+		this.uri = sessionKey.getUri();
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("id as recieved from C is " + getId());
 		}
@@ -163,5 +165,24 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	void setPtrServerSession(long ptrSesServer) {
 		this.ptrSesServer = ptrSesServer;
 
+	}
+	
+	public static class SessionKey{
+		private final long sessionPtr;
+		private final String uri;
+		
+		public long getSessionPtr() {
+			return sessionPtr;
+		}
+
+		public String getUri() {
+			return uri;
+		}
+
+		SessionKey(long sessionPtr, String uri){
+			this.sessionPtr = sessionPtr;
+			this.uri = uri;
+		}
+		
 	}
 }

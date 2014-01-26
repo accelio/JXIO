@@ -37,8 +37,8 @@ public class ServerSessionHandle {
 	private final static Log LOG = LogFactory.getLog(ServerSessionHandle.class.getCanonicalName());
 
 	// cTor
-	public ServerSessionHandle(long session_ptr, ServerPortalWorker s) {
-		ss = new ServerSession(session_ptr, new SessionServerCallbacks());
+	public ServerSessionHandle(ServerSession.SessionKey sesKey, ServerPortalWorker s) {
+		ss = new ServerSession(sesKey, new SessionServerCallbacks());
 		spw = s;
 	}
 
