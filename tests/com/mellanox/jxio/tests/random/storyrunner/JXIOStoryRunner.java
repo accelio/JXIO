@@ -445,7 +445,8 @@ public class JXIOStoryRunner implements StoryRunner {
 					uriQueryStr += uriQueryStr.isEmpty() ? "?" : "&";
 					uriQueryStr += "reject=1";
 				}
-
+				int violent_exit = Integer.valueOf(client.getAttribute("violent_exit"));
+				
 				// Create URI
 				URI uri = new URI("rdma://" + hostname + ":" + port + "/" + uriQueryStr);
 
@@ -460,7 +461,7 @@ public class JXIOStoryRunner implements StoryRunner {
 				int clientStartDelay;
 				for (int i = 0; i < repeats + 1; i++){
 					clientStartDelay = (duration + repeatDelay) * i + startDelay;
-					ClientPlayer cp = new ClientPlayer(id, uri, clientStartDelay, duration, pool, tps, batch, seed + counter * 17);
+					ClientPlayer cp = new ClientPlayer(id, uri, clientStartDelay, duration, pool, tps, batch, violent_exit, seed + counter * 17);
 					clientPlayers.add(cp);
 				}
 			} catch (URISyntaxException e) {
@@ -548,6 +549,7 @@ public class JXIOStoryRunner implements StoryRunner {
 				int delay = Integer.valueOf(server.getAttribute("delay"));
 				int startDelay = Integer.valueOf(server.getAttribute("start_delay"));
 				int tps = Integer.valueOf(server.getAttribute("tps"));
+				int violent_exit = Integer.valueOf(server.getAttribute("violent_exit"));
 
 				// Get server msg pools
 				List<Character> supportingCharacters = server.getSupportingCharacters();
@@ -582,7 +584,7 @@ public class JXIOStoryRunner implements StoryRunner {
 
 				// Add server
 				ServerPortalPlayer sp = new ServerPortalPlayer(numWorkers, id, 0, uri, startDelay, duration,
-				        chapter.processWorkerThreads.get(myProcess), msgPools, seed + counter * 3);
+				        chapter.processWorkerThreads.get(myProcess), msgPools, violent_exit, seed + counter * 3);
 				serverPlayers.add(sp);
 			} catch (URISyntaxException e) {
 				e.printStackTrace();

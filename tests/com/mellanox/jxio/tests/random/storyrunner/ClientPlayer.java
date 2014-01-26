@@ -51,9 +51,10 @@ public class ClientPlayer extends GeneralPlayer {
 	private int               counterReceivedMsgs;
 	private boolean           isClosing = false;
 	private Random            random;
+	private int               violent_exit;
 
 	public ClientPlayer(int id, URI uri, long startDelaySec, long runDurationSec, MsgPoolData pool, int msgRate,
-	        int msgBatch, long seed) {
+	        int msgBatch, int violent_exit, long seed) {
 		this.name = new String("CP[" + id + "]");
 		this.uri = uri;
 		this.runDurationSec = runDurationSec;
@@ -61,6 +62,7 @@ public class ClientPlayer extends GeneralPlayer {
 		this.msgDelayMicroSec = (msgRate > 0) ? (1000000 / msgRate) : 0;
 		this.poolData = pool;
 		this.msgBatchSize = msgBatch;
+		this.violent_exit = violent_exit;
 
 		// count number of nextHop
 		int numHops = 0;
@@ -194,8 +196,6 @@ public class ClientPlayer extends GeneralPlayer {
 	@Override
 	protected void terminate() {
 		LOG.info(this.toString() + ": terminating. sent " + this.counterSentMsgs + " msgs");
-		if (!this.isClosing)
-			this.client.close();
 		this.isClosing = true;
 		if (this.counterEstablished != 1) {
 			LOG.error(this.toString() + ": FAILURE: session did not get established/rejected as expected");
@@ -205,6 +205,12 @@ public class ClientPlayer extends GeneralPlayer {
 			LOG.error(this.toString() + ": FAILURE: not all Msgs returned to MSgPoll: " + mp);
 			System.exit(1); // Failure in test - eject!
 		}
+		if (this.violent_exit == 1) {
+			LOG.info(this.toString() + ": terminating violently. Exiting NOW");
+			System.exit(0);
+		}
+		if (!this.isClosing)
+			this.client.close();
 	}
 
 	class JXIOCallbacks implements ClientSession.Callbacks {
@@ -232,8 +238,8 @@ public class ClientPlayer extends GeneralPlayer {
 					if (outer.isClosing == true) {
 						LOG.info(outer.toString() + ": onSESSION_CLOSED, reason='" + reason + "'");
 						if (outer.counterReceivedMsgs != outer.counterSentMsgs) {
-							LOG.error(outer.toString() + ": there were " + outer.counterSentMsgs + " sent and " + outer.counterReceivedMsgs
-							        + " received");
+							LOG.error(outer.toString() + ": there were " + outer.counterSentMsgs + " sent and "
+							        + outer.counterReceivedMsgs + " received");
 						} else {
 							LOG.info(outer.toString() + ": SUCCESSFULLY received all sent msgs (" + counterReceivedMsgs
 							        + ")");
@@ -283,7 +289,8 @@ public class ClientPlayer extends GeneralPlayer {
 			final long sendTime = m.getOut().getLong(0);
 			final long rTrip = recTime - sendTime;
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(outer.toString() + ": roundTrip for message " + outer.counterReceivedMsgs + " took " + rTrip / 1000 + " usec");
+				LOG.trace(outer.toString() + ": roundTrip for message " + outer.counterReceivedMsgs + " took " + rTrip
+				        / 1000 + " usec");
 			}
 			return rTrip;
 		}

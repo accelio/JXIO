@@ -31,6 +31,7 @@
 		<port value="[70]:3000-3010, [30]:3011-65536"/>
 		<start_delay value="[100]:0"/>
 		<duration value="[100]:25"/>
+		<violent_exit value="[90]:0, [10]:1"/>
 		<num_workers value="[40]:0, [60]:1-4"/>
 		<msg_pools>
 			<msg_pool_amount value="[100]:1"/>
@@ -49,6 +50,7 @@
 		<server value="random"/>
         	<start_delay value="[50]:2-6, [50]:10-14"/>
 		<duration value="[100]:5-10"/>
+		<violent_exit value="[90]:0, [10]:1"/>
 		<reject value="[90]:0, [10]:1"/>
 		<hops>
 			<hop_amount value="[100]:0"/>

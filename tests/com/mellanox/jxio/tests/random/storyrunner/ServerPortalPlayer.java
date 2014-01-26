@@ -44,6 +44,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	private final ArrayList<MsgPoolData> msgPoolsData;
 	private ArrayList<MsgPool>           msgPools;
 	private long                         seed;
+	private int                          violent_exit;
 
 	public ServerPortalPlayer(int numWorkers, int id, int instance, URI uri, long startDelaySec, long runDurationSec,
 	        WorkerThreads workerThreads, ArrayList<MsgPoolData> msgPoolsData, long seed) {
@@ -57,6 +58,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		this.msgPoolsData = msgPoolsData;
 		msgPools = new ArrayList<MsgPool>();
 		this.seed = seed;
+		this.violent_exit = violent_exit;
 		LOG.debug("new " + this.toString() + " done");
 	}
 
@@ -111,13 +113,17 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		// workers
 		for (int i = 0; i < numWorkers; i++) {
 			ServerPortalPlayer spp = new ServerPortalPlayer(0, this.id, i + 1, this.listener.getUriForServer(), 0,
-			        runDurationSec, workerThreads, msgPoolsData, seed + (i * 47));
+			        runDurationSec, workerThreads, msgPoolsData, this.violent_exit, seed + (i * 47));
 			workerThreads.getWorkerThread().addWorkAction(spp.getAttachAction());
 		}
 	}
 
 	@Override
 	protected void terminate() {
+		if (this.violent_exit == 1){
+			LOG.info(this.toString() + ": terminating. Exiting NOW");
+			System.exit(0);
+		}
 		LOG.info(this.toString() + ": terminating");
 		this.listener.close();
 		// isclosing = true?
@@ -164,14 +170,14 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
-			
-			switch (session_event){
+
+			switch (session_event) {
 				case SESSION_CLOSED:
 					LOG.info(outer.toString() + ": SESSION_TEARDOWN. reason='" + reason + "'");
 					break;
 				case PORTAL_CLOSED:
 					LOG.info(outer.toString() + ": PORTAL_CLOSED, reason='" + reason + "'");
-					for (MsgPool pool : msgPools){
+					for (MsgPool pool : msgPools) {
 						outer.workerThread.getEQH().releaseMsgPool(pool);
 						pool.deleteMsgPool();
 					}
@@ -181,7 +187,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 					        + reason + "'");
 					System.exit(1);
 					break;
-				
+
 			}
 		}
 	}
