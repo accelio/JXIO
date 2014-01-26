@@ -123,7 +123,7 @@ Context* Client::ctxForSessionEvent(xio_session_event eventType, struct xio_sess
 	case XIO_SESSION_TEARDOWN_EVENT:
 		CLIENT_LOG_DBG("got XIO_SESSION_TEARDOWN_EVENT. must delete session");
 		if (!this->is_closing){
-			CLIENT_LOG_ERR("Got session teardown without getting connection/close/disconnected");
+			CLIENT_LOG_ERR("Got session teardown without getting connection/close/disconnected/rejected");
 		}
 		//the event should also be written to buffer to let user know that the session was closed
 		if (xio_session_destroy(session)) {
@@ -133,6 +133,7 @@ Context* Client::ctxForSessionEvent(xio_session_event eventType, struct xio_sess
 
 	case XIO_SESSION_REJECT_EVENT:
 		CLIENT_LOG_DBG("got XIO_SESSION_REJECT_EVENT. must delete session");
+		this->is_closing = true;
 		return this->get_ctx_class();
 
 	case XIO_SESSION_CONNECTION_ERROR_EVENT:
