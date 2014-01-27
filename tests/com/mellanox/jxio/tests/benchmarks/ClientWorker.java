@@ -106,8 +106,9 @@ public class ClientWorker implements Callable<double[]> {
 
 	class ClientWorkerCallbacks implements ClientSession.Callbacks {
 
-		public void onMsgError() {
-			LOG.error("On Message Error");
+		public void onMsgError(Msg msg, EventReason reason) {
+			LOG.error("On Message Error. Reason is="+reason);
+			msg.returnToParentPool();
 		}
 
 		public void onSessionEstablished() {

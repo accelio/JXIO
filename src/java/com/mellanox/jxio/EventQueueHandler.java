@@ -40,7 +40,8 @@ import com.mellanox.jxio.impl.EventSessionEstablished;
  */
 public class EventQueueHandler implements Runnable {
 
-	private static final Log       LOG                   = LogFactory.getLog(EventQueueHandler.class.getCanonicalName());
+	private static final Log       LOG                   = LogFactory
+	                                                             .getLog(EventQueueHandler.class.getCanonicalName());
 	private final long             refToCObject;
 	private final int              eventQueueSize        = 15000;                                                    // size
 	private final Callbacks        callbacks;
@@ -55,7 +56,7 @@ public class EventQueueHandler implements Runnable {
 	private volatile boolean       inRunLoop             = false;
 
 	public static interface Callbacks {
-		//this method should return an unbinded MsgPool.  
+		// this method should return an unbinded MsgPool.
 		public MsgPool getAdditionalMsgPool(int inSize, int outSize);
 	}
 
@@ -124,9 +125,20 @@ public class EventQueueHandler implements Runnable {
 		        && ((is_forever) || (!this.elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
 
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("[" + getId() + "] in loop with " + eventsWaitingInQ + " events in Q. handled " + eventsHandled + " events out of "
-				        + maxEvents + ", " + "elapsed time is " + this.elapsedTime.getElapsedTimeMicro() + " usec (blocking for "
-				        + ((is_forever) ? "infinite duration)" : "a max duration of " + remainingTimeOutMicroSec / 1000 + " msec.)"));
+				LOG.debug("["
+				        + getId()
+				        + "] in loop with "
+				        + eventsWaitingInQ
+				        + " events in Q. handled "
+				        + eventsHandled
+				        + " events out of "
+				        + maxEvents
+				        + ", "
+				        + "elapsed time is "
+				        + this.elapsedTime.getElapsedTimeMicro()
+				        + " usec (blocking for "
+				        + ((is_forever) ? "infinite duration)" : "a max duration of " + remainingTimeOutMicroSec / 1000
+				                + " msec.)"));
 			}
 
 			if (eventsWaitingInQ <= 0) { // the event queue is empty now, get more events from libxio
@@ -183,7 +195,7 @@ public class EventQueueHandler implements Runnable {
 			LOG.error("no context opened on C side. can not close event loop");
 			return;
 		}
-		if (this.inRunLoop){
+		if (this.inRunLoop) {
 			LOG.error(this.toString() + " can not close EQH from within runEventLoop");
 			return;
 		}
@@ -245,7 +257,7 @@ public class EventQueueHandler implements Runnable {
 		}
 
 		abstract void onEvent(Event ev);
-		
+
 	}
 
 	long getId() {
@@ -308,21 +320,45 @@ public class EventQueueHandler implements Runnable {
 			}
 				break;
 
-			case 1: // msg error
+			case 1: // msg error server
 			{
-				EventMsgError evMsgErr = new EventMsgError(eventType, id);
-				synchronized (eventables) {
-					eventable = eventables.get(id);
+
+				// msg was added to msgsPendingNewRequest after sendResponce. the real lookup of the Msg is done on C
+				// side. msgsPendingNewRequest is used for look up of the java object based on the id
+				Msg msg = this.msgsPendingNewRequest.get(id);
+				final long session_id = eventQueue.getLong();
+				if (LOG.isTraceEnabled()) {
+					LOG.trace("session refToCObject" + session_id);
 				}
+				final int reason = eventQueue.getInt();
+				eventable = eventables.get(session_id);
 				if (eventable == null) {
-					LOG.warn(this.toString() + " eventable with id " + id + " was not found in map");
+					LOG.warn(this.toString() + " eventable with id " + session_id + " was not found in map");
 					break;
 				}
+				EventMsgError evMsgErr = new EventMsgError(eventType, id, msg, reason);
 				eventable.onEvent(evMsgErr);
 			}
 				break;
 
-			case 2: // session established
+			case 2: // msg error client
+			{
+				Msg msg = msgsPendingReply.remove(id);
+				final int reason = eventQueue.getInt();
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("got error on msg " + msg);
+				}
+				EventMsgError evMsgErr = new EventMsgError(eventType, id, msg, reason);
+				eventable = msg.getClientSession();
+				if (LOG.isTraceEnabled()) {
+					LOG.trace("eventable is " + eventable);
+				}
+				eventable.onEvent(evMsgErr);
+				
+			}
+				break;
+
+			case 3: // session established
 			{
 				EventSessionEstablished evSesEstab = new EventSessionEstablished(eventType, id);
 				eventable = eventables.get(id);
@@ -334,9 +370,10 @@ public class EventQueueHandler implements Runnable {
 			}
 				break;
 
-			case 3: // on request
+			case 4: // on request
 			{
 				Msg msg = this.msgsPendingNewRequest.get(id);
+				msg.resetPositions();
 				final int msg_size = eventQueue.getInt();
 				msg.getIn().limit(msg_size);
 				final long session_id = eventQueue.getLong();
@@ -353,7 +390,7 @@ public class EventQueueHandler implements Runnable {
 			}
 				break;
 
-			case 4: // on reply
+			case 5: // on reply
 			{
 				Msg msg = msgsPendingReply.remove(id);
 				final int msg_size = eventQueue.getInt();
@@ -370,7 +407,7 @@ public class EventQueueHandler implements Runnable {
 			}
 				break;
 
-			case 5: // on new session
+			case 6: // on new session
 			{
 				long ptrSes = eventQueue.getLong();
 				String uri = readString(eventQueue);
@@ -388,7 +425,7 @@ public class EventQueueHandler implements Runnable {
 			}
 				break;
 
-			case 7: // on fd ready
+			case 8: // on fd ready
 			{
 				/*
 				 * int fd = eventQueue.getInt();
@@ -425,11 +462,13 @@ public class EventQueueHandler implements Runnable {
 			return ptrCtx;
 		}
 	}
-	
-	/** This method binds MsgPool to this EQH. It is necessary for MsgPool on server side 
-	 * to be binded to server's EQH 
+
+	/**
+	 * This method binds MsgPool to this EQH. It is necessary for MsgPool on server side
+	 * to be binded to server's EQH
 	 * 
-	 * @param msgPool to be binded to this EQH
+	 * @param msgPool
+	 *            to be binded to this EQH
 	 * @return bool that indicate if the bind was successful
 	 */
 
@@ -438,12 +477,13 @@ public class EventQueueHandler implements Runnable {
 			LOG.error("no context opened on C side. can not bind msg pool");
 			return false;
 		}
-		if (msgPool == null || msgPool.getId() == 0){
+		if (msgPool == null || msgPool.getId() == 0) {
 			LOG.error("msgPool provided is null or id is wrong. Can not bind");
 			return false;
 		}
-		if (msgPool.isBounded()){
-			LOG.warn("trying to bind MsgPool " + msgPool.toString() + " to EQH" + this.toString() + ", but it's already bound");
+		if (msgPool.isBounded()) {
+			LOG.warn("trying to bind MsgPool " + msgPool.toString() + " to EQH" + this.toString()
+			        + ", but it's already bound");
 			return false;
 		}
 		// the messages inside the pool must be added to hashmap, so that the appropraite msg can be tracked
@@ -453,36 +493,38 @@ public class EventQueueHandler implements Runnable {
 			msgsPendingNewRequest.put(msg.getId(), msg);
 		}
 		boolean retVal = Bridge.bindMsgPool(msgPool.getId(), this.getId());
-		if (retVal){
+		if (retVal) {
 			msgPool.setIsBounded(true);
 		}
 		return retVal;
 	}
 
 	void releaseMsgBackToPool(Msg msg) {
-		msg.resetPositions();
+//		msg.resetPositions();
 		this.msgsPendingNewRequest.put(msg.getId(), msg);
 	}
 
-	/** This method releases MsgPool from server's EQH (opposite of bindMsgPool)
+	/**
+	 * This method releases MsgPool from server's EQH (opposite of bindMsgPool)
 	 * 
-	 * @param msgPool to be released
+	 * @param msgPool
+	 *            to be released
 	 */
-	
+
 	public void releaseMsgPool(MsgPool msgPool) {
 		// TODO implement!
 	}
 
 	public void getAdditionalMsgPool(int inSize, int outSize) {
-	    if (callbacks == null){
-	    	LOG.fatal(this.toString() + ": user did not provide callback for providing additional buffers. aborting");
-	    	System.exit(1);
-	    }
-	    MsgPool pool = this.callbacks.getAdditionalMsgPool(inSize, outSize);
-	    if (pool == null){
-	    	LOG.fatal("user failed to provide buffer. aborting");
-	    	System.exit(1);
-	    }
-	    this.bindMsgPool(pool);
-    }
+		if (callbacks == null) {
+			LOG.fatal(this.toString() + ": user did not provide callback for providing additional buffers. aborting");
+			System.exit(1);
+		}
+		MsgPool pool = this.callbacks.getAdditionalMsgPool(inSize, outSize);
+		if (pool == null) {
+			LOG.fatal("user failed to provide buffer. aborting");
+			System.exit(1);
+		}
+		this.bindMsgPool(pool);
+	}
 }

@@ -22,6 +22,7 @@ import java.net.URI;
 
 import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
+import com.mellanox.jxio.impl.EventMsgError;
 import com.mellanox.jxio.impl.EventNewMsg;
 import com.mellanox.jxio.impl.EventSession;
 
@@ -38,7 +39,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 		public void onSessionEvent(EventName session_event, EventReason reason);
 
-		public void onMsgError();
+		public void onMsgError(Msg msg, EventReason reason);
 	}
 	
 	/** ClientSession is the object that connects to the Server. The application sends requests to the server
@@ -152,19 +153,27 @@ public class ClientSession extends EventQueueHandler.Eventable {
 				}
 				break;
 
-			case 1: // msg error
+			case 2: // msg error
 				LOG.error("received msg error event");
-				callbacks.onMsgError();
+				EventMsgError evMsgErr;
+				if (ev instanceof EventMsgError) {
+					evMsgErr = (EventMsgError) ev;
+					Msg msg = evMsgErr.getMsg();
+					int reason = evMsgErr.getReason();
+					callbacks.onMsgError(msg, EventReason.getEventByIndex(reason));
+				} else {
+					LOG.error("Event is not an instance of EventMsgError" + this.toString());
+				}
 				break;
 
-			case 2: // session established
+			case 3: // session established
 				if (LOG.isDebugEnabled()) {
 					LOG.debug("received session established event");
 				}
 				callbacks.onSessionEstablished();
 				break;
 
-			case 4: // on reply
+			case 5: // on reply
 				if (LOG.isTraceEnabled()) {
 					LOG.trace("received msg event at client" + this.toString());
 				}

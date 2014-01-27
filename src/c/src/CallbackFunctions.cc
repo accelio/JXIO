@@ -108,8 +108,17 @@ int on_msg_error_callback(struct xio_session *session, enum xio_status error,
 	Context *ctx = cntxbl->get_ctx_class();
 
 	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnMsgErrorEvent(buf, msg->user_context,
-			session, error, msg);
+	int sizeWritten;
+	if (msg->type == XIO_MSG_TYPE_REQ) {
+		//this is client side - send of the request failed
+		sizeWritten = ctx->events->writeOnMsgErrorEventClient(buf, msg->user_context, error);
+	}else{//this is server side - send of the response failed
+		sizeWritten = ctx->events->writeOnMsgErrorEventServer(buf, msg->user_context,
+						session, error);
+		//must release the message
+//		Msg *msg_from_pool = (Msg*) msg->user_context;
+//		msg_from_pool->release_to_pool();
+	}
 	done_event_creating(ctx, sizeWritten);
 
 	return 0;

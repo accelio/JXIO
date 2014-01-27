@@ -23,13 +23,14 @@
 
 typedef enum {
 	EVENT_SESSION_ERROR = 0,
-	EVENT_MSG_ERROR = 1,
-	EVENT_SESSION_ESTABLISHED = 2,
-	EVENT_REQUEST_RECEIVED = 3,
-	EVENT_REPLY_RECEIVED = 4,
-	EVENT_SESSION_NEW = 5,
-	EVENT_MSG_SEND_COMPLETE = 6,
-	EVENT_FD_READY = 7,
+	EVENT_MSG_ERROR_SERVER = 1,
+	EVENT_MSG_ERROR_CLIENT = 2,
+	EVENT_SESSION_ESTABLISHED = 3,
+	EVENT_REQUEST_RECEIVED = 4,
+	EVENT_REPLY_RECEIVED = 5,
+	EVENT_SESSION_NEW = 6,
+	EVENT_MSG_SEND_COMPLETE = 7,
+	EVENT_FD_READY = 8,
 	EVENT_LAST
 } event_type_t;
 
@@ -129,15 +130,32 @@ int Events::writeOnMsgSendCompleteEvent(char *buf, void *ptrForJava, struct xio_
 	return this->size;
 }
 
-int Events::writeOnMsgErrorEvent(char *buf, void *ptrForJava, struct xio_session *session,
-            enum xio_status error, struct xio_msg *msg)
+int Events::writeOnMsgErrorEventServer(char *buf, void *ptrForJavaMsg, void* ptrForJavaSession, enum xio_status error)
 {
 	struct event_struct* event = (struct event_struct*)buf;
-	event->type = htonl(EVENT_MSG_ERROR);
-	event->ptr = htobe64(intptr_t(ptrForJava));
-	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
-	return this->size;
+
+    event->type = htonl(EVENT_MSG_ERROR_SERVER);
+    event->ptr = htobe64(intptr_t(ptrForJavaMsg));
+    int reason = error - XIO_BASE_STATUS + 1;
+    event->event_specific.msg_error_server.error_reason = htonl (reason);
+    event->event_specific.msg_error_server.ptr_session = htobe64(intptr_t(ptrForJavaSession));
+    this->size = sizeof(struct event_msg_error_server) + sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+    return this->size;
 }
+
+
+int Events::writeOnMsgErrorEventClient(char *buf, void *ptrForJavaMsg, enum xio_status error)
+{
+	struct event_struct* event = (struct event_struct*)buf;
+	event->type = htonl(EVENT_MSG_ERROR_CLIENT);
+	event->ptr = htobe64(intptr_t(ptrForJavaMsg));
+
+	int reason = error - XIO_BASE_STATUS + 1;
+	event->event_specific.msg_error_client.error_reason = htonl (reason);
+
+	this->size = sizeof(struct event_msg_error_client) + sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+	return this->size;
+ }
 
 
 int Events::writeOnReqReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_size, void *ptrForJavaSession)

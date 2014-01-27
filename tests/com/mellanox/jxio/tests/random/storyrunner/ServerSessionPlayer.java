@@ -160,8 +160,8 @@ public class ServerSessionPlayer {
 			}
 		}
 
-		public void onMsgError() {
-			LOG.info(outer.toString() + ": onMsgError");
+		public void onMsgError(Msg msg, EventReason reason) {
+			LOG.info(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
 		}
 
 		private ClientSession prepareNextHopClient() {
@@ -189,8 +189,9 @@ public class ServerSessionPlayer {
 	class JXIOProxyCallbacks implements ClientSession.Callbacks {
 		private final ServerSessionPlayer outer = ServerSessionPlayer.this;
 
-		public void onMsgError() {
-			LOG.info(outer.toString() + ": onMsgErrorCallback");
+		public void onMsgError(Msg msg, EventReason reason) {
+			LOG.info(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
+			msg.returnToParentPool();
 		}
 
 		public void onSessionEstablished() {

@@ -216,8 +216,9 @@ public class ClientPlayer extends GeneralPlayer {
 	class JXIOCallbacks implements ClientSession.Callbacks {
 		private final ClientPlayer outer = ClientPlayer.this;
 
-		public void onMsgError() {
-			LOG.info(outer.toString() + ": onMsgErrorCallback");
+		public void onMsgError(Msg msg, EventReason reason) {
+			LOG.info(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
+			msg.returnToParentPool();
 		}
 
 		public void onSessionEstablished() {

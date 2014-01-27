@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
+import com.mellanox.jxio.impl.EventMsgError;
 import com.mellanox.jxio.impl.EventNewMsg;
 import com.mellanox.jxio.impl.EventSession;
 
@@ -44,7 +45,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 
 		public void onSessionEvent(EventName session_event, EventReason reason);
 
-		public void onMsgError();
+		public void onMsgError(Msg msg, EventReason reason);
 	}
 
 	public ServerSession(SessionKey sessionKey, Callbacks callbacks) {
@@ -126,10 +127,18 @@ public class ServerSession extends EventQueueHandler.Eventable {
 
 			case 1: // msg error
 				LOG.error("received msg error event");
-				callbacks.onMsgError();
+				EventMsgError evMsgErr;
+				if (ev instanceof EventMsgError) {
+					evMsgErr = (EventMsgError) ev;
+					Msg msg = evMsgErr.getMsg();
+					int reason = evMsgErr.getReason();
+					callbacks.onMsgError(msg, EventReason.getEventByIndex(reason));
+				} else {
+					LOG.error("Event is not an instance of EventMsgError");
+				}
 				break;
 
-			case 3: // on request
+			case 4: // on request
 				if (LOG.isTraceEnabled()) {
 					LOG.trace("received msg event");
 				}
@@ -142,12 +151,6 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					LOG.error("Event is not an instance of EventNewMsg");
 				}
 
-				break;
-
-			case 6: // msg sent complete
-				if (LOG.isTraceEnabled()) {
-					LOG.trace("received msg sent complete event");
-				}
 				break;
 
 			default:

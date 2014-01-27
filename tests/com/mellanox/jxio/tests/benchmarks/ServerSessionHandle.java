@@ -65,8 +65,8 @@ public class ServerSessionHandle {
 			}
 		}
 
-		public void onMsgError() {
-			LOG.info("onMsgErrorCallback");
+		public void onMsgError(Msg msg, EventReason reason) {
+			LOG.error("On Message Error. Reason is="+reason);
 		}
 	}
 }

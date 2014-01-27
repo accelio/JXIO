@@ -38,6 +38,7 @@ ServerPortal::ServerPortal(const char *url, long ptrCtx)
 	server_ops.on_msg = on_msg_callback; //TODO: to separate into 2 different classes
 	server_ops.on_msg_send_complete = on_msg_send_complete_callback;
 	server_ops.assign_data_in_buf = on_buffer_request_callback;
+	server_ops.on_msg_error = on_msg_error_callback;
 
 	struct xio_context *ctx;
 	Context *ctxClass = (Context *) ptrCtx;

@@ -43,7 +43,7 @@ Client::Client(const char* url, long ptrCtx)
 	ses_ops.on_session_event = on_session_event_callback;
 	ses_ops.on_session_established = on_session_established_callback;
 	ses_ops.on_msg = on_msg_callback;
-	ses_ops.on_msg_error = NULL;
+	ses_ops.on_msg_error = on_msg_error_callback;
 
 	attr.ses_ops = &ses_ops; /* callbacks structure */
 	attr.user_context = NULL; /* no need to pass the server private data */

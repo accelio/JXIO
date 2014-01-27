@@ -168,7 +168,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 				}
 				break;
 
-			case 5: // on new session
+			case 6: // on new session
 				if (LOG.isDebugEnabled()) {
 					LOG.debug("received new session event");
 				}
