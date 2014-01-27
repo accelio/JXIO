@@ -29,6 +29,19 @@ import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * ServerPortal is the object which listens to incoming connections. He can accept/reject or forward to
+ * another portal the new session request. There are two kinds of ServerPortal:
+ * 1. listener - listens on a well known port and redirects the session to a different thread (he
+ * can also accept the session)
+ * 2. worker - sessions are redirected to him. The requests from Client will arrive on this portal
+ * ServerPortal receives several events on his lifetime. On each of them a method of interface
+ * Callbacks is invoked. User must implement this interface and pass it in c-tor.
+ * The events are:
+ * 1. onSessionNew.
+ * 2. onSessionEvent.
+ * 
+ */
 public class ServerPortal extends EventQueueHandler.Eventable {
 
 	private final Callbacks         callbacks;
@@ -40,14 +53,40 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	private static final Log        LOG      = LogFactory.getLog(ServerPortal.class.getCanonicalName());
 
 	public static interface Callbacks {
+
+		/**
+		 * This event is triggered when a request for a new session arrives from Client.
+		 * 
+		 * @param sesKey
+		 *            - SessionKey. Contains long (id of the session) and String (uri of the session)
+		 *            Needs to be passed to ServerSession c-tor.
+		 * @param srcIP
+		 *            - IP of the Client
+		 */
 		public void onSessionNew(ServerSession.SessionKey sesKey, String srcIP);
 
+		/**
+		 * This event is triggered when PORTAL_CLOSED event arrives
+		 * 
+		 * @param session_event
+		 *            - the event that was triggered
+		 * @param reason
+		 *            - the object containing the reason for triggerring session_event
+		 */
 		public void onSessionEvent(EventName session_event, EventReason reason);
 	}
 
-	/*
-	 * this c-tor is for the ServerPortal manager. He listens on a well known port and redirects the request for a new
-	 * session to ServerPortal worker
+	/**
+	 * This constructor is for the ServerPortal listener. He istens on a well known port and redirects
+	 * the request for a new session to ServerPortal worker
+	 * 
+	 * @param eventQHandler
+	 *            - EventQueueHAndler on which the events
+	 *            (onSessionNew, onSessionEvent etc) of this portal will arrive
+	 * @param uri
+	 *            - on which the ServerPortal will listen. Should contain a well known port
+	 * @param callbacks
+	 *            - implementation of Interface ServerPortal.Callbacks
 	 */
 	public ServerPortal(EventQueueHandler eventQHandler, URI uri, Callbacks callbacks) {
 		this.eventQHndl = eventQHandler;
@@ -73,17 +112,37 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		this.eventQHndl.addEventable(this);
 	}
 
-	/*
-	 * this c-tor is used for ServerPortal worker. a new session is redirected here by ServerPortal manager
+	/**
+	 * This constructor is for the ServerPortal worker. A new session is redirected here by ServerPortal listener
+	 * 
+	 * @param eventQHandler
+	 *            - EventQueueHandler on which events of the session will arrive
+	 * @param uri
+	 *            - Should be uri for listener from ServerPortal listener; listener.getUriForServer()
 	 */
 	public ServerPortal(EventQueueHandler eventQHandler, URI uri) {
 		this(eventQHandler, uri, null);
 	}
 
+	/**
+	 * Returns URI for ServerPortal listener. This method is called from ServerPortal listener
+	 * 
+	 * @return URI for ServerPortal listener
+	 */
 	public URI getUriForServer() {
 		return uriPort0;
 	}
 
+	/**
+	 * This method closes the ServerPortal. The method is asynchronous:
+	 * the ServerPortal will be closed only when it receives event POTRTAL_CLOSED.
+	 * If there are still ServerSessions on this ServerPortal, they will be closed as well. Only after
+	 * SESSION_CLOSED will be recieved on all ServerSessions (if there are any), SERVER_PORTAL event will be
+	 * received/.
+	 * 
+	 * @return true if there was a successful call to close of the ServerPortal object on
+	 *         C side and false otherwise
+	 */
 	public boolean close() {
 		if (this.getIsClosing()) {
 			LOG.warn("attempting to close server portal that is already closed or being closed");
@@ -108,6 +167,13 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		return true;
 	}
 
+	/**
+	 * This method accepts the serverSession on this ServerPortal. This means that all ServerSession
+	 * events will arrive on this ServerPortal's EventQueueHandler.
+	 * 
+	 * @param serverSession
+	 *            - serverSession that will be accepted
+	 */
 	public void accept(ServerSession serverSession) {
 		serverSession.setEventQueueHandlers(this.eventQHndl, this.eventQHndl);
 		long ptrSesServer = Bridge.acceptSession(serverSession.getId(), this.getId());
@@ -115,6 +181,15 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		this.setSession(serverSession);
 	}
 
+	/**
+	 * This method forwards the serverSession on the ServerPortal. This means that all ServerSession
+	 * events will arrive on this portal's EventQueueHandler.
+	 * 
+	 * @param portal
+	 *            - the portal to which the serverSession will be forwarded
+	 * @param serverSession
+	 *            - sesrverSession that will be forwarded
+	 */
 	public void forward(ServerPortal portal, ServerSession serverSession) {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("portal " + portal + " ses id is " + serverSession.getId());
@@ -124,18 +199,28 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 			return;
 		}
 		URI uriForForward = portal.getUri();
-		if (uriForForward.getHost().equals("0.0.0.0")){
+		if (uriForForward.getHost().equals("0.0.0.0")) {
 			uriForForward = this.replaceIPinURI(uriForForward, serverSession.uri);
 		}
-		
+
 		serverSession.setEventQueueHandlers(this.eventQHndl, portal.eventQHndl);
 		long ptrSesServer = Bridge.forwardSession(uriForForward.toString(), serverSession.getId(), portal.getId());
 		serverSession.setPtrServerSession(ptrSesServer);
 		portal.setSession(serverSession);
 	}
 
-	public void reject(ServerSession.SessionKey sesKey, EventReason res, String data) {
-		Bridge.rejectSession(sesKey.getSessionPtr(), res.getIndex(), data, data.length());
+	/**
+	 * This method rejects the Session.
+	 * 
+	 * @param sesKey
+	 *            which was received in callback onNewSession
+	 * @param reason
+	 *            - reason to reject the Session
+	 * @param data
+	 *            - data to pass to the client
+	 */
+	public void reject(ServerSession.SessionKey sesKey, EventReason reason, String data) {
+		Bridge.rejectSession(sesKey.getSessionPtr(), reason.getIndex(), data, data.length());
 	}
 
 	private void setSession(ServerSession serverSession) {
@@ -195,7 +280,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		try {
 			newUri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), newPort, uri.getPath(), uri.getQuery(),
 			        uri.getFragment());
-			if (LOG.isDebugEnabled()){
+			if (LOG.isDebugEnabled()) {
 				LOG.debug("uri with port " + newPort + " is " + newUri.toString());
 			}
 		} catch (URISyntaxException e) {
@@ -208,16 +293,17 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 
 	private URI replaceIPinURI(URI uriForForward, String uriIPAddress) {
 		URI newUri = null;
-		try{
-		newUri = new URI(uriForForward.getScheme(), uriForForward.getUserInfo(), new URI (uriIPAddress).getHost(),
-				uriForForward.getPort(), uriForForward.getPath(), uriForForward.getQuery(), uriForForward.getFragment());
-		} catch (URISyntaxException e){
+		try {
+			newUri = new URI(uriForForward.getScheme(), uriForForward.getUserInfo(), new URI(uriIPAddress).getHost(),
+			        uriForForward.getPort(), uriForForward.getPath(), uriForForward.getQuery(),
+			        uriForForward.getFragment());
+		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			LOG.error("URISyntaxException occured while trying to create a new URI");
 		}
-	    return newUri;
-    }
-	
+		return newUri;
+	}
+
 	private URI getUri() {
 		return uri;
 	}

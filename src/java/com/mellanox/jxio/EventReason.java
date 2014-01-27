@@ -16,6 +16,9 @@
  */
 package com.mellanox.jxio;
 
+/** Reason for SessionEvent as received from accelio
+ * 
+ */
 public enum EventReason {
 	SUCCESS(0), 
 	NOT_SUPPORTED(1), 

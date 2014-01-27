@@ -23,24 +23,29 @@ import java.nio.ByteBuffer;
 
 import com.mellanox.jxio.EventQueueHandler.Eventable;
 
+/**
+ * Msg is the object that represents a message received from or to be sent to another
+ * peer. Msg contains both OUT (ByteBuffer to which the Client writes the request and the Server
+ * writes the response) and IN buffer (ByteBuffer to which the Client receives the Response
+ * from Server and the Server receives the request from Client).
+ * 
+ */
 public class Msg {
 
-	//private static final Log LOG = LogFactory.getLog(Msg.class.getCanonicalName());
-	private long             refToCObject;
-	private Eventable        clientSession;
-	private MsgPool          msgPool;                                              // reference to MsgPool holding this
-																					// buffer
-	private ByteBuffer       in, out;
-	private Object           userContext;                                          // variable for usage by the user
+	// private static final Log LOG = LogFactory.getLog(Msg.class.getCanonicalName());
+	private long       refToCObject;
+	private Eventable  clientSession;
+	// reference to MsgPool holding this buffer
+	private MsgPool    msgPool;
+	private ByteBuffer in, out;
+	private Object     userContext;  // variable for usage by the user
+
 	Msg(ByteBuffer buffer, int inSize, int outSize, long id, MsgPool msgPool) {
 		this.msgPool = msgPool;
 		this.refToCObject = id;
 		this.in = createSubBuffer(0, inSize, buffer);
-		this.out = createSubBuffer(inSize, inSize+outSize, buffer);
+		this.out = createSubBuffer(inSize, inSize + outSize, buffer);
 		resetPositions();
-		//if (LOG.isTraceEnabled()) {
-		//	LOG.trace(this);
-		//}
 	}
 
 	public String toString() {
@@ -52,26 +57,61 @@ public class Msg {
 		return sb.toString();
 	}
 
+	/**
+	 * Returns a Msg to the MsgPool to which it belongs. This method should be called only on
+	 * Client side - when the application finished handling the message: only when the
+	 * response from the server arrives or if Client.sendRequest failed.
+	 * 
+	 */
 	public void returnToParentPool() {
 		msgPool.releaseMsg(this);
 	}
 
+	/**
+	 * Returns ByteBuffer to which the other side has written
+	 * <p>
+	 * For server this will be the request from client and for client this will be the response from server
+	 * 
+	 * @return ByteBuffer to which the other side has written
+	 */
 	public ByteBuffer getIn() {
 		return in;
 	}
 
+	/**
+	 * Returns ByteBuffer that will be sent to the other side
+	 * <p>
+	 * For server this will be the response to client and for client this will be the request for server
+	 * 
+	 * @return ByteBuffer that will be sent to the other side
+	 */
 	public ByteBuffer getOut() {
 		return out;
 	}
 
+	/**
+	 * Retrieves user context associated with this Msg
+	 * 
+	 * @return user context associated with this Msg
+	 */
 	public Object getUserContext() {
 		return userContext;
 	}
 
+	/**
+	 * Sets user context to be associated with this Msg. It can be retrieved later
+	 * 
+	 * @param userContext
+	 *            to be kept in this Msg. It can be retrieved later
+	 */
 	public void setUserContext(Object userContext) {
 		this.userContext = userContext;
 	}
 
+	/**
+	 * This method sets IN & OUT ByteBuffer position to 0 and sets limit to 0
+	 * 
+	 */
 	public void resetPositions() {
 		this.in.position(0).limit(0);
 		this.out.clear();
@@ -100,7 +140,7 @@ public class Msg {
 		sub = buf.slice();
 		return sub;
 	}
-	
+
 	private String toStringBB(ByteBuffer bb) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("[pos=");

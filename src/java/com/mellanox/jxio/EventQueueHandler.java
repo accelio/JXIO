@@ -36,7 +36,9 @@ import com.mellanox.jxio.impl.EventSession;
 import com.mellanox.jxio.impl.EventSessionEstablished;
 
 /**
- *
+ * This class recieves events from accelio. It implements Runnable. Each EventQueueHandle
+ * should be run in a different thread.
+ * 
  */
 public class EventQueueHandler implements Runnable {
 
@@ -55,12 +57,31 @@ public class EventQueueHandler implements Runnable {
 	private volatile boolean       stopLoop              = false;
 	private volatile boolean       inRunLoop             = false;
 
+	/**
+	 * This interface needs to be implemented and passed to EventQueueHandler in c-tor
+	 * 
+	 */
 	public static interface Callbacks {
-		// this method should return an unbinded MsgPool.
+		/**
+		 * This callback is called on serverSide. If a request from client arrives
+		 * and there are no more Msg list is empty this callback is called. getAdditionalMsgPool
+		 * should return a new unbinded MsgPool
+		 * 
+		 * @param inSize
+		 *            - size of Msg.IN
+		 * @param outSize
+		 *            - size of Msg.Out
+		 * @return an unbinded MsgPool
+		 */
 		public MsgPool getAdditionalMsgPool(int inSize, int outSize);
 	}
 
-	// ctor
+	/**
+	 * Constructor of EventQueueHandler
+	 * 
+	 * @param callbacks
+	 *            - - implementation of Interface EventQueueHandler.Callbacks
+	 */
 	public EventQueueHandler(Callbacks callbacks) {
 		DataFromC dataFromC = new DataFromC();
 		boolean statusError = Bridge.createCtx(this, eventQueueSize, dataFromC);
@@ -354,7 +375,7 @@ public class EventQueueHandler implements Runnable {
 					LOG.trace("eventable is " + eventable);
 				}
 				eventable.onEvent(evMsgErr);
-				
+
 			}
 				break;
 
@@ -500,7 +521,7 @@ public class EventQueueHandler implements Runnable {
 	}
 
 	void releaseMsgBackToPool(Msg msg) {
-//		msg.resetPositions();
+		// msg.resetPositions();
 		this.msgsPendingNewRequest.put(msg.getId(), msg);
 	}
 

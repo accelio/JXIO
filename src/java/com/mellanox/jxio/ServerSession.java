@@ -25,6 +25,17 @@ import com.mellanox.jxio.impl.EventMsgError;
 import com.mellanox.jxio.impl.EventNewMsg;
 import com.mellanox.jxio.impl.EventSession;
 
+/**
+ * ServerSession is the object which receives Msgs from Client and sends responses. This side
+ * does not initiate connection. ServerSession receives several events on his lifetime.
+ * On each of them a method of interface Callbacks is invoked.
+ * User must implement this interface and pass it in c-tor.
+ * The events are:
+ * 1. onRequest.
+ * 2. onSessionEvent.
+ * 3. onMsgError.
+ * 
+ */
 public class ServerSession extends EventQueueHandler.Eventable {
 
 	private final Callbacks   callbacks;
@@ -37,17 +48,49 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	private EventQueueHandler eventQHandlerSession;
 	private long              ptrSesServer;
 	private ServerPortal      creator;
-	final String uri;
+	final String              uri;
 	private static final Log  LOG = LogFactory.getLog(ServerSession.class.getCanonicalName());
 
 	public static interface Callbacks {
+		/**
+		 * This event is triggered when a request from Client is received.
+		 * Server should send the reply on the same {@link com.mellanox.jxio.Msg} object.
+		 * 
+		 * @param msg
+		 *            containing Client's request
+		 */
 		public void onRequest(Msg msg);
 
+		/**
+		 * There are several types of session events: SESSION_CLOSED(because user called ServerSession.close(),
+		 * Client initiated close or because of an internal error),
+		 * SESSION_ERROR (due to internal error)
+		 * 
+		 * @param session_event
+		 *            - the event that was triggered
+		 * @param reason
+		 *            - the object containing the reason for triggerring session_event
+		 */
 		public void onSessionEvent(EventName session_event, EventReason reason);
 
+		/**
+		 * This event is triggered if there is an error in Msg send/receive
+		 * 
+		 * @param session_event
+		 * @param reason
+		 */
 		public void onMsgError(Msg msg, EventReason reason);
 	}
 
+	/**
+	 * Constructor of ServerSession. This object should be created after ServerPortal receives
+	 * callback onNewSession.
+	 * 
+	 * @param sessionKey
+	 *            - was received in ServerPortal's callback onNewSession
+	 * @param callbacks
+	 *            - implementation of Interface ServerSession.Callbacks
+	 */
 	public ServerSession(SessionKey sessionKey, Callbacks callbacks) {
 		this.callbacks = callbacks;
 		setId(sessionKey.getSessionPtr());
@@ -57,6 +100,13 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		}
 	}
 
+	/**
+	 * This method closes the ServerSession.
+	 * <p>
+	 * The method is asynchronous: the ServerSession will be closed only when it receives event SESSION_CLOSED
+	 * 
+	 * @return true if there was a successful call to close of the ServerSession object on C side and false otherwise
+	 */
 	public boolean close() {
 		if (this.getIsClosing()) {
 			LOG.warn("attempting to close server session that is already closed or being closed");
@@ -72,6 +122,16 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		return true;
 	}
 
+	/**
+	 * This method sends the response to client.
+	 * <p>
+	 * The send is asynchronous, therefore even if the function returns, this does not mean that the msg reached the
+	 * client or even was sent to the client. The size send to Client is the current position of the OUT ByteBuffer
+	 * 
+	 * @param msg
+	 *            - Msg to be sent to Client
+	 * @return true if queuing of the msg was successful and false otherwise
+	 */
 	public boolean sendResponse(Msg msg) {
 		if (this.getIsClosing()) {
 			LOG.warn("Trying to send message while session is closing");
@@ -83,7 +143,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		}
 		this.eventQHandlerMsg.releaseMsgBackToPool(msg);
 		/*
-		 * this message shold be released back to pool.
+		 * this message should be released back to pool.
 		 * even though the message might not reached the client yet, it's ok since this pool is
 		 * used only for matching of id to object. the actual release to pool is done on c side
 		 */
@@ -169,23 +229,38 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		this.ptrSesServer = ptrSesServer;
 
 	}
-	
-	public static class SessionKey{
-		private final long sessionPtr;
+
+	/**
+	 * This class holds the ID of a session. It is passed to user on onNewSession callback
+	 * and passed to ServerSession's constructor. It contains id of the session request (long) and
+	 * uri that the client wishes to connect to.
+	 */
+	public static class SessionKey {
+		private final long   sessionPtr;
 		private final String uri;
-		
+
+		/**
+		 * Returns id of the session request
+		 * 
+		 * @return id of the session request
+		 */
 		public long getSessionPtr() {
 			return sessionPtr;
 		}
 
+		/**
+		 * Returns uri that the client wishes to connect to
+		 * 
+		 * @return uri that the client wishes to connect to
+		 */
 		public String getUri() {
 			return uri;
 		}
 
-		SessionKey(long sessionPtr, String uri){
+		SessionKey(long sessionPtr, String uri) {
 			this.sessionPtr = sessionPtr;
 			this.uri = uri;
 		}
-		
+
 	}
 }
