@@ -190,7 +190,7 @@ public class BreakEventLoopTests{
 		public void onSessionEvent(EventName session_event, EventReason reason) {
 		}
 
-		public void onMsgError() {
+		public void onMsgError(Msg msg, EventReason reason){
 		}
 	}
 
