@@ -225,15 +225,14 @@ public class EventQueueHandler implements Runnable {
 		}
 		while (!this.eventables.isEmpty()) {
 			int waitForEvent = 0;
-			Iterator<Map.Entry<Long, Eventable>> it = this.eventables.entrySet().iterator();
+			Iterator<Eventable> it = this.eventables.values().iterator();
 			while (it.hasNext()) {
-				Eventable ev = it.next().getValue();
+				Eventable ev = it.next();
 				if (!ev.getIsClosing()) {
 					if (LOG.isDebugEnabled()) {
-						LOG.debug("[" + getId() + "] closing eventable with refToCObject " + ev.getId());
+						LOG.debug("[" + getId() + "] closing eventable" + ev.toString() + " with refToCObject " + ev.getId());
 					}
 					ev.close();
-					it = this.eventables.entrySet().iterator();
 				}
 				waitForEvent++;
 			}
