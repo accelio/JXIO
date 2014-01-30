@@ -46,6 +46,7 @@ bool MsgPools::add_msg_pool(MsgPool* pool)
 		}
 	}
 	msg_pool_list.push_front(pool);
+	this->first_time = false;
 	return true;
 }
 
