@@ -90,7 +90,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 	ServerSession* ses = NULL;
 	switch (event->event) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
-		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT");
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT in session %p", session);
 		//no need to delete session from map since we haven't received session_teardown yet
 		ses = get_ses_server_for_session(session, false);
 		if (!ses->ignore_first_disconnect()){
@@ -99,31 +99,34 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 		return NULL;
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
-		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT");
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT in session%p", session);
 		xio_connection_destroy(event->conn);
 		return NULL;
 
 	case XIO_SESSION_NEW_CONNECTION_EVENT:
-		SRVPORTAL_LOG_DBG("got XIO_SESSION_NEW_CONNECTION_EVENT");
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_NEW_CONNECTION_EVENT in session %p", session);
 		return NULL;
 
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
-		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT");
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT in session", session);
 		//no need to delete session from map since we haven't received session_teardown yet
 		ses = get_ses_server_for_session(session, false);
-		if (!ses->ignore_first_disconnect()){
+		if (ses && !ses->ignore_first_disconnect()){
 			ses->set_is_closing(true);
 		}
 		return NULL;
 
 	case XIO_SESSION_TEARDOWN_EVENT:
-		SRVPORTAL_LOG_DBG("got XIO_SESSION_TEARDOWN_EVENT");
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_TEARDOWN_EVENT in session %p", session);
 		//the event should also be written to buffer to let user know that the session was closed
 		if (xio_session_destroy(session)) {
 			SRVPORTAL_LOG_ERR("Error in xio_session_close: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		}
 		//last event for this session EVER: ses can be deleted from the map, but not deleted
 		ses = get_ses_server_for_session(session, true);
+		if (!ses){
+			return NULL;
+		}
 		//this teardown is after user did reject. He does not need to get this event
 		if (ses->delete_after_teardown){
 			delete ses;
@@ -141,12 +144,15 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 		return ses->getCtx();
 
 	case XIO_SESSION_CONNECTION_ERROR_EVENT:
-		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_ERROR_EVENT");
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_ERROR_EVENT in session %p", session);
 		return NULL;
 
 	default:
-		SRVPORTAL_LOG_WARN("UNHANDLED event: got event '%s' (%d)", xio_session_event_str(event->event), event->event);
+		SRVPORTAL_LOG_WARN("UNHANDLED event in session %p: got event '%s' (%d)", session, xio_session_event_str(event->event), event->event);
 		ses = get_ses_server_for_session(session, false);
+		if (ses == NULL){
+			return NULL;
+		}
 		ses->set_is_closing(true);
 		return ses->getCtx();
 	}
