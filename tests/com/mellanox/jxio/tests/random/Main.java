@@ -31,6 +31,8 @@ public class Main {
 	private static StoryRunner storyRunner = new JXIOStoryRunner();
 	private static File        storyFile;
 	private static long        seed;
+	public static String       coberturaJarPath;
+	public static String       javaCoverageProps;
 
 	/**
      * The main program that runs the probability XML file through the StoryTeller in order to produce a story XML file.
@@ -53,6 +55,9 @@ public class Main {
 					seed = (args.length < 3 || args[2].equals("0")) ? System.nanoTime() : Long.valueOf(args[2]);
 					print("***********************************\nStory Random Seed: " + seed
 					        + "\n***********************************");
+					// Code coverage configurations
+					coberturaJarPath = (args.length == 5) ? args[3] : "";
+					javaCoverageProps = (args.length == 5) ? args[4] : "";
 					// Create a new StoryTeller Instance
 					File probabiltyFile = new File(xmlFileDir + "/" + xmlFileName);
 					storyTeller = new StoryTeller(probabiltyFile, seed);
@@ -91,6 +96,7 @@ public class Main {
 			        + "\nSecond arugment needs to be the file name of the test XML file."
 			        + "\nThis must be a file containing the word 'probability' or 'story'."
 			        + "\nA Third arugment MAY be added as a seed (for random selections)."
+			        + "\nA Fourth arugment MAY be added as a timeout (only with the seed argument)."
 			        + "\n\nparameters: 'XML_DIR_PATH XML_FILE [SEED [TIMEOUT]]'");
 			return false;
 		}

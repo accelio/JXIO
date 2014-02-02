@@ -100,4 +100,85 @@ public class Character {
 		}
 		return str;
 	}
+	
+	/**
+     * Retrieve all characters matching a specific type.
+     * 
+     * @param charcterType
+     *            A character type in single form.
+     * @return A list of all characters of the requested type.
+     */
+	public static List<Character> getCharactersOfType(String charcterType, List<Character> charactersList) {
+		List<Character> chracterList = new ArrayList<Character>();
+		for (Character character : charactersList) {
+			if (character.getCharacterType().equals(charcterType)) {
+				chracterList = character.getSupportingCharacters();
+				return chracterList;
+			}
+		}
+		return chracterList;
+	}
+
+	/**
+     * Returns a mapping a characters to a list of matching characters by a given attribute.
+     * 
+     * @param supportingCharacter
+     *            A list of characters the sublists of it will be the values of the returned map.
+     * @param attribute
+     *            The attribute by which the supporting characters will be matched to the main character.
+     * @param Characters
+     *            A list of characters the will be the keys of the returned map.
+     * @return A map that matches the characters to the relevant supporting characters.
+     */
+	public static Map<Character, List<Character>> mapCharactersByCharacter(List<Character> supportingCharacter,
+	        String attribute, List<Character> Characters) {
+		Map<Character, List<Character>> map = new HashMap<Character, List<Character>>();
+		for (Character character : Characters) {
+			String id = character.getAttribute("id");
+			List<Character> list = getCharactersFromListByAttribute(supportingCharacter, attribute, id);
+			map.put(character, list);
+		}
+		return map;
+	}
+
+	/**
+     * Retrieves a specific matching character from a list of characters.
+     * 
+     * @param characters
+     *            The list of characters.
+     * @param attribute
+     *            The attribute to match.
+     * @param value
+     *            The value of the requested attribute to match.
+     * @return The character from the list with there attribute matching the given value.
+     */
+	public static Character getCharacterFromListByAttribute(List<Character> characters, String attribute, String value) {
+		for (Character character : characters) {
+			if (character.getAttribute(attribute).equals(value)) {
+				return character;
+			}
+		}
+		return null;
+	}
+
+	/**
+     * Retrieves a list of matching characters from a list of characters.
+     * 
+     * @param characters
+     *            The list of characters.
+     * @param attribute
+     *            The attribute to match.
+     * @param value
+     *            The value of the requested attribute to match.
+     * @return A list of character from the list with there attribute matching the given value.
+     */
+	public static List<Character> getCharactersFromListByAttribute(List<Character> characters, String attribute, String value) {
+		List<Character> list = new ArrayList<Character>();
+		for (Character character : characters) {
+			if (character.getAttribute(attribute).equals(value)) {
+				list.add(character);
+			}
+		}
+		return list;
+	}
 }
