@@ -76,7 +76,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		/**
 		 * This event is triggered if there is an error in Msg send/receive
 		 * 
-		 * @param session_event
+		 * @param msg
 		 * @param reason
 		 */
 		public void onMsgError(Msg msg, EventReason reason);

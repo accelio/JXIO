@@ -54,7 +54,8 @@ fi
 
 echo "Build JXIO... (java code)"
 cd $TOP_DIR
-javadoc -d $TOP_DIR/docs/ -sourcepath src/java/  com.mellanox.jxio
+mkdir -p docs
+javadoc -classpath $LIB_FOLDER/commons-logging.jar -d $TOP_DIR/docs -sourcepath src/java/   com.mellanox.jxio
 javac -cp $LIB_FOLDER/commons-logging.jar -d $BIN_FOLDER $SRC_JAVA_FILES
 if [[ $? != 0 ]] ; then
     exit 1
