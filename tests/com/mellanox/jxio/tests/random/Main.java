@@ -50,21 +50,21 @@ public class Main {
 				// Handle the XML file
 				xmlFileDir = args[0];
 				xmlFileName = args[1];
+				// Code coverage configurations
+				coberturaJarPath = (args.length == 5) ? args[3] : "";
+				javaCoverageProps = (args.length == 5) ? args[4] : "";
 				// Get input seed or randomize one
 				if (xmlFileName.contains("probability")) {
 					seed = (args.length < 3 || args[2].equals("0")) ? System.nanoTime() : Long.valueOf(args[2]);
 					print("***********************************\nStory Random Seed: " + seed
 					        + "\n***********************************");
-					// Code coverage configurations
-					coberturaJarPath = (args.length == 5) ? args[3] : "";
-					javaCoverageProps = (args.length == 5) ? args[4] : "";
 					// Create a new StoryTeller Instance
 					File probabiltyFile = new File(xmlFileDir + "/" + xmlFileName);
 					storyTeller = new StoryTeller(probabiltyFile, seed);
 					// Tell Story
 					storyTeller.read();
 					storyTeller.write();
-					print("Finised reading probability file.");
+					print("Finished reading probability file.");
 					// Define story file
 					String storyFileName = "story_" + seed + ".xml";
 					storyFile = new File(xmlFileDir + "/" + storyFileName);

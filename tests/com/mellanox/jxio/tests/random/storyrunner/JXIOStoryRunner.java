@@ -101,7 +101,7 @@ public class JXIOStoryRunner implements StoryRunner {
 			servers = Character.getCharactersOfType("servers", story.getCharacters());
 
 			// Print Summary
-			System.out.println("Finised reading the story.");
+			System.out.println("Finished reading the story.");
 			System.out.println("=============");
 			System.out.println("Story Summary");
 			System.out.println("=============");
