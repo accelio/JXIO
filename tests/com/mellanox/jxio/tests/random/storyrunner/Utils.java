@@ -16,8 +16,12 @@
  */
 package com.mellanox.jxio.tests.random.storyrunner;
 
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Enumeration;
 import java.util.Random;
 import java.util.zip.CRC32;
 
@@ -102,5 +106,31 @@ public final class Utils {
 	public static int randIntInRange(Random rand, int min, int max) {
 		int randNum = rand.nextInt((max - min) + 1) + min;
 		return randNum;
+	}
+	
+	/**
+     * Retrive the current machine's Infiniband IPv4 address
+     * 
+     * @return An IPv4 address
+     */
+	public static String getIP() {
+		String myIP = null;
+		try {
+			Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
+			while (nis.hasMoreElements()) {
+				NetworkInterface ni = nis.nextElement();
+				if (ni.getDisplayName().contains("ib")) {
+					for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
+						if (ia.getNetworkPrefixLength() == 8 || ia.getNetworkPrefixLength() == 16
+						        || ia.getNetworkPrefixLength() == 24) {
+							myIP = ia.getAddress().getHostAddress();
+						}
+					}
+				}
+			}
+		} catch (SocketException e) {
+			e.printStackTrace();
+		}
+		return myIP;
 	}
 }
