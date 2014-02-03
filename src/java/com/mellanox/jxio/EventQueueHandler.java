@@ -312,8 +312,7 @@ public class EventQueueHandler implements Runnable {
 	}
 
 	Msg getAndremoveMsgInUse(long id) {
-		Msg msg = msgsPendingReply.get(id);
-		msgsPendingReply.remove(id);
+		Msg msg = msgsPendingReply.remove(id);
 		return msg;
 	}
 
@@ -345,7 +344,7 @@ public class EventQueueHandler implements Runnable {
 
 				// msg was added to msgsPendingNewRequest after sendResponce. the real lookup of the Msg is done on C
 				// side. msgsPendingNewRequest is used for look up of the java object based on the id
-				Msg msg = this.msgsPendingNewRequest.get(id);
+				Msg msg = this.msgsPendingNewRequest.remove(id);
 				final long session_id = eventQueue.getLong();
 				if (LOG.isTraceEnabled()) {
 					LOG.trace("session refToCObject" + session_id);
@@ -392,7 +391,7 @@ public class EventQueueHandler implements Runnable {
 
 			case 4: // on request
 			{
-				Msg msg = this.msgsPendingNewRequest.get(id);
+				Msg msg = this.msgsPendingNewRequest.remove(id);
 				msg.resetPositions();
 				final int msg_size = eventQueue.getInt();
 				msg.getIn().limit(msg_size);
