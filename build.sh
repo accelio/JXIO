@@ -27,17 +27,18 @@ echo "git version is: $GIT_VERSION"
 echo "$GIT_VERSION" > version
 
 ## Build Accelio
-echo "Build Accelio....(libxio c code)"
+echo "Build Accelio... libxio C code"
 cd $TOP_DIR
 git submodule update --init
 cd src/accelio/ && make distclean -si > /dev/null 2>&1;
 ./autogen.sh && ./configure --silent --disable-raio-build --enable-silent-rules && make -s && cp -f src/usr/.libs/libxio.so $BIN_FOLDER
 if [[ $? != 0 ]] ; then
+    echo "FAILURE! stopped JXIO build"
     exit 1
 fi
 
 ## Build JX
-echo "Build JXIO... (c code)"
+echo "Build JXIO C code"
 cd $TOP_DIR
 if [[ -n "$CODE_COVERAGE_ON" ]];then
 	sudo rm -rf $COVFILE
@@ -46,20 +47,32 @@ if [[ -n "$CODE_COVERAGE_ON" ]];then
 fi
 cd src/c/ && ./autogen.sh && ./configure --silent && make clean -s && make -s && cp -f src/libjxio.so $BIN_FOLDER
 if [[ $? != 0 ]] ; then
+    echo "FAILURE! stopped JXIO build"
     exit 1
 fi
 if [[ -n "$CODE_COVERAGE_ON" ]];then
 	cov01 --off
 fi
 
-echo "Build JXIO... (java code)"
+echo "Build JXIO Java code"
 cd $TOP_DIR
-mkdir -p docs
-javadoc -classpath $LIB_FOLDER/commons-logging.jar -d $TOP_DIR/docs -sourcepath src/java/   com.mellanox.jxio
 javac -cp $LIB_FOLDER/commons-logging.jar -d $BIN_FOLDER $SRC_JAVA_FILES
 if [[ $? != 0 ]] ; then
+    echo "FAILURE! stopped JXIO build"
+    exit 1
+fi
+
+echo "Creating JXIO Java docs"
+javadoc -quiet -classpath $LIB_FOLDER/commons-logging.jar -d $TOP_DIR/docs -sourcepath src/java/ com.mellanox.jxio
+if [[ $? != 0 ]] ; then
+    echo "FAILURE! stopped JXIO build"
     exit 1
 fi
 
 echo "Creating JXIO jar..."
 cd $BIN_FOLDER && jar -cfm $TARGET ../manifest.txt com $NATIVE_LIBS
+if [[ $? != 0 ]] ; then
+    echo "FAILURE! stopped JXIO build"
+    exit 1
+fi
+

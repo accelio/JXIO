@@ -84,7 +84,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		 * This event is triggered if there is an error in Msg send/receive. Once the user is done
 		 * with the Msg he needs to call method msg.returnToParentPool()
 		 * 
-		 * @param msg- send/receive of this Msg failed
+		 * @param msg - send/receive of this Msg failed
 		 * @param reason - reason of the msg error 
 		 */
 		public void onMsgError(Msg msg, EventReason reason);
