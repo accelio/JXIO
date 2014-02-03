@@ -70,9 +70,9 @@ public class WorkerThreads {
 	}
 
 	public void addPortal(int id, ServerPortalPlayer spp) {
-		if (!idToIndex.containsKey(id)){
-			synchronized (listPortalPlayers[index]) {
-				this.listPortalPlayers[index].add(spp);
+		synchronized (listPortalPlayers[index]) {
+			this.listPortalPlayers[index].add(spp);
+			if (!idToIndex.containsKey(id)){
 				idToIndex.put(id, index);
 				index++;
 			}
