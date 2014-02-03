@@ -141,8 +141,9 @@ public class HelloServer {
 			// eqh.stop();
 		}
 
-		public void onMsgError(Msg msg, EventReason reason) {
+		public boolean onMsgError(Msg msg, EventReason reason) {
 			LOG.info("[ERROR] onMsgErrorCallback. reason=" + reason);
+			return true;
 		}
 	}
 }

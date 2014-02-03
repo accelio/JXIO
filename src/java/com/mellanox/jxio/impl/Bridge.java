@@ -176,7 +176,13 @@ public class Bridge {
 		boolean ret = serverSendResponseNative(ptrMsg, size, ptrSesServer);
 		return ret;
 	}
+	
+	private static native void releaseMsgServerSideNative(long ptrMsg);
 
+	public static void releaseMsgServerSide(final long ptrMsg) {
+		releaseMsgServerSideNative(ptrMsg);
+	}
+	
 	private static native boolean bindMsgPoolNative(long ptrMsgPool, long ptrEQH);
 
 	public static boolean bindMsgPool(final long ptrMsgPool, final long ptrEQH) {

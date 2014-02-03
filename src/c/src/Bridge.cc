@@ -446,6 +446,13 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_clientS
 	return client->send_msg(msg, size);
 }
 
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_releaseMsgServerSideNative(JNIEnv *env, jclass cls, long ptr_msg)
+{
+	Msg * msg = (Msg*) ptr_msg;
+	msg->release_to_pool();
+}
+
+
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_bindMsgPoolNative(JNIEnv *env, jclass cls, jlong ptr_msg_pool, jlong ptr_ctx)
 {
 	Context * ctx = (Context*) ptr_ctx;

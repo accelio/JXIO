@@ -65,8 +65,9 @@ public class ServerSessionHandle {
 			}
 		}
 
-		public void onMsgError(Msg msg, EventReason reason) {
+		public boolean onMsgError(Msg msg, EventReason reason) {
 			LOG.error("On Message Error. Reason is="+reason);
+			return true;
 		}
 	}
 }

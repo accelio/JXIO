@@ -115,9 +115,6 @@ int on_msg_error_callback(struct xio_session *session, enum xio_status error,
 	}else{//this is server side - send of the response failed
 		sizeWritten = ctx->events->writeOnMsgErrorEventServer(buf, msg->user_context,
 						session, error);
-		//must release the message
-//		Msg *msg_from_pool = (Msg*) msg->user_context;
-//		msg_from_pool->release_to_pool();
 	}
 	done_event_creating(ctx, sizeWritten);
 

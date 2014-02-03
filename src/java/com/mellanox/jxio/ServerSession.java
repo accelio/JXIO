@@ -74,12 +74,16 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		public void onSessionEvent(EventName session_event, EventReason reason);
 
 		/**
-		 * This event is triggered if there is an error in Msg send/receive
+		 * This event is triggered if there is an error in Msg send/receive. The method returns true 
+		 * if the Msg should be released automatically once onMsgError finishes and false if
+		 * the user will release it later with method returnOnMsgError. 
 		 * 
-		 * @param msg
-		 * @param reason
+		 * @param msg - send/receive of this Msg failed
+		 * @param reason - reason of the msg error 
+		 * @return true if the Msg should be released automatically once onMsgError finishes and false
+		 * if the user will release it later with method returnOnMsgError. 
 		 */
-		public void onMsgError(Msg msg, EventReason reason);
+		public boolean onMsgError(Msg msg, EventReason reason);
 	}
 
 	/**
@@ -150,6 +154,18 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		return ret;
 	}
 
+	
+	/** This method releases Msg to pool after onMsgError. In case the user returns false in
+	 * onMsgError he needs to release the Msg back to pool once he is done with it (using returnOnMsgError)
+	 * 
+	 * @param msg - msg to be released back to pool
+	 */
+	public void returnOnMsgError (Msg msg){
+		//the user finished with the Msg. It can now be released on C side 
+		Bridge.releaseMsgServerSide(msg.getId());
+		this.eventQHandlerMsg.releaseMsgBackToPool(msg);
+	}
+	
 	void setEventQueueHandlers(EventQueueHandler eqhS, EventQueueHandler eqhM) {
 		this.eventQHandlerMsg = eqhM;
 		this.eventQHandlerMsg.addEventable(this);
@@ -192,7 +208,10 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					evMsgErr = (EventMsgError) ev;
 					Msg msg = evMsgErr.getMsg();
 					int reason = evMsgErr.getReason();
-					callbacks.onMsgError(msg, EventReason.getEventByIndex(reason));
+					if (callbacks.onMsgError(msg, EventReason.getEventByIndex(reason))){
+						//the user is finished with the Msg and it can be released
+						this.returnOnMsgError(msg);
+					}
 				} else {
 					LOG.error("Event is not an instance of EventMsgError");
 				}

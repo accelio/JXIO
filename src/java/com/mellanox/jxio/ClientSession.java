@@ -51,7 +51,8 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	public static interface Callbacks {
 		/**
 		 * Event triggered whe reply from server is recieved. Request and reply are on the same
-		 * {@link com.mellanox.jxio.Msg} object.
+		 * {@link com.mellanox.jxio.Msg} object. Once the user is done
+		 * with the Msg he needs to call method msg.returnToParentPool()
 		 * 
 		 * @param msg - the response message that was recieved. Msg object contains both request and Response
 		 */
@@ -80,10 +81,11 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		public void onSessionEvent(EventName session_event, EventReason reason);
 
 		/**
-		 * This event is triggered if there is an error in Msg send/receive
+		 * This event is triggered if there is an error in Msg send/receive. Once the user is done
+		 * with the Msg he needs to call method msg.returnToParentPool()
 		 * 
-		 * @param msg
-		 * @param reason
+		 * @param msg- send/receive of this Msg failed
+		 * @param reason - reason of the msg error 
 		 */
 		public void onMsgError(Msg msg, EventReason reason);
 	}

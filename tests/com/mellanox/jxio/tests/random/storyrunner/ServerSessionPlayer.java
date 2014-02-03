@@ -160,8 +160,9 @@ public class ServerSessionPlayer {
 			}
 		}
 
-		public void onMsgError(Msg msg, EventReason reason) {
+		public boolean onMsgError(Msg msg, EventReason reason) {
 			LOG.info(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
+			return true;
 		}
 
 		private ClientSession prepareNextHopClient() {
