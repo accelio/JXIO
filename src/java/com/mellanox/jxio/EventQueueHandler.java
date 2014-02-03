@@ -45,7 +45,7 @@ public class EventQueueHandler implements Runnable {
 	private static final Log       LOG                   = LogFactory
 	                                                             .getLog(EventQueueHandler.class.getCanonicalName());
 	private final long             refToCObject;
-	private final int              eventQueueSize        = 15000;                                                    // size
+	private final int              eventQueueSize        = 30000;                                                    
 	private final Callbacks        callbacks;
 	private int                    eventsWaitingInQ      = 0;
 	private ByteBuffer             eventQueue            = null;

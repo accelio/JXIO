@@ -54,4 +54,8 @@ char* Event_queue::get_buffer()
 void Event_queue::increase_offset(int increase)
 {
 	this->offset += increase;
+	if (this->offset > this->size){
+		LOG_FATAL("There has been overflow in EventQueue buffer. Exiting!");
+		exit(1);
+	}
 }
