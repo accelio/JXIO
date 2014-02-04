@@ -17,6 +17,7 @@
 
 #include <sys/timerfd.h>
 
+#include "bullseye.h"
 #include "Utils.h"
 #include "Msg.h"
 #include "MsgPool.h"
@@ -135,7 +136,8 @@ bool Msg::send_reply(const int size)
 	//checking that client in size is big enough
 	int client_in = this->get_xio_msg()->request->out.data_iov[0].iov_len;
 	int server_out = this->get_xio_msg()->out.data_iov[0].iov_len;
-	if (client_in < server_out){
+	BULLSEYE_EXCLUDE_BLOCK_START
+	if (client_in < server_out) {
 		MSG_LOG_ERR("attempting to write when client IN size=%d, server sends %d", client_in, server_out);
 		return false;
 	}
@@ -144,9 +146,13 @@ bool Msg::send_reply(const int size)
 		MSG_LOG_DBG("Got error from sending xio_msg: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 	return true;
 }
 
+#if _BullseyeCoverage
+    #pragma BullseyeCoverage off
+#endif
 void Msg::dump(struct xio_msg *xio_msg)
 {
 	MSG_LOG_DBG("*********************************************");
@@ -168,3 +174,6 @@ void Msg::dump(struct xio_msg *xio_msg)
 		MSG_LOG_DBG("out data[%d]: length:%d, address:%p, mr:%p", i, xio_msg->out.data_iov[i].iov_len, xio_msg->out.data_iov[i].iov_base, xio_msg->out.data_iov[i].mr);
 	MSG_LOG_DBG("*********************************************");
 }
+#if _BullseyeCoverage
+    #pragma BullseyeCoverage on
+#endif

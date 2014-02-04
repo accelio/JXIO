@@ -17,7 +17,7 @@
 #include <string.h>
 #include <map>
 
-
+#include "bullseye.h"
 #include "Event_queue.h"
 
 Event_queue::Event_queue(int size)
@@ -27,16 +27,18 @@ Event_queue::Event_queue(int size)
 
 	error_creating = false;
 	this->buf = (char*)malloc(size * sizeof(char));
-	if (this->buf== NULL){
+	BULLSEYE_EXCLUDE_BLOCK_START
+	if (this->buf== NULL) {
 		LOG_DBG("ERROR, could not allocate memory for Event Queue buffer");
 		error_creating = true;
 		return;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 }
 
 Event_queue::~Event_queue()
 {
-	if (this->buf!= NULL){
+	if (this->buf != NULL) {
 		free(this->buf);
 	}
 }
@@ -54,8 +56,10 @@ char* Event_queue::get_buffer()
 void Event_queue::increase_offset(int increase)
 {
 	this->offset += increase;
-	if (this->offset > this->size){
+	BULLSEYE_EXCLUDE_BLOCK_START
+	if (this->offset > this->size) {
 		LOG_FATAL("There has been overflow in EventQueue buffer. Exiting!");
 		exit(1);
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 }

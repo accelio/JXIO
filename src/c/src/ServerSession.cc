@@ -22,7 +22,8 @@
 #define SRVSESSION_LOG_ERR(log_fmt, log_args...)  LOG_BY_MODULE(lsERROR, log_fmt, ##log_args)
 #define SRVSESSION_LOG_DBG(log_fmt, log_args...)  LOG_BY_MODULE(lsDEBUG, log_fmt, ##log_args)
 
-ServerSession::ServerSession(xio_session * session, Context* ctx) {
+ServerSession::ServerSession(xio_session * session, Context* ctx)
+{
 	this->is_closing = false;
 	this->session = session;
 	this->ctx = ctx;
@@ -32,8 +33,9 @@ ServerSession::ServerSession(xio_session * session, Context* ctx) {
 
 ServerSession::~ServerSession() {}
 
-bool ServerSession::ignore_first_disconnect(){
-	if (this->to_ignore_first_disconnect){
+bool ServerSession::ignore_first_disconnect()
+{
+	if (this->to_ignore_first_disconnect) {
 		this->to_ignore_first_disconnect = false;
 		return true;
 	}

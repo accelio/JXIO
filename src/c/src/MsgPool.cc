@@ -15,6 +15,7 @@
 **
 */
 
+#include "bullseye.h"
 #include "Utils.h"
 #include "MsgPool.h"
 
@@ -39,9 +40,10 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 	this->buf_size = msg_num * (in_size + out_size);
 
 	this->x_buf = xio_alloc(buf_size);
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (this->x_buf == NULL) {
 		MSGPOOL_LOG_WARN("there was an error while allocating & registering memory via huge pages");
-		MSGPOOL_LOG_WARN("You should work with Mellanox Ofed 2.0 ow newer");
+		MSGPOOL_LOG_WARN("You should work with Mellanox OFED 2.0 or newer");
 		MSGPOOL_LOG_WARN("attempting to allocate&registering memory. THIS COULD HURT PERFORMANCE!!!!!");
 		this->buf = (char*) malloc(this->buf_size);
 		if (this->buf == NULL) {
@@ -59,22 +61,29 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 		this->buf = (char*) x_buf->addr;
 		this->xio_mr = x_buf->mr;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 
 	msg_ptrs = (Msg**) malloc(sizeof(Msg*) * msg_num);
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (msg_ptrs == NULL) {
 		goto cleanup_buffer;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 
 	msg_list = new std::list<Msg*>;
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (msg_list == NULL) {
 		goto cleanup_array;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 
 	for (int i = 0; i < msg_num; i++) {
 		Msg *m = new Msg((char*) buf + i * (in_size + out_size), xio_mr, in_size, out_size, this);
+		BULLSEYE_EXCLUDE_BLOCK_START
 		if (m == NULL) {
 			goto cleanup_list;
 		}
+		BULLSEYE_EXCLUDE_BLOCK_END
 		msg_list->push_front(m);
 		msg_ptrs[i] = m;
 	}
@@ -121,9 +130,11 @@ MsgPool::~MsgPool()
 	delete (msg_list);
 
 	if (this->x_buf) { //memory was allocated using xio_alloc
+		BULLSEYE_EXCLUDE_BLOCK_START
 		if (xio_free(&this->x_buf)) {
 			MSGPOOL_LOG_DBG("Error xio_free failed: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		}
+		BULLSEYE_EXCLUDE_BLOCK_END
 	}
 	else { //memory was allocated using malloc and xio_reg_mr
 		if (xio_dereg_mr(&this->xio_mr)) {

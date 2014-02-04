@@ -15,6 +15,7 @@
 **
 */
 
+#include "bullseye.h"
 #include "MsgPools.h"
 
 MsgPools::MsgPools()
@@ -36,26 +37,28 @@ MsgPools::~MsgPools()
 
 bool MsgPools::add_msg_pool(MsgPool* pool)
 {
-	if (this->first_time){
+	if (this->first_time) {
 		this->in_size = pool->get_in_size();
 		this->out_size = pool->get_out_size();
-	}else{
+	} else {
+		BULLSEYE_EXCLUDE_BLOCK_START
 		if (this->in_size != pool->get_in_size() || this->out_size != pool->get_out_size()) {
 			LOG_FATAL("New pool is not of the same size!!! should be in=%d, out=%d", this->in_size, this->out_size);
 			exit(1);
 		}
+		BULLSEYE_EXCLUDE_BLOCK_END
 	}
 	msg_pool_list.push_front(pool);
 	this->first_time = false;
 	return true;
 }
 
-Msg * MsgPools::get_msg_from_pool(int in_size, int out_size)
+Msg* MsgPools::get_msg_from_pool(int in_size, int out_size)
 {
 	//currently all msgPools have the same message sizes
-	while (true){
+	while (true) {
 		list_pools::iterator it = msg_pool_list.begin();
-		while (it != msg_pool_list.end()){
+		while (it != msg_pool_list.end()) {
 			MsgPool* pool = *it;
 			if (!pool->is_empty()){
 				return pool->get_msg_from_pool();

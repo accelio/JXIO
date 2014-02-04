@@ -15,6 +15,7 @@
  **
  */
 
+#include "bullseye.h"
 #include "Utils.h"
 #include "Client.h"
 
@@ -50,21 +51,23 @@ Client::Client(const char* url, long ptrCtx)
 	attr.user_context_len = 0;
 
 	this->session = xio_session_create(XIO_SESSION_REQ, &attr, url, 0, 0, this);
-
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (session == NULL) {
 		CLIENT_LOG_ERR("Error in creating session for Context=%p", ctxClass);
 		error_creating = true;
 		return;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 
 	/* connect the session  */
 	this->con = xio_connect(session, ctxClass->ctx, 0, NULL, this);
-
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (con == NULL) {
 		CLIENT_LOG_ERR("Error in creating connection for Context=%p", ctxClass);
 		goto cleanupSes;
 
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 
 	CLIENT_LOG_DBG("CTOR done");
 	return;
@@ -82,15 +85,17 @@ Client::~Client()
 
 bool Client::close_connection()
 {
-	if (this->is_closing){
+	if (this->is_closing) {
 		CLIENT_LOG_DBG("trying to close connection while already closing");
 		return true;
 	}
 	this->is_closing = true;
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (xio_disconnect(this->con)) {
 		CLIENT_LOG_ERR("Error xio_disconnect failure: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 
 	CLIENT_LOG_DBG("connection closed successfully");
 	return true;
@@ -125,9 +130,11 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 			CLIENT_LOG_ERR("Got session teardown without getting connection/close/disconnected/rejected");
 		}
 		//the event should also be written to buffer to let user know that the session was closed
+		BULLSEYE_EXCLUDE_BLOCK_START
 		if (xio_session_destroy(session)) {
 			CLIENT_LOG_ERR("Error xio_session_close failure: '%s' (%d) ", xio_strerror(xio_errno()), xio_errno());
 		}
+		BULLSEYE_EXCLUDE_BLOCK_END
 		return this->get_ctx_class();
 
 	case XIO_SESSION_REJECT_EVENT:
@@ -157,9 +164,11 @@ bool Client::send_msg(Msg *msg, const int size)
 	msg->set_xio_msg_out_size(size);
 	msg->reset_xio_msg_in_size();
 	int ret_val = xio_send_request(this->con, msg->get_xio_msg());
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (ret_val) {
 		CLIENT_LOG_ERR("Error in sending xio_msg: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 	return true;
 }

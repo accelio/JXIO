@@ -63,7 +63,7 @@ int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 		int more_in_batch, void *cb_prv_data)
 {
 	LOG_TRACE("on_msg_callback is %p. num_iov = %d, len is %d msg is %p", msg->user_context, msg->in.data_iovlen, msg->in.data_iov[0].iov_len, msg);
-	if (msg->status){
+	if (msg->status) {
 		LOG_ERR("xio_msg=%p completed with error.[%s]", msg, xio_strerror(msg->status));
 	}
 
@@ -112,7 +112,7 @@ int on_msg_error_callback(struct xio_session *session, enum xio_status error,
 	if (msg->type == XIO_MSG_TYPE_REQ) {
 		//this is client side - send of the request failed
 		sizeWritten = ctx->events->writeOnMsgErrorEventClient(buf, msg->user_context, error);
-	}else{//this is server side - send of the response failed
+	} else { //this is server side - send of the response failed
 		sizeWritten = ctx->events->writeOnMsgErrorEventServer(buf, msg->user_context,
 						session, error);
 	}
@@ -163,13 +163,12 @@ int on_session_event_callback(struct xio_session *session,
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 
 	Context *ctx = cntxbl->ctxForSessionEvent(event_data, session);
-
 	if (ctx) {
-		if (cntxbl->isClient()){
+		if (cntxbl->isClient()) {
 			Client* client = (Client*)cntxbl;
 			/*in case it is a client, the java object is represented by cb_prv_data */
 			on_session_event(client, ctx, event_data);
-		}else{//it's  a server
+		} else { //it's  a server
 			ServerPortal* serverPortal = (ServerPortal*)cntxbl;
 			on_session_event_server(serverPortal, ctx, session, event_data);
 		}
@@ -184,7 +183,6 @@ int on_buffer_request_callback(struct xio_msg *msg, void *cb_user_context)
 	Context *ctx = cntxbl->get_ctx_class();
 	Msg* msg_from_pool = ctx->msg_pools.get_msg_from_pool(msg->in.data_iovlen, msg->out.data_iovlen);
 	msg_from_pool->set_xio_msg_fields_for_assign(msg);
-
 	return 0;
 }
 

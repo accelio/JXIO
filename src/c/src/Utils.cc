@@ -14,6 +14,8 @@
 ** governing permissions and  limitations under the License.
 **
 */
+
+#include "bullseye.h"
 #include "Utils.h"
 #include "Bridge.h"
 #include <libxio.h>
@@ -108,14 +110,14 @@ ServerSession* get_ses_server_for_session(xio_session* session, bool to_delete)
 {
 	map_ses_ctx_t::iterator it;
 	pthread_mutex_lock(&mutex_for_map);
-	it=map_sessions.find(session);
-	if (it == map_sessions.end()){
+	it = map_sessions.find(session);
+	if (it == map_sessions.end()) {
 		LOG_ERR("session=%p not in map", session);
 		pthread_mutex_unlock(&mutex_for_map);
 		return NULL;
 	}
 	ServerSession *jxio_session = it->second;
-	if (to_delete){
+	if (to_delete) {
 		map_sessions.erase(it);
 	}
 	pthread_mutex_unlock(&mutex_for_map);
@@ -138,11 +140,13 @@ void add_ses_server_for_session(xio_session * xio_session, ServerSession* jxio_s
 bool close_xio_connection(struct xio_session *session, struct xio_context *ctx)
 {
 	LOG_DBG("closing connection for session=%p, context=%p", session, ctx);
-	xio_connection * con = xio_get_connection(session, ctx);
+	xio_connection* con = xio_get_connection(session, ctx);
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (con == NULL) {
 		LOG_DBG("ERROR, no connection found (xio_session=%p, xio_context=%p)", session, ctx);
 		return false;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 	if (xio_disconnect(con)) {
 		LOG_DBG("ERROR, xio_disconnect failed with error '%s' (%d) (xio_session=%p, xio_context=%p, conn=%p)",
 				xio_strerror(xio_errno()), xio_errno(), session, ctx, con);
@@ -158,10 +162,12 @@ bool forward_session(ServerSession* jxio_session, const char * url)
 	LOG_DBG("url before forward is %s. xio_session is %p", url, xio_session);
 
 	int retVal = xio_accept(xio_session, &url, 1, NULL, 0);
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (retVal) {
 		LOG_DBG("ERROR, accepting session=%p. error '%s' (%d)", xio_session, xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 	add_ses_server_for_session(xio_session, jxio_session);
 	jxio_session->set_ignore_first_disconnect();
 	return true;
@@ -173,10 +179,12 @@ bool accept_session(ServerSession* jxio_session)
 	LOG_DBG("before accept xio_session is %p", xio_session);
 
 	int retVal = xio_accept(xio_session, NULL, 0, NULL, 0);
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (retVal) {
-		LOG_DBG("ERROR, accepting session=%p. error '%s' (%d)",xio_session, xio_strerror(xio_errno()), xio_errno());
+		LOG_DBG("ERROR, accepting session=%p. error '%s' (%d)", xio_session, xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 	add_ses_server_for_session(xio_session, jxio_session);
 	return true;
 }
@@ -191,10 +199,12 @@ bool reject_session(ServerSession* jxio_session, int reason,
 	enum xio_status s = (enum xio_status)(reason + XIO_BASE_STATUS -1);
 
 	int retVal = xio_reject(xio_session, s, user_context, user_context_len);
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (retVal) {
 		LOG_DBG("ERROR, rejecting session=%p. error '%s' (%d)",xio_session, xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 	add_ses_server_for_session(xio_session, jxio_session);
 	jxio_session->delete_after_teardown = true;
 	return true;

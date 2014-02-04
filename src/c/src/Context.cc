@@ -15,6 +15,7 @@
 **
 */
 
+#include "bullseye.h"
 #include "Utils.h"
 #include "Context.h"
 #include "CallbackFunctions.h"
@@ -37,23 +38,30 @@ Context::Context(int eventQSize)
 	this->offset_read_for_java = 0;
 
 	ctx = xio_context_create(NULL, 0);
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (ctx == NULL) {
 		CONTEXT_LOG_ERR("ERROR, xio_context_create failed");
 		error_creating = true;
 		return;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 
 	this->msg_pools.setCtx(this);
 
 	this->event_queue = new Event_queue(eventQSize);
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (this->event_queue == NULL || this->event_queue->error_creating) {
 		CONTEXT_LOG_ERR("ERROR, fail in create of EventQueue object");
 		goto cleanupCtx;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
+
 	this->events = new Events();
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (this->events == NULL) {
 		goto cleanupEventQueue;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 
 	CONTEXT_LOG_DBG("CTOR done");
 	return;
@@ -85,7 +93,7 @@ Context::~Context()
 
 int Context::run_event_loop(long timeout_micro_sec)
 {
-	if (this->events_num !=  0){
+	if (this->events_num !=  0) {
 		CONTEXT_LOG_DBG("there are events that were not created by epoll. no need to call ev_loop_run");
 		return this->events_num;
 	}
@@ -113,6 +121,9 @@ void Context::break_event_loop(int is_self_thread)
 	CONTEXT_LOG_DBG("after break event loop (is_self_thread=%d)", is_self_thread);
 }
 
+#if _BullseyeCoverage
+    #pragma BullseyeCoverage off
+#endif
 int Context::add_event_loop_fd(int fd, int events, void *priv_data)
 {
 	return xio_context_add_ev_handler(this->ctx, fd, events, Context::on_event_loop_handler, priv_data);
@@ -130,8 +141,11 @@ void Context::on_event_loop_handler(int fd, int events, void *data)
 	// Pass an 'FD Ready' event to Java
 	on_fd_ready_event_callback(ctx, fd, events);
 }
+#if _BullseyeCoverage
+    #pragma BullseyeCoverage on
+#endif
 
-void Context::add_msg_pool (MsgPool* msg_pool)
+void Context::add_msg_pool(MsgPool* msg_pool)
 {
 	CONTEXT_LOG_DBG("adding msg pool=%p", msg_pool);
 	this->msg_pools.add_msg_pool(msg_pool);
@@ -139,7 +153,7 @@ void Context::add_msg_pool (MsgPool* msg_pool)
 
 void Context::add_my_event()
 {
-	if (this->events_num == 0){
+	if (this->events_num == 0) {
 		this->offset_read_for_java = event_queue->get_offset();
 	}
 }
