@@ -17,6 +17,7 @@
 package com.mellanox.jxio.tests.random.storyrunner;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -29,28 +30,20 @@ import org.apache.commons.logging.LogFactory;
 public class WorkerThreads {
 
 	private final static Log                LOG               = LogFactory.getLog(WorkerThreads.class.getSimpleName());
-	private final WorkerThread[]            workers;
+	private final ArrayList<WorkerThread>   workers           = new ArrayList<WorkerThread>();
 	private final ExecutorService           executor;
 	private final Random                    rand;
 	private final int                       num_workers;
-	private int                             next_worker_index = -1;
+	private int                             next_worker_index = 0;
 	private ArrayList<ServerPortalPlayer>[] listPortalPlayers;
 	private int                             index             = 0;
 	private Map<Integer, Integer>           idToIndex         = new HashMap<Integer, Integer>();
-	// represents worker threads that were created
-	private int                             actualWorkersNumber;
 
 	@SuppressWarnings("unchecked")
 	public WorkerThreads(int numEQHs, int numListners) {
 		super();
 		this.num_workers = numEQHs;
 		this.executor = Executors.newCachedThreadPool();
-		if (this.num_workers != -1) {
-			this.workers = new WorkerThread[numEQHs];
-			this.next_worker_index = 0;
-		} else {
-			this.workers = null;
-		}
 		this.listPortalPlayers = (ArrayList<ServerPortalPlayer>[]) new ArrayList[numListners];
 		for (int i = 0; i < numListners; i++) {
 			this.listPortalPlayers[i] = new ArrayList<ServerPortalPlayer>();
@@ -61,9 +54,10 @@ public class WorkerThreads {
 
 	public void close() {
 
-		for (int i = 0; i < actualWorkersNumber; i++) {
-			workers[i].notifyClose();
+		for (WorkerThread workerThread : workers) {
+			workerThread.notifyClose();
 		}
+
 		executor.shutdown();
 		while (!executor.isTerminated()) {
 		}
@@ -72,7 +66,7 @@ public class WorkerThreads {
 	public void addPortal(int id, ServerPortalPlayer spp) {
 		synchronized (listPortalPlayers[index]) {
 			this.listPortalPlayers[index].add(spp);
-			if (!idToIndex.containsKey(id)){
+			if (!idToIndex.containsKey(id)) {
 				idToIndex.put(id, index);
 				index++;
 			}
@@ -90,28 +84,22 @@ public class WorkerThreads {
 	}
 
 	public synchronized WorkerThread getWorkerThread() {
-
-		WorkerThread worker = getWorkerThreadByIndex(this.next_worker_index);
-
-		if (this.num_workers != -1) {
-			workers[this.next_worker_index] = worker;
-			this.next_worker_index++;
-			if (this.next_worker_index >= this.num_workers)
-				this.next_worker_index = 0;
-		}
-		return worker;
-	}
-
-	public WorkerThread getWorkerThreadByIndex(int worker_index) {
 		WorkerThread worker = null;
-		if (this.num_workers != -1 && this.num_workers > worker_index) {
-			// if collection is limited then take from it the next slot
-			worker = this.workers[worker_index];
-		}
-		if (worker == null) {
-			// allocate new WorkerThread in case we are in unlimited workers mode
-			// or if we did not populate the WorkerThread slot yet
+		if (this.num_workers == -1) {
+			// unlimited worker mode
 			worker = createWorkerThread();
+			workers.add(worker);
+		} else {
+			if (this.workers.size() < this.num_workers) {
+				// the slop hasn't been populated yet
+				worker = createWorkerThread();
+				workers.add(worker);
+			} else {
+				worker = this.workers.get(this.next_worker_index);
+			}
+			this.next_worker_index++;
+			// round robin
+			this.next_worker_index = this.next_worker_index % this.num_workers;
 		}
 		return worker;
 	}
