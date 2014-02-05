@@ -161,7 +161,11 @@ public class ServerSessionPlayer {
 		}
 
 		public boolean onMsgError(Msg msg, EventReason reason) {
-			LOG.info(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
+			if (outer.server.getIsClosing()){
+				LOG.debug(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
+			}else{
+				LOG.error(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
+			}
 			return true;
 		}
 

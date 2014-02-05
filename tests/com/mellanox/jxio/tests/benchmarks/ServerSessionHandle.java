@@ -66,7 +66,11 @@ public class ServerSessionHandle {
 		}
 
 		public boolean onMsgError(Msg msg, EventReason reason) {
-			LOG.error("On Message Error. Reason is="+reason);
+			if (ServerSessionHandle.this.ss.getIsClosing()){
+				LOG.debug("On Message Error while closing. Reason is="+reason);
+			}else{
+				LOG.error("On Message Error. Reason is="+reason);
+			}
 			return true;
 		}
 	}

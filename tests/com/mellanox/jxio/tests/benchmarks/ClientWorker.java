@@ -107,7 +107,11 @@ public class ClientWorker implements Callable<double[]> {
 	class ClientWorkerCallbacks implements ClientSession.Callbacks {
 
 		public void onMsgError(Msg msg, EventReason reason) {
-			LOG.error("On Message Error. Reason is="+reason);
+			if (ClientWorker.this.cs.getIsClosing()){
+				LOG.debug("On Message Error while closing. Reason is="+reason);
+			}else{
+				LOG.error("On Message Error. Reason is="+reason);
+			}
 			msg.returnToParentPool();
 		}
 

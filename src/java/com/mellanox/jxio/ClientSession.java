@@ -205,7 +205,9 @@ public class ClientSession extends EventQueueHandler.Eventable {
 				break;
 
 			case 2: // msg error
-				LOG.error("received msg error event");
+				if (LOG.isDebugEnabled()){
+					LOG.debug("received msg error event");
+				}
 				EventMsgError evMsgErr;
 				if (ev instanceof EventMsgError) {
 					evMsgErr = (EventMsgError) ev;

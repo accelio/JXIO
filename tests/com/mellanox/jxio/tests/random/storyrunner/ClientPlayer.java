@@ -217,7 +217,11 @@ public class ClientPlayer extends GeneralPlayer {
 		private final ClientPlayer outer = ClientPlayer.this;
 
 		public void onMsgError(Msg msg, EventReason reason) {
-			LOG.info(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
+			if (outer.client.getIsClosing()){
+				LOG.debug(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
+			}else{
+				LOG.error(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
+			}
 			msg.returnToParentPool();
 		}
 

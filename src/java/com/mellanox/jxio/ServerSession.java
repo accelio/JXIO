@@ -202,7 +202,9 @@ public class ServerSession extends EventQueueHandler.Eventable {
 				break;
 
 			case 1: // msg error
-				LOG.error("received msg error event");
+				if (LOG.isDebugEnabled()){
+					LOG.debug("received msg error event");
+				}
 				EventMsgError evMsgErr;
 				if (ev instanceof EventMsgError) {
 					evMsgErr = (EventMsgError) ev;
