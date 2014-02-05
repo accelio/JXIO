@@ -112,7 +112,6 @@ public class WorkerThreads {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		actualWorkersNumber++;
 		return worker;
 	}
 }
