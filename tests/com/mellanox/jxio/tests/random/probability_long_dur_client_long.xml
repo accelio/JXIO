@@ -1,0 +1,67 @@
+<root>
+	<machines>
+		<machine_amount value="1"/>
+		<machine>
+			<name value="zorro010"/>
+			<address value="36.0.0.120"/>
+			<type value="Eth"/>
+			<manag_interface value="192.168.1.242"/>
+		</machine>
+		<machine>
+                        <name value="zorro011"/>
+                        <address value="36.0.0.121"/>
+                        <type value="Eth"/>
+                        <manag_interface value="192.168.1.243"/>
+                </machine>
+	</machines>
+
+	<!-- JXIO process parameters -->
+	<processes>
+		<process_amount value="[50]:1, [50]:2"/>
+		<machine value="[100]:1"/>
+		<num_eqhs value="[40]:1, [60]:2-5"/>
+		<timeout value="[100]:4000"/>
+		<log_level value="[100]:INFO"/>
+	</processes>
+
+	<!-- Server process parameters -->
+	<servers>
+		<server_amount value="[100]:1"/>
+		<process value="random"/>
+		<port value="[70]:3000-3010, [30]:3011-65536"/>
+		<start_delay value="[100]:0"/>
+		<duration value="[100]:3600"/>
+		<violent_exit value="[100]:0"/>
+		<num_workers value="[40]:0, [60]:1-4"/>
+		<msg_pools>
+			<msg_pool_amount value="[100]:1"/>
+			<msg_pool_count value="[100]:10-1000"/>
+			<msg_pool_size_in value="[20]:24-512, [30]:512-1024, [50]:1024-128000"/>
+			<msg_pool_size_out value="[20]:24-512, [30]:512-1024, [50]:1024-128000"/>
+		</msg_pools>
+		<tps value="[30]:100, [25]:100-500, [25]:500-50000, [20]:60000"/>
+		<delay value="[20]:5, [20]:10, [60]:0"/>
+	</servers>
+
+	<!-- Client process parameters -->
+	<clients>
+		<client_amount value="[50]:1, [50]:2"/>
+	        <process value="random"/>
+		<server value="random"/>
+        	<start_delay value="[50]:2-6, [50]:10-14"/>
+		<duration value="[100]:3500"/>
+		<violent_exit value="[100]:0"/>
+		<reject value="[100]:0"/>
+		<hops>
+			<hop_amount value="[100]:0"/>
+			<server value="random"/>
+		</hops>
+		<msg_count_factor_perc value="[80]:80, [10]:20, [10]:30"/>
+		<msg_size_in_factor_perc value="[90]:100, [10]:100-120"/>
+		<msg_size_out_factor_perc value="[80]:80, [10]:20, [10]:30"/>
+		<tps value="[30]:100, [25]:100-500, [0]:500-50000, [0]:100000"/>
+		<batch value="[50]:1, [50]:2-10000"/>
+		<repeats value="[100]:0"/>
+		<repeat_delay value="[100]:0"/>
+	</clients>
+</root>
