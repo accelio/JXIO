@@ -179,7 +179,9 @@ int Events::writeOnReplyReceivedEvent(char *buf, void *ptrForJavaMsg, const int3
 	return this->size;
 }
 
-
+#if _BullseyeCoverage
+    #pragma BullseyeCoverage off
+#endif
 int Events::writeOnFdReadyEvent(char *buf, int fd, int epoll_event)
 {
 	struct event_struct* event = (struct event_struct*)buf;
@@ -190,3 +192,6 @@ int Events::writeOnFdReadyEvent(char *buf, int fd, int epoll_event)
 	this->size = sizeof(struct event_fd_ready) + sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 	return this->size;
 }
+#if _BullseyeCoverage
+    #pragma BullseyeCoverage on
+#endif

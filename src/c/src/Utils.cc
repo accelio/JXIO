@@ -36,9 +36,11 @@ void log_func(log_severity_t severity, const char *log_fmt, ...)
 	va_start(ap, log_fmt);
 	int m = vsnprintf(_str_, SIZE, log_fmt, ap);
 	va_end(ap);
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (m < 0) {
 		return; /*error*/
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 	_str_[SIZE-1] = '\0';
 	Bridge_invoke_logToJava_callback(severity, _str_);
 }
@@ -52,17 +54,21 @@ void logs_from_xio_callback(const char *file, unsigned line, const char *func, u
 	const int SIZE = 2048;
 	char _str_[SIZE];
 	int n = snprintf(_str_, SIZE, MODULE_FILE_INFO, file, line, func);
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (n < 0) {
 		return; /*error*/
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 	if (n < SIZE) {
 		va_list ap;
 		va_start(ap, log_fmt);
 		int m = vsnprintf(_str_ + n, SIZE - n, log_fmt, ap);
 		va_end(ap);
+		BULLSEYE_EXCLUDE_BLOCK_START
 		if (m < 0) {
 			return; /*error*/
 		}
+		BULLSEYE_EXCLUDE_BLOCK_END
 	}
 	_str_[SIZE - 1] = '\0';
 	Bridge_invoke_logToJava_callback(severity, _str_);
@@ -146,12 +152,12 @@ bool close_xio_connection(struct xio_session *session, struct xio_context *ctx)
 		LOG_DBG("ERROR, no connection found (xio_session=%p, xio_context=%p)", session, ctx);
 		return false;
 	}
-	BULLSEYE_EXCLUDE_BLOCK_END
 	if (xio_disconnect(con)) {
 		LOG_DBG("ERROR, xio_disconnect failed with error '%s' (%d) (xio_session=%p, xio_context=%p, conn=%p)",
 				xio_strerror(xio_errno()), xio_errno(), session, ctx, con);
 		return false;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 	LOG_DBG("successfully closed connection=%p, for session=%p, context=%p", con, session, ctx);
 	return true;
 }
