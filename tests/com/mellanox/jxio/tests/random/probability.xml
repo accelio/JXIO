@@ -2,14 +2,14 @@
 	<machines>
 		<machine_amount value="2"/>
 		<machine>
-			<name value="zorro010"/>
-			<address value="11.0.0.120"/>
+			<name value="cloud1"/>
+			<address value="10.131.100.73"/>
 			<type value="Eth"/>
 			<manag_interface value="192.168.1.242"/>
 		</machine>
 		<machine>
-                        <name value="zorro011"/>
-                        <address value="11.0.0.121"/>
+                        <name value="cloud2"/>
+                        <address value="10.131.100.2"/>
                         <type value="Eth"/>
                         <manag_interface value="192.168.1.243"/>
                 </machine>
