@@ -50,7 +50,7 @@ def usage():
     print "\ttests/runJBenchmarkTest.py -s -a 1.1.1.1 -p 2222 -t 2 -i 64 -o 0 -m 2 -u 12"   
 
 
-options, remainder = getopt.gnu_getopt(sys.argv[1:], 'hcsa:p:t:i:o:m:u:f:r:', ['help',
+options, remainder = getopt.gnu_getopt(sys.argv[1:], '?hcsa:p:t:i:o:m:u:f:r:', ['help',
                                                                 'address=',
                                                                 'port=',
                                                                 'thread=',
@@ -76,7 +76,7 @@ out1 = None
 
                                                                
 for opt, arg in options:
-        if opt in ('-h', '--help'):
+        if opt in ('-?', '-h', '--help'):
             usage()
             sys.exit(0)
         elif opt in ('-c', '--option'):
