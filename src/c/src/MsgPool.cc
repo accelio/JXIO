@@ -29,14 +29,13 @@
 
 MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 {
+	Msg* msg = NULL;
 	error_creating = false;
 	this->in_size = in_size;
 	this->out_size = out_size;
 	this->msg_num = msg_num;
-	this->msg_list = NULL;
 	this->msg_ptrs = NULL;
 	this->xio_mr = NULL;
-
 	this->buf_size = msg_num * (in_size + out_size);
 
 	this->x_buf = xio_alloc(buf_size);
@@ -70,33 +69,23 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 
-	msg_list = new std::list<Msg*>;
-	BULLSEYE_EXCLUDE_BLOCK_START
-	if (msg_list == NULL) {
-		goto cleanup_array;
-	}
-	BULLSEYE_EXCLUDE_BLOCK_END
-
 	for (int i = 0; i < msg_num; i++) {
-		Msg *m = new Msg((char*) buf + i * (in_size + out_size), xio_mr, in_size, out_size, this);
+		msg = new Msg((char*) buf + i * (in_size + out_size), xio_mr, in_size, out_size, this);
 		BULLSEYE_EXCLUDE_BLOCK_START
-		if (m == NULL) {
+		if (msg == NULL) {
 			goto cleanup_list;
 		}
 		BULLSEYE_EXCLUDE_BLOCK_END
-		msg_list->push_front(m);
-		msg_ptrs[i] = m;
+		add_msg_to_pool(msg);
+		msg_ptrs[i] = msg;
 	}
 	MSGPOOL_LOG_DBG("CTOR done. allocated msg pool: num_msgs=%d, in_size=%d, out_size=%d", msg_num, in_size, out_size);
 	return;
 
 cleanup_list:
-	while (!msg_list->empty()) {
-		Msg * msg = msg_list->front();
-		msg_list->pop_front();
+	while ((msg = get_msg_from_pool()) != NULL) {
 		delete msg;
 	}
-	delete (msg_list);
 cleanup_array:
 	free(msg_ptrs);
 cleanup_buffer:
@@ -121,13 +110,10 @@ MsgPool::~MsgPool()
 		return;
 	}
 
-	while (!msg_list->empty()) {
-		Msg * msg = msg_list->front();
-		msg_list->pop_front();
+	Msg* msg = NULL;
+	while ((msg = get_msg_from_pool()) != NULL) {
 		delete msg;
 	}
-
-	delete (msg_list);
 
 	if (this->x_buf) { //memory was allocated using xio_alloc
 		BULLSEYE_EXCLUDE_BLOCK_START
@@ -143,22 +129,21 @@ MsgPool::~MsgPool()
 		free(this->buf);
 	}
 
-	free (msg_ptrs);
+	free(msg_ptrs);
 	MSGPOOL_LOG_DBG("DTOR done");
 }
 
 Msg* MsgPool::get_msg_from_pool()
 {
-	if (msg_list->empty()) {
+	if (msg_list.empty()) {
 		return NULL;
 	}
-	Msg * msg = msg_list->front();
-	msg_list->pop_front();
+	Msg* msg = msg_list.front();
+	msg_list.pop_front();
 	return msg;
 }
 
 void MsgPool::add_msg_to_pool(Msg* msg)
 {
-	msg_list->push_front(msg);
+	msg_list.push_front(msg);
 }
-

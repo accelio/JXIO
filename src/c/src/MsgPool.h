@@ -32,25 +32,24 @@ public:
 	MsgPool (int msg_num, int in_size, int out_size);
 	~MsgPool();
 
-	Msg * get_msg_from_pool ();
-	void add_msg_to_pool(Msg * msg);
-	bool is_empty() {return msg_list->empty();}
-	int get_in_size(){return in_size;}
-	int get_out_size(){return out_size;}
+	Msg* get_msg_from_pool();
+	void add_msg_to_pool(Msg* msg);
+	bool is_empty()    { return msg_list.empty(); }
+	int get_in_size()  { return in_size; }
+	int get_out_size() { return out_size; }
 
-	bool error_creating;
-	char   			*buf;
-	long 			buf_size;
-	Msg** 			msg_ptrs;
+	bool            error_creating;
+	long            buf_size;
+	char*           buf;
+	Msg**           msg_ptrs;
 
 private:
-	struct xio_mr	*xio_mr;
-	struct xio_buf  *x_buf;
-	int 			msg_num;
-	int 			in_size;
-	int 			out_size;
-	std::list<Msg*> *msg_list;
-
+	int             msg_num;
+	int             in_size;
+	int             out_size;
+	struct xio_mr*  xio_mr;
+	struct xio_buf* x_buf;
+	std::list<Msg*> msg_list;
 };
 
 #endif // ! MsgPool__H___
