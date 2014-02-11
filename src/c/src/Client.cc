@@ -119,15 +119,20 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 		CLIENT_LOG_DBG("got XIO_SESSION_NEW_CONNECTION_EVENT");
 		return NULL;
 
+	case XIO_SESSION_CONNECTION_REFUSED_EVENT:
+		CLIENT_LOG_ERR("got XIO_SESSION_CONNECTION_REFUSED_EVENT");
+		this->is_closing = true;
+		return NULL;
+
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
 		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT");
-		close_connection();
+		this->is_closing = true;
 		return NULL;
 
 	case XIO_SESSION_TEARDOWN_EVENT:
 		CLIENT_LOG_DBG("got XIO_SESSION_TEARDOWN_EVENT. must delete session");
 		if (!this->is_closing){
-			CLIENT_LOG_ERR("Got session teardown without getting connection/close/disconnected/rejected");
+			CLIENT_LOG_ERR("Got session teardown without getting connection/close/disconnected/rejected/refused");
 		}
 		//the event should also be written to buffer to let user know that the session was closed
 		BULLSEYE_EXCLUDE_BLOCK_START
