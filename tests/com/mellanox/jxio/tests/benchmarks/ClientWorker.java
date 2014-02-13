@@ -42,6 +42,7 @@ public class ClientWorker implements Callable<double[]> {
 	private long cnt;
 	private int sample_cnt;
 	private int res_array_index = 0;
+	private int burst_size;
 
 	// results array (in the form of [tps1,bw1,tp2,bw2...]
 	public double[] results;
@@ -49,17 +50,16 @@ public class ClientWorker implements Callable<double[]> {
 	// logger
 	private static Log LOG = LogFactory.getLog(ClientWorker.class.getCanonicalName());
 
-	// number of messages to be sent at first burst
-	int num_of_messages = 50;
 
 	// cTor
-	public ClientWorker(int inMsg_size, int outMsg_size, URI uri, int num_of_buffers, double[] res) {
+	public ClientWorker(int inMsg_size, int outMsg_size, URI uri, int burst_size, double[] res) {
 		eqh = new EventQueueHandler(new ClientEQHCallbacks());
-		pool = new MsgPool(num_of_buffers, inMsg_size, outMsg_size);
+		pool = new MsgPool(burst_size, inMsg_size, outMsg_size);
 		results = res;
 		cs = new ClientSession(eqh, uri, new ClientWorkerCallbacks());
 		in_msgSize = inMsg_size;
 		out_msgSize = outMsg_size;
+		this.burst_size = burst_size;
 		int msgKSize = ((inMsg_size > outMsg_size) ? inMsg_size : outMsg_size) / 1024;
 		if (msgKSize == 0) {
 			sample_cnt = 40000;
@@ -76,7 +76,7 @@ public class ClientWorker implements Callable<double[]> {
 	}
 
 	public double[] call() {
-		for (int i = 0; i < num_of_messages; i++) {
+		for (int i = 0; i < burst_size; i++) {
 			Msg msg = pool.getMsg();
 			if (msg == null) {
 				LOG.error("Cannot get new message");

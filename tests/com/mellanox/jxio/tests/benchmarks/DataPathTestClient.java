@@ -63,7 +63,7 @@ public class DataPathTestClient extends DataPathTest {
 		executor = Executors.newFixedThreadPool(num_of_threads);
 
 		for (int i = 0; i < num_of_threads; i++) {
-			ClientWorker cw = new ClientWorker(inMsg_size, outMsg_size, uri, num_of_buffers_per_thread, results[i]);
+			ClientWorker cw = new ClientWorker(inMsg_size, outMsg_size, uri, burst_size, results[i]);
 			workers.add(new FutureTask<double[]>(cw));
 		}
 		// Create/Open file

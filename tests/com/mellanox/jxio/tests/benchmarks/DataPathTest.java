@@ -31,7 +31,7 @@ public abstract class DataPathTest {
 	protected int num_of_threads;
 	protected int outMsg_size;
 	protected int inMsg_size;
-	protected int max_memory; // in MB
+	protected int burst_size; 
 	protected String test_type;
 	protected String server_ip;
 	protected String server_port;
@@ -39,9 +39,6 @@ public abstract class DataPathTest {
 
 	// uri for connection
 	protected final URI uri;
-
-	// number of buffers to configure the message pool with for each thread
-	protected int num_of_buffers_per_thread;
 
 	// file members
 	protected FileWriter fstream;
@@ -57,7 +54,6 @@ public abstract class DataPathTest {
 			System.out.println("Bad URI, Aborting test...");
 			System.exit(0);
 		}
-		num_of_buffers_per_thread = (max_memory * 1024 * 1024) / (num_of_threads * (inMsg_size + outMsg_size));
 	}
 
 	// build URI from command line parameters
@@ -84,6 +80,6 @@ public abstract class DataPathTest {
 		num_of_threads = Integer.parseInt(args[2]);
 		inMsg_size = Integer.parseInt(args[3]);
 		outMsg_size = Integer.parseInt(args[4]);
-		max_memory = Integer.parseInt(args[5]);
+		burst_size = Integer.parseInt(args[5]);
 	}
 }

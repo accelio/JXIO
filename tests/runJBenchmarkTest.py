@@ -41,22 +41,22 @@ def usage():
     print "\t-t  | --thread			number of threads (default is 1)"
     print "\t-i  | --in			in message size in Bytes (default is 64/0 for server/client)"  
     print "\t-o  | --out			out message size In Bytes(default is 0/64 for server/client)"   
-    print "\t-m  | --memory			max memory to use in MB (default is 1 MB)"
+    print "\t-b  | --burst			initial client burst size (only default is 50). Must be the same for client and server"
     print "\t-u  | --cpu			core number or range of cores to run the threads on (default is 1)"  
     print "\t-f  | --file			path to results file (client only, default is no file for writing)"  
-    print "\t-r  | --runs			number of runs of the test (client only, default is 50)"
+    print "\t-r  | --runs			number of iterations of the test (client only, default is 50). Single iteration=measure of every 40000/MsgSizeInK"
     print "examples :"
-    print "\ttests/runJBenchmarkTest.py -c -a 1.1.1.1 -p 2222 -t 2 -i 0 -o 64 -m 2 -u 12 -f /tmp/results.csv -r 10"  
-    print "\ttests/runJBenchmarkTest.py -s -a 1.1.1.1 -p 2222 -t 2 -i 64 -o 0 -m 2 -u 12"   
+    print "\ttests/runJBenchmarkTest.py -c -a 1.1.1.1 -p 2222 -t 2 -i 0 -o 64 -b 100 -u 12 -f /tmp/results.csv -r 10"  
+    print "\ttests/runJBenchmarkTest.py -s -a 1.1.1.1 -p 2222 -t 2 -i 64 -o 0 -b 100 -u 12"   
 
 
-options, remainder = getopt.gnu_getopt(sys.argv[1:], '?hcsa:p:t:i:o:m:u:f:r:', ['help',
+options, remainder = getopt.gnu_getopt(sys.argv[1:], '?hcsa:p:t:i:o:b:u:f:r:', ['help',
                                                                 'address=',
                                                                 'port=',
                                                                 'thread=',
                                                                 'in='
                                                                 'out=',
-                                                                'memory=',
+                                                                'burst=',
                                                                 'cpu=',
                                                                 'file=',
                                                                 'runs='])
@@ -66,7 +66,7 @@ address = None
 
 port = 2222
 thread = 1
-memory = 2
+burst = 50
 core = 1
 file = "no_file"
 runs = 50
@@ -95,8 +95,8 @@ for opt, arg in options:
             port = arg
         elif opt in ('-t', '--thread'):
             thread = arg
-        elif opt in ('-m', '--memory'):
-            memory = arg
+        elif opt in ('-b', '--burst'):
+            burst = arg
         elif opt in ('-u', '--cpu'):
             core = arg
         elif opt in ('-f', '--file'):
@@ -148,11 +148,11 @@ os.system(cmd)
 
 if(test_type == "server"):
 	print "\n------ Running Server Test Application -----"
-	cmd = 'taskset -c %s java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "%s:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." %s com.mellanox.jxio.tests.benchmarks.DataPathTestServer  %s %s %s %s %s %s' % (core, cob_jar_path, cov_command, address, port, thread, in1, out1, memory)
+	cmd = 'taskset -c %s java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "%s:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." %s com.mellanox.jxio.tests.benchmarks.DataPathTestServer  %s %s %s %s %s %s' % (core, cob_jar_path, cov_command, address, port, thread, in1, out1, burst)
 	os.system(cmd)
 else:
 	print "\n------ Running Client Test Application -----"
-	cmd = 'taskset -c %s java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "%s:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." %s com.mellanox.jxio.tests.benchmarks.DataPathTestClient  %s %s %s %s %s %s %s %s' % (core, cob_jar_path, cov_command, address, port, thread, in1, out1, memory, file, runs)
+	cmd = 'taskset -c %s java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "%s:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." %s com.mellanox.jxio.tests.benchmarks.DataPathTestClient  %s %s %s %s %s %s %s %s' % (core, cob_jar_path, cov_command, address, port, thread, in1, out1, burst, file, runs)
 	os.system(cmd)
    
 sys.exit(0)
