@@ -47,9 +47,9 @@ public class DataPathTestServer extends DataPathTest {
 		tsc = new TestServerCallbacks();
 		listener = new ServerPortal(listen_eqh, uri, tsc);
 		SPWorkers = new PriorityQueue<ServerPortalWorker>(num_of_threads);
-		//adding 15 to num_of_buffers_per_thread due to ACCELLIO demand
+		//adding 64 to num_of_buffers_per_thread due to ACCELLIO demand
 		for (int i = 0; i < num_of_threads; i++) {
-			SPWorkers.add(new ServerPortalWorker(i, inMsg_size, outMsg_size, listener.getUriForServer(), burst_size + 15));
+			SPWorkers.add(new ServerPortalWorker(i, inMsg_size, outMsg_size, listener.getUriForServer(), burst_size + 64));
 		}
 	}
 
