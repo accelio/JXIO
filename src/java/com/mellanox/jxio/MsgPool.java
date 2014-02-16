@@ -30,11 +30,12 @@ import com.mellanox.jxio.impl.Bridge;
  * Server side must bind the pool to EventQueueHandler.
  * Each Msg in MsgPool will be zero copied via the RDMA transport to the remote peer.
  * <p>
+ * On ServerSize the capacity should be bigger by 64 than on Client Size. 
  * InSize and outSize for client and server need to be reversed. For example:
  * <p>
- * Client: MsgPool p1 = new MsgPool(10, 8192, 64)
+ * Client: MsgPool p1 = new MsgPool(100, 8192, 64)
  * <p>
- * Server: MsgPool p2 = new MsgPool(10, 64, 8192)
+ * Server: MsgPool p2 = new MsgPool(164, 64, 8192)
  */
 public class MsgPool {
 	private static final Log LOG     = LogFactory.getLog(MsgPool.class.getCanonicalName());
