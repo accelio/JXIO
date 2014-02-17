@@ -27,7 +27,7 @@ libjxio_so_LDFLAGS = -shared -rdynamic -L$(topdir)accelio/src/usr/.libs -lxio -l
 libjxio_so_LDADD = $(AM_LDFLAGS)
 
 cov:
-	PATH=/hpc/local/commercial/coverity/cov-sa/bin:$$PATH && rm -rf $(PWD)/cov-build && make clean && cov-build --dir $(PWD)/cov-build make all && cov-analyze --dir $(PWD)/cov-build && cov-format-errors --dir $(PWD)/cov-build
+	PATH=/.autodirect/app/Coverity/cov-analysis-linux64-7.0.1/bin:$$PATH && rm -rf $(PWD)/cov-build && make clean && cov-build --dir $(PWD)/cov-build make all && cov-analyze --dir $(PWD)/cov-build && cov-format-errors --dir $(PWD)/cov-build --html-output $(PWD)/cov-build/c/output/errors/
 
 clean:
 	rm -rf *.o

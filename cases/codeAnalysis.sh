@@ -82,11 +82,11 @@ if [ $? != 0 ]; then
 fi
 echo -e "\nDone!\n"
 
-# Calculate number of errors
-let "C_ERRORS = `grep "C/C++ error" ${RUNNING_DIR}/${C_REPORT_FILE} | head -n 1 | cut -d " " -f 2`"
-
 # Config Report
 cp cov-build/c/output/errors/index.html ${RUNNING_DIR}/${C_REPORT_FILE}
+
+# Calculate number of errors
+let "C_ERRORS = `grep "error" ${RUNNING_DIR}/${C_REPORT_FILE} | wc -l`"
 
 #################
 # Store Reports #
