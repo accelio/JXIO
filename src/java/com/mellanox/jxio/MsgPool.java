@@ -30,30 +30,30 @@ import com.mellanox.jxio.impl.Bridge;
  * Server side must bind the pool to EventQueueHandler.
  * Each Msg in MsgPool will be zero copied via the RDMA transport to the remote peer.
  * <p>
- * On ServerSize the capacity should be bigger by 64 than on Client Size. 
- * InSize and outSize for client and server need to be reversed. For example:
+ * On ServerSize the capacity should be bigger by 64 than on Client Size. InSize and outSize for client and server need
+ * to be reversed. For example:
  * <p>
  * Client: MsgPool p1 = new MsgPool(100, 8192, 64)
  * <p>
  * Server: MsgPool p2 = new MsgPool(164, 64, 8192)
  */
 public class MsgPool {
-	private static final Log LOG     = LogFactory.getLog(MsgPool.class.getCanonicalName());
+	private static final Log LOG          = LogFactory.getLog(MsgPool.class.getCanonicalName());
+	public static final int  MAX_CAPACITY = 100064;
 	private final int        capacity;
 	private final int        inSize;
 	private final int        outSize;
 	private final ByteBuffer buffer;
 	private final long       refToCObject;
-	List<Msg>                listMsg = new ArrayList<Msg>();
-	private boolean          already_bound;                                                // this flag indicated if
-	                                                                                        // this pool is already
-	                                                                                        // bound to eqh
+	List<Msg>                listMsg      = new ArrayList<Msg>();
+	// this flag indicated if this pool is already bound to eqh
+	private boolean          already_bound;
 
 	/**
 	 * Constructor of MsgPool. Creates MsgPool (including allocating and RDMA registering the memory in C).
 	 * 
 	 * @param capacity
-	 *            - number of msg that this pool will contain
+	 *            - number of msg that this pool will contain. Max is {@value MAX_CAPACITY}
 	 * @param inSize
 	 *            - size (in bytes) of the receive buffer. For client this will be the response from the server
 	 *            and for the server this will be the request from the client
@@ -63,11 +63,17 @@ public class MsgPool {
 	 * 
 	 */
 	public MsgPool(int capacity, int inSize, int outSize) {
-		this.capacity = capacity;
+		if (capacity > MsgPool.MAX_CAPACITY) {
+			LOG.warn("Can't create pool with capacity bigger than maximum. Creating pool with capacity "
+			        + MsgPool.MAX_CAPACITY);
+			this.capacity = MsgPool.MAX_CAPACITY;
+		} else {
+			this.capacity = capacity;
+		}
 		this.inSize = inSize;
 		this.outSize = outSize;
-		long refToCObjects[] = new long[capacity + 1]; // the first element represents the id of MsgPool
-		buffer = Bridge.createMsgPool(capacity, inSize, outSize, refToCObjects);
+		long refToCObjects[] = new long[this.capacity + 1]; // the first element represents the id of MsgPool
+		buffer = Bridge.createMsgPool(this.capacity, inSize, outSize, refToCObjects);
 		if (buffer == null) {
 			LOG.fatal("there was an error creating the MsgPool");
 			refToCObject = 0;
@@ -77,7 +83,7 @@ public class MsgPool {
 		refToCObject = refToCObjects[0];
 		int msgBufferSize = inSize + outSize;
 
-		for (int i = 0; i < capacity; i++) {
+		for (int i = 0; i < this.capacity; i++) {
 			buffer.position(msgBufferSize * i);
 			ByteBuffer partialBuffer = buffer.slice();
 			partialBuffer.limit(msgBufferSize);
@@ -188,12 +194,12 @@ public class MsgPool {
 	void setIsBounded(boolean already_bound) {
 		this.already_bound = already_bound;
 	}
-	
-	int getInSize(){
+
+	int getInSize() {
 		return this.inSize;
 	}
-	
-	int getOutSize(){
+
+	int getOutSize() {
 		return this.outSize;
 	}
 }
