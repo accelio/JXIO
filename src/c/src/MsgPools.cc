@@ -43,7 +43,7 @@ bool MsgPools::add_msg_pool(MsgPool* pool)
 	} else {
 		BULLSEYE_EXCLUDE_BLOCK_START
 		if (this->in_size != pool->get_in_size() || this->out_size != pool->get_out_size()) {
-			LOG_FATAL("New pool is not of the same size!!! should be in=%d, out=%d", this->in_size, this->out_size);
+			LOG_FATAL("New pool is not of the same size!!! should be in=%d, out=%d and it is in=%d, out=%d", this->in_size, this->out_size, pool->get_in_size(), pool->get_out_size());
 			exit(1);
 		}
 		BULLSEYE_EXCLUDE_BLOCK_END

@@ -188,4 +188,12 @@ public class MsgPool {
 	void setIsBounded(boolean already_bound) {
 		this.already_bound = already_bound;
 	}
+	
+	int getInSize(){
+		return this.inSize;
+	}
+	
+	int getOutSize(){
+		return this.outSize;
+	}
 }

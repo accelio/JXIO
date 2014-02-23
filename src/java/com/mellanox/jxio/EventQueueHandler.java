@@ -546,6 +546,10 @@ public class EventQueueHandler implements Runnable {
 			LOG.fatal("user failed to provide buffer. aborting");
 			System.exit(1);
 		}
+		if (pool.getInSize() < inSize || pool.getOutSize() < outSize){
+			LOG.fatal("user failed to provide pool with correct sizes. aborting");
+			System.exit(1);
+		}
 		this.bindMsgPool(pool);
 	}
 }
