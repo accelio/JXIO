@@ -412,6 +412,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_rejectS
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (data_copy == NULL) {
 		LOG_ERR("memory allocation failed");
+		delete jxio_session;
 		env->ReleaseStringUTFChars(jdata, data);
 		return false;
 	}
