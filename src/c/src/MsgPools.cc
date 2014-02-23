@@ -56,6 +56,10 @@ bool MsgPools::add_msg_pool(MsgPool* pool)
 Msg* MsgPools::get_msg_from_pool(int in_size, int out_size)
 {
 	//currently all msgPools have the same message sizes
+	if (this->in_size < in_size || this->out_size < out_size){
+		LOG_FATAL("Can not allocate msg with in=%d, out=%d, while msgPool is in=%d, out=%d", in_size, out_size, this->in_size, this->out_size);
+		exit(1);
+	}
 	while (true) {
 		list_pools::iterator it = msg_pool_list.begin();
 		while (it != msg_pool_list.end()) {
