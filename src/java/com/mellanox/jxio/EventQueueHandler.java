@@ -224,6 +224,9 @@ public class EventQueueHandler implements Runnable {
 			LOG.debug("[" + getId() + "] closing EQH ");
 		}
 		while (!this.eventables.isEmpty()) {
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("attempting to close EQH while objects " + this.eventables.keySet() + " are still listening.");
+			}
 			int waitForEvent = 0;
 			Iterator<Eventable> it = this.eventables.values().iterator();
 			while (it.hasNext()) {
@@ -239,7 +242,6 @@ public class EventQueueHandler implements Runnable {
 			if (waitForEvent != 0) {
 				runEventLoop(waitForEvent, -1);
 			}
-			LOG.warn("attempting to close EQH while objects " + this.eventables.keySet() + " are still listening.");
 		}
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("[" + getId() + "] no more objects listening");
