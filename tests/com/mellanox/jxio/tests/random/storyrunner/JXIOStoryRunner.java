@@ -47,7 +47,7 @@ import com.mellanox.jxio.tests.random.Story;
 
 public class JXIOStoryRunner implements StoryRunner {
 
-	private final static Log LOG = LogFactory.getLog(JXIOStoryRunner.class.getSimpleName());
+	private final static Log LOG    = LogFactory.getLog(JXIOStoryRunner.class.getSimpleName());
 
 	private File             storyFile;
 	private Document         docRead;
@@ -59,6 +59,7 @@ public class JXIOStoryRunner implements StoryRunner {
 	private List<Character>  processes;
 	private List<Character>  servers;
 	private List<Character>  clients;
+	private int              status = 1;
 
 	/**
      * Constructs an new StoryRunner
@@ -129,8 +130,12 @@ public class JXIOStoryRunner implements StoryRunner {
 		chapter = Chapter.readChapter(machines, processes, clients, servers);
 		if (chapter == null) {
 			System.out.println("[ERROR] Failed to read chapter.");
+			status = 0; // Change to "= 1" after mahcines configuration happens automaticlly
 			return;
-		} else if (chapter.myProcesses.size() != 0) {
+		} else if (chapter.myProcesses.size() == 0) {
+			status = 0;
+			return;
+		} else {
 			// Run
 			System.out.println("\nRunning JXIO processes...\n");
 			final String dir = new File(".").getAbsolutePath();
@@ -140,13 +145,14 @@ public class JXIOStoryRunner implements StoryRunner {
 			for (Character process : chapter.myProcesses) {
 				try {
 					// Code coverage configuration
-					String coberturaJarPath = Main.coberturaJarPath + ":"; //"/.autodirect/acclgwork/general/cobertura-2.0.3/cobertura-2.0.3.jar:";
-					String javaCoverageProps = Main.javaCoverageProps; //"-Dnet.sourceforge.cobertura.datafile=/tmp/mars_tests/UDA-jx.db/tests/covfile_cobertura.ser";
+					String coberturaJarPath = Main.coberturaJarPath + ":"; // "/.autodirect/acclgwork/general/cobertura-2.0.3/cobertura-2.0.3.jar:";
+					String javaCoverageProps = Main.javaCoverageProps; // "-Dnet.sourceforge.cobertura.datafile=/tmp/mars_tests/UDA-jx.db/tests/covfile_cobertura.ser";
 					// Configure process
 					ProcessBuilder jxioProcessBuilder = new ProcessBuilder("java", "-Dlog4j.configuration=" + log4jFile
-					        + "_" + process.getAttribute("log_level"), "-cp", coberturaJarPath + topDir + "/bin/jxio.jar:" + topDir
-					        + "/src/lib/commons-logging.jar:" + topDir + "/src/lib/log4j-1.2.15.jar:" + dir);
-					if (!javaCoverageProps.equals("")){
+					        + "_" + process.getAttribute("log_level"), "-cp", coberturaJarPath + topDir
+					        + "/bin/jxio.jar:" + topDir + "/src/lib/commons-logging.jar:" + topDir
+					        + "/src/lib/log4j-1.2.15.jar:" + dir);
+					if (!javaCoverageProps.equals("")) {
 						jxioProcessBuilder.command().add(javaCoverageProps);
 					}
 					jxioProcessBuilder.command().add("com.mellanox.jxio.tests.random.storyrunner.JXIOProcessTask");
@@ -161,8 +167,7 @@ public class JXIOStoryRunner implements StoryRunner {
 					// Start process
 					Process jxioProcess = jxioProcessBuilder.start();
 					// Handle process output
-					BufferedReader buffer = new BufferedReader(
-					        new InputStreamReader(jxioProcess.getInputStream()));
+					BufferedReader buffer = new BufferedReader(new InputStreamReader(jxioProcess.getInputStream()));
 					// Store process
 					jxioProcesses.put(jxioProcess, buffer);
 				} catch (IOException e) {
@@ -177,7 +182,8 @@ public class JXIOStoryRunner implements StoryRunner {
 					e.printStackTrace();
 				}
 			}
-			// Print all process logs
+			// Print all process logs to screen and check for errors
+			status = 0; // Set run status to successful
 			for (Character process : chapter.myProcesses) {
 				String processID = process.getAttribute("id");
 				System.out.println("\n==================");
@@ -189,15 +195,28 @@ public class JXIOStoryRunner implements StoryRunner {
 					String line = null;
 					while ((line = br.readLine()) != null) {
 						System.out.println(line);
+						// Check if an error occured
+						if (line.toLowerCase().contains("core dump") || line.toLowerCase().contains("fatal error")
+						        || line.contains("FAILURE")) {
+							status = 1; // Set run status to failure
+						}
 					}
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
-	                e.printStackTrace();
-                }
+					e.printStackTrace();
+				}
 			}
+
 			System.out.println("\nAll JXIO processes ended!\n");
 		}
+	}
+
+	/**
+     * Returns true if the story ran successfully.
+     */
+	public boolean wasRunSuccessful() {
+		return ((status == 0) ? true : false);
 	}
 
 	/**

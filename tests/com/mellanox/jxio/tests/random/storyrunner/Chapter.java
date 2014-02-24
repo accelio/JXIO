@@ -23,8 +23,8 @@ public class Chapter {
 	public Map<Character, Integer>                  processMaxDuration;
 	public Map<Character, WorkerThreads>            processWorkerThreads;
 
-	
-	public static Chapter readChapter(List<Character> machines, List<Character> processes, List<Character> clients, List<Character> servers){
+	public static Chapter readChapter(List<Character> machines, List<Character> processes, List<Character> clients,
+	        List<Character> servers) {
 
 		Chapter myChapter = new Chapter();
 
@@ -39,7 +39,7 @@ public class Chapter {
 		// Fetch my machine
 		myChapter.myMachine = Character.getCharacterFromListByAttribute(machines, "address", myChapter.myIP);
 		if (myChapter.myMachine == null) {
-			System.out.println("[ERROR] No machine with your IP found in the story!");
+			System.out.println("[WARNING] No machine with your IP found in the story!");
 			return null;
 		}
 		System.out.println("Your name is " + myChapter.myMachine.getAttribute("name"));
@@ -61,4 +61,3 @@ public class Chapter {
 		return myChapter;
 	}
 }
-

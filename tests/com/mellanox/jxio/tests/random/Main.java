@@ -79,6 +79,13 @@ public class Main {
 				storyRunner.read(storyFile);
 				// Run story
 				storyRunner.run();
+				// Exit
+				if (storyRunner.wasRunSuccessful()) {
+					System.exit(0);
+				} else {
+					System.exit(1);
+				}
+
 			}
 		}
 	}
