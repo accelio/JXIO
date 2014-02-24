@@ -42,12 +42,8 @@ public:
 private:
 	char * buf;
 	char * buf_out;
-	int in_size;
-	int out_size;
 	struct xio_mr *xio_mr;
 	struct xio_msg *xio_msg;
-	struct xio_msg *req;
-	int serial_number;
 	int in_buf_size;
 	int out_buf_size;
 	MsgPool* pool;
