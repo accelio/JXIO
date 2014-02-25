@@ -181,7 +181,9 @@ int on_buffer_request_callback(struct xio_msg *msg, void *cb_user_context)
 	LOG_DBG("got on_buffer_request_callback");
 	Contexable *cntxbl = (Contexable*) cb_user_context;
 	Context *ctx = cntxbl->get_ctx_class();
-	Msg* msg_from_pool = ctx->msg_pools.get_msg_from_pool(msg->in.data_iovlen, msg->out.data_iovlen);
+	int in_size = (msg->in.data_iovlen > 0) ? msg->in.data_iov[0].iov_len : 0;
+	int out_size = (msg->out.data_iovlen > 0) ? msg->out.data_iov[0].iov_len : 0;
+	Msg* msg_from_pool = ctx->msg_pools.get_msg_from_pool(in_size, out_size);
 	msg_from_pool->set_xio_msg_fields_for_assign(msg);
 	return 0;
 }
