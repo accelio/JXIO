@@ -228,7 +228,7 @@ public class ClientPlayer extends GeneralPlayer {
 		public void onSessionEstablished() {
 			counterEstablished++;
 			final long timeSessionEstablished = System.nanoTime() - outer.startSessionTime;
-			if (timeSessionEstablished > 100000000) { // 100 milli-sec
+			if (timeSessionEstablished > 100000000 && !LOG.isDebugEnabled()) { // 100 milli-sec  Debug prints slow down
 				LOG.error(outer.toString() + ": FAILURE: session establish took " + timeSessionEstablished / 1000
 				        + " usec");
 				System.exit(1); // Failure in test - eject!
@@ -276,7 +276,7 @@ public class ClientPlayer extends GeneralPlayer {
 			outer.counterReceivedMsgs++;
 
 			final long roundTrip = roundTrip(msg);
-			if (roundTrip > 100000000) { // 100 milli-sec
+			if (roundTrip > 100000000 && !LOG.isDebugEnabled()) { // 100 milli-sec. Debug prints slow down
 				if (outer.counterReceivedMsgs != 1 || outer.numHops <= 0) {
 					LOG.error(outer.toString() + ": FAILURE: msg(#" + outer.counterReceivedMsgs + ") round trip took "
 					        + roundTrip / 1000 + " usec");
