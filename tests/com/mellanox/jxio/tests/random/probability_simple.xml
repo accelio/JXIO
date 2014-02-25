@@ -19,7 +19,7 @@
 	<processes>
 		<process_amount value="[50]:1, [50]:2"/>
 		<machine value="[100]:1"/>
-		<num_eqhs value="[40]:1, [60]:2-5"/>
+		<num_eqhs value="[100]:-1"/>
 		<timeout value="[100]:60"/>
 		<log_level value="[0]:OFF, [5]:FATAL, [5]:ERROR, [5]:WARN, [50]:INFO, [20]:DEBUG, [10]:TRACE, [5]:ALL"/>
 	</processes>
@@ -57,7 +57,7 @@
 			<server value="random"/>
 		</hops>
 		<msg_count_factor_perc value="[80]:80, [10]:20, [10]:30"/>
-		<msg_size_in_factor_perc value="[90]:100, [10]:100-120"/>
+		<msg_size_in_factor_perc value="[80]:80, [10]:20, [10]:30"/>
 		<msg_size_out_factor_perc value="[80]:80, [10]:20, [10]:30"/>
 		<tps value="[30]:100, [25]:100-500, [0]:500-50000, [0]:100000"/>
 		<batch value="[50]:1, [50]:2-10000"/>
