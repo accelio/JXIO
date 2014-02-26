@@ -23,15 +23,15 @@ class JxBenchmarksWrapper(ClientServerWrapper):
         self.add_client_cmd_argument('-t_client', help='t.', type=str, alias='-t', value_only=True, priority=3)
         self.add_client_cmd_argument('-i_client', help='i.', type=str, alias='-i', value_only=True, priority=4)
         self.add_client_cmd_argument('-o_client', help='o.', type=str, alias='-o', value_only=True, priority=5)
-        self.add_client_cmd_argument('-u_client', help='u.', type=str, alias='-u', value_only=True, priority=7)
-        self.add_client_cmd_argument('-r_client', help='r.', type=str, alias='-r', value_only=True, priority=8)
+        self.add_client_cmd_argument('-u_client', help='u.', type=str, alias='-u', value_only=True, priority=6)
+        self.add_client_cmd_argument('-r_client', help='r.', type=str, alias='-r', value_only=True, priority=7)
 
         self.add_server_cmd_argument('-p_server', help='The port.', type=str, alias='-p', value_only=True, priority=2)
         self.add_server_cmd_argument('-t_server', help='t.', type=str, alias='-t', value_only=True, priority=3)
         self.add_server_cmd_argument('-i_server', help='i.', type=str, alias='-i', value_only=True, priority=4)
         self.add_server_cmd_argument('-o_server', help='o.', type=str, alias='-o', value_only=True, priority=5)
-        self.add_server_cmd_argument('-u_server', help='u.', type=str, alias='-u', value_only=True, priority=7)
-        self.add_server_cmd_argument('-r_server', help='r.', type=str, alias='-r', value_only=True, priority=8)
+        self.add_server_cmd_argument('-u_server', help='u.', type=str, alias='-u', value_only=True, priority=6)
+        self.add_server_cmd_argument('-r_server', help='r.', type=str, alias='-r', value_only=True, priority=7)
 
 
     def get_server_manage_ip(self):

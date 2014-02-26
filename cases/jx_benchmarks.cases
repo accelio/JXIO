@@ -16,7 +16,7 @@
 		<tout>1500</tout>
 		<cmd>
 			<params>
-				<static_args>-p_server 4653 -t_server 1 -i_server 64 -o_server 0 -u_server 1 -p_client 4653 -t_client 1 -i_client 0 -o_client 64 -m_client 2 -u_client 1 -r_client 10</static_args>
+				<static_args>-p_server 4653 -t_server 1 -i_server 64 -o_server 0 -u_server 1 -p_client 4653 -t_client 1 -i_client 0 -o_client 64 -u_client 1 -r_client 10</static_args>
 			</params>
 		</cmd>
 	</case>
