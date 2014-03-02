@@ -95,7 +95,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 	ServerSession* ses = NULL;
 	switch (event->event) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
-		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT in session %p", session);
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
 		//no need to delete session from map since we haven't received session_teardown yet
 		ses = get_ses_server_for_session(session, false);
 		if (!ses->ignore_first_disconnect()){
@@ -104,7 +104,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 		return NULL;
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
-		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT in session%p", session);
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
 		xio_connection_destroy(event->conn);
 		return NULL;
 
@@ -113,7 +113,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 		return NULL;
 
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
-		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT in session", session);
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
 		//no need to delete session from map since we haven't received session_teardown yet
 		ses = get_ses_server_for_session(session, false);
 		if (ses && !ses->ignore_first_disconnect()) {
@@ -151,7 +151,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 		return ses->getCtx();
 
 	case XIO_SESSION_CONNECTION_ERROR_EVENT:
-		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_ERROR_EVENT in session %p", session);
+		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_ERROR_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
 		return NULL;
 
 	default:

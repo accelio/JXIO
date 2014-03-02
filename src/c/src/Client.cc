@@ -106,12 +106,12 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 	Context *ctx;
 	switch (event->event) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
-		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT");
+		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT. Reason=%s", xio_strerror(event->reason));
 		this->is_closing = true;
 		return NULL;
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
-		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT");
+		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT. Reason=%s", xio_strerror(event->reason));
 		xio_connection_destroy(event->conn);
 		return NULL;
 
@@ -124,12 +124,12 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 		return NULL;
 
 	case XIO_SESSION_CONNECTION_REFUSED_EVENT:
-		CLIENT_LOG_ERR("got XIO_SESSION_CONNECTION_REFUSED_EVENT");
+		CLIENT_LOG_ERR("got XIO_SESSION_CONNECTION_REFUSED_EVENT. Reason=%s", xio_strerror(event->reason));
 		this->is_closing = true;
 		return NULL;
 
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
-		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT");
+		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT. Reason=%s", xio_strerror(event->reason));
 		this->is_closing = true;
 		return NULL;
 
@@ -147,12 +147,12 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 		return this->get_ctx_class();
 
 	case XIO_SESSION_REJECT_EVENT:
-		CLIENT_LOG_DBG("got XIO_SESSION_REJECT_EVENT. must delete session");
+		CLIENT_LOG_DBG("got XIO_SESSION_REJECT_EVENT. Reason=%s .Must delete session", xio_strerror(event->reason));
 		this->is_closing = true;
 		return this->get_ctx_class();
 
 	case XIO_SESSION_CONNECTION_ERROR_EVENT:
-		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_ERROR_EVENT");
+		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_ERROR_EVENT. Reason=%s", xio_strerror(event->reason));
 		close_connection();
 		return NULL;
 
