@@ -41,7 +41,7 @@ public enum EventName {
 	/**
 	 * SESSION_ERROR is received by ClientSession, ServerSession and ServerPortal.
 	 */
-	SESSION_ERROR(7);
+	SESSION_ERROR(9);
 
 	private int index;
 

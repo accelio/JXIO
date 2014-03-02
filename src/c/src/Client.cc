@@ -119,6 +119,10 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 		CLIENT_LOG_DBG("got XIO_SESSION_NEW_CONNECTION_EVENT");
 		return NULL;
 
+	case XIO_SESSION_CONNECTION_ESTABLISHED_EVENT:
+		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_ESTABLISHED_EVENT");
+		return NULL;
+
 	case XIO_SESSION_CONNECTION_REFUSED_EVENT:
 		CLIENT_LOG_ERR("got XIO_SESSION_CONNECTION_REFUSED_EVENT");
 		this->is_closing = true;
