@@ -188,6 +188,9 @@ int on_buffer_request_callback(struct xio_msg *msg, void *cb_user_context)
 	return 0;
 }
 
+#if _BullseyeCoverage
+    #pragma BullseyeCoverage off
+#endif
 void on_fd_ready_event_callback(Context *ctx, int fd, int events)
 {
 	LOG_DBG("got on_fd_ready_event_callback");
@@ -196,3 +199,6 @@ void on_fd_ready_event_callback(Context *ctx, int fd, int events)
 	done_event_creating(ctx, sizeWritten);
 	return;
 }
+#if _BullseyeCoverage
+    #pragma BullseyeCoverage on
+#endif

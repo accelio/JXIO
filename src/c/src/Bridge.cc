@@ -45,10 +45,16 @@ static jfieldID fidError;
 static jmethodID jmethodID_logToJava; // handle to java cb method
 static jmethodID jmethodID_requestForBoundMsgPool;
 
+#if _BullseyeCoverage
+    #pragma BullseyeCoverage off
+#endif
 extern "C" void bridge_print_error(const char* logmsg)
 {
 	fprintf(stderr, "in JXIO/c/Bridge: %s\n", logmsg);
 }
+#if _BullseyeCoverage
+    #pragma BullseyeCoverage on
+#endif
 
 // JNI inner functions implementations
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
@@ -515,18 +521,3 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_delEventLoo
 #if _BullseyeCoverage
     #pragma BullseyeCoverage on
 #endif
-
-JNIEnv *JX_attachNativeThread()
-{
-	JNIEnv *env;
-	if (!cached_jvm) {
-		printf("cached_jvm is NULL\n");
-	}
-	jint ret = cached_jvm->AttachCurrentThread((void **) &env, NULL);
-
-	if (ret < 0) {
-		printf("cached_jvm->AttachCurrentThread failed ret=%d\n", ret);
-	}
-	LOG_DBG("completed successfully env=%p", env);
-	return env; // note: this handler is valid for all functions in this thread
-}
