@@ -5,13 +5,11 @@
 			<name value="zorro10"/>
 			<address value="36.0.0.120"/>
 			<type value="Eth"/>
-			<manag_interface value="192.168.1.242"/>
 		</machine>
 		<machine>
                         <name value="zorro11"/>
                         <address value="36.0.0.121"/>
                         <type value="Eth"/>
-                        <manag_interface value="192.168.1.243"/>
                 </machine>
 	</machines>
 
@@ -21,7 +19,7 @@
 		<machine value="[50]:1, [50]:2"/>
 		<num_eqhs value="[100]:-1"/>
 		<timeout value="[100]:60"/>
-		<log_level value="[0]:OFF, [5]:FATAL, [5]:ERROR, [5]:WARN, [50]:INFO, [20]:DEBUG, [10]:TRACE, [5]:ALL"/>
+		<log_level value="[0]:OFF, [5]:FATAL, [5]:ERROR, [5]:WARN, [60]:INFO, [25]:DEBUG, [0]:TRACE, [0]:ALL"/>
 	</processes>
 
 	<!-- Server process parameters -->
