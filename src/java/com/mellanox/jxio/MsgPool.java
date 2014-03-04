@@ -139,30 +139,34 @@ public class MsgPool {
 			return null;
 		}
 		Msg msg = listMsg.remove(0);
+		msg.setMsgReturnable();
 		return msg;
 	}
 
 	/**
 	 * Returns msg back to pool.
 	 * This method should be called on client side, once the application
-	 * finished handling the msg
-	 */
-
-	/**
-	 * Returns msg back to pool.
-	 * This method should be called on client side, once the application
-	 * finished handling the msg
+	 * finished handling the msg. This method should only be called for Msg that
+	 * was obtained by MsgPool.getMsg() method
 	 * 
 	 * @param msg
 	 *            to be returned back to pool
+	 * @return true if Msg was returned to pool and false if this msg can not be returned to pool
 	 */
-	public void releaseMsg(Msg msg) {
+	public boolean releaseMsg(Msg msg) {
 		if (msg.getParentPool() == this) {
-			msg.resetPositions();
-			listMsg.add(msg);
-		} else {
-			LOG.error("parent pool and actual msg pool do not match!");
+			if (msg.isReturnable()) {
+				msg.resetPositions();
+				msg.setMsgNotReturnable();
+				listMsg.add(msg);
+				return true;
+			} else {
+				LOG.error("This msg can not be returned to pool " + this.getId() + ", since msg " + msg.toString() + " was not obtained using pool.getMsg method");
+				return false;
+			}
 		}
+		LOG.error("parent pool " + msg.getParentPool().getId() + " and actual msg pool " + this.getId() + " do not match!");
+		return false;
 	}
 
 	/**

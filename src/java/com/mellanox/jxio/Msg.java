@@ -18,8 +18,8 @@ package com.mellanox.jxio;
 
 import java.nio.ByteBuffer;
 
-//import org.apache.commons.logging.Log;
-//import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.EventQueueHandler.Eventable;
 
@@ -33,12 +33,15 @@ import com.mellanox.jxio.EventQueueHandler.Eventable;
 public class Msg {
 
 	// private static final Log LOG = LogFactory.getLog(Msg.class.getCanonicalName());
-	private long       refToCObject;
-	private Eventable  clientSession;
+	private long             refToCObject;
+	private Eventable        clientSession;
 	// reference to MsgPool holding this buffer
-	private MsgPool    msgPool;
-	private ByteBuffer in, out;
-	private Object     userContext;  // variable for usage by the user
+	private MsgPool          msgPool;
+	private ByteBuffer       in, out;
+	// this flag indicates if this method returnToParentPool can be called for this Msg
+	private boolean          returnableToPool;
+	private Object           userContext;                                          // variable for usage by the user
+	private static final Log LOG = LogFactory.getLog(Msg.class.getCanonicalName());
 
 	Msg(ByteBuffer buffer, int inSize, int outSize, long id, MsgPool msgPool) {
 		this.msgPool = msgPool;
@@ -58,13 +61,15 @@ public class Msg {
 	}
 
 	/**
-	 * Returns a Msg to the MsgPool to which it belongs. This method should be called only on
-	 * Client side - when the application finished handling the message: only when the
+	 * Returns a Msg to the MsgPool to which it belongs. This method should be called only
+	 * on msg which was received using pool.getMsg() method:
+	 * only for msg on Client side: When the application finished handling the message: only when the
 	 * response from the server arrives or if Client.sendRequest failed.
 	 * 
+	 * @return true if Msg was returned to pool and false if this msg can not be returned to pool
 	 */
-	public void returnToParentPool() {
-		msgPool.releaseMsg(this);
+	public boolean returnToParentPool() {
+		return msgPool.releaseMsg(this);
 	}
 
 	/**
@@ -131,6 +136,18 @@ public class Msg {
 
 	long getId() {
 		return refToCObject;
+	}
+
+	void setMsgNotReturnable() {
+		this.returnableToPool = false;
+	}
+	
+	void setMsgReturnable() {
+		this.returnableToPool = true;
+	}
+	
+	boolean isReturnable(){
+		return this.returnableToPool;
 	}
 
 	private ByteBuffer createSubBuffer(int position, int limit, ByteBuffer buf) {
