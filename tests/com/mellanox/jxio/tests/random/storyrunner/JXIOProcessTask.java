@@ -318,10 +318,8 @@ public class JXIOProcessTask implements Callable<Integer> {
 		int count = Integer.valueOf(msgPool.getAttribute("msg_pool_count"));
 		int in = Integer.valueOf(msgPool.getAttribute("msg_pool_size_in"));
 		int out = Integer.valueOf(msgPool.getAttribute("msg_pool_size_out"));
-		data = new MsgPoolData(count, in, out);
-		// TODO [This need to change in the future]
-		// Check for a smaller msg_pool in a hoop along the way
-		// If there is a possibilty for a smaller msg_pool, use that msg_pool
+		// Check for a better msg_pool in a hoop along the way
+		// Check tho congigure a MsgPoolData with mininal out size, maximal in size and miniaml count.
 		for (Character hop : clientServers.subList(1, clientServers.size())) {
 			// Get msg_pools
 			serverSupportingCharacters = hop.getSupportingCharacters();
@@ -336,13 +334,22 @@ public class JXIOProcessTask implements Callable<Integer> {
 				int pool_count = Integer.valueOf(pool.getAttribute("msg_pool_count"));
 				int pool_in = Integer.valueOf(pool.getAttribute("msg_pool_size_in"));
 				int pool_out = Integer.valueOf(pool.getAttribute("msg_pool_size_out"));
-				// Check for a smaller msg_pool
-				if (data.getCount() >= pool_count && data.getInSize() >= pool_in
-				        && data.getOutSize() >= data.getOutSize()) {
-					data = new MsgPoolData(pool_count, pool_in, pool_out);
+				// Check for a smaller msg_pool count
+				if (count > pool_count){
+					count = pool_count;
+				}
+				// Check for a bigger msg_pool in size
+				if (in < pool_in){
+					in = pool_in;
+				}
+				// Check for a smaller msg_pool out size
+				if (out > pool_out) {
+					out = pool_out;
 				}
 			}
 		}
+		// Return proper MsgPoolData
+		data = new MsgPoolData(count, in, out);
 		return data;
 	}
 

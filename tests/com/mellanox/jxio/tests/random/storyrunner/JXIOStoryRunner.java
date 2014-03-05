@@ -186,9 +186,10 @@ public class JXIOStoryRunner implements StoryRunner {
 			status = 0; // Set run status to successful
 			for (Character process : chapter.myProcesses) {
 				String processID = process.getAttribute("id");
-				System.out.println("\n==================");
-				System.out.println("Log for process " + processID);
-				System.out.println("==================\n");
+				String processLogLevel = process.getAttribute("log_level");
+				System.out.println("\n======================================");
+				System.out.println("Log for process " + processID + " at " + processLogLevel + " log level");
+				System.out.println("======================================\n");
 				BufferedReader br;
 				try {
 					br = new BufferedReader(new FileReader("jxio_process_" + processID + "_log.txt"));
