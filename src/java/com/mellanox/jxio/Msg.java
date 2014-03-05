@@ -40,6 +40,8 @@ public class Msg {
 	private ByteBuffer       in, out;
 	// this flag indicates if this method returnToParentPool can be called for this Msg
 	private boolean          returnableToPool;
+	private boolean          isMirror;
+	private Msg              mirrorMsg;
 	private Object           userContext;                                          // variable for usage by the user
 	private static final Log LOG = LogFactory.getLog(Msg.class.getCanonicalName());
 
@@ -49,6 +51,15 @@ public class Msg {
 		this.in = createSubBuffer(0, inSize, buffer);
 		this.out = createSubBuffer(inSize, inSize + outSize, buffer);
 		resetPositions();
+	}
+
+	// this c-tor is used for creation of mirrorMsg
+	private Msg(Msg parent) {
+		this.mirrorMsg = parent;
+		this.isMirror = true;
+		this.out = parent.getIn();
+		this.in = parent.getOut();
+		this.refToCObject = parent.getId();
 	}
 
 	public String toString() {
@@ -122,6 +133,30 @@ public class Msg {
 		this.out.clear();
 	}
 
+	/**
+	 * This method returns mirror message of this message. IN buffer of the mirror message
+	 * is the OUT buffer of the original message, and OUT buffer of the mirror message
+	 * is the IN buffer of the original message. In case this method is called on mirror
+	 * message it returns the original (parent message)
+	 * 
+	 * @return mirror message
+	 */
+	public Msg getMirror() {
+		if (this.mirrorMsg == null) {
+			this.mirrorMsg = new Msg(this);
+		}
+		return this.mirrorMsg;
+	}
+
+	/**
+	 * Returns true if this message is mirror message and false otherwise
+	 * 
+	 * @return true if this message is mirror message and false otherwise
+	 */
+	public boolean getIsMirror() {
+		return this.isMirror;
+	}
+
 	MsgPool getParentPool() {
 		return msgPool;
 	}
@@ -141,12 +176,12 @@ public class Msg {
 	void setMsgNotReturnable() {
 		this.returnableToPool = false;
 	}
-	
+
 	void setMsgReturnable() {
 		this.returnableToPool = true;
 	}
-	
-	boolean isReturnable(){
+
+	boolean isReturnable() {
 		return this.returnableToPool;
 	}
 

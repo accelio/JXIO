@@ -477,11 +477,11 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_serverS
 	return msg->send_reply(size);
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_clientSendReqNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_msg, jint size)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_clientSendReqNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_msg, jint size, jboolean is_mirror)
 {
 	Msg * msg = (Msg*) ptr_msg;
 	Client * client = (Client*)ptr_session;
-	return client->send_msg(msg, size);
+	return client->send_msg(msg, size, is_mirror);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_releaseMsgServerSideNative(JNIEnv *env, jclass cls, long ptr_msg)

@@ -38,7 +38,7 @@ public:
 	Client(const char* url, long ptrCtx);
 	~Client();
 	bool close_connection();
-	bool send_msg(Msg *msg, const int size);
+	bool send_msg(Msg *msg, const int size, bool is_mirror);
 
 	Context* ctxForSessionEvent(struct xio_session_event_data * event,
 				struct xio_session *session);

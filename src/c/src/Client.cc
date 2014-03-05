@@ -163,16 +163,17 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 	}
 }
 
-bool Client::send_msg(Msg *msg, const int size)
+bool Client::send_msg(Msg *msg, const int size, bool is_mirror)
 {
 	if (this->is_closing) {
 		CLIENT_LOG_DBG("attempting to send a message while client session is closing");
 		return false;
 	}
 	CLIENT_LOG_TRACE("##################### sending msg=%p, size=%d", msg, size);
-	msg->set_xio_msg_out_size(size);
-	msg->reset_xio_msg_in_size();
-	int ret_val = xio_send_request(this->con, msg->get_xio_msg());
+	struct xio_msg *xio_msg = (is_mirror)? msg->get_mirror_xio_msg() : msg->get_xio_msg();
+	msg->set_xio_msg_out_size(size, xio_msg);
+	msg->reset_xio_msg_in_size(xio_msg);
+	int ret_val = xio_send_request(this->con, xio_msg);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (ret_val) {
 		CLIENT_LOG_ERR("Error in sending xio_msg: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());

@@ -34,61 +34,67 @@ Msg::Msg(char* buf, struct xio_mr* xio_mr, int in_buf_size, int out_buf_size, Ms
 	this->xio_mr = xio_mr;
 	this->in_buf_size = in_buf_size;
 	this->out_buf_size = out_buf_size;
-	this->xio_msg = (struct xio_msg *) calloc(1, sizeof(struct xio_msg));
 	this->pool = pool;
 	this->buf_out = this->buf + in_buf_size;
+	memset(&this->xio_msg, 0, sizeof(this->xio_msg));
+	memset(&this->xio_msg_mirror, 0, sizeof(this->xio_msg_mirror));
 	this->set_xio_msg_client_fields();
+	this->set_xio_msg_mirror_fields();
 }
 
 Msg::~Msg()
 {
-	free(this->xio_msg);
-}
-
-struct xio_msg* Msg::get_xio_msg()
-{
-	return xio_msg;
 }
 
 void Msg::set_xio_msg_client_fields()
 {
-	this->xio_msg->user_context = this; //we will be able to recieve it back on responce from server
+	//needed to retrieve back the Msg when response from server is received
+	this->xio_msg.user_context = this;
 
-	this->xio_msg->out.header.iov_base = NULL;
-	this->xio_msg->out.header.iov_len = 0;
+	this->xio_msg.out.header.iov_base = NULL;
+	this->xio_msg.out.header.iov_len = 0;
 	if (this->out_buf_size == 0) {
-		this->xio_msg->out.data_iovlen = 0;
+		this->xio_msg.out.data_iovlen = 0;
 	} else {
-		this->xio_msg->out.data_iovlen = 1;
-		this->xio_msg->out.data_iov[0].iov_base = this->buf_out;
-		this->xio_msg->out.data_iov[0].iov_len = this->out_buf_size;
-		this->xio_msg->out.data_iov[0].mr = this->xio_mr;
+		this->xio_msg.out.data_iovlen = 1;
+		this->xio_msg.out.data_iov[0].iov_base = this->buf_out;
+		this->xio_msg.out.data_iov[0].iov_len = this->out_buf_size;
+		this->xio_msg.out.data_iov[0].mr = this->xio_mr;
 	}
 
-	this->xio_msg->in.header.iov_base = NULL;
-	this->xio_msg->in.header.iov_len = 0;
+	this->xio_msg.in.header.iov_base = NULL;
+	this->xio_msg.in.header.iov_len = 0;
 	if (this->in_buf_size == 0) {
-		this->xio_msg->in.data_iovlen = 0;
+		this->xio_msg.in.data_iovlen = 0;
 	} else {
-		this->xio_msg->in.data_iovlen = 1;
-		this->xio_msg->in.data_iov[0].iov_base = this->buf;
-		this->xio_msg->in.data_iov[0].iov_len = this->in_buf_size;
-		this->xio_msg->in.data_iov[0].mr = this->xio_mr;
+		this->xio_msg.in.data_iovlen = 1;
+		this->xio_msg.in.data_iov[0].iov_base = this->buf;
+		this->xio_msg.in.data_iov[0].iov_len = this->in_buf_size;
+		this->xio_msg.in.data_iov[0].mr = this->xio_mr;
 	}
+}
+
+
+void Msg::set_xio_msg_mirror_fields()
+{
+	//needed to retrieve back the Msg when response from server is received
+	this->xio_msg_mirror.user_context = this;
+	this->xio_msg_mirror.out = this->xio_msg.in;
+	this->xio_msg_mirror.in = this->xio_msg.out;
 }
 
 void Msg::set_xio_msg_server_fields()
 {
-	this->xio_msg->out.data_iovlen = 1;
-	this->xio_msg->out.data_iov[0].iov_base = this->buf_out;
-	this->xio_msg->out.data_iov[0].iov_len = this->out_buf_size;
-	this->xio_msg->out.data_iov[0].mr = this->xio_mr;
+	this->xio_msg.out.data_iovlen = 1;
+	this->xio_msg.out.data_iov[0].iov_base = this->buf_out;
+	this->xio_msg.out.data_iov[0].iov_len = this->out_buf_size;
+	this->xio_msg.out.data_iov[0].mr = this->xio_mr;
 
-	this->xio_msg->in.header.iov_base = NULL;
-	this->xio_msg->in.data_iovlen = 1;
-	this->xio_msg->in.data_iov[0].iov_base = this->buf;
-	this->xio_msg->in.data_iov[0].iov_len = this->in_buf_size;
-	this->xio_msg->in.data_iov[0].mr = this->xio_mr;
+	this->xio_msg.in.header.iov_base = NULL;
+	this->xio_msg.in.data_iovlen = 1;
+	this->xio_msg.in.data_iov[0].iov_base = this->buf;
+	this->xio_msg.in.data_iov[0].iov_len = this->in_buf_size;
+	this->xio_msg.in.data_iov[0].mr = this->xio_mr;
 }
 
 void Msg::set_xio_msg_fields_for_assign(struct xio_msg *msg)
@@ -102,24 +108,24 @@ void Msg::set_xio_msg_fields_for_assign(struct xio_msg *msg)
 
 void Msg::set_xio_msg_req(struct xio_msg *msg)
 {
-	this->xio_msg->request = msg;
+	this->xio_msg.request = msg;
 //	log (lsDEBUG, "inside set_req_xio_msg msg is %p req is %p\n",this->xio_msg,  this->xio_msg->request);
 }
 
-void Msg::set_xio_msg_out_size(const int size)
+void Msg::set_xio_msg_out_size(const int size, struct xio_msg *xio_msg)
 {
 	if (size > 0) {
-		this->xio_msg->out.data_iovlen = 1;
-		this->xio_msg->out.data_iov[0].iov_len = size;
+		xio_msg->out.data_iovlen = 1;
+		xio_msg->out.data_iov[0].iov_len = size;
 	}
 	else {
-		this->xio_msg->out.data_iovlen = 0;
+		xio_msg->out.data_iovlen = 0;
 	}
 }
 
-void Msg::reset_xio_msg_in_size()
+void Msg::reset_xio_msg_in_size(struct xio_msg *xio_msg)
 {
-	this->xio_msg->in.data_iov[0].iov_len = this->in_buf_size;
+	xio_msg->in.data_iov[0].iov_len = this->in_buf_size;
 }
 
 void Msg::release_to_pool()
@@ -132,7 +138,7 @@ bool Msg::send_reply(const int size)
 	MSG_LOG_TRACE("sending %d bytes, xio_msg is %p", size, this->get_xio_msg());
 	//TODO : make sure that this function is not called in the fast path
 	this->set_xio_msg_server_fields();
-	set_xio_msg_out_size(size);
+	set_xio_msg_out_size(size, this->get_xio_msg());
 	//checking that client in size is big enough
 	int client_in = this->get_xio_msg()->request->out.data_iov[0].iov_len;
 	int server_out = this->get_xio_msg()->out.data_iov[0].iov_len;

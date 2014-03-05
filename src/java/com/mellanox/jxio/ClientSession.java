@@ -137,7 +137,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 			LOG.warn("Trying to send message while session is closing");
 			return false;
 		}
-		if (!Bridge.clientSendReq(this.getId(), msg.getId(), msg.getOut().position())) {
+		if (!Bridge.clientSendReq(this.getId(), msg.getId(), msg.getOut().position(), msg.getIsMirror())) {
 			LOG.error("there was an error sending the message");
 			return false;
 		}
