@@ -126,7 +126,7 @@ public class ClientWorker implements Callable<double[]> {
 			}
 		}
 
-		public void onReply(Msg msg) {
+		public void onResponse(Msg msg) {
 			if (firstTime) {
 				startTime = System.nanoTime();
 				firstTime = false;

@@ -391,7 +391,7 @@ public class EventQueueHandler implements Runnable {
 			}
 				break;
 
-			case 4: // on request
+			case 4: // on request (server side)
 			{
 				Msg msg = this.msgsPendingNewRequest.remove(id);
 				msg.resetPositions();
@@ -411,7 +411,7 @@ public class EventQueueHandler implements Runnable {
 			}
 				break;
 
-			case 5: // on reply
+			case 5: // on response (client side)
 			{
 				Msg msg = msgsPendingReply.remove(id);
 				final int msg_size = eventQueue.getInt();

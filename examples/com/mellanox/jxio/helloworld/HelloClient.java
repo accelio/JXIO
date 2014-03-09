@@ -102,7 +102,7 @@ public class HelloClient {
 			LOG.info("[SUCCESS] Session established! Hurray !");
 		}
 
-		public void onReply(Msg msg) {
+		public void onResponse(Msg msg) {
 			LOG.info("[SUCCESS] Got a message! Bring the champagne!");
 
 			// Read reply message String

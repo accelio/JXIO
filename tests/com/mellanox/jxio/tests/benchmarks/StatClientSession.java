@@ -95,7 +95,7 @@ public class StatClientSession {
 			print(session_num + "GOT EVENT " + session_event.toString() + " because of " + reason.toString());
 		}
 
-		public void onReply(Msg msg) {
+		public void onResponse(Msg msg) {
 
 		}
 	}

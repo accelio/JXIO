@@ -158,7 +158,7 @@ int Events::writeOnMsgErrorEventClient(char *buf, void *ptrForJavaMsg, enum xio_
  }
 
 
-int Events::writeOnReqReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_size, void *ptrForJavaSession)
+int Events::writeOnRequestReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_size, void *ptrForJavaSession)
 {
 	struct event_struct* event = (struct event_struct*)buf;
 	event->type = htonl(EVENT_REQUEST_RECEIVED);
@@ -169,13 +169,13 @@ int Events::writeOnReqReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_
 	return this->size;
 }
 
-int Events::writeOnReplyReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_size)
+int Events::writeOnResponseReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_size)
 {
 	struct event_struct* event = (struct event_struct*)buf;
 	event->type = htonl(EVENT_REPLY_RECEIVED);
 	event->ptr = htobe64(intptr_t(ptrForJavaMsg));
-	event->event_specific.reply_received.msg_size = htonl(msg_size);
-	this->size = sizeof(struct event_reply_received) +  sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+	event->event_specific.res_received.msg_size = htonl(msg_size);
+	this->size = sizeof(struct event_res_received) +  sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 	return this->size;
 }
 

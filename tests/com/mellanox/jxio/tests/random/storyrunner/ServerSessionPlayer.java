@@ -218,7 +218,7 @@ public class ServerSessionPlayer {
 			
 		}
 
-		public void onReply(Msg msg) {
+		public void onResponse(Msg msg) {
 			if (LOG.isDebugEnabled())
 				LOG.debug(outer.toString() + ": onReply(" + msg + ")");
 			Msg returnHopMsg = (Msg) msg.getUserContext();

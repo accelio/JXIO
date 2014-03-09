@@ -133,7 +133,7 @@ void Msg::release_to_pool()
 	this->pool->add_msg_to_pool(this);
 }
 
-bool Msg::send_reply(const int size)
+bool Msg::send_response(const int size)
 {
 	MSG_LOG_TRACE("sending %d bytes, xio_msg is %p", size, this->get_xio_msg());
 	//TODO : make sure that this function is not called in the fast path

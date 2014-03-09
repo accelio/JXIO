@@ -268,7 +268,7 @@ public class ClientPlayer extends GeneralPlayer {
 			}
 		}
 
-		public void onReply(Msg msg) {
+		public void onResponse(Msg msg) {
 			if (!Utils.checkIntegrity(msg, outer.counterReceivedMsgs)) {
 				LOG.error(outer.toString() + ": FAILURE: Message " + msg.toString() + " did not arrive ok!");
 				System.exit(1); // Failure in test - eject!

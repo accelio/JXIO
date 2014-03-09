@@ -63,7 +63,7 @@ struct __attribute__ ((packed)) event_req_received {
 	//use the ptr inside event_struct for passing the pointer to msg class in java
 };
 
-struct __attribute__ ((packed)) event_reply_received {
+struct __attribute__ ((packed)) event_res_received {
 	int32_t 	msg_size;
 };
 
@@ -83,7 +83,7 @@ struct  event_struct {
 		struct event_msg_error_server msg_error_server;
 		struct event_msg_error_client msg_error_client;
 		struct event_req_received req_received;
-		struct event_reply_received reply_received;
+		struct event_res_received res_received;
 		struct event_fd_ready fd_ready;
 	} event_specific;
 } __attribute__ ((packed));
@@ -106,8 +106,8 @@ public:
 	int writeOnMsgErrorEventServer(char *buf, void *ptrForJavaMsg, void *ptrForJavaSession,
 			enum xio_status error);
 	int writeOnMsgErrorEventClient(char *buf, void *ptrForJava, enum xio_status error);
-	int writeOnReqReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_size, void *ptrForJavaSession);
-	int writeOnReplyReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_size);
+	int writeOnRequestReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_size, void *ptrForJavaSession);
+	int writeOnResponseReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_size);
 	int writeOnFdReadyEvent(char *buf, int fd, int event);
 
 };

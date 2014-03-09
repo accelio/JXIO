@@ -480,7 +480,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_serverS
 		msg->release_to_pool();
 		return false;
 	}
-	return msg->send_reply(size);
+	return msg->send_response(size);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_clientSendReqNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_msg, jint size, jboolean is_mirror)

@@ -184,7 +184,7 @@ public class BreakEventLoopTests{
 		public void onSessionEstablished() {
 		}
 
-		public void onReply(Msg msg) {
+		public void onResponse(Msg msg) {
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {

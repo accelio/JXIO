@@ -84,9 +84,9 @@ int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 	char* buf = ctx->event_queue->get_buffer();
 	int sizeWritten;
 	if (msg->type == XIO_MSG_TYPE_REQ) { //it's request
-		sizeWritten = ctx->events->writeOnReqReceivedEvent(buf, msg->user_context, msg_size, session);
+		sizeWritten = ctx->events->writeOnRequestReceivedEvent(buf, msg->user_context, msg_size, session);
 	} else { //it's response
-		sizeWritten = ctx->events->writeOnReplyReceivedEvent(buf, msg->user_context, msg_size);
+		sizeWritten = ctx->events->writeOnResponseReceivedEvent(buf, msg->user_context, msg_size);
 	}
 
 	done_event_creating(ctx, sizeWritten);

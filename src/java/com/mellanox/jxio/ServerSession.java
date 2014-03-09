@@ -54,7 +54,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	public static interface Callbacks {
 		/**
 		 * This event is triggered when a request from Client is received.
-		 * Server should send the reply on the same {@link com.mellanox.jxio.Msg} object.
+		 * Server should send the response on the same {@link com.mellanox.jxio.Msg} object.
 		 * 
 		 * @param msg
 		 *            containing Client's request
@@ -69,7 +69,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		 * @param session_event
 		 *            - the event that was triggered
 		 * @param reason
-		 *            - the object containing the reason for triggerring session_event
+		 *            - the object containing the reason for triggering session_event
 		 */
 		public void onSessionEvent(EventName session_event, EventReason reason);
 

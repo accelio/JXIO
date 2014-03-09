@@ -34,7 +34,7 @@ import com.mellanox.jxio.impl.EventSession;
  * The events are:
  * 1. onSessionEstablished.
  * 2. onSessionEvent.
- * 3. onReply
+ * 3. onResponse
  * 4. onMsgError.
  * 
  */
@@ -50,13 +50,13 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	 */
 	public static interface Callbacks {
 		/**
-		 * Event triggered whe reply from server is recieved. Request and reply are on the same
+		 * Event triggered when response from server is received. Request and response are on the same
 		 * {@link com.mellanox.jxio.Msg} object. Once the user is done
 		 * with the Msg he needs to call method msg.returnToParentPool()
 		 * 
-		 * @param msg - the response message that was recieved. Msg object contains both request and Response
+		 * @param msg - the response message that was received. Msg object contains both request and Response
 		 */
-		public void onReply(Msg msg);
+		public void onResponse(Msg msg);
 
 		/**
 		 * The client initiates a connection to Server in c-tor. When the connection is established,
@@ -76,7 +76,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		 * @param session_event
 		 *            - the event that was triggered
 		 * @param reason
-		 *            - the object containing the reason for triggerring session_event
+		 *            - the object containing the reason for triggering session_event
 		 */
 		public void onSessionEvent(EventName session_event, EventReason reason);
 
@@ -95,7 +95,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	 * 
 	 * @param eventQHandler
 	 *            - EventQueueHAndler on which the events
-	 *            (onReply, onSessionEstablished etc) of this client will arrive
+	 *            (onResponse, onSessionEstablished etc) of this client will arrive
 	 * @param uri
 	 *            - URI of the server to which this Client will connect
 	 *            of the server
@@ -142,7 +142,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 			return false;
 		}
 		msg.setClientSession(this);
-		// only if the send was successful the msg needs to be added to the "pending reply" list
+		// only if the send was successful the msg needs to be added to the "pending response" list
 		eventQHandler.addMsgInUse(msg);
 		return true;
 	}
@@ -226,7 +226,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 				callbacks.onSessionEstablished();
 				break;
 
-			case 5: // on reply
+			case 5: // on response
 				if (LOG.isTraceEnabled()) {
 					LOG.trace("received msg event at client" + this.toString());
 				}
@@ -234,7 +234,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 				if (ev instanceof EventNewMsg) {
 					evNewMsg = (EventNewMsg) ev;
 					Msg msg = evNewMsg.getMsg();
-					callbacks.onReply(msg);
+					callbacks.onResponse(msg);
 				} else {
 					LOG.error("Event is not an instance of EventNewMsg" + this.toString());
 				}
