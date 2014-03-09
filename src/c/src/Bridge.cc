@@ -141,6 +141,12 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 	if (xio_set_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_ENABLE_MEM_POOL, &opt, sizeof(opt))) {
 		bridge_print_error("failed to disable AccelIO's internal memory pool buffers");
 	}
+
+	opt = 512;
+	if (xio_set_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_RDMA_BUF_THRESHOLD, &opt, sizeof(opt))) {
+		bridge_print_error("failed to change Accelio's RDMA_BUF_THRESHOLD");
+	}
+
 	BULLSEYE_EXCLUDE_BLOCK_END
 
 	LOG_DBG("Version: %s", GIT_VERSION);
