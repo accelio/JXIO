@@ -20,7 +20,7 @@ class JxRandomWrapper(StandaloneWrapper):
 	print("Running directory is " + here + "!")
 	print("Running user is " + getpass.getuser() + "!")
 	my_topology = "/tmp/my_topology.xml"
-        self.topology_api = TopologyAPI("/.autodirect/mtrswgwork/alongr/mars/MARS_conf/topo/JX-Setup/topology.xml")
+        self.topology_api = TopologyAPI(self.topo_file)
         hosts = self.topology_api.get_all_hosts()
 	# Create the topology file
 	f = open(my_topology, "w")
@@ -29,10 +29,10 @@ class JxRandomWrapper(StandaloneWrapper):
 	f.write("\t\t<machine_amount value=\"%s\"/>\n" % amount)
         for host in hosts:
             f.write("\t\t<machine>\n")
-            ip = self.topology_api.get_object_attribute(host, "BASE_IP")
-            conn_type = self.topology_api.get_object_attribute(host, "HOST_PORT_ETH")
-            if conn_type != "eth":
-                ip = ip.replace("172.30.21.", "36.0.0.")
+            base_ip = self.topology_api.get_object_attribute(host, "BASE_IP")
+            ports = self.topology_api.get_device_active_ports(host)
+            ip = self.topology_api.get_port_ip(ports[0])
+            conn_type = self.topology_api.get_object_attribute(ports[0], "TYPE")
             hostname = socket.gethostbyaddr(ip)[0].replace("-", "_")
             f.write("\t\t\t<name value=\"%s\"/>\n" %hostname)
             f.write("\t\t\t<address value=\"%s\"/>\n" %ip)
@@ -65,6 +65,8 @@ class JxRandomWrapper(StandaloneWrapper):
         self.add_cmd_argument('--filename', help='The probabilty file name.', type=str, value_only=True, priority=2, action='store', required=True)
 	self.add_test_attribute_argument('', 'seed', priority=3)
         self.add_cmd_argument('--timeout', help='The timeout in seconds for the entire run.', type=str, value_only=True, priority=4, action='store', required=True)
+	self.add_test_attribute_argument('', 'topo_file', running_stage=RunningStage.PRE)
+
 
 if __name__ == "__main__":
     wrapper = JxRandomWrapper("JX Random Wrapper")
