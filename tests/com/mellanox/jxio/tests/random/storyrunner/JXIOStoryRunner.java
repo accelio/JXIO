@@ -136,6 +136,8 @@ public class JXIOStoryRunner implements StoryRunner {
 			status = 0;
 			return;
 		} else {
+			// Calcualte max duration
+			int maxDuration = getMaxDuration(chapter);
 			// Run
 			System.out.println("\nRunning JXIO processes...\n");
 			final String dir = new File(".").getAbsolutePath();
@@ -174,13 +176,13 @@ public class JXIOStoryRunner implements StoryRunner {
 					e.printStackTrace();
 				}
 			}
-			// Wait for all process to finish
-			for (Process p : jxioProcesses.keySet()) {
-				try {
-					p.waitFor();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+			// Wait for all processes to finish
+			try {
+				System.out.println("Will now wait " + maxDuration + " seconds for all processes to finish.");
+				// Sleeps for the maximal duration in milliseconds with a asmall delay
+				Thread.sleep(maxDuration * 1000 + 50);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
 			}
 			// Print all process logs to screen and check for errors
 			status = 0; // Set run status to successful
@@ -211,6 +213,29 @@ public class JXIOStoryRunner implements StoryRunner {
 
 			System.out.println("\nAll JXIO processes ended!\n");
 		}
+	}
+
+	/**
+     * Calculates and returns the maximal time in seconds that will that for the chapter to run.
+     * 
+     * @param processes
+     *            A list of process charachers
+     * @return The maximal duration of the run in milliseconds
+     */
+	private int getMaxDuration(Chapter chpater) {
+		int maxDuration = 0;
+		for (Character process : chpater.myProcesses) {
+			for (Character client : chpater.processClients.get(process)) {
+				int duration = Integer.valueOf(client.getAttribute("duration"));
+				maxDuration = (duration > maxDuration) ? duration : maxDuration;
+			}
+			for (Character server : chpater.processServers.get(process)) {
+				int duration = Integer.valueOf(server.getAttribute("duration"));
+				maxDuration = (duration > maxDuration) ? duration : maxDuration;
+			}
+		}
+		// Return the maximal duration in seconds
+		return maxDuration;
 	}
 
 	/**
