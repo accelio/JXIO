@@ -170,9 +170,17 @@ bool Client::send_msg(Msg *msg, const int size, bool is_mirror)
 		return false;
 	}
 	CLIENT_LOG_TRACE("##################### sending msg=%p, size=%d", msg, size);
-	struct xio_msg *xio_msg = (is_mirror)? msg->get_mirror_xio_msg() : msg->get_xio_msg();
+	struct xio_msg *xio_msg;
+	int in_size;
+	if (is_mirror){
+		xio_msg = msg->get_mirror_xio_msg();
+		in_size = msg->get_out_size();
+	}else{
+		xio_msg = msg->get_xio_msg();
+		in_size = msg->get_in_size();
+	}
 	msg->set_xio_msg_out_size(size, xio_msg);
-	msg->reset_xio_msg_in_size(xio_msg);
+	msg->reset_xio_msg_in_size(xio_msg, in_size);
 	int ret_val = xio_send_request(this->con, xio_msg);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (ret_val) {

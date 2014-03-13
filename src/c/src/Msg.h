@@ -33,12 +33,14 @@ public:
 	void set_xio_msg_fields_for_assign(struct xio_msg *msg); //used when assign_buffer callback is called
 	void set_xio_msg_out_size(const int size, struct xio_msg *msg);
 	void set_xio_msg_mirror_fields();
-	void reset_xio_msg_in_size(struct xio_msg *xio_msg);
+	void reset_xio_msg_in_size(struct xio_msg *xio_msg, int in_size);
 	void* get_buf() { return buf; }
 	struct xio_msg* get_xio_msg() {return &xio_msg;}
 	struct xio_msg* get_mirror_xio_msg() {return &xio_msg_mirror;}
 	void release_to_pool();
 	bool send_response(const int size);
+	int get_in_size(){return this->in_buf_size;}
+	int get_out_size(){return this->out_buf_size;}
 	void dump(struct xio_msg *m); //func for debugging only
 
 private:
