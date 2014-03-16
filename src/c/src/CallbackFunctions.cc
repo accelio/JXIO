@@ -70,12 +70,13 @@ int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
 
-	const int msg_size = (msg->in.data_iovlen > 0) ? msg->in.data_iov[0].iov_len : 0;
+	const int msg_in_size = (msg->in.data_iovlen > 0) ? msg->in.data_iov[0].iov_len : 0;
+
 
 	if (msg->user_context == NULL) { //it's a request with a small buffer on server side
 		Msg* msg_from_pool = ctx->msg_pools.get_msg_from_pool(msg->in.data_iov[0].iov_len, msg->out.data_iov[0].iov_len);
-		if (msg_size > 0)
-			memcpy(msg_from_pool->get_buf(), msg->in.data_iov[0].iov_base, msg_size);
+		if (msg_in_size > 0)
+			memcpy(msg_from_pool->get_buf(), msg->in.data_iov[0].iov_base, msg_in_size);
 		msg->user_context = msg_from_pool;
 		msg_from_pool->set_xio_msg_req(msg);
 		LOG_TRACE("!!!!!!!!!!!!!! xio_msg is %p", msg);
@@ -84,9 +85,10 @@ int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 	char* buf = ctx->event_queue->get_buffer();
 	int sizeWritten;
 	if (msg->type == XIO_MSG_TYPE_REQ) { //it's request
-		sizeWritten = ctx->events->writeOnRequestReceivedEvent(buf, msg->user_context, msg_size, session);
+		const int msg_out_size = (msg->out.data_iovlen > 0) ? msg->out.data_iov[0].iov_len : 0;
+		sizeWritten = ctx->events->writeOnRequestReceivedEvent(buf, msg->user_context, msg_in_size, msg_out_size, session);
 	} else { //it's response
-		sizeWritten = ctx->events->writeOnResponseReceivedEvent(buf, msg->user_context, msg_size);
+		sizeWritten = ctx->events->writeOnResponseReceivedEvent(buf, msg->user_context, msg_in_size);
 	}
 
 	done_event_creating(ctx, sizeWritten);

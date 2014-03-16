@@ -395,8 +395,12 @@ public class EventQueueHandler implements Runnable {
 			{
 				Msg msg = this.msgsPendingNewRequest.remove(id);
 				msg.resetPositions();
-				final int msg_size = eventQueue.getInt();
-				msg.getIn().limit(msg_size);
+				final int msg_in_size = eventQueue.getInt();
+				msg.getIn().limit(msg_in_size);
+				int msg_out_size = eventQueue.getInt();
+				if (msg_out_size > msg.getOut().capacity())
+					msg_out_size = msg.getOut().capacity();
+				msg.getOut().limit(msg_out_size);
 				final long session_id = eventQueue.getLong();
 				if (LOG.isTraceEnabled()) {
 					LOG.trace("session refToCObject" + session_id);

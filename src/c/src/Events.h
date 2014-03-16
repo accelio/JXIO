@@ -58,7 +58,8 @@ struct __attribute__ ((packed)) event_msg_error_client {
 };
 
 struct __attribute__ ((packed)) event_req_received {
-	int32_t 	msg_size;
+	int32_t 	msg_in_size;
+	int32_t 	msg_out_size;
 	int64_t		ptr_session;
 	//use the ptr inside event_struct for passing the pointer to msg class in java
 };
@@ -106,8 +107,8 @@ public:
 	int writeOnMsgErrorEventServer(char *buf, void *ptrForJavaMsg, void *ptrForJavaSession,
 			enum xio_status error);
 	int writeOnMsgErrorEventClient(char *buf, void *ptrForJava, enum xio_status error);
-	int writeOnRequestReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_size, void *ptrForJavaSession);
-	int writeOnResponseReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_size);
+	int writeOnRequestReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_in_size, const int32_t msg_out_size, void *ptrForJavaSession);
+	int writeOnResponseReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_in_size);
 	int writeOnFdReadyEvent(char *buf, int fd, int event);
 
 };

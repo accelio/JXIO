@@ -139,15 +139,8 @@ bool Msg::send_response(const int size)
 	//TODO : make sure that this function is not called in the fast path
 	this->set_xio_msg_server_fields();
 	set_xio_msg_out_size(size, this->get_xio_msg());
-	//checking that client in size is big enough
-	int client_in = this->get_xio_msg()->request->out.data_iov[0].iov_len;
-	int server_out = this->get_xio_msg()->out.data_iov[0].iov_len;
-	BULLSEYE_EXCLUDE_BLOCK_START
-	if (client_in < server_out) {
-		MSG_LOG_ERR("attempting to write when client IN size=%d, server sends %d", client_in, server_out);
-		return false;
-	}
 
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (xio_send_response(this->get_xio_msg())) {
 		MSG_LOG_DBG("Got error from sending xio_msg: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		return false;
