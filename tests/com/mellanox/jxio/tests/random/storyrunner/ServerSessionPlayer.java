@@ -73,35 +73,48 @@ public class ServerSessionPlayer {
 		int mpcount = 0;
 		int msginsize = 0;
 		int msgoutsize = 0;
+		String useMsgMirror = new String();
+
 		// build and prepare nextHop strings
 		String query = Utils.getQuery(uri);
 		String[] queryParams = Utils.getQueryPairs(query);
 		for (String param : queryParams) {
 			if (this.nextHop.isEmpty() && Utils.getQueryPairKey(param).equals("nextHop")) {
 				this.nextHop = Utils.getQueryPairValue(param);
-			} else {
-				if (Utils.getQueryPairKey(param).equals("name")) {
-					String origName = Utils.getQueryPairValue(param);
-					param = "name=" + this + ":" + origName;
-				}
-				if (Utils.getQueryPairKey(param).equals("mpcount")) {
-					mpcount = Integer.valueOf(Utils.getQueryPairValue(param));
-					mpcount += 16; // to overcome accelio's internal server batching
-				}
-				if (Utils.getQueryPairKey(param).equals("msginsize")) {
-					msginsize = Integer.valueOf(Utils.getQueryPairValue(param));
-				}
-				if (Utils.getQueryPairKey(param).equals("msgoutsize")) {
-					msgoutsize = Integer.valueOf(Utils.getQueryPairValue(param));
-				}
-				this.nextHopQuery += nextHopQuery.isEmpty() ? "?" : "&";
-				this.nextHopQuery += param;
+				continue;
 			}
+
+			if (useMsgMirror.isEmpty() && Utils.getQueryPairKey(param).equals("useMsgMirror")) {
+				useMsgMirror = Utils.getQueryPairValue(param);
+				continue;
+			}
+
+			// else prepare nextHop URI
+			if (Utils.getQueryPairKey(param).equals("name")) {
+				String origName = Utils.getQueryPairValue(param);
+				param = "name=" + this + ":" + origName;
+				continue;
+			}
+			if (Utils.getQueryPairKey(param).equals("mpcount")) {
+				mpcount = Integer.valueOf(Utils.getQueryPairValue(param));
+				mpcount += 16; // to overcome accelio's internal server batching
+				continue;
+			}
+			if (Utils.getQueryPairKey(param).equals("msginsize")) {
+				msginsize = Integer.valueOf(Utils.getQueryPairValue(param));
+				continue;
+			}
+			if (Utils.getQueryPairKey(param).equals("msgoutsize")) {
+				msgoutsize = Integer.valueOf(Utils.getQueryPairValue(param));
+				continue;
+			}
+			this.nextHopQuery += nextHopQuery.isEmpty() ? "?" : "&";
+			this.nextHopQuery += param;
 		}
 
-		if (!this.nextHop.isEmpty() && mpcount > 0 && (msgoutsize + msginsize) > 0) {
+		if (!this.nextHop.isEmpty() && !useMsgMirror.equals("1") && mpcount > 0 && (msgoutsize + msginsize) > 0) {
 			this.nextHopMP = new MsgPool(mpcount, msginsize, msgoutsize);
-			LOG.info(this.toString() + ": new MsgPool: " + this.nextHopMP);
+			LOG.info(this.toString() + ": new nextHop MsgPool: " + this.nextHopMP);
 		}
 	}
 
@@ -113,21 +126,18 @@ public class ServerSessionPlayer {
 				LOG.debug(outer.toString() + ": onRequest(" + msg + ")");
 
 			if (!Utils.checkIntegrity(msg, outer.counterReceivedMsgs)) {
-				LOG.error(outer.toString() + "FAILURE: Message did not arrive ok!");
+				LOG.error(outer.toString() + ": FAILURE: Message #" + outer.counterReceivedMsgs + " did not arrive ok!");
 				System.exit(1);
 			}
 
-			if (LOG.isTraceEnabled()) {
-				LOG.trace(outer.toString() + ": onRequest: msg (#" + outer.counterReceivedMsgs + ") = " + msg);
-			}
+			outer.counterReceivedMsgs++;
 
 			if (outer.nextHop.isEmpty()) {
 				if (LOG.isDebugEnabled())
 					LOG.debug(outer.toString() + ": sendResponse(" + msg + ")");
 				int position = Utils.randIntInRange(random, 0, msg.getOut().limit() - Utils.HEADER_SIZE);
 				Utils.writeMsg(msg, position, 0, outer.counterSentMsgs);
-				outer.counterSentMsgs++;
-				outer.counterReceivedMsgs++;
+
 				outer.server.sendResponse(msg);
 			} else {
 				// server session is in proxy mode (nextHopClient), check if client need to be connected
@@ -141,11 +151,12 @@ public class ServerSessionPlayer {
 					LOG.debug(outer.toString() + ": sendMessage(" + nextHopMsg + ")");
 				outer.nextHopClient.sendRequest(nextHopMsg);
 			}
+			outer.counterSentMsgs++;
 
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
-			switch (session_event){
+			switch (session_event) {
 				case SESSION_CLOSED:
 					LOG.info(outer.toString() + ": SESSION_CLOSED. reason='" + reason + "'");
 					LOG.info(outer.toString() + ": received " + counterReceivedMsgs + " msgs");
@@ -161,9 +172,9 @@ public class ServerSessionPlayer {
 		}
 
 		public boolean onMsgError(Msg msg, EventReason reason) {
-			if (outer.server.getIsClosing()){
+			if (outer.server.getIsClosing()) {
 				LOG.debug(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
-			}else{
+			} else {
 				LOG.error(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
 			}
 			return true;
@@ -181,6 +192,12 @@ public class ServerSessionPlayer {
 		}
 
 		private Msg prepareNextHopMsg(Msg msg) {
+			if (outer.nextHopMP == null) {
+				// Use MsgMirror
+				return msg.getMirror();
+			}
+
+			// Use Msg copy instead of MsgMirror
 			Msg nextHopMsg = outer.nextHopMP.getMsg();
 			if (nextHopMsg != null) {
 				msg.getIn().position(0);
@@ -210,23 +227,31 @@ public class ServerSessionPlayer {
 					LOG.debug(outer.toString() + ": on" + session_event.toString() + ", reason='" + reason + "'");
 					break;
 				default:
-			LOG.error(outer.toString() + ": FAILURE: onSessionError: event='" + session_event + "', reason='" + reason
-			        + "'");
-			System.exit(1); // Failure in test - eject!
+					LOG.error(outer.toString() + ": FAILURE: onSessionError: event='" + session_event + "', reason='"
+					        + reason + "'");
+					System.exit(1); // Failure in test - eject!
 					break;
 			}
-			
+
 		}
 
 		public void onResponse(Msg msg) {
+			Msg returnHopMsg;
+			if (outer.nextHopMP == null) {
+				returnHopMsg = msg.getMirror();
+			} else {
+				returnHopMsg = (Msg) msg.getUserContext();
+				returnHopMsg.getOut().put(msg.getIn());
+			}
 			if (LOG.isDebugEnabled())
-				LOG.debug(outer.toString() + ": onReply(" + msg + ")");
-			Msg returnHopMsg = (Msg) msg.getUserContext();
-			returnHopMsg.getOut().put(msg.getIn());
-			if (LOG.isDebugEnabled())
-				LOG.debug(outer.toString() + ": sendResponse(" + returnHopMsg + ")");
-			outer.server.sendResponse(returnHopMsg);
-			msg.returnToParentPool();
+				LOG.debug(outer.toString() + ": onResponse(" + msg + "), " + "sendResponse(" + returnHopMsg + ")");
+
+			if (outer.server.sendResponse(returnHopMsg) == false) {
+				LOG.error(outer.toString() + ": FAILURE: sendResponse with error on msg=" + returnHopMsg);
+			}
+			if (outer.nextHopMP != null) {
+				msg.returnToParentPool();
+			}
 		}
 	}
 }

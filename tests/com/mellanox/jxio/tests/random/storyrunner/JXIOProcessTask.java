@@ -227,10 +227,12 @@ public class JXIOProcessTask implements Callable<Integer> {
 					Character machineHop = Character.getCharacterFromListByAttribute(machines, "id", machineHopID);
 					String hostnameHop = machineHop.getAttribute("address");
 					String portHop = serverHop.getAttribute("port");
+					String useMsgMirror = hop.getAttribute("use_msg_mirror");
 
 					// Add hop to URI suffix
 					uriQueryStr += uriQueryStr.isEmpty() ? "?" : "&";
 					uriQueryStr += "nextHop=" + hostnameHop + ":" + portHop;
+					uriQueryStr += "&useMsgMirror=" + useMsgMirror;
 
 					// Update client's servers list
 					clientServers.add(serverHop);
@@ -319,7 +321,7 @@ public class JXIOProcessTask implements Callable<Integer> {
 		int in = Integer.valueOf(msgPool.getAttribute("msg_pool_size_in"));
 		int out = Integer.valueOf(msgPool.getAttribute("msg_pool_size_out"));
 		// Check for a better msg_pool in a hoop along the way
-		// Check tho congigure a MsgPoolData with mininal out size, maximal in size and miniaml count.
+		// Check tho congigure a MsgPoolData with mininal out size, in size and count.
 		for (Character hop : clientServers.subList(1, clientServers.size())) {
 			// Get msg_pools
 			serverSupportingCharacters = hop.getSupportingCharacters();
@@ -338,8 +340,8 @@ public class JXIOProcessTask implements Callable<Integer> {
 				if (count > pool_count){
 					count = pool_count;
 				}
-				// Check for a bigger msg_pool in size
-				if (in < pool_in){
+				// Check for a smaller msg_pool in size
+				if (in > pool_in){
 					in = pool_in;
 				}
 				// Check for a smaller msg_pool out size

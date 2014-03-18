@@ -51,8 +51,9 @@
 		<violent_exit value="[90]:0, [10]:1"/>
 		<reject value="[90]:0, [10]:1"/>
 		<hops>
-			<hop_amount value="[100]:0"/>
+			<hop_amount value="[70]:0, [30]:1"/>
 			<server value="random"/>
+			<use_msg_mirror value="[70]:0, [30]:1"/>
 		</hops>
 		<msg_count_factor_perc value="[80]:80, [10]:20, [10]:30"/>
 		<msg_size_in_factor_perc value="[90]:100, [10]:100-120"/>
