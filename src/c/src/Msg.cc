@@ -125,7 +125,13 @@ void Msg::set_xio_msg_out_size(const int size, struct xio_msg *xio_msg)
 
 void Msg::reset_xio_msg_in_size(struct xio_msg *xio_msg, int in_size)
 {
+	if (in_size == 0) {
+		xio_msg->in.data_iovlen = 0;
+	} else {
+		xio_msg->in.data_iovlen = 1;
+	}
 	xio_msg->in.data_iov[0].iov_len = in_size;
+
 }
 
 void Msg::release_to_pool()
