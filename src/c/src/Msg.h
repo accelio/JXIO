@@ -28,16 +28,16 @@ public:
 	Msg(char * buf, struct xio_mr *xio_mr, int in_buf_size, int out_buf_size, MsgPool* pool);
 	~Msg();
 	void set_xio_msg_client_fields(); //this method is used by client side
-	void set_xio_msg_req(struct xio_msg *msg); //this method is used by server side
+	void set_xio_msg_mirror_fields();
 	void set_xio_msg_server_fields();
 	void set_xio_msg_fields_for_assign(struct xio_msg *msg); //used when assign_buffer callback is called
-	void set_xio_msg_out_size(const int size, struct xio_msg *msg);
-	void set_xio_msg_mirror_fields();
-	void reset_xio_msg_in_size(struct xio_msg *xio_msg, int in_size);
+	void set_xio_msg_req(struct xio_msg *msg); //this method is used by server side
+	void set_xio_msg_out_size(struct xio_msg *xio_msg, const int out_size);
+	void set_xio_msg_in_size(struct xio_msg *xio_msg, const int in_size);
+	void release_to_pool();
 	void* get_buf() { return buf; }
 	struct xio_msg* get_xio_msg() {return &xio_msg;}
 	struct xio_msg* get_mirror_xio_msg() {return &xio_msg_mirror;}
-	void release_to_pool();
 	bool send_response(const int size);
 	int get_in_size(){return this->in_buf_size;}
 	int get_out_size(){return this->out_buf_size;}
@@ -53,5 +53,20 @@ private:
 	int out_buf_size;
 	MsgPool* pool;
 };
+
+
+
+inline const int get_xio_msg_in_size(struct xio_msg *msg)
+{
+	const int msg_in_size = (msg->in.data_iovlen > 0) ? msg->in.data_iov[0].iov_len : 0;
+	return msg_in_size;
+}
+
+inline const int get_xio_msg_out_size(struct xio_msg *msg)
+{
+	const int msg_out_size = (msg->out.data_iovlen > 0) ? msg->out.data_iov[0].iov_len : 0;
+	return msg_out_size;
+}
+
 
 #endif // ! Msg__H___

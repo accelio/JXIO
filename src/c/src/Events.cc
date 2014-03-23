@@ -158,7 +158,7 @@ int Events::writeOnMsgErrorEventClient(char *buf, void *ptrForJavaMsg, enum xio_
  }
 
 
-int Events::writeOnRequestReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_in_size, const int32_t msg_out_size,void *ptrForJavaSession)
+int Events::writeOnRequestReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_in_size, const int32_t msg_out_size, void *ptrForJavaSession)
 {
 	struct event_struct* event = (struct event_struct*)buf;
 	event->type = htonl(EVENT_REQUEST_RECEIVED);

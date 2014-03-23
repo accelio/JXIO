@@ -74,7 +74,6 @@ void Msg::set_xio_msg_client_fields()
 	}
 }
 
-
 void Msg::set_xio_msg_mirror_fields()
 {
 	//needed to retrieve back the Msg when response from server is received
@@ -112,26 +111,24 @@ void Msg::set_xio_msg_req(struct xio_msg *msg)
 //	log (lsDEBUG, "inside set_req_xio_msg msg is %p req is %p\n",this->xio_msg,  this->xio_msg->request);
 }
 
-void Msg::set_xio_msg_out_size(const int size, struct xio_msg *xio_msg)
+void Msg::set_xio_msg_out_size(struct xio_msg *xio_msg, const int out_size)
 {
-	if (size > 0) {
+	if (out_size > 0) {
 		xio_msg->out.data_iovlen = 1;
-		xio_msg->out.data_iov[0].iov_len = size;
-	}
-	else {
+		xio_msg->out.data_iov[0].iov_len = out_size;
+	} else {
 		xio_msg->out.data_iovlen = 0;
 	}
 }
 
-void Msg::reset_xio_msg_in_size(struct xio_msg *xio_msg, int in_size)
+void Msg::set_xio_msg_in_size(struct xio_msg *xio_msg, const int in_size)
 {
-	if (in_size == 0) {
-		xio_msg->in.data_iovlen = 0;
-	} else {
+	if (in_size > 0) {
 		xio_msg->in.data_iovlen = 1;
+		xio_msg->in.data_iov[0].iov_len = in_size;
+	} else {
+		xio_msg->in.data_iovlen = 0;
 	}
-	xio_msg->in.data_iov[0].iov_len = in_size;
-
 }
 
 void Msg::release_to_pool()
@@ -139,12 +136,12 @@ void Msg::release_to_pool()
 	this->pool->add_msg_to_pool(this);
 }
 
-bool Msg::send_response(const int size)
+bool Msg::send_response(const int out_size)
 {
-	MSG_LOG_TRACE("sending %d bytes, xio_msg is %p", size, this->get_xio_msg());
+	MSG_LOG_TRACE("sending %d bytes, xio_msg is %p", out_size, this->get_xio_msg());
 	//TODO : make sure that this function is not called in the fast path
 	this->set_xio_msg_server_fields();
-	set_xio_msg_out_size(size, this->get_xio_msg());
+	set_xio_msg_out_size(this->get_xio_msg(), out_size);
 
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (xio_send_response(this->get_xio_msg())) {

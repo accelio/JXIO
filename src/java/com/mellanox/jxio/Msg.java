@@ -57,8 +57,8 @@ public class Msg {
 	private Msg(Msg parent) {
 		this.mirrorMsg = parent;
 		this.isMirror = true;
-		this.out = parent.getIn();
-		this.in = parent.getOut();
+		this.out = parent.getIn().duplicate();
+		this.in = parent.getOut().duplicate();
 		this.refToCObject = parent.getId();
 	}
 
@@ -139,11 +139,18 @@ public class Msg {
 	 * is the IN buffer of the original message. In case this method is called on mirror
 	 * message it returns the original (parent message)
 	 * 
+	 * @param alignPositions
+	 *            - when true will copy position + limit from the original Msg.In buffer MsgMirror.Out
+	 * 
 	 * @return mirror message
 	 */
-	public Msg getMirror() {
+	public Msg getMirror(boolean alignPositions) {
 		if (this.mirrorMsg == null) {
 			this.mirrorMsg = new Msg(this);
+		}
+		if (alignPositions) {
+			this.mirrorMsg.getOut().limit(this.getIn().capacity());
+			this.mirrorMsg.getOut().position(this.getIn().limit());
 		}
 		return this.mirrorMsg;
 	}

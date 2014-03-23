@@ -49,6 +49,7 @@ public class ClientPlayer extends GeneralPlayer {
 	private int               counterEstablished;
 	private int               counterSentMsgs;
 	private int               counterReceivedMsgs;
+	private int               counterReturnedErrorMsgs;
 	private boolean           isClosing = false;
 	private Random            random;
 	private int               violent_exit;
@@ -138,8 +139,8 @@ public class ClientPlayer extends GeneralPlayer {
 			int numMsgToSend = outer.msgBatchSize;
 			while (numMsgToSend > 0) {
 				numMsgToSend--;
-				Msg m = outer.mp.getMsg();
-				if (m == null) {
+				Msg msg = outer.mp.getMsg();
+				if (msg == null) {
 					// MsgPool is empty (client used up all the msgs and
 					// or they didn't return from server yet
 					if (LOG.isDebugEnabled()) {
@@ -147,14 +148,16 @@ public class ClientPlayer extends GeneralPlayer {
 					}
 					return;
 				}
-				int position = Utils.randIntInRange(random, 0, m.getOut().limit() - Utils.HEADER_SIZE);
+				int position = Utils.randIntInRange(random, 0, msg.getOut().limit() - Utils.HEADER_SIZE);
 				final long sendTime = System.nanoTime();
-				Utils.writeMsg(m, position, sendTime, counterSentMsgs);
-				if (outer.client.sendRequest(m)) {
+				Utils.writeMsg(msg, position, sendTime, counterSentMsgs);
+				if (LOG.isInfoEnabled())
+					LOG.info(outer.toString() + ": sendRequest(" + msg + ")");
+				if (outer.client.sendRequest(msg)) {
 					outer.counterSentMsgs++;
 				} else {
-					LOG.error(outer.toString() + ": FAILURE while sending a message = " + m);
-					m.returnToParentPool();
+					LOG.error(outer.toString() + ": FAILURE while sending a message = " + msg);
+					msg.returnToParentPool();
 					System.exit(1); // Failure in test - eject!
 				}
 			}
@@ -201,7 +204,7 @@ public class ClientPlayer extends GeneralPlayer {
 			LOG.error(this.toString() + ": FAILURE: session did not get established/rejected as expected");
 			System.exit(1); // Failure in test - eject!
 		}
-		if (this.mp.count() + (this.counterSentMsgs - this.counterReceivedMsgs) != this.mp.capacity()) {
+		if (this.mp.count() + (this.counterSentMsgs - this.counterReceivedMsgs - this.counterReturnedErrorMsgs) != this.mp.capacity()) {
 			LOG.error(this.toString() + ": FAILURE: not all Msgs returned to MSgPoll: " + mp);
 			System.exit(1); // Failure in test - eject!
 		}
@@ -217,12 +220,13 @@ public class ClientPlayer extends GeneralPlayer {
 		private final ClientPlayer outer = ClientPlayer.this;
 
 		public void onMsgError(Msg msg, EventReason reason) {
-			if (outer.client.getIsClosing()){
+			if (outer.client.getIsClosing()) {
 				LOG.debug(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
-			}else{
+			} else {
 				LOG.error(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
 			}
 			msg.returnToParentPool();
+			outer.counterReturnedErrorMsgs++;
 		}
 
 		public void onSessionEstablished() {
@@ -246,8 +250,7 @@ public class ClientPlayer extends GeneralPlayer {
 							LOG.error(outer.toString() + ": there were " + outer.counterSentMsgs + " sent and "
 							        + outer.counterReceivedMsgs + " received");
 						} else {
-							LOG.info(outer.toString() + ": SUCCESSFULLY received all sent msgs (" + counterReceivedMsgs
-							        + ")");
+							LOG.info(outer.toString() + ": SUCCESSFULLY received all sent msgs (" + counterReceivedMsgs + ")");
 						}
 						return;
 					}
@@ -283,9 +286,8 @@ public class ClientPlayer extends GeneralPlayer {
 					System.exit(1); // Failure in test - eject!
 				}
 			}
-			if (LOG.isTraceEnabled()) {
-				LOG.trace(outer.toString() + ": onReply: msg = " + msg + "#" + outer.counterReceivedMsgs);
-			}
+			if (LOG.isInfoEnabled())
+				LOG.info(outer.toString() + ": onResponse(#" + outer.counterReceivedMsgs + ", " + msg + ")");
 			msg.returnToParentPool();
 		}
 
