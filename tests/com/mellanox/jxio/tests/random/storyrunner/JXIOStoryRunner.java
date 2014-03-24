@@ -178,9 +178,9 @@ public class JXIOStoryRunner implements StoryRunner {
 			}
 			// Wait for all processes to finish
 			try {
-				System.out.println("Will now wait " + maxDuration + " seconds for all processes to finish.");
-				// Sleeps for the maximal duration in milliseconds with a asmall delay
-				Thread.sleep(maxDuration * 1000 + 50);
+				System.out.println("Will now wait " + maxDuration + " seconds plus a small delay for all processes to finish.");
+				// Sleeps for the maximal duration in milliseconds with a a small delay
+				Thread.sleep((maxDuration + 5) * 1000);
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}

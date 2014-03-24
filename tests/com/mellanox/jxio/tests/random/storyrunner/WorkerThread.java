@@ -123,7 +123,7 @@ public class WorkerThread implements Runnable {
 
 		public void doAction(WorkerThread workerThread) {
 			outer.stopThread = true;
-			// eqh.close();
+			eqh.close();
 			for (MsgPool mp : msgPools) {
 				outer.eqh.releaseMsgPool(mp);
 				mp.deleteMsgPool();

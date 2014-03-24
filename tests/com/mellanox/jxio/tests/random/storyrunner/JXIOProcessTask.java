@@ -463,7 +463,6 @@ public class JXIOProcessTask implements Callable<Integer> {
 			// Sleeping for max_duration + 2 extra sec
 			LOG.info("max duration of all threads is " + maxDuration + " seconds");
 			try {
-
 				Thread.sleep((maxDuration + 2) * 1000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
