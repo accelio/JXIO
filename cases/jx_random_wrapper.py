@@ -33,7 +33,11 @@ class JxRandomWrapper(StandaloneWrapper):
             ports = self.topology_api.get_device_active_ports(host)
             ip = self.topology_api.get_port_ip(ports[0])
             conn_type = self.topology_api.get_object_attribute(ports[0], "TYPE")
-            hostname = socket.gethostbyaddr(ip)[0].replace("-", "_")
+            try:
+                hostname = socket.gethostbyaddr(ip)[0].replace("-", "_")
+            except:
+                print "Hostname could not be found!"
+                hostname = "Unknown"
             f.write("\t\t\t<name value=\"%s\"/>\n" %hostname)
             f.write("\t\t\t<address value=\"%s\"/>\n" %ip)
             f.write("\t\t\t<type value=\"%s\"/>\n" %conn_type)
@@ -49,10 +53,10 @@ class JxRandomWrapper(StandaloneWrapper):
         for host in hosts:
 		ip = self.topology_api.get_object_attribute(host, "BASE_IP")
 		print("Copying topology to " + ip + "!")
-		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability.xml root@" + ip + ":/tmp/mars_tests/UDA-jx.db/tests/tests/com/mellanox/jxio/tests/random/probability.xml", shell=True, cwd=here)
-		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability_simple.xml root@" + ip + ":/tmp/mars_tests/UDA-jx.db/tests/tests/com/mellanox/jxio/tests/random/probability_simple.xml", shell=True, cwd=here)
-		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability_long_dur_client_long.xml root@" + ip + ":/tmp/mars_tests/UDA-jx.db/tests/tests/com/mellanox/jxio/tests/random/probability_long_dur_client_long.xml", shell=True, cwd=here)
-		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability_client_repeats.xml root@" + ip + ":/tmp/mars_tests/UDA-jx.db/tests/tests/com/mellanox/jxio/tests/random/probability_client_repeats.xml", shell=True, cwd=here)
+		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability.xml root@" + ip + ":/tmp/mars_tests/UDA-JXIO.db/tests/tests/com/mellanox/jxio/tests/random/probability.xml", shell=True, cwd=here)
+		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability_simple.xml root@" + ip + ":/tmp/mars_tests/UDA-JXIO.db/tests/tests/com/mellanox/jxio/tests/random/probability_simple.xml", shell=True, cwd=here)
+		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability_long_dur_client_long.xml root@" + ip + ":/tmp/mars_tests/UDA-JXIO.db/tests/tests/com/mellanox/jxio/tests/random/probability_long_dur_client_long.xml", shell=True, cwd=here)
+		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability_client_repeats.xml root@" + ip + ":/tmp/mars_tests/UDA-JXIO.db/tests/tests/com/mellanox/jxio/tests/random/probability_client_repeats.xml", shell=True, cwd=here)
 
     def get_prog_path(self, running_stage=RunningStage.RUN):
         return "../tests/runRandomTest.sh"
