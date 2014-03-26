@@ -28,7 +28,7 @@
 		<process value="random"/>
 		<port value="[70]:3000-3010, [30]:3011-65536"/>
 		<start_delay value="[100]:0"/>
-		<duration value="[100]:25"/>
+		<duration value="[80]:25, [20]:18"/>
 		<violent_exit value="[90]:0, [10]:1"/>
 		<num_workers value="[40]:0, [60]:1-4"/>
 		<msg_pools>
