@@ -31,8 +31,10 @@ void done_event_creating(Context *ctx, int sizeWritten)
 }
 
 
-
+//
 // implementation of the XIO callbacks
+//
+
 int on_new_session_callback(struct xio_session *session,
 		struct xio_new_session_req *req, void *cb_prv_data)
 {
@@ -62,7 +64,10 @@ int on_msg_send_complete_callback(struct xio_session *session,
 int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 		int more_in_batch, void *cb_prv_data)
 {
-	LOG_TRACE("on_msg_callback is %p. num_iov = %d, len is %d msg is %p", msg->user_context, msg->in.data_iovlen, msg->in.data_iov[0].iov_len, msg);
+	const int msg_in_size = get_xio_msg_in_size(msg);
+	const int msg_out_size = get_xio_msg_out_size(msg);
+
+	LOG_TRACE("on_msg_callback context=%p, num_iov=%d, len: in=%d out=%d, msg=%p", msg->user_context, msg->in.data_iovlen, msg_in_size, msg_out_size, msg);
 	if (msg->status) {
 		LOG_ERR("xio_msg=%p completed with error.[%s]", msg, xio_strerror(msg->status));
 	}
@@ -70,24 +75,20 @@ int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
 
-	const int msg_in_size = (msg->in.data_iovlen > 0) ? msg->in.data_iov[0].iov_len : 0;
-
-
 	if (msg->user_context == NULL) { //it's a request with a small buffer on server side
-		Msg* msg_from_pool = ctx->msg_pools.get_msg_from_pool(msg->in.data_iov[0].iov_len, msg->out.data_iov[0].iov_len);
+		Msg* msg_from_pool = ctx->msg_pools.get_msg_from_pool(msg_in_size, msg_out_size);
 		if (msg_in_size > 0)
 			memcpy(msg_from_pool->get_buf(), msg->in.data_iov[0].iov_base, msg_in_size);
 		msg->user_context = msg_from_pool;
 		msg_from_pool->set_xio_msg_req(msg);
-		LOG_TRACE("!!!!!!!!!!!!!! xio_msg is %p", msg);
+		LOG_TRACE("xio_msg is %p", msg);
 	}
 
 	char* buf = ctx->event_queue->get_buffer();
 	int sizeWritten;
-	if (msg->type == XIO_MSG_TYPE_REQ) { //it's request
-		const int msg_out_size = (msg->out.data_iovlen > 0) ? msg->out.data_iov[0].iov_len : 0;
+	if (msg->type == XIO_MSG_TYPE_REQ) { // it's a request
 		sizeWritten = ctx->events->writeOnRequestReceivedEvent(buf, msg->user_context, msg_in_size, msg_out_size, session);
-	} else { //it's response
+	} else { // it's a response
 		sizeWritten = ctx->events->writeOnResponseReceivedEvent(buf, msg->user_context, msg_in_size);
 	}
 
@@ -183,9 +184,9 @@ int on_buffer_request_callback(struct xio_msg *msg, void *cb_user_context)
 	LOG_DBG("got on_buffer_request_callback");
 	Contexable *cntxbl = (Contexable*) cb_user_context;
 	Context *ctx = cntxbl->get_ctx_class();
-	int in_size = (msg->in.data_iovlen > 0) ? msg->in.data_iov[0].iov_len : 0;
-	int out_size = (msg->out.data_iovlen > 0) ? msg->out.data_iov[0].iov_len : 0;
-	Msg* msg_from_pool = ctx->msg_pools.get_msg_from_pool(in_size, out_size);
+	const int msg_in_size = get_xio_msg_in_size(msg);
+	const int msg_out_size = get_xio_msg_out_size(msg);
+	Msg* msg_from_pool = ctx->msg_pools.get_msg_from_pool(msg_in_size, msg_out_size);
 	msg_from_pool->set_xio_msg_fields_for_assign(msg);
 	return 0;
 }

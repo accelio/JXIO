@@ -55,11 +55,13 @@ public final class Utils {
 
 	public static boolean checkIntegrity(Msg msg, int expectedSerialNum) {
 		@SuppressWarnings("unused")
+		int pos = msg.getIn().position();
 		long sendTime = msg.getIn().getLong();
 		long rcvCheckSum = msg.getIn().getLong();
 		int rcvSerialNum = msg.getIn().getInt();
 		if (rcvSerialNum != expectedSerialNum) {
 			LOG.error("msgs were not received by order. expected " + expectedSerialNum + " and got " + rcvSerialNum);
+			msg.getIn().position(pos);
 			return false;
 		}
 		int size = msg.getIn().getInt();
@@ -70,8 +72,10 @@ public final class Utils {
 		long calcChecksum = checksum.getValue();
 		if (calcChecksum != rcvCheckSum) {
 			LOG.error("checksums for message #" + expectedSerialNum + " does not match");
+			msg.getIn().position(pos);
 			return false;
 		}
+		msg.getIn().position(pos);
 		return true;
 	}
 

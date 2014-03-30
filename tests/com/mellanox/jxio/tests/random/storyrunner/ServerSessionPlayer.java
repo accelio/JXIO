@@ -123,7 +123,7 @@ public class ServerSessionPlayer {
 
 		public void onRequest(Msg msg) {
 			if (LOG.isDebugEnabled())
-				LOG.debug(outer.toString() + ": onRequest(" + msg + ")");
+				LOG.debug(outer.toString() + ": onRequest: msg (#" + outer.counterReceivedMsgs + ") = " + msg);
 
 			if (!Utils.checkIntegrity(msg, outer.counterReceivedMsgs)) {
 				LOG.error(outer.toString() + ": FAILURE: Message #" + outer.counterReceivedMsgs + " did not arrive ok!");
@@ -133,26 +133,29 @@ public class ServerSessionPlayer {
 			outer.counterReceivedMsgs++;
 
 			if (outer.nextHop.isEmpty()) {
-				if (LOG.isDebugEnabled())
-					LOG.debug(outer.toString() + ": sendResponse(" + msg + ")");
 				int position = Utils.randIntInRange(random, 0, msg.getOut().limit() - Utils.HEADER_SIZE);
 				Utils.writeMsg(msg, position, 0, outer.counterSentMsgs);
-
-				outer.server.sendResponse(msg);
+				if (LOG.isDebugEnabled())
+					LOG.debug(outer.toString() + ": sendResponse(" + msg + ")");
+				if (outer.server.sendResponse(msg) == false) {
+					LOG.error(outer.toString() + ": FAILURE: sendResponse with error on msg=" + msg);
+					System.exit(1);
+				}
 			} else {
 				// server session is in proxy mode (nextHopClient), check if client need to be connected
-				if (outer.nextHopClient == null) {
+				if (outer.nextHopClient == null)
 					outer.nextHopClient = prepareNextHopClient();
-				}
 
 				// send mirror msg to next hoop server
 				Msg nextHopMsg = prepareNextHopMsg(msg);
 				if (LOG.isDebugEnabled())
-					LOG.debug(outer.toString() + ": sendMessage(" + nextHopMsg + ")");
-				outer.nextHopClient.sendRequest(nextHopMsg);
+					LOG.debug(outer.toString() + ": sendRequest(" + nextHopMsg + ")");
+				if (outer.nextHopClient.sendRequest(nextHopMsg) == false) {
+					LOG.error(outer.toString() + ": FAILURE: sendRequest to nextHopClient with msg=" + nextHopMsg);
+					System.exit(1);
+				}
 			}
 			outer.counterSentMsgs++;
-
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
@@ -194,13 +197,12 @@ public class ServerSessionPlayer {
 		private Msg prepareNextHopMsg(Msg msg) {
 			if (outer.nextHopMP == null) {
 				// Use MsgMirror
-				return msg.getMirror();
+				return msg.getMirror(true);
 			}
 
 			// Use Msg copy instead of MsgMirror
 			Msg nextHopMsg = outer.nextHopMP.getMsg();
 			if (nextHopMsg != null) {
-				msg.getIn().position(0);
 				nextHopMsg.getOut().put(msg.getIn());
 				nextHopMsg.setUserContext(msg);
 			}
@@ -238,7 +240,7 @@ public class ServerSessionPlayer {
 		public void onResponse(Msg msg) {
 			Msg returnHopMsg;
 			if (outer.nextHopMP == null) {
-				returnHopMsg = msg.getMirror();
+				returnHopMsg = msg.getMirror(true);
 			} else {
 				returnHopMsg = (Msg) msg.getUserContext();
 				returnHopMsg.getOut().put(msg.getIn());
