@@ -107,7 +107,7 @@ public class WorkerThread implements Runnable {
 	}
 
 	public void notifyClose() {
-		CloseEQH action = new CloseEQH();
+		StopEQH action = new StopEQH();
 		this.addWorkAction(action);
 	}
 
@@ -117,13 +117,11 @@ public class WorkerThread implements Runnable {
 		this.outSize = outSize;
 	}
 
-	public class CloseEQH implements WorkerThread.QueueAction {
+	public class StopEQH implements WorkerThread.QueueAction {
 		private final WorkerThread outer = WorkerThread.this;
-		EventQueueHandler          eqh;
 
 		public void doAction(WorkerThread workerThread) {
 			outer.stopThread = true;
-			eqh.close();
 			for (MsgPool mp : msgPools) {
 				outer.eqh.releaseMsgPool(mp);
 				mp.deleteMsgPool();
