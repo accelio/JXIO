@@ -6,6 +6,7 @@ import subprocess
 import os
 import getpass
 import socket
+import random
 
 from reg2_wrapper.test_wrapper.standalone_wrapper import StandaloneWrapper
 from reg2_wrapper.utils.parser.cmd_argument import RunningStage
@@ -19,7 +20,7 @@ class JxRandomWrapper(StandaloneWrapper):
         here = os.path.dirname(os.path.abspath(__file__))
 	print("Running directory is " + here + "!")
 	print("Running user is " + getpass.getuser() + "!")
-	my_topology = "/tmp/my_topology.xml"
+	my_topology = "/tmp/my_topology" + str(random.getrandbits(64)) + ".xml"
         self.topology_api = TopologyAPI(self.topo_file)
         hosts = self.topology_api.get_all_hosts()
 	# Create the topology file
@@ -57,6 +58,8 @@ class JxRandomWrapper(StandaloneWrapper):
 		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability_simple.xml root@" + ip + ":/tmp/mars_tests/UDA-JXIO.db/tests/tests/com/mellanox/jxio/tests/random/probability_simple.xml", shell=True, cwd=here)
 		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability_long_dur_client_long.xml root@" + ip + ":/tmp/mars_tests/UDA-JXIO.db/tests/tests/com/mellanox/jxio/tests/random/probability_long_dur_client_long.xml", shell=True, cwd=here)
 		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability_client_repeats.xml root@" + ip + ":/tmp/mars_tests/UDA-JXIO.db/tests/tests/com/mellanox/jxio/tests/random/probability_client_repeats.xml", shell=True, cwd=here)
+	# Delete topology file
+	os.remove(my_topology)	
 
     def get_prog_path(self, running_stage=RunningStage.RUN):
         return "../tests/runRandomTest.sh"
