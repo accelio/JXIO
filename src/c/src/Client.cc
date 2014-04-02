@@ -124,7 +124,7 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 		return NULL;
 
 	case XIO_SESSION_CONNECTION_REFUSED_EVENT:
-		CLIENT_LOG_ERR("got XIO_SESSION_CONNECTION_REFUSED_EVENT. Reason=%s", xio_strerror(event->reason));
+		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_REFUSED_EVENT. Reason=%s", xio_strerror(event->reason));
 		this->is_closing = true;
 		return NULL;
 
