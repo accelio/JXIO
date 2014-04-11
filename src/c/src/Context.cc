@@ -37,7 +37,7 @@ Context::Context(int eventQSize)
 
 	this->offset_read_for_java = 0;
 
-	ctx = xio_context_create(NULL, 0);
+	ctx = xio_context_create(NULL, 0, -1);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (ctx == NULL) {
 		CONTEXT_LOG_ERR("ERROR, xio_context_create failed");
