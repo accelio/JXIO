@@ -122,8 +122,8 @@ public class ServerSessionPlayer {
 		private final ServerSessionPlayer outer = ServerSessionPlayer.this;
 
 		public void onRequest(Msg msg) {
-			if (LOG.isDebugEnabled())
-				LOG.debug(outer.toString() + ": onRequest: msg (#" + outer.counterReceivedMsgs + ") = " + msg);
+			if (LOG.isTraceEnabled())
+				LOG.trace(outer.toString() + ": onRequest: msg (#" + outer.counterReceivedMsgs + ") = " + msg);
 
 			if (!Utils.checkIntegrity(msg, outer.counterReceivedMsgs)) {
 				LOG.error(outer.toString() + ": FAILURE: Message #" + outer.counterReceivedMsgs + " did not arrive ok!");
@@ -135,8 +135,8 @@ public class ServerSessionPlayer {
 			if (outer.nextHop.isEmpty()) {
 				int position = Utils.randIntInRange(random, 0, msg.getOut().limit() - Utils.HEADER_SIZE);
 				Utils.writeMsg(msg, position, 0, outer.counterSentMsgs);
-				if (LOG.isDebugEnabled())
-					LOG.debug(outer.toString() + ": sendResponse(" + msg + ")");
+				if (LOG.isTraceEnabled())
+					LOG.trace(outer.toString() + ": sendResponse(" + msg + ")");
 				if (outer.server.sendResponse(msg) == false) {
 					LOG.error(outer.toString() + ": FAILURE: sendResponse with error on msg=" + msg);
 					System.exit(1);
@@ -148,8 +148,8 @@ public class ServerSessionPlayer {
 
 				// send mirror msg to next hoop server
 				Msg nextHopMsg = prepareNextHopMsg(msg);
-				if (LOG.isDebugEnabled())
-					LOG.debug(outer.toString() + ": sendRequest(" + nextHopMsg + ")");
+				if (LOG.isTraceEnabled())
+					LOG.trace(outer.toString() + ": sendRequest(" + nextHopMsg + ")");
 				if (outer.nextHopClient.sendRequest(nextHopMsg) == false) {
 					LOG.error(outer.toString() + ": FAILURE: sendRequest to nextHopClient with msg=" + nextHopMsg);
 					System.exit(1);
@@ -245,8 +245,8 @@ public class ServerSessionPlayer {
 				returnHopMsg = (Msg) msg.getUserContext();
 				returnHopMsg.getOut().put(msg.getIn());
 			}
-			if (LOG.isDebugEnabled())
-				LOG.debug(outer.toString() + ": onResponse(" + msg + "), " + "sendResponse(" + returnHopMsg + ")");
+			if (LOG.isTraceEnabled())
+				LOG.trace(outer.toString() + ": onResponse(" + msg + "), " + "sendResponse(" + returnHopMsg + ")");
 
 			if (outer.server.sendResponse(returnHopMsg) == false) {
 				LOG.error(outer.toString() + ": FAILURE: sendResponse with error on msg=" + returnHopMsg);

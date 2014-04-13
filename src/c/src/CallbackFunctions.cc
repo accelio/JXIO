@@ -24,7 +24,7 @@ void done_event_creating(Context *ctx, int sizeWritten)
 
 	//need to stop the event queue only if this is the first callback
 	if (!ctx->events_num) {
-		LOG_DBG("inside a callback - stopping the event queue");
+		LOG_TRACE("inside a callback - stopping the event queue");
 		ctx->break_event_loop(1); // always 'self thread = true' since JXIO break from within callback
 	}
 	ctx->events_num++;
@@ -181,7 +181,7 @@ int on_session_event_callback(struct xio_session *session,
 
 int on_buffer_request_callback(struct xio_msg *msg, void *cb_user_context)
 {
-	LOG_DBG("got on_buffer_request_callback");
+	LOG_TRACE("got on_buffer_request_callback");
 	Contexable *cntxbl = (Contexable*) cb_user_context;
 	Context *ctx = cntxbl->get_ctx_class();
 	const int msg_in_size = get_xio_msg_in_size(msg);

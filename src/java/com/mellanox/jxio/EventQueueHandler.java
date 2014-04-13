@@ -145,8 +145,8 @@ public class EventQueueHandler implements Runnable {
 		while (!this.breakLoop && ((is_infinite_events) || (maxEvents > eventsHandled))
 		        && ((is_forever) || (!this.elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
 
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("["
+			if (LOG.isTraceEnabled()) {
+				LOG.trace("["
 				        + getId()
 				        + "] in loop with "
 				        + eventsWaitingInQ
@@ -178,8 +178,8 @@ public class EventQueueHandler implements Runnable {
 		}
 
 		this.breakLoop = false;
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("[" + getId() + "] returning with " + eventsWaitingInQ + " events in Q. handled " + eventsHandled
+		if (LOG.isTraceEnabled()) {
+			LOG.trace("[" + getId() + "] returning with " + eventsWaitingInQ + " events in Q. handled " + eventsHandled
 			        + " events, elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec.");
 		}
 		this.inRunLoop = false;
@@ -348,9 +348,6 @@ public class EventQueueHandler implements Runnable {
 				// side. msgsPendingNewRequest is used for look up of the java object based on the id
 				Msg msg = this.msgsPendingNewRequest.remove(id);
 				final long session_id = eventQueue.getLong();
-				if (LOG.isTraceEnabled()) {
-					LOG.trace("session refToCObject" + session_id);
-				}
 				final int reason = eventQueue.getInt();
 				eventable = eventables.get(session_id);
 				if (eventable == null) {
@@ -366,14 +363,8 @@ public class EventQueueHandler implements Runnable {
 			{
 				Msg msg = msgsPendingReply.remove(id);
 				final int reason = eventQueue.getInt();
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("got error on msg " + msg);
-				}
 				EventMsgError evMsgErr = new EventMsgError(eventType, id, msg, reason);
 				eventable = msg.getClientSession();
-				if (LOG.isTraceEnabled()) {
-					LOG.trace("eventable is " + eventable);
-				}
 				eventable.onEvent(evMsgErr);
 
 			}

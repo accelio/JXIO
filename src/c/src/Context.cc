@@ -23,7 +23,7 @@
 #define MODULE_NAME		"Context"
 #define CONTEXT_LOG_ERR(log_fmt, log_args...)  LOG_BY_MODULE(lsERROR, log_fmt, ##log_args)
 #define CONTEXT_LOG_DBG(log_fmt, log_args...)  LOG_BY_MODULE(lsDEBUG, log_fmt, ##log_args)
-
+#define CONTEXT_LOG_TRACE(log_fmt, log_args...)  LOG_BY_MODULE(lsTRACE, log_fmt, ##log_args)
 
 Context::Context(int eventQSize)
 {
@@ -100,25 +100,25 @@ int Context::run_event_loop(long timeout_micro_sec)
 
 	int timeout_msec = -1; // infinite timeout as default
 	if (timeout_micro_sec == -1) {
-		CONTEXT_LOG_DBG("before ev_loop_run. requested infinite timeout");
+		CONTEXT_LOG_TRACE("before ev_loop_run. requested infinite timeout");
 	} else {
 		timeout_msec = timeout_micro_sec/1000;
-		CONTEXT_LOG_DBG("before ev_loop_run. requested timeout is %d msec", timeout_msec);
+		CONTEXT_LOG_TRACE("before ev_loop_run. requested timeout is %d msec", timeout_msec);
 	}
 
 	// enter Accelio's event loop
 	xio_context_run_loop(this->ctx, timeout_msec);
 
-	CONTEXT_LOG_DBG("after ev_loop_run. there are %d events", this->events_num);
+	CONTEXT_LOG_TRACE("after ev_loop_run. there are %d events", this->events_num);
 
 	return this->events_num;
 }
 
 void Context::break_event_loop(int is_self_thread)
 {
-	CONTEXT_LOG_DBG("before break event loop (is_self_thread=%d)", is_self_thread);
+	CONTEXT_LOG_TRACE("before break event loop (is_self_thread=%d)", is_self_thread);
 	xio_context_stop_loop(this->ctx, is_self_thread);
-	CONTEXT_LOG_DBG("after break event loop (is_self_thread=%d)", is_self_thread);
+	CONTEXT_LOG_TRACE("after break event loop (is_self_thread=%d)", is_self_thread);
 }
 
 #if _BullseyeCoverage

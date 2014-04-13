@@ -157,24 +157,24 @@ bool Msg::send_response(const int out_size)
 #endif
 void Msg::dump(struct xio_msg *xio_msg)
 {
-	MSG_LOG_DBG("*********************************************");
-	MSG_LOG_DBG("type:0x%x", xio_msg->type);
-	MSG_LOG_DBG("status:%d", xio_msg->status);
+	MSG_LOG_TRACE("*********************************************");
+	MSG_LOG_TRACE("type:0x%x", xio_msg->type);
+	MSG_LOG_TRACE("status:%d", xio_msg->status);
 	if (xio_msg->type == XIO_MSG_TYPE_REQ)
-		MSG_LOG_DBG("serial number:%ld", xio_msg->sn);
+		MSG_LOG_TRACE("serial number:%ld", xio_msg->sn);
 	else if (xio_msg->type == XIO_MSG_TYPE_RSP)
-		MSG_LOG_DBG("response:%p, serial number:%ld", xio_msg->request, ((xio_msg->request) ? xio_msg->request->sn : -1));
+		MSG_LOG_TRACE("response:%p, serial number:%ld", xio_msg->request, ((xio_msg->request) ? xio_msg->request->sn : -1));
 
-	MSG_LOG_DBG("in header: length:%d, address:%p", xio_msg->in.header.iov_len, xio_msg->in.header.iov_base);
-	MSG_LOG_DBG("in data size:%d \n", xio_msg->in.data_iovlen);
+	MSG_LOG_TRACE("in header: length:%d, address:%p", xio_msg->in.header.iov_len, xio_msg->in.header.iov_base);
+	MSG_LOG_TRACE("in data size:%d \n", xio_msg->in.data_iovlen);
 	for (int i = 0; i < xio_msg->in.data_iovlen; i++)
-		MSG_LOG_DBG("in data[%d]: length:%d, address:%p, mr:%p", i, xio_msg->in.data_iov[i].iov_len, xio_msg->in.data_iov[i].iov_base, xio_msg->in.data_iov[i].mr);
+		MSG_LOG_TRACE("in data[%d]: length:%d, address:%p, mr:%p", i, xio_msg->in.data_iov[i].iov_len, xio_msg->in.data_iov[i].iov_base, xio_msg->in.data_iov[i].mr);
 
-	MSG_LOG_DBG("out header: length:%d, address:%p", xio_msg->out.header.iov_len, xio_msg->out.header.iov_base);
-	MSG_LOG_DBG("out data size:%d", xio_msg->out.data_iovlen);
+	MSG_LOG_TRACE("out header: length:%d, address:%p", xio_msg->out.header.iov_len, xio_msg->out.header.iov_base);
+	MSG_LOG_TRACE("out data size:%d", xio_msg->out.data_iovlen);
 	for (int i = 0; i < xio_msg->out.data_iovlen; i++)
-		MSG_LOG_DBG("out data[%d]: length:%d, address:%p, mr:%p", i, xio_msg->out.data_iov[i].iov_len, xio_msg->out.data_iov[i].iov_base, xio_msg->out.data_iov[i].mr);
-	MSG_LOG_DBG("*********************************************");
+		MSG_LOG_TRACE("out data[%d]: length:%d, address:%p, mr:%p", i, xio_msg->out.data_iov[i].iov_len, xio_msg->out.data_iov[i].iov_base, xio_msg->out.data_iov[i].mr);
+	MSG_LOG_TRACE("*********************************************");
 }
 #if _BullseyeCoverage
     #pragma BullseyeCoverage on

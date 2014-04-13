@@ -23,7 +23,7 @@ public class TimerList {
 
 	private final static Log LOG = LogFactory.getLog(TimerList.class.getSimpleName());
 
-	private Timer head;
+	private Timer            head;
 
 	public abstract static class Timer {
 
@@ -40,9 +40,10 @@ public class TimerList {
 
 		public Timer(long durationMicroSec) {
 			this.durationMicroSec = durationMicroSec;
-		    this.startedAt = System.nanoTime() / 1000;
-		    this.expiry = startedAt + this.durationMicroSec;
-			LOG.debug("new " + this.toString() + " done (" + super.toString() + ")");
+			this.startedAt = System.nanoTime() / 1000;
+			this.expiry = startedAt + this.durationMicroSec;
+			if (LOG.isTraceEnabled())
+				LOG.trace("new " + this.toString() + " done (" + super.toString() + ")");
 		}
 
 		public String toString() {
@@ -58,7 +59,7 @@ public class TimerList {
 	// stop this timer event
 	public void stop(Timer timer) {
 		if (timer.isStarted() == true && timer.list == this) {
-			synchronized(this) {
+			synchronized (this) {
 				remove(timer);
 				LOG.debug(head.toString() + " stopped");
 			}
@@ -69,11 +70,11 @@ public class TimerList {
 	// returns true if new timer was added first in line (new wakeup duration)
 	public boolean start(Timer timer) {
 		boolean notify = false;
-		synchronized(this) {
+		synchronized (this) {
 			if (timer.isStarted() == true) {
 				if (timer.list != this)
 					return notify;
-				
+
 				remove(timer); // remove and re-insert
 			}
 
@@ -114,38 +115,42 @@ public class TimerList {
 				head = timer;
 				notify = true; // Need to notify that something has changed at the beginning of the list.
 			}
-			LOG.debug(timer.toString() + " started");
+			if (LOG.isTraceEnabled())
+				LOG.trace(timer.toString() + " started");
 			return notify;
 		}
 	}
 
-	// This will check from expired timers, in which case it will activate their callback and remove the timer from the list   
+	// This will check from expired timers, in which case it will activate their callback and remove the timer from the
+	// list
 	public void checkForTimeOuts() {
-		synchronized(this) {
+		synchronized (this) {
 			long now = System.nanoTime() / 1000;
 
 			// check for TimeOut event and remove the Timers
 			while (head != null && head.expiry <= now) {
-				LOG.debug(head.toString() + " expired");
+				if (LOG.isTraceEnabled())
+					LOG.trace(head.toString() + " expired");
 				head.onTimeOut(); // activate the callback
 				remove(head);
 			}
 		}
-    }
+	}
 
-	// return the duration (micro-sec) until next expiry time, zero if Timers expiried in the past or -1 if no Timers are pending. 
+	// return the duration (micro-sec) until next expiry time, zero if Timers expiried in the past or -1 if no Timers
+	// are pending.
 	public long getWaitDuration() {
-		synchronized(this) {
-    		long timeout = -1;
-    		if (head != null) {
-			    timeout = head.expiry - System.nanoTime() / 1000;
-			    if (timeout < 0)
-			    	timeout = 0;
+		synchronized (this) {
+			long timeout = -1;
+			if (head != null) {
+				timeout = head.expiry - System.nanoTime() / 1000;
+				if (timeout < 0)
+					timeout = 0;
 			}
-    		return timeout;
+			return timeout;
 		}
 	}
-	
+
 	// remove this timer from the queue.
 	private void remove(Timer timer) {
 
