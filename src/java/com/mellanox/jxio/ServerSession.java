@@ -49,6 +49,8 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	private long              ptrSesServer;
 	private ServerPortal      creator;
 	final String              uri;
+	private final String      name;
+	private final String      nameForLog;
 	private static final Log  LOG = LogFactory.getLog(ServerSession.class.getCanonicalName());
 
 	public static interface Callbacks {
@@ -74,14 +76,16 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		public void onSessionEvent(EventName session_event, EventReason reason);
 
 		/**
-		 * This event is triggered if there is an error in Msg send/receive. The method returns true 
+		 * This event is triggered if there is an error in Msg send/receive. The method returns true
 		 * if the Msg should be released automatically once onMsgError finishes and false if
-		 * the user will release it later with method returnOnMsgError. 
+		 * the user will release it later with method returnOnMsgError.
 		 * 
-		 * @param msg - send/receive of this Msg failed
-		 * @param reason - reason of the msg error 
+		 * @param msg
+		 *            - send/receive of this Msg failed
+		 * @param reason
+		 *            - reason of the msg error
 		 * @return true if the Msg should be released automatically once onMsgError finishes and false
-		 * if the user will release it later with method returnOnMsgError. 
+		 *         if the user will release it later with method returnOnMsgError.
 		 */
 		public boolean onMsgError(Msg msg, EventReason reason);
 	}
@@ -99,8 +103,10 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		this.callbacks = callbacks;
 		setId(sessionKey.getSessionPtr());
 		this.uri = sessionKey.getUri();
+		this.name = "jxio.SS[" + Long.toHexString(getId()) + "]";
+		this.nameForLog = this.name + ": ";
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("id as recieved from C is " + getId());
+			LOG.debug(this.toLogString() + "listening to " + sessionKey.getUri());
 		}
 	}
 
@@ -113,11 +119,11 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	 */
 	public boolean close() {
 		if (this.getIsClosing()) {
-			LOG.warn("attempting to close server session that is already closed or being closed");
+			LOG.warn(this.toLogString() + "attempting to close server session that is already closed or being closed");
 			return false;
 		}
 		if (getId() == 0) {
-			LOG.error("closing ServerSession with empty id");
+			LOG.error(this.toLogString() + "closing ServerSession with empty id");
 			return false;
 		}
 		setIsClosing(true);
@@ -138,12 +144,12 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	 */
 	public boolean sendResponse(Msg msg) {
 		if (this.getIsClosing()) {
-			LOG.warn("Trying to send message while session is closing");
+			LOG.warn(this.toLogString() + "Trying to send message while session is closing");
 			return false;
 		}
 		boolean ret = Bridge.serverSendResponse(msg.getId(), msg.getOut().position(), ptrSesServer);
 		if (!ret) {
-			LOG.debug("there was an error sending the message");
+			LOG.debug(this.toLogString() + "there was an error sending the message");
 		}
 		this.eventQHandlerMsg.releaseMsgBackToPool(msg);
 		/*
@@ -154,18 +160,19 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		return ret;
 	}
 
-	
-	/** This method releases Msg to pool after onMsgError. In case the user returns false in
+	/**
+	 * This method releases Msg to pool after onMsgError. In case the user returns false in
 	 * onMsgError he needs to release the Msg back to pool once he is done with it (using returnOnMsgError)
 	 * 
-	 * @param msg - msg to be released back to pool
+	 * @param msg
+	 *            - msg to be released back to pool
 	 */
-	public void returnOnMsgError (Msg msg){
-		//the user finished with the Msg. It can now be released on C side 
+	public void returnOnMsgError(Msg msg) {
+		// the user finished with the Msg. It can now be released on C side
 		Bridge.releaseMsgServerSide(msg.getId());
 		this.eventQHandlerMsg.releaseMsgBackToPool(msg);
 	}
-	
+
 	void setEventQueueHandlers(EventQueueHandler eqhS, EventQueueHandler eqhM) {
 		this.eventQHandlerMsg = eqhM;
 		this.eventQHandlerMsg.addEventable(this);
@@ -182,7 +189,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		switch (ev.getEventType()) {
 			case 0: // session event
 				if (LOG.isDebugEnabled()) {
-					LOG.debug("received session event");
+					LOG.debug(this.toLogString() + "received session event");
 				}
 				if (ev instanceof EventSession) {
 					int errorType = ((EventSession) ev).getErrorType();
@@ -202,26 +209,26 @@ public class ServerSession extends EventQueueHandler.Eventable {
 				break;
 
 			case 1: // msg error
-				if (LOG.isDebugEnabled()){
-					LOG.debug("received msg error event");
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(this.toLogString() + "received msg error event");
 				}
 				EventMsgError evMsgErr;
 				if (ev instanceof EventMsgError) {
 					evMsgErr = (EventMsgError) ev;
 					Msg msg = evMsgErr.getMsg();
 					int reason = evMsgErr.getReason();
-					if (callbacks.onMsgError(msg, EventReason.getEventByIndex(reason))){
-						//the user is finished with the Msg and it can be released
+					if (callbacks.onMsgError(msg, EventReason.getEventByIndex(reason))) {
+						// the user is finished with the Msg and it can be released
 						this.returnOnMsgError(msg);
 					}
 				} else {
-					LOG.error("Event is not an instance of EventMsgError");
+					LOG.error(this.toLogString() + "Event is not an instance of EventMsgError");
 				}
 				break;
 
 			case 4: // on request
 				if (LOG.isTraceEnabled()) {
-					LOG.trace("received msg event");
+					LOG.trace(this.toLogString() + "received msg event");
 				}
 				EventNewMsg evNewMsg;
 				if (ev instanceof EventNewMsg) {
@@ -229,13 +236,13 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					Msg msg = evNewMsg.getMsg();
 					callbacks.onRequest(msg);
 				} else {
-					LOG.error("Event is not an instance of EventNewMsg");
+					LOG.error(this.toLogString() + "Event is not an instance of EventNewMsg");
 				}
 
 				break;
 
 			default:
-				LOG.error("received an unknown event " + ev.getEventType());
+				LOG.error(this.toLogString() + "received an unknown event " + ev.getEventType());
 		}
 	}
 
@@ -249,6 +256,14 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	void setPtrServerSession(long ptrSesServer) {
 		this.ptrSesServer = ptrSesServer;
 
+	}
+
+	public String toString() {
+		return this.name;
+	}
+
+	private String toLogString() {
+		return this.nameForLog;
 	}
 
 	/**

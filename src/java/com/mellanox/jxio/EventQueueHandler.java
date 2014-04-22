@@ -45,7 +45,7 @@ public class EventQueueHandler implements Runnable {
 	private static final Log       LOG                   = LogFactory
 	                                                             .getLog(EventQueueHandler.class.getCanonicalName());
 	private final long             refToCObject;
-	private final int              eventQueueSize        = 30000;                                                    
+	private final int              eventQueueSize        = 30000;
 	private final Callbacks        callbacks;
 	private int                    eventsWaitingInQ      = 0;
 	private ByteBuffer             eventQueue            = null;
@@ -56,6 +56,8 @@ public class EventQueueHandler implements Runnable {
 	private volatile boolean       breakLoop             = false;
 	private volatile boolean       stopLoop              = false;
 	private volatile boolean       inRunLoop             = false;
+	private final String           name;
+	private final String           nameForLog;
 
 	/**
 	 * This interface needs to be implemented and passed to EventQueueHandler in c-tor
@@ -92,6 +94,8 @@ public class EventQueueHandler implements Runnable {
 		this.refToCObject = dataFromC.getPtrCtx();
 		this.elapsedTime = new ElapsedTimeMeasurement();
 		this.callbacks = callbacks;
+		this.name = "jxio.EQH[" + Long.toHexString(this.refToCObject) + "]";
+		this.nameForLog = this.name + ": ";
 	}
 
 	/**
@@ -126,11 +130,11 @@ public class EventQueueHandler implements Runnable {
 	 */
 	public int runEventLoop(int maxEvents, long timeOutMicroSec) {
 		if (getId() == 0) {
-			LOG.error("no context opened on C side. can not run event loop");
+			LOG.error(this.toLogString() + "no context opened on C side. can not run event loop");
 			return 0;
 		}
 		if (this.inRunLoop) {
-			LOG.error(this.toString() + " event loop is already running");
+			LOG.error(this.toLogString() + "event loop is already running");
 			return 0;
 		}
 		this.inRunLoop = true;
@@ -146,9 +150,8 @@ public class EventQueueHandler implements Runnable {
 		        && ((is_forever) || (!this.elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
 
 			if (LOG.isTraceEnabled()) {
-				LOG.trace("["
-				        + getId()
-				        + "] in loop with "
+				LOG.trace(this.toLogString()
+				        + ":in loop with "
 				        + eventsWaitingInQ
 				        + " events in Q. handled "
 				        + eventsHandled
@@ -179,8 +182,8 @@ public class EventQueueHandler implements Runnable {
 
 		this.breakLoop = false;
 		if (LOG.isTraceEnabled()) {
-			LOG.trace("[" + getId() + "] returning with " + eventsWaitingInQ + " events in Q. handled " + eventsHandled
-			        + " events, elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec.");
+			LOG.trace(this.toLogString() + "returning with " + eventsWaitingInQ + " events in Q. handled "
+			        + eventsHandled + " events, elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec.");
 		}
 		this.inRunLoop = false;
 		return eventsHandled;
@@ -195,7 +198,7 @@ public class EventQueueHandler implements Runnable {
 	 */
 	public void breakEventLoop() {
 		if (getId() == 0) {
-			LOG.error("no context opened on C side. can not break event loop");
+			LOG.error(this.toLogString() + "no context opened on C side. can not break event loop");
 			return;
 		}
 		if (this.breakLoop == false) {
@@ -213,19 +216,20 @@ public class EventQueueHandler implements Runnable {
 	 */
 	public void close() {
 		if (getId() == 0) {
-			LOG.error("no context opened on C side. can not close event loop");
+			LOG.error(this.toLogString() + "no context opened on C side. can not close event loop");
 			return;
 		}
 		if (this.inRunLoop) {
-			LOG.error(this.toString() + " can not close EQH from within runEventLoop");
+			LOG.error(this.toLogString() + "can not close EQH from within runEventLoop");
 			return;
 		}
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("[" + getId() + "] closing EQH ");
+			LOG.debug(this.toLogString() + "closing EQH ");
 		}
 		while (!this.eventables.isEmpty()) {
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("attempting to close EQH while objects " + this.eventables.keySet() + " are still listening.");
+				LOG.debug(this.toLogString() + "attempting to close EQH while objects " + this.eventables.keySet()
+				        + " are still listening.");
 			}
 			int waitForEvent = 0;
 			Iterator<Eventable> it = this.eventables.values().iterator();
@@ -233,7 +237,8 @@ public class EventQueueHandler implements Runnable {
 				Eventable ev = it.next();
 				if (!ev.getIsClosing()) {
 					if (LOG.isDebugEnabled()) {
-						LOG.debug("[" + getId() + "] closing eventable" + ev.toString() + " with refToCObject " + ev.getId());
+						LOG.debug(this.toLogString() + "closing eventable" + ev.toString() + " with refToCObject "
+						        + ev.getId());
 					}
 					ev.close();
 				}
@@ -244,12 +249,12 @@ public class EventQueueHandler implements Runnable {
 			}
 		}
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("[" + getId() + "] no more objects listening");
+			LOG.debug(this.toLogString() + "no more objects listening");
 		}
 		Bridge.closeCtx(getId());
 		this.stopLoop = true;
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("[" + getId() + "] closing EQH is finished");
+			LOG.debug(this.toLogString() + "closing EQH is finished");
 		}
 	}
 
@@ -288,7 +293,7 @@ public class EventQueueHandler implements Runnable {
 
 	void addEventable(Eventable eventable) {
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("** adding " + eventable.getId() + " to map of EQH id=" + this.getId());
+			LOG.debug(this.toLogString() + "adding " + eventable.getId() + " to map");
 		}
 		// add lock
 		synchronized (eventables) {
@@ -300,7 +305,7 @@ public class EventQueueHandler implements Runnable {
 
 	void removeEventable(Eventable eventable) {
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("** removing " + eventable.getId() + " from map of EQH id=" + this.getId());
+			LOG.debug(this.toLogString() + "removing " + eventable.getId() + " from map");
 		}
 		synchronized (eventables) {
 			eventables.remove(eventable.getId());
@@ -334,7 +339,7 @@ public class EventQueueHandler implements Runnable {
 					eventable = eventables.get(id);
 				}
 				if (eventable == null) {
-					LOG.warn(this.toString() + " eventable with id " + id + " was not found in map");
+					LOG.warn(this.toLogString() + "eventable with id " + id + " was not found in map");
 					break;
 				}
 				eventable.onEvent(evSes);
@@ -351,7 +356,7 @@ public class EventQueueHandler implements Runnable {
 				final int reason = eventQueue.getInt();
 				eventable = eventables.get(session_id);
 				if (eventable == null) {
-					LOG.warn(this.toString() + " eventable with id " + session_id + " was not found in map");
+					LOG.warn(this.toLogString() + "eventable with id " + session_id + " was not found in map");
 					break;
 				}
 				EventMsgError evMsgErr = new EventMsgError(eventType, id, msg, reason);
@@ -375,7 +380,7 @@ public class EventQueueHandler implements Runnable {
 				EventSessionEstablished evSesEstab = new EventSessionEstablished(eventType, id);
 				eventable = eventables.get(id);
 				if (eventable == null) {
-					LOG.warn(this.toString() + " eventable with id " + id + " was not found in map");
+					LOG.warn(this.toLogString() + "eventable with id " + id + " was not found in map");
 					break;
 				}
 				eventable.onEvent(evSesEstab);
@@ -394,11 +399,11 @@ public class EventQueueHandler implements Runnable {
 				msg.getOut().limit(msg_out_size);
 				final long session_id = eventQueue.getLong();
 				if (LOG.isTraceEnabled()) {
-					LOG.trace("session refToCObject" + session_id);
+					LOG.trace(this.toLogString() + "session refToCObject" + session_id);
 				}
 				eventable = eventables.get(session_id);
 				if (eventable == null) {
-					LOG.warn(this.toString() + " eventable with id " + session_id + " was not found in map");
+					LOG.warn(this.toLogString() + "eventable with id " + session_id + " was not found in map");
 					break;
 				}
 				EventNewMsg evMsg = new EventNewMsg(eventType, id, msg);
@@ -412,12 +417,12 @@ public class EventQueueHandler implements Runnable {
 				final int msg_size = eventQueue.getInt();
 				msg.getIn().limit(msg_size);
 				if (LOG.isTraceEnabled()) {
-					LOG.trace("msg is " + msg);
+					LOG.trace(this.toLogString() + "got msg " + msg);
 				}
 				EventNewMsg evMsg = new EventNewMsg(eventType, id, msg);
 				eventable = msg.getClientSession();
 				if (LOG.isTraceEnabled()) {
-					LOG.trace("eventable is " + eventable);
+					LOG.trace(this.toLogString() + "eventable is " + eventable);
 				}
 				eventable.onEvent(evMsg);
 			}
@@ -433,7 +438,7 @@ public class EventQueueHandler implements Runnable {
 					eventable = eventables.get(id);
 				}
 				if (eventable == null) {
-					LOG.warn(this.toString() + " eventable with id " + id + " was not found in map");
+					LOG.warn(this.toLogString() + "eventable with id " + id + " was not found in map");
 					break;
 				}
 				EventNewSession evNewSes = new EventNewSession(eventType, id, ptrSes, uri, srcIP);
@@ -447,12 +452,12 @@ public class EventQueueHandler implements Runnable {
 				 * int fd = eventQueue.getInt();
 				 * int events = eventQueue.getInt();
 				 */
-				LOG.error("received FD Ready event - not handled");
+				LOG.error(this.toLogString() + "received FD Ready event - not handled");
 			}
 				break;
 
 			default:
-				LOG.error("received an unknown event " + eventType);
+				LOG.error(this.toLogString() + "received an unknown event " + eventType);
 				// TODO: throw exception
 		}
 	}
@@ -490,16 +495,15 @@ public class EventQueueHandler implements Runnable {
 
 	public boolean bindMsgPool(MsgPool msgPool) {
 		if (getId() == 0) {
-			LOG.error("no context opened on C side. can not bind msg pool");
+			LOG.error(this.toLogString() + "no context opened on C side. can not bind msg pool");
 			return false;
 		}
 		if (msgPool == null || msgPool.getId() == 0) {
-			LOG.error("msgPool provided is null or id is wrong. Can not bind");
+			LOG.error(this.toLogString() + "msgPool provided is null or id is wrong. Can not bind");
 			return false;
 		}
 		if (msgPool.isBounded()) {
-			LOG.warn("trying to bind MsgPool " + msgPool.toString() + " to EQH" + this.toString()
-			        + ", but it's already bound");
+			LOG.warn(this.toLogString() + "trying to bind MsgPool " + msgPool.toString() + ", but it's already bound");
 			return false;
 		}
 		// the messages inside the pool must be added to hashmap, so that the appropraite msg can be tracked
@@ -533,18 +537,26 @@ public class EventQueueHandler implements Runnable {
 
 	public void getAdditionalMsgPool(int inSize, int outSize) {
 		if (callbacks == null) {
-			LOG.fatal(this.toString() + ": user did not provide callback for providing additional buffers. aborting");
+			LOG.fatal(this.toLogString() + "user did not provide callback for providing additional buffers. aborting");
 			System.exit(1);
 		}
 		MsgPool pool = this.callbacks.getAdditionalMsgPool(inSize, outSize);
 		if (pool == null) {
-			LOG.fatal("user failed to provide buffer. aborting");
+			LOG.fatal(this.toLogString() + "user failed to provide buffer. aborting");
 			System.exit(1);
 		}
-		if (pool.getInSize() < inSize || pool.getOutSize() < outSize){
-			LOG.fatal("user failed to provide pool with correct sizes. aborting");
+		if (pool.getInSize() < inSize || pool.getOutSize() < outSize) {
+			LOG.fatal(this.toLogString() + "user failed to provide pool with correct sizes. aborting");
 			System.exit(1);
 		}
 		this.bindMsgPool(pool);
+	}
+
+	public String toString() {
+		return this.name;
+	}
+
+	private String toLogString() {
+		return this.nameForLog;
 	}
 }

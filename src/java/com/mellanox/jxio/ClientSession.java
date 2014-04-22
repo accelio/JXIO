@@ -43,6 +43,8 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	private final Callbacks         callbacks;
 	private final EventQueueHandler eventQHandler;
 	private static final Log        LOG = LogFactory.getLog(ClientSession.class.getCanonicalName());
+	private final String            name;
+	private final String            nameForLog;
 
 	/**
 	 * This interface needs to be implemented and passed to ClientSession in c-tor
@@ -54,7 +56,8 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		 * {@link com.mellanox.jxio.Msg} object. Once the user is done
 		 * with the Msg he needs to call method msg.returnToParentPool()
 		 * 
-		 * @param msg - the response message that was received. Msg object contains both request and Response
+		 * @param msg
+		 *            - the response message that was received. Msg object contains both request and Response
 		 */
 		public void onResponse(Msg msg);
 
@@ -84,8 +87,10 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		 * This event is triggered if there is an error in Msg send/receive. Once the user is done
 		 * with the Msg he needs to call method msg.returnToParentPool()
 		 * 
-		 * @param msg - send/receive of this Msg failed
-		 * @param reason - reason of the msg error 
+		 * @param msg
+		 *            - send/receive of this Msg failed
+		 * @param reason
+		 *            - reason of the msg error
 		 */
 		public void onMsgError(Msg msg, EventReason reason);
 	}
@@ -110,16 +115,19 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		}
 
 		final long id = Bridge.startSessionClient(uri.toString(), eventQHandler.getId());
+		this.name = "jxio.CS[" + Long.toHexString(id) + "]";
+		this.nameForLog = this.name + ": ";
 		if (id == 0) {
-			LOG.error("there was an error creating session");
+			LOG.error(this.toLogString() + "there was an error creating session");
 		}
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("id as recieved from C is " + id);
+			LOG.debug(this.toLogString() + "connecting to " + uri);
 		}
 		this.setId(id);
 
 		this.eventQHandler.addEventable(this);
+
 	}
 
 	/**
@@ -134,11 +142,11 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	 */
 	public boolean sendRequest(Msg msg) {
 		if (this.getIsClosing()) {
-			LOG.warn("Trying to send message while session is closing");
+			LOG.warn(this.toLogString() + "Trying to send message while session is closing");
 			return false;
 		}
 		if (!Bridge.clientSendReq(this.getId(), msg.getId(), msg.getOut().position(), msg.getIsMirror())) {
-			LOG.error("there was an error sending the message");
+			LOG.error(this.toLogString() + "there was an error sending the message");
 			return false;
 		}
 		msg.setClientSession(this);
@@ -156,11 +164,11 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	 */
 	public boolean close() {
 		if (this.getIsClosing()) {
-			LOG.warn(this.toString() + ": attempting to close client that is already closed or being closed");
+			LOG.warn(this.toLogString() + "attempting to close client that is already closed or being closed");
 			return false;
 		}
 		if (getId() == 0) {
-			LOG.error(this.toString() + ": closing Session with empty id");
+			LOG.error(this.toLogString() + "closing Session with empty id");
 			return false;
 		}
 		setIsClosing(true);
@@ -168,7 +176,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		Bridge.closeSessionClient(getId());
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug(this.toString() + ": at the end of SessionClient:close()");
+			LOG.debug(this.toLogString() + "at the end of SessionClient:close()");
 		}
 		return true;
 	}
@@ -178,7 +186,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 			case 0: // session error event
 				if (LOG.isDebugEnabled()) {
-					LOG.debug("received session event");
+					LOG.debug(this.toLogString() + "received session event");
 				}
 				if (ev instanceof EventSession) {
 
@@ -205,8 +213,8 @@ public class ClientSession extends EventQueueHandler.Eventable {
 				break;
 
 			case 2: // msg error
-				if (LOG.isDebugEnabled()){
-					LOG.debug("received msg error event");
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(this.toLogString() + "received msg error event");
 				}
 				EventMsgError evMsgErr;
 				if (ev instanceof EventMsgError) {
@@ -215,20 +223,20 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					int reason = evMsgErr.getReason();
 					callbacks.onMsgError(msg, EventReason.getEventByIndex(reason));
 				} else {
-					LOG.error("Event is not an instance of EventMsgError" + this.toString());
+					LOG.error(this.toLogString() + "Event is not an instance of EventMsgError");
 				}
 				break;
 
 			case 3: // session established
 				if (LOG.isDebugEnabled()) {
-					LOG.debug("received session established event");
+					LOG.debug(this.toLogString() + "received session established event");
 				}
 				callbacks.onSessionEstablished();
 				break;
 
 			case 5: // on response
 				if (LOG.isTraceEnabled()) {
-					LOG.trace("received msg event at client" + this.toString());
+					LOG.trace(this.toLogString() + "received msg event");
 				}
 				EventNewMsg evNewMsg;
 				if (ev instanceof EventNewMsg) {
@@ -236,13 +244,21 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					Msg msg = evNewMsg.getMsg();
 					callbacks.onResponse(msg);
 				} else {
-					LOG.error("Event is not an instance of EventNewMsg" + this.toString());
+					LOG.error(this.toLogString() + "Event is not an instance of EventNewMsg");
 				}
 
 				break;
 
 			default:
-				LOG.error("received an unknown event " + ev.getEventType());
+				LOG.error(this.toLogString() + "received an unknown event " + ev.getEventType());
 		}
+	}
+
+	public String toString() {
+		return this.name;
+	}
+
+	private String toLogString() {
+		return this.nameForLog;
 	}
 }

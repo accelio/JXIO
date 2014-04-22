@@ -50,6 +50,8 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	private URI                     uriPort0;
 	private final int               port;
 	private Set<ServerSession>      sessions = new HashSet<ServerSession>();
+	private final String            name;
+	private final String            nameForLog;
 	private static final Log        LOG      = LogFactory.getLog(ServerPortal.class.getCanonicalName());
 
 	public static interface Callbacks {
@@ -99,12 +101,14 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		long[] ar = Bridge.startServerPortal(uri.toString(), eventQHandler.getId());
 		this.setId(ar[0]);
 		this.port = (int) ar[1];
+		this.name = "jxio.SP[" + Long.toHexString(getId()) + "]";
+		this.nameForLog = this.name + ": ";
 
 		if (getId() == 0) {
-			LOG.fatal("there was an error creating ServerPortal");
+			LOG.fatal(this.toLogString() + "there was an error creating ServerPortal");
 		}
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("id as recieved from C is " + getId());
+			LOG.debug(this.toLogString() + "listening to " + uri);
 		}
 		this.uriPort0 = replacePortInURI(uri, 0);
 		this.uri = replacePortInURI(uri, this.port);
@@ -145,17 +149,17 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	 */
 	public boolean close() {
 		if (this.getIsClosing()) {
-			LOG.warn("attempting to close server portal that is already closed or being closed");
+			LOG.warn(this.toLogString() + "attempting to close server portal that is already closed or being closed");
 			return false;
 		}
 		if (getId() == 0) {
-			LOG.error("closing ServerPortal with empty id");
+			LOG.error(this.toLogString() + "closing ServerPortal with empty id");
 			return false;
 		}
 		for (ServerSession serverSession : sessions) {
 			if (!serverSession.getIsClosing()) {
 				if (LOG.isDebugEnabled()) {
-					LOG.debug("[" + getId() + "] closing serverSession=" + serverSession.getId()
+					LOG.debug(this.toLogString() + "closing serverSession=" + serverSession.getId()
 					        + " from ServerPortal.close");
 				}
 				serverSession.close();
@@ -192,7 +196,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	 */
 	public void forward(ServerPortal portal, ServerSession serverSession) {
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("portal " + portal + " ses id is " + serverSession.getId());
+			LOG.debug(this.toLogString() + "portal " + portal + " ses id is " + serverSession.getId());
 		}
 		if (portal == this) {// in case forward was called but the user really means accept
 			accept(serverSession);
@@ -233,7 +237,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 
 			case 0: // session error event
 				if (LOG.isDebugEnabled()) {
-					LOG.debug("received session error event");
+					LOG.debug(this.toLogString() + "received session error event");
 				}
 				if (ev instanceof EventSession) {
 					int errorType = ((EventSession) ev).getErrorType();
@@ -246,7 +250,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 					if (eventName == EventName.PORTAL_CLOSED) {
 						this.eventQHndl.removeEventable(this);
 						if (LOG.isDebugEnabled()) {
-							LOG.debug("[" + this.getId() + "] portal was closed");
+							LOG.debug(this.toLogString() + "portal was closed");
 						}
 					}
 					callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
@@ -255,7 +259,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 
 			case 6: // on new session
 				if (LOG.isDebugEnabled()) {
-					LOG.debug("received new session event");
+					LOG.debug(this.toLogString() + "received new session event");
 				}
 				if (ev instanceof EventNewSession) {
 					long ptrSes = ((EventNewSession) ev).getPtrSes();
@@ -267,7 +271,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 				break;
 
 			default:
-				LOG.error("received an unknown event " + ev.getEventType());
+				LOG.error(this.toLogString() + "received an unknown event " + ev.getEventType());
 		}
 	}
 
@@ -281,11 +285,11 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 			newUri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), newPort, uri.getPath(), uri.getQuery(),
 			        uri.getFragment());
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("uri with port " + newPort + " is " + newUri.toString());
+				LOG.debug(this.toLogString() + "uri with port " + newPort + " is " + newUri.toString());
 			}
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
-			LOG.error("URISyntaxException occured while trying to create a new URI");
+			LOG.error(this.toLogString() + "URISyntaxException occured while trying to create a new URI");
 		}
 
 		return newUri;
@@ -299,12 +303,20 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 			        uriForForward.getFragment());
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
-			LOG.error("URISyntaxException occured while trying to create a new URI");
+			LOG.error(this.toLogString() + "URISyntaxException occured while trying to create a new URI");
 		}
 		return newUri;
 	}
 
 	private URI getUri() {
 		return uri;
+	}
+
+	public String toString() {
+		return this.name;
+	}
+
+	private String toLogString() {
+		return this.nameForLog;
 	}
 }

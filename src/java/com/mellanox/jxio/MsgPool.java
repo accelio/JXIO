@@ -92,16 +92,6 @@ public class MsgPool {
 		}
 	}
 
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append("jxio.MsgPool(" + Long.toHexString(refToCObject) + ")");
-		sb.append("[count=" + count());
-		sb.append(", capacity=" + capacity);
-		sb.append(", inSize=" + inSize);
-		sb.append(", outSize=" + outSize + "]");
-		return sb.toString();
-	}
-
 	/**
 	 * Returns true if this MsgPool is empty
 	 * 
@@ -135,7 +125,7 @@ public class MsgPool {
 	 */
 	public Msg getMsg() {
 		if (listMsg.isEmpty()) {
-			LOG.warn("there are no more messages in pool");
+			LOG.warn(this.toLogString() + "there are no more messages in pool");
 			return null;
 		}
 		Msg msg = listMsg.remove(0);
@@ -161,11 +151,13 @@ public class MsgPool {
 				listMsg.add(msg);
 				return true;
 			} else {
-				LOG.error("This msg can not be returned to pool " + this.getId() + ", since msg " + msg.toString() + " was not obtained using pool.getMsg method");
+				LOG.error(this.toLogString() + "Msg " + msg.toString()
+				        + " can not be returned to pool, since it was not obtained using pool.getMsg method");
 				return false;
 			}
 		}
-		LOG.error("parent pool " + msg.getParentPool().getId() + " and actual msg pool " + this.getId() + " do not match!");
+		LOG.error(this.toLogString() + "parent pool " + msg.getParentPool().getId() + " and actual msg pool "
+		        + this.getId() + " do not match!");
 		return false;
 	}
 
@@ -205,5 +197,19 @@ public class MsgPool {
 
 	int getOutSize() {
 		return this.outSize;
+	}
+
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("jxio.MsgPool(" + Long.toHexString(refToCObject) + ")");
+		sb.append("[count=" + count());
+		sb.append(", capacity=" + capacity);
+		sb.append(", inSize=" + inSize);
+		sb.append(", outSize=" + outSize + "]");
+		return sb.toString();
+	}
+
+	private String toLogString() {
+		return this.toString() + ": ";
 	}
 }

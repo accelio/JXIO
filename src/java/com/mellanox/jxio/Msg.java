@@ -62,15 +62,6 @@ public class Msg {
 		this.refToCObject = parent.getId();
 	}
 
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append("jxio.Msg(" + Long.toHexString(refToCObject) + ")");
-		sb.append("[msgIn=" + toStringBB(this.in));
-		sb.append(", msgOut=" + toStringBB(this.out));
-		sb.append(", msgPool=" + this.msgPool + "]");
-		return sb.toString();
-	}
-
 	/**
 	 * Returns a Msg to the MsgPool to which it belongs. This method should be called only
 	 * on msg which was received using pool.getMsg() method:
@@ -198,6 +189,19 @@ public class Msg {
 		buf.limit(limit);
 		sub = buf.slice();
 		return sub;
+	}
+
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("jxio.Msg(" + Long.toHexString(refToCObject) + ")");
+		sb.append("[msgIn=" + toStringBB(this.in));
+		sb.append(", msgOut=" + toStringBB(this.out));
+		sb.append(", msgPool=" + this.msgPool + "]");
+		return sb.toString();
+	}
+
+	private String toLogString() {
+		return this.toString() + ": ";
 	}
 
 	private String toStringBB(ByteBuffer bb) {
