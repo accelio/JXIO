@@ -53,6 +53,8 @@ public class ClientPlayer extends GeneralPlayer {
 	private boolean           isClosing = false;
 	private Random            random;
 	private int               violent_exit;
+	private long              maxBandwidthIn;                                                   // in Gb
+	private long              maxBandwidthOut;                                                  // in Gb
 
 	public ClientPlayer(int id, URI uri, long startDelaySec, long runDurationSec, MsgPoolData pool, int msgRate,
 	        int msgBatch, int violent_exit, long seed) {
@@ -78,6 +80,12 @@ public class ClientPlayer extends GeneralPlayer {
 		}
 		this.numHops = numHops;
 		this.random = new Random(seed);
+		this.maxBandwidthIn = (long) Math.min(msgBatch, pool.getCount()) * msgRate * pool.getInSize() * 8
+		        / (1024 * 1024 * 1024);
+		this.maxBandwidthOut = (long) Math.min(msgBatch, pool.getCount()) * msgRate * pool.getOutSize() * 8
+		        / (1024 * 1024 * 1024);
+		LOG.info("maximum bandwidth can be up to " + this.maxBandwidthIn + "Gb for In and " + this.maxBandwidthOut
+		        + "Gb for Out");
 		LOG.debug("new " + this.toString() + " done");
 	}
 
@@ -204,7 +212,8 @@ public class ClientPlayer extends GeneralPlayer {
 			LOG.error(this.toString() + ": FAILURE: session did not get established/rejected as expected");
 			System.exit(1); // Failure in test - eject!
 		}
-		if (this.mp.count() + (this.counterSentMsgs - this.counterReceivedMsgs - this.counterReturnedErrorMsgs) != this.mp.capacity()) {
+		if (this.mp.count() + (this.counterSentMsgs - this.counterReceivedMsgs - this.counterReturnedErrorMsgs) != this.mp
+		        .capacity()) {
 			LOG.error(this.toString() + ": FAILURE: not all Msgs returned to MSgPoll: " + mp);
 			System.exit(1); // Failure in test - eject!
 		}
@@ -232,7 +241,7 @@ public class ClientPlayer extends GeneralPlayer {
 		public void onSessionEstablished() {
 			counterEstablished++;
 			final long timeSessionEstablished = System.nanoTime() - outer.startSessionTime;
-			if (timeSessionEstablished > 100000000 && !LOG.isTraceEnabled()) { // 100 milli-sec  Debug prints slow down
+			if (timeSessionEstablished > 100000000 && !LOG.isTraceEnabled()) { // 100 milli-sec Debug prints slow down
 				LOG.error(outer.toString() + ": FAILURE: session establish took " + timeSessionEstablished / 1000
 				        + " usec");
 				System.exit(1); // Failure in test - eject!
@@ -250,7 +259,8 @@ public class ClientPlayer extends GeneralPlayer {
 							LOG.error(outer.toString() + ": there were " + outer.counterSentMsgs + " sent and "
 							        + outer.counterReceivedMsgs + " received");
 						} else {
-							LOG.info(outer.toString() + ": SUCCESSFULLY received all sent msgs (" + counterReceivedMsgs + ")");
+							LOG.info(outer.toString() + ": SUCCESSFULLY received all sent msgs (" + counterReceivedMsgs
+							        + ")");
 						}
 						return;
 					}
@@ -282,7 +292,8 @@ public class ClientPlayer extends GeneralPlayer {
 			if (roundTrip > 100000000 && !LOG.isTraceEnabled()) { // 100 milli-sec. Debug prints slow down
 				if (outer.counterReceivedMsgs != 1 || outer.numHops <= 0) {
 					LOG.error(outer.toString() + ": FAILURE: msg(#" + outer.counterReceivedMsgs + ") round trip took "
-					        + roundTrip / 1000 + " usec");
+					        + roundTrip / 1000 + " usec. max in bandwith is " + outer.maxBandwidthIn
+					        + "Gb. max out bandwidth is " + outer.maxBandwidthOut);
 					System.exit(1); // Failure in test - eject!
 				}
 			}
