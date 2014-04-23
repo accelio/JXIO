@@ -11,7 +11,7 @@ function getFiled()
 	grep "$1" "$2" | awk -v fieldNum="$3" '{print $fieldNum}'
 }
 
-function convertLinuxPathToWindoes()
+function convertLinuxPathToWindows()
 {
 	echo $1 | awk '{gsub("/.autodirect","file://mtrlabfs01",$0); print $0}'
 }
@@ -61,7 +61,7 @@ cCoverageReportDir=$cCoverageDir/$REPORT_DIRNAME
 $BULLSEYE_DIR/covhtml --file $cMergedCovfileTemp $cCoverageReportDir
 sudo chmod -R 755 $cCoverageReportDir
 cReportDir="$cCoverageReportDir/index.html"
-cReportDirWindoes=`convertLinuxPathToWindoes $cReportDir`
+cReportDirWindows=`convertLinuxPathToWindows $cReportDir`
 
 mv $cMergedCovfileTemp $cCoverageDir
 mv $cCoverageSummaryTemp $cCoverageDir
@@ -86,6 +86,9 @@ if [[ $javaSrcLocal == "/" ]];then
 	echo "$echoPrefix: java source can not be found"
 	exit 1
 fi
+
+# copy sources to remote for the report to use
+mkdir $javaSrcRemote
 cp -r $javaSrcLocal/* $javaSrcRemote
 
 
@@ -99,14 +102,14 @@ cat $tmpFile | awk '($1=="Project"){print $5 ": " $9}' > $javaCoverageSummary
 rm $tmpFile
 
 javaCoverageReportDir=$javaCoverageDir/$REPORT_DIRNAME
-bash $COBERTURA_DIR/cobertura-report.sh --datafile $javaCoverageFinal --destination $javaCoverageReportDir $javaSrcRemote
+bash $COBERTURA_DIR/cobertura-report.sh --datafile $javaCoverageFinal --destination $javaCoverageReportDir --srcdir $javaSrcRemote
 if (( $? != 0 ));then
 	echo "$echoPrefix: cobertura-report failure"
 	exit 1
 fi
 sudo chmod -R 755 $javaCoverageReportDir
 javaReportDir="$javaCoverageReportDir/index.html"
-javaReportDirWindoes=`convertLinuxPathToWindoes $javaReportDir`
+javaReportDirWindows=`convertLinuxPathToWindows $javaReportDir`
 
 javaLinesCoverage=`getFiled "line" $javaCoverageSummary 2`
 javaBlocksCoverage=`getFiled "branch" $javaCoverageSummary 2`
@@ -124,9 +127,9 @@ mailMessageFile=$coverageDir/report.html
 message="<h1>${subjectCation}</h1><br>
 	<h3>JXIO Java and C code coverage results for `date +%d/%m/%y`:</h3><br><br>
 	<b>Java: </b> Lines: ${javaLinesCoverage}. Blocks: ${javaBlocksCoverage} <br>
-	<b>Full Java report: </b><a href=$javaReportDirWindoes>Windoes</a>  <a href=$javaReportDir>Linux</a> <br><br>
+	<b>Full Java report: </b><a href=$javaReportDirWindows>Windows</a>  <a href=$javaReportDir>Linux</a> <br><br>
 	<b>C: </b> Functions: ${cFunctionsCoverage}. Blocks: ${cBlocksCoverage} <br>
-	<b>Full C report: </b><a href=$cReportDirWindoes>Windoes</a>  <a href=$cReportDir>Linux</a> <br>
+	<b>Full C report: </b><a href=$cReportDirWindows>Windows</a>  <a href=$cReportDir>Linux</a> <br>
 	<h3>Total: $totalCoverage</h3>"
 	
 message="<html><body><font face=""Calibri"" size=3>"${message}"</font></body></html>"
