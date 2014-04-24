@@ -25,6 +25,7 @@ mkdir -p $BIN_FOLDER
 GIT_VERSION=`git describe --long --tags --always`
 echo "git version is: $GIT_VERSION"
 echo "$GIT_VERSION" > version
+sed -i "s/Specification-Version: .*/Specification-Version: $GIT_VERSION/" manifest.txt
 
 ## Build Accelio
 echo "Build Accelio... libxio C code"
