@@ -44,3 +44,6 @@ missing
 
 # JX specific
 /bin
+manifest.txt
+/docs
+version
