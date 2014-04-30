@@ -317,9 +317,13 @@ public class StoryTeller {
 				}
 				// Generate inner tags
 				for (Character supportingCharacter : mainCharacter.getSupportingCharacters()) {
-					String occurrences = supportingCharacter.getAttribute(Story.singleFromPlural(docRead,
-					        supportingCharacter.getCharacterType())
-					        + "_amount");
+					String singleForm = Story.singleFromPlural(docRead, supportingCharacter.getCharacterType());
+					String att =  singleForm + "_amount";
+					String occurrences = null;
+					// Check if there is a single from the character
+					if (singleForm != null){
+						 occurrences = supportingCharacter.getAttribute(att);
+					}
 					// Check if amount is configured
 					if (occurrences != null) {
 						occurrences = randomizeValueByProbability(occurrences);

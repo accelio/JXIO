@@ -20,63 +20,79 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class Character {
+
+	private final static Log    LOG                  = LogFactory.getLog(Character.class.getSimpleName());
 
 	private String              characterType;
 	private Map<String, String> attributes           = new HashMap<String, String>();
 	private List<Character>     supportingCharacters = new ArrayList<Character>();
 
 	/**
-	 * @return The character's type
-	 */
+     * @return The character's type
+     */
 	public String getCharacterType() {
 		return characterType;
 	}
 
 	/**
-	 * Set the character's type to the given one.
-	 * @param characterType A string representing the character's type.
-	 */
+     * Set the character's type to the given one.
+     * 
+     * @param characterType
+     *            A string representing the character's type.
+     */
 	public void setCharacterType(String characterType) {
 		this.characterType = characterType;
 	}
 
 	/**
-	 * Add an attribute to the character.
-	 * @param att The attribute name.
-	 * @param value The attribute value.
-	 */
+     * Add an attribute to the character.
+     * 
+     * @param att
+     *            The attribute name.
+     * @param value
+     *            The attribute value.
+     */
 	public void setAttribute(String att, String value) {
 		attributes.put(att, value);
 	}
-	
+
 	/**
-	 * @param att A character attribute name.
-	 * @return The value og the given attribute.
-	 */
+     * @param att
+     *            A character attribute name.
+     * @return The value of the given attribute.
+     */
 	public String getAttribute(String att) {
+		if (attributes.get(att) == null) {
+			StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+			LOG.warn("Retrieved attribute is NULL!");
+			LOG.warn("This happed when " + stackTrace[2].getClassName() + " called " + stackTrace[1].getMethodName()
+			        + " in line " + stackTrace[2].getLineNumber() + " for the attribute '" + att + "'.");
+		}
 		return attributes.get(att);
+
 	}
 
 	/**
-	 * @return A Map of the character's attributes and their values.
-	 */
+     * @return A Map of the character's attributes and their values.
+     */
 	public Map<String, String> getAttributes() {
 		return this.attributes;
 	}
 
 	/**
-	 * @return A list of all the character's supporting characters.
-	 */
+     * @return A list of all the character's supporting characters.
+     */
 	public List<Character> getSupportingCharacters() {
 		return supportingCharacters;
 	}
 
 	/**
-	 * @return A list of character types of all the character's
-	 * supporting characters.
-	 */
+     * @return A list of character types of all the character's supporting characters.
+     */
 	public List<String> getSupportingCharactersTypes() {
 		List<String> supportingCharactersTypes = new ArrayList<String>();
 		for (Character character : supportingCharacters) {
@@ -86,13 +102,14 @@ public class Character {
 	}
 
 	/**
-	 * Add a a supporting character to this character.
-	 * @param supportingCharacter
-	 */
+     * Add a a supporting character to this character.
+     * 
+     * @param supportingCharacter
+     */
 	public void addSupportingCharacter(Character supportingCharacter) {
 		supportingCharacters.add(supportingCharacter);
 	}
-	
+
 	public String toString() {
 		String str = "Character Type: " + characterType.toString();
 		for (String att : attributes.keySet()) {
@@ -100,7 +117,7 @@ public class Character {
 		}
 		return str;
 	}
-	
+
 	/**
      * Retrieve all characters matching a specific type.
      * 
@@ -172,7 +189,8 @@ public class Character {
      *            The value of the requested attribute to match.
      * @return A list of character from the list with there attribute matching the given value.
      */
-	public static List<Character> getCharactersFromListByAttribute(List<Character> characters, String attribute, String value) {
+	public static List<Character> getCharactersFromListByAttribute(List<Character> characters, String attribute,
+	        String value) {
 		List<Character> list = new ArrayList<Character>();
 		for (Character character : characters) {
 			if (character.getAttribute(attribute).equals(value)) {
