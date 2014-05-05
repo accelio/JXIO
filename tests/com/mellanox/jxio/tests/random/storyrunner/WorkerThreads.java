@@ -40,12 +40,12 @@ public class WorkerThreads {
 	private Map<Integer, Integer>           idToIndex         = new HashMap<Integer, Integer>();
 
 	@SuppressWarnings("unchecked")
-	public WorkerThreads(int numEQHs, int numListners) {
+	public WorkerThreads(int numEQHs, int numListeners) {
 		super();
 		this.num_workers = numEQHs;
 		this.executor = Executors.newCachedThreadPool();
-		this.listPortalPlayers = (ArrayList<ServerPortalPlayer>[]) new ArrayList[numListners];
-		for (int i = 0; i < numListners; i++) {
+		this.listPortalPlayers = (ArrayList<ServerPortalPlayer>[]) new ArrayList[numListeners];
+		for (int i = 0; i < numListeners; i++) {
 			this.listPortalPlayers[i] = new ArrayList<ServerPortalPlayer>();
 		}
 
@@ -64,12 +64,12 @@ public class WorkerThreads {
 	}
 
 	public void addPortal(int id, ServerPortalPlayer spp) {
-		synchronized (listPortalPlayers[index]) {
-			this.listPortalPlayers[index].add(spp);
-			if (!idToIndex.containsKey(id)) {
-				idToIndex.put(id, index);
-				index++;
-			}
+		if (!idToIndex.containsKey(id)) {
+			idToIndex.put(id, index);
+			index++;
+		}
+		synchronized (listPortalPlayers[idToIndex.get(id)]) {
+			this.listPortalPlayers[idToIndex.get(id)].add(spp);
 		}
 	}
 

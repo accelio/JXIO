@@ -147,8 +147,8 @@ public class JXIOProcessTask implements Callable<Integer> {
 		for (Character myProcess : chapter.myProcesses) {
 
 			// Configure Worker Threads
-			int numWorkerThreads = Integer.valueOf(myProcess.getAttribute("num_eqhs"));
-			WorkerThreads myWorkers = new WorkerThreads(numWorkerThreads, chapter.processServers.get(myProcess).size());
+			int numEqhs = Integer.valueOf(myProcess.getAttribute("num_eqhs"));
+			WorkerThreads myWorkers = new WorkerThreads(numEqhs, chapter.processServers.get(myProcess).size());
 			chapter.processWorkerThreads.put(myProcess, myWorkers);
 
 			// Configure Servers
