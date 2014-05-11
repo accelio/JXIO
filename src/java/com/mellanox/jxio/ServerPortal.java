@@ -208,7 +208,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		}
 
 		serverSession.setEventQueueHandlers(this.eventQHndl, portal.eventQHndl);
-		long ptrSesServer = Bridge.forwardSession(uriForForward.toString(), serverSession.getId(), portal.getId());
+		long ptrSesServer = Bridge.forwardSession(uriForForward.toString(), serverSession.getId(), portal.getId(), this.getId());
 		serverSession.setPtrServerSession(ptrSesServer);
 		portal.setSession(serverSession);
 	}

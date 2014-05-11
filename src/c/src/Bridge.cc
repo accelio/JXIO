@@ -362,11 +362,12 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSessio
 	close_xio_connection(xio_session, context->ctx);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_portal)
+extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_portal, jlong ptr_portal_forwarder)
 {
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	struct xio_session *xio_session = (struct xio_session *)ptr_session;
 	ServerPortal * portal = (ServerPortal *) ptr_portal;
+	ServerPortal * portal_forwarder = (ServerPortal *) ptr_portal_forwarder;
 	Context * ctx = portal->get_ctx_class();
 	ServerSession *jxio_session = new ServerSession(xio_session, ctx);
 	BULLSEYE_EXCLUDE_BLOCK_START
@@ -379,7 +380,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSes
 	bool ret_val = forward_session(jxio_session, url);
 	env->ReleaseStringUTFChars(jurl, url);
 	if (ret_val) {
-		portal->sessions++;
+		portal_forwarder->sessions++;
 		return (jlong)(intptr_t) jxio_session;
 	} else {
 		return 0;
