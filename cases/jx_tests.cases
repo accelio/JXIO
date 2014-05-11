@@ -5,14 +5,11 @@
 			<name>jx tests</name>
 			<owner>AlonGr</owner>
 		</Test>
-		<Case>
-			<wrapper>./jx_tests_wrapper.py</wrapper>
-			<tout>300</tout>
-		</Case>
 	</global>
 	<case>
 		<info>jx test</info>
 		<name>run break event loop test</name>
+		<wrapper>./jx_break_event_loop_wrapper.py</wrapper>
 		<tout>1500</tout>
 		<cmd>
 			<params>
@@ -20,5 +17,38 @@
 			</params>
 		</cmd>
 	</case>
-</CASEDEF>
+	<case>
+		<info>jx test</info>
+		<name>run jxio connection test 1</name>
+		<wrapper>./jx_connection_wrapper.py</wrapper>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>-port_server 4611 -server_buffer_count_server 164 -num_workers_server 1 -data_size_server 1000000000 -client_buffer_count_server 100 -num_clients_server 1 -num_times_server 1 -port_client 4611 -server_buffer_count_client 164 -num_workers_client 1 -data_size_client 1000000000 -client_buffer_count_client 100 -num_clients_client 1 -num_times_client 1</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run jxio connection test 2</name>
+		<wrapper>./jx_connection_wrapper.py</wrapper>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>-port_server 4612 -server_buffer_count_server 164 -num_workers_server 1 -data_size_server 10000000000 -client_buffer_count_server 100 -num_clients_server 1 -num_times_server 1 -port_client 4612 -server_buffer_count_client 164 -num_workers_client 1 -data_size_client 10000000000 -client_buffer_count_client 100 -num_clients_client 1 -num_times_client 1</static_args>
+			</params>
+		</cmd>
+	</case>
+	<case>
+		<info>jx test</info>
+		<name>run jxio connection test 3</name>
+		<wrapper>./jx_connection_wrapper.py</wrapper>
+		<tout>1500</tout>
+		<cmd>
+			<params>
+				<static_args>-port_server 4613 -server_buffer_count_server 164 -num_workers_server 5 -data_size_server 1000000000 -client_buffer_count_server 100 -num_clients_server 5 -num_times_server 1 -port_client 4613 -server_buffer_count_client 164 -num_workers_client 5 -data_size_client 1000000000 -client_buffer_count_client 100 -num_clients_client 5 -num_times_client 1</static_args>
+			</params>
 
+		</cmd>
+	</case>
+</CASEDEF>

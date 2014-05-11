@@ -9,7 +9,7 @@ TARGET=jxio.jar
 BIN_FOLDER=$TOP_DIR/bin
 LIB_FOLDER=$TOP_DIR/src/lib
 SRC_JAVA_FOLDER=$TOP_DIR/src/java
-SRC_JAVA_FILES="$SRC_JAVA_FOLDER/com/mellanox/jxio/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/impl/*.java"
+SRC_JAVA_FILES="$SRC_JAVA_FOLDER/com/mellanox/jxio/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/impl/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/jxioConnection/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/jxioConnection/impl/*.java"
 NATIVE_LIBS="libjxio.so libxio.so"
 
 export PATH=$BULLSEYE_DIR:$PATH

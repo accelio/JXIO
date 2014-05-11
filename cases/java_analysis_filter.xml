@@ -17,5 +17,25 @@
 	<Method name="requestForBoundMsgPool" params="long,int,int" returns="void"/>
 	<Bug code="Dm" />
      </Match>
+
+     <Match>
+	<Class name="com.mellanox.jxio.Msg" />
+	<Method name="toLogString" params="" returns="java.lang.String" />
+	<Bug code="UPM" />
+     </Match>
+
+     <Match>
+	<Class name="com.mellanox.jxio.jxioConnection.impl.ServerWorker" />
+        <Field name="msg" />
+        <Field type="com.mellanox.jxio.Msg" />
+	<Bug code="NP,RCN" />
+     </Match>
+
+     <Match>
+	<Class name="com.mellanox.jxio.jxioConnection.impl.ServerWorker" />
+	<Method name="run" params="" returns="void"/>
+	<Bug code="UW" />
+     </Match>
+
 </FindBugsFilter>
 
