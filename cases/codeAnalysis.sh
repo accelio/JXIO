@@ -134,7 +134,7 @@ else
 fi
 recipients="alongr@mellanox.com katyak@mellanox.com alexr@mellanox.com dinal@mellanox.com olgas@mellanox.com"
 MAIL_MESSAGE=mail.html
-MAIL_MESSAGE_HTML="<h1>JXIO Code Analysis Report</h1><br>Attached are the JXIO Java and C code analysis for `date +%d/%m/%y`.<br><br>"
+MAIL_MESSAGE_HTML="<h1>JXIO Code Analysis Report</h1><br>Attached are the JXIO Java and C code analysis for `date +%d/%m/%y`.<br><br>Running on the $GIT_BRANCH branch.<br><br>"
 if [ $JAVA_ERRORS != 0 ]; then
 	MAIL_MESSAGE_HTML="${MAIL_MESSAGE_HTML} Found $JAVA_ERRORS JAVA Errors/Warnings.<br>"
 	attachment="$attachment $JAVA_REPORT_FILE"
