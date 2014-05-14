@@ -200,9 +200,9 @@ public class Msg {
 		return sb.toString();
 	}
 
-	private String toLogString() {
+	/* private String toLogString() {
 		return this.toString() + ": ";
-	}
+	} */
 
 	private String toStringBB(ByteBuffer bb) {
 		StringBuffer sb = new StringBuffer();

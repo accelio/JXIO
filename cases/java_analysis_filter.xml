@@ -19,12 +19,6 @@
      </Match>
 
      <Match>
-	<Class name="com.mellanox.jxio.Msg" />
-	<Method name="toLogString" params="" returns="java.lang.String" />
-	<Bug code="UPM" />
-     </Match>
-
-     <Match>
 	<Class name="com.mellanox.jxio.jxioConnection.impl.ServerWorker" />
         <Field name="msg" />
         <Field type="com.mellanox.jxio.Msg" />
