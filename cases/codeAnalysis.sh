@@ -132,7 +132,7 @@ if ([ $TOTAL_ERRORS == 0 ]); then
 else
 	subject="${subject} - found $TOTAL_ERRORS issue(s)"
 fi
-recipients="alongr@mellanox.com katyak@mellanox.com alexr@mellanox.com dinal@mellanox.com"
+recipients="alongr@mellanox.com katyak@mellanox.com alexr@mellanox.com dinal@mellanox.com olgas@mellanox.com"
 MAIL_MESSAGE=mail.html
 MAIL_MESSAGE_HTML="<h1>JXIO Code Analysis Report</h1><br>Attached are the JXIO Java and C code analysis for `date +%d/%m/%y`.<br><br>"
 if [ $JAVA_ERRORS != 0 ]; then

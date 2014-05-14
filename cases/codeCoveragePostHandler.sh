@@ -121,7 +121,7 @@ totalCoverage=`getAverage $cFunctionsCoverage $cBlocksCoverage $javaLinesCoverag
 attachment=""
 subjectCation="JXIO Code Coverage Report"
 subject="$subjectCation - total $totalCoverage"
-recipients="alongr@mellanox.com katyak@mellanox.com alexr@mellanox.com dinal@mellanox.com"
+recipients="alongr@mellanox.com katyak@mellanox.com alexr@mellanox.com dinal@mellanox.com olgas@mellanox.com"
 
 mailMessageFile=$coverageDir/report.html
 message="<h1>${subjectCation}</h1><br>
