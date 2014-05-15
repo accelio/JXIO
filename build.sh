@@ -22,11 +22,11 @@ rm -fr $BIN_FOLDER
 mkdir -p $BIN_FOLDER
 
 ## Prepare VERSION file
-GIT_VERSION=`git describe --long --tags --always`
+GIT_VERSION=`git describe --long --tags --always --dirty`
 echo "git version is: $GIT_VERSION"
 echo "$GIT_VERSION" > version
 cp manifest.template manifest.txt
-sed -i "s/Specification-Version: .*/Specification-Version: $GIT_VERSION/" manifest.txt
+sed -i "s/Implementation-Version: .*/Implementation-Version: $GIT_VERSION/" manifest.txt
 
 ## Build Accelio
 echo "Build Accelio... libxio C code"
