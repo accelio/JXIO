@@ -93,12 +93,15 @@ public class CPDTestClient {
 			average[j] = average[j] / results.length;
 		}
 		String steps[] = new String[numSteps - 1];
-		steps[0] = "Session initialization\t";
-		steps[1] = "Session established\t\t";
-		steps[2] = "Session closed\t\t\t";
+		steps[0] = "Session Initialization";
+		steps[1] = "Session Establishment";
+		steps[2] = "Session Closing";
+		System.out.println(String.format("%-24s %10s %10s %10s %10s", "  step", "average", "min", "max", "units"));
+		System.out.println(String.format("%-24s %10s %10s %10s %10s", "  ----", "-------", "---", "---", "-----"));
 		for (int i = 0; i < numSteps - 1; i++) {
-			System.out.println(steps[i] + " took on average " + average[i] / 1000 + ", min " + min[i] / 1000 + ", max "
-			        + max[i] / 1000 + " usec");
+			System.out.println(String.format("%-24s %10d %10d %10d %10s", steps[i], average[i]/1000, min[i]/1000, max[i]/1000, "[usec]"));
+//			System.out.println(steps[i] + " took on average " + average[i] / 1000 + ", min " + min[i] / 1000 + ", max "
+//			        + max[i] / 1000 + " [usec]");
 		}
 
 	}

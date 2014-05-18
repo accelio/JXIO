@@ -67,8 +67,8 @@ public class CPDClientWorkerThread extends Thread {
 	class ClientWorkerCallbacks implements ClientSession.Callbacks {
 
 		private final CPDClientWorkerThread client;
-		private int                         index;
-		private int                         rowIndex;
+		private final int                   index;
+		private final int                   rowIndex;
 
 		ClientWorkerCallbacks(CPDClientWorkerThread client, int index, int rowIndex) {
 			this.client = client;
