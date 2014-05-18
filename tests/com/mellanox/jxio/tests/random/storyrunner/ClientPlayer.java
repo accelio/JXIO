@@ -288,15 +288,6 @@ public class ClientPlayer extends GeneralPlayer {
 			}
 			outer.counterReceivedMsgs++;
 
-			final long roundTrip = roundTrip(msg);
-			if (roundTrip > 100000000 && !LOG.isTraceEnabled()) { // 100 milli-sec. Debug prints slow down
-				if (outer.counterReceivedMsgs != 1 || outer.numHops <= 0) {
-					LOG.error(outer.toString() + ": FAILURE: msg(#" + outer.counterReceivedMsgs + ") round trip took "
-					        + roundTrip / 1000 + " usec. max in bandwith is " + outer.maxBandwidthIn
-					        + "Gb. max out bandwidth is " + outer.maxBandwidthOut);
-					System.exit(1); // Failure in test - eject!
-				}
-			}
 			if (LOG.isTraceEnabled())
 				LOG.trace(outer.toString() + ": onResponse(#" + outer.counterReceivedMsgs + ", " + msg + ")");
 			msg.returnToParentPool();
