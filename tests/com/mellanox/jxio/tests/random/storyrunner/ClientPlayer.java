@@ -221,8 +221,7 @@ public class ClientPlayer extends GeneralPlayer {
 			LOG.info(this.toString() + ": terminating violently. Exiting NOW");
 			System.exit(0);
 		}
-		if (!this.isClosing)
-			this.client.close();
+		this.client.close();
 	}
 
 	class JXIOCallbacks implements ClientSession.Callbacks {

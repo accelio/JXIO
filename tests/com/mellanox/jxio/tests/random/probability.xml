@@ -37,7 +37,8 @@
 			<msg_pool_size_in value="[20]:24-512, [30]:512-1024, [50]:1024-128000"/>
 			<msg_pool_size_out value="[20]:24-512, [30]:512-1024, [50]:1024-128000"/>
 		</msg_pools>
-		<tps value="[30]:100, [25]:100-500, [25]:500-50000, [20]:60000"/>
+		<tps value="[50]:0, [25]:100, [25]:100-500"/> <!--0 represents no delay-->
+		<batch value="[50]:1, [50]:2-10000"/>
 		<delay value="[20]:5, [20]:10, [60]:0"/>
 	</servers>
 
@@ -58,7 +59,7 @@
 		<msg_count_factor_perc value="[80]:80, [10]:20, [10]:30"/>
 		<msg_size_in_factor_perc value="[90]:100, [10]:100-120"/>
 		<msg_size_out_factor_perc value="[80]:80, [10]:20, [10]:30"/>
-		<tps value="[30]:100, [25]:100-500, [0]:500-50000, [0]:100000"/>
+		<tps value="[50]:100, [50]:100-500"/>
 		<batch value="[50]:1, [50]:2-10000"/>
 		<repeats value="[100]:0"/>
 		<repeat_delay value="[100]:0"/>

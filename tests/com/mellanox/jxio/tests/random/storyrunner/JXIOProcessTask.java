@@ -379,8 +379,9 @@ public class JXIOProcessTask implements Callable<Integer> {
 				int numWorkers = Integer.valueOf(server.getAttribute("num_workers"));
 				int delay = Integer.valueOf(server.getAttribute("delay"));
 				int startDelay = Integer.valueOf(server.getAttribute("start_delay"));
-				int violentExit = Integer.valueOf(server.getAttribute("violent_exit"));
 				int tps = Integer.valueOf(server.getAttribute("tps"));
+				int batch = Integer.valueOf(server.getAttribute("batch"));
+				int violentExit = Integer.valueOf(server.getAttribute("violent_exit"));
 
 				// Get server msg pools
 				List<Character> supportingCharacters = server.getSupportingCharacters();
@@ -416,7 +417,7 @@ public class JXIOProcessTask implements Callable<Integer> {
 
 				// Add server
 				ServerPortalPlayer sp = new ServerPortalPlayer(numWorkers, id, 0, uri, startDelay, duration,
-				        chapter.processWorkerThreads.get(myProcess), msgPools, violentExit, seed + counter * 3);
+				        chapter.processWorkerThreads.get(myProcess), msgPools, violentExit, tps, batch, seed + counter * 3);
 				serverPlayers.add(sp);
 			} catch (URISyntaxException e) {
 				e.printStackTrace();

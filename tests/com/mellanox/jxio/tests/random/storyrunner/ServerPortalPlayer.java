@@ -38,16 +38,19 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	private final int                    numWorkers;
 	private final long                   runDurationSec;
 	private final long                   startDelaySec;
-	private WorkerThread                 workerThread;
+	WorkerThread                         workerThread;
 	private WorkerThreads                workerThreads;
 	private ServerPortal                 listener;
 	private final ArrayList<MsgPoolData> msgPoolsData;
 	private ArrayList<MsgPool>           msgPools;
 	private long                         seed;
 	private int                          violent_exit;
+	private final int                    msgRate;
+	private final int                    msgBatchSize;
 
 	public ServerPortalPlayer(int numWorkers, int id, int instance, URI uri, long startDelaySec, long runDurationSec,
-	        WorkerThreads workerThreads, ArrayList<MsgPoolData> msgPoolsData, int violent_exit, long seed) {
+	        WorkerThreads workerThreads, ArrayList<MsgPoolData> msgPoolsData, int violent_exit, int msgRate,
+	        int msgBatch, long seed) {
 		this.name = new String("SPP[" + id + ":" + instance + "]");
 		this.id = id;
 		this.uri = uri;
@@ -56,6 +59,8 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		this.startDelaySec = startDelaySec;
 		this.workerThreads = workerThreads;
 		this.msgPoolsData = msgPoolsData;
+		this.msgRate = msgRate;
+		this.msgBatchSize = msgBatch;
 		msgPools = new ArrayList<MsgPool>();
 		this.seed = seed;
 		this.violent_exit = violent_exit;
@@ -113,14 +118,15 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		// workers
 		for (int i = 0; i < numWorkers; i++) {
 			ServerPortalPlayer spp = new ServerPortalPlayer(0, this.id, i + 1, this.listener.getUriForServer(), 0,
-			        runDurationSec, workerThreads, msgPoolsData, this.violent_exit, seed + (i * 47));
+			        runDurationSec, workerThreads, msgPoolsData, this.violent_exit, this.msgRate, this.msgBatchSize,
+			        this.seed + (i * 47));
 			workerThreads.getWorkerThread().addWorkAction(spp.getAttachAction());
 		}
 	}
 
 	@Override
 	protected void terminate() {
-		if (this.violent_exit == 1){
+		if (this.violent_exit == 1) {
 			LOG.info(this.toString() + ": terminating. Exiting NOW");
 			System.exit(0);
 		}
@@ -165,7 +171,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 			LOG.info(outer.toString() + ": Establishing new session from '" + clientName + "'");
 			ServerPortalPlayer sp = workerThreads.getPortal(outer.id);
-			ServerSessionPlayer ss = new ServerSessionPlayer(sp, sesKey, srcIP, seed);
+			ServerSessionPlayer ss = new ServerSessionPlayer(sp, sesKey, srcIP, outer.msgRate, outer.msgBatchSize, seed);
 			outer.listener.forward(sp.listener, ss.getServerSession());
 		}
 

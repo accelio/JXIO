@@ -19,7 +19,8 @@ package com.mellanox.jxio.tests.random.storyrunner;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Random;
-
+import java.util.LinkedList;
+import java.util.Queue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -45,15 +46,24 @@ public class ServerSessionPlayer {
 	private MsgPool                  nextHopMP;
 	private int                      counterReceivedMsgs;
 	private int                      counterSentMsgs;
+	private final int                msgBatchSize;
+	private final long               msgDelayMicroSec;
+	private Queue<Msg>               queueDelayedMsgs;
+	private boolean                  isClosing    = false;
 	private Random                   random;
 
-	public ServerSessionPlayer(ServerPortalPlayer spp, ServerSession.SessionKey sesKey, String srcIP, long seed) {
+	public ServerSessionPlayer(ServerPortalPlayer spp, ServerSession.SessionKey sesKey, String srcIP, int msgRate,
+	        int msgBatch, long seed) {
 		this.name = "SSP[" + id++ + "]";
 		this.spp = spp;
 		this.sk = sesKey.getSessionPtr();
+		this.queueDelayedMsgs = new LinkedList<Msg>();
+		this.msgDelayMicroSec = (msgRate > 0) ? (1000000 / msgRate) : 0;
+		this.msgBatchSize = msgBatch;
 		prepareForNextHop(sesKey.getUri());
 		this.server = new ServerSession(sesKey, new JXIOServerCallbacks());
 		this.random = new Random(seed);
+		sendMsgTimerStart();
 		LOG.debug("new " + this.toString() + " done");
 	}
 
@@ -118,6 +128,63 @@ public class ServerSessionPlayer {
 		}
 	}
 
+	protected void sendMsgTimerStart() {
+		if (this.msgDelayMicroSec > 0) {
+			if (LOG.isTraceEnabled()) {
+				LOG.trace(this.toString() + ": starting send timer for " + this.msgDelayMicroSec + " usec");
+			}
+			TimerList.Timer tSendMsg = new SendMsgTimer(this.msgDelayMicroSec);
+			this.spp.workerThread.start(tSendMsg);
+		}
+	}
+
+	private void sendMsg(Msg msg) {
+		int position = Utils.randIntInRange(this.random, 0, msg.getOut().limit() - Utils.HEADER_SIZE);
+		Utils.writeMsg(msg, position, 0, counterSentMsgs);
+		if (LOG.isTraceEnabled())
+			LOG.trace(this.toString() + ": sendResponse(" + msg + ")");
+		if (server.sendResponse(msg) == false) {
+			LOG.error(this.toString() + ": FAILURE: sendResponse with error on msg=" + msg);
+			System.exit(1);
+		}
+		this.counterSentMsgs++;
+	}
+
+	private class SendMsgTimer extends TimerList.Timer {
+		private final ServerSessionPlayer outer = ServerSessionPlayer.this;
+
+		public SendMsgTimer(long durationMicroSec) {
+			super(durationMicroSec);
+		}
+
+		@Override
+		public void onTimeOut() {
+			if (LOG.isTraceEnabled()) {
+				LOG.trace("SendMsgTimer: " + outer.toString());
+			}
+
+			if (outer.isClosing) {
+				return;
+			}
+			// register next send timer
+			sendMsgTimerStart();
+			// send msgs
+			int numMsgToSend = outer.msgBatchSize;
+			while (numMsgToSend > 0) {
+				numMsgToSend--;
+				Msg msg = outer.queueDelayedMsgs.poll();
+				if (msg == null) {
+					// MsgQueue is empty
+					if (LOG.isTraceEnabled()) {
+						LOG.trace(outer.toString() + ": no more messages in queue: skipping a timer");
+					}
+					return;
+				}
+				outer.sendMsg(msg);
+			}
+		}
+	}
+
 	class JXIOServerCallbacks implements ServerSession.Callbacks {
 		private final ServerSessionPlayer outer = ServerSessionPlayer.this;
 
@@ -133,13 +200,10 @@ public class ServerSessionPlayer {
 			outer.counterReceivedMsgs++;
 
 			if (outer.nextHop.isEmpty()) {
-				int position = Utils.randIntInRange(random, 0, msg.getOut().limit() - Utils.HEADER_SIZE);
-				Utils.writeMsg(msg, position, 0, outer.counterSentMsgs);
-				if (LOG.isTraceEnabled())
-					LOG.trace(outer.toString() + ": sendResponse(" + msg + ")");
-				if (outer.server.sendResponse(msg) == false) {
-					LOG.error(outer.toString() + ": FAILURE: sendResponse with error on msg=" + msg);
-					System.exit(1);
+				if (msgDelayMicroSec > 0) {
+					outer.queueDelayedMsgs.add(msg);
+				} else {
+					outer.sendMsg(msg);
 				}
 			} else {
 				// server session is in proxy mode (nextHopClient), check if client need to be connected
@@ -154,8 +218,9 @@ public class ServerSessionPlayer {
 					LOG.error(outer.toString() + ": FAILURE: sendRequest to nextHopClient with msg=" + nextHopMsg);
 					System.exit(1);
 				}
+				outer.counterSentMsgs++;
 			}
-			outer.counterSentMsgs++;
+
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
@@ -167,6 +232,7 @@ public class ServerSessionPlayer {
 						LOG.info(outer.toString() + ": closing nextHopClient");
 						outer.nextHopClient.close();
 					}
+					outer.isClosing = true;
 					break;
 				default:
 					LOG.error(outer.toString() + " got " + session_event.toString() + " reason='" + reason + "'");
