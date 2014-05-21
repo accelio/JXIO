@@ -27,49 +27,49 @@ import com.mellanox.jxio.tests.random.Story;
  */
 public class JXIOProcessTask implements Callable<Integer> {
 
-	private final static Log         LOG = LogFactory.getLog(JXIOProcessTask.class.getSimpleName());
+	private final static Log    LOG = LogFactory.getLog(JXIOProcessTask.class.getSimpleName());
 
-	private final String             storyFile;
-	private final String             processID;
-	private Document                 docRead;
-	private Story                    story;
-	private long                     seed;
-	private Chapter                  chapter;
-	private List<String>             characterTypes;
-	private List<Character>          machines;
-	private List<Character>          processes;
-	private List<Character>          servers;
-	private List<Character>          clients;
+	private final String        storyFile;
+	private final String        processID;
+	private Document            docRead;
+	private Story               story;
+	protected long              seed;
+	protected Chapter           chapter;
+	private List<String>        characterTypes;
+	protected List<Character>   machines;
+	protected List<Character>   processes;
+	protected List<Character>   servers;
+	protected List<Character>   clients;
 
-	private Character                machine;
-	private Character                process;
-	private List<ServerPortalPlayer> serverPlayers;
-	private List<ClientPlayer>       clientPlayers;
-	private WorkerThreads            workers;
-	private int                      maxDuration;
-	private CallbacksCounter         callbacksCounter;
+	private Character           machine;
+	private Character           process;
+	private List<GeneralPlayer> serverPlayers;
+	private List<GeneralPlayer> clientPlayers;
+	private WorkerThreads       workers;
+	private int                 maxDuration;
+	private CallbacksCounter    callbacksCounter;
 
 	/**
-     * The main JXIO Process Task that runs.
-     * 
-     * @param args
-     */
+	 * The main JXIO Process Task that runs.
+	 * 
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		if (!argsCheck(args)) {
 			return;
 		} else {
 			try {
 				System.out.println("\nRunning process " + args[1] + "!");
-	            new JXIOProcessTask(args[0], args[1]).call();
-            } catch (Exception e) {
-	            e.printStackTrace();
-            }
+				new JXIOProcessTask(args[0], args[1]).call();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
-	
+
 	/**
-     * Constructs a new JXIOProcessTask
-     */
+	 * Constructs a new JXIOProcessTask
+	 */
 	public JXIOProcessTask(String storyFile, String processID) {
 		this.storyFile = storyFile;
 		this.processID = processID;
@@ -91,8 +91,8 @@ public class JXIOProcessTask implements Callable<Integer> {
 	}
 
 	/**
-     * Reads the story XML file.
-     */
+	 * Reads the story XML file.
+	 */
 	public void read(File storyFile) {
 		try {
 			// Set needed XML document handling objects
@@ -131,22 +131,23 @@ public class JXIOProcessTask implements Callable<Integer> {
 			System.out.println("[ERROR] XML Read Expetion occurred.");
 		}
 	}
-	
+
 	/**
-     * Updates the maps of a given chapter to map and store server players, client players, max durations and worker
-     * threads.
-     * 
-     * @param chapter
-     *            The chapter which it's maps should be updated.
-     * @return 0 on success, -1 otherwise.
-     */
+	 * Updates the maps of a given chapter to map and store server players, client players, max durations and worker
+	 * threads.
+	 * 
+	 * @param chapter
+	 *            The chapter which it's maps should be updated.
+	 * @return 0 on success, -1 otherwise.
+	 */
 	private int mapPlayers(Chapter chapter) {
 
-		chapter.processServerPlayers = new HashMap<Character, List<ServerPortalPlayer>>();
-		chapter.processClientPlayers = new HashMap<Character, List<ClientPlayer>>();
+		chapter.processServerPlayers = new HashMap<Character, List<GeneralPlayer>>();
+		chapter.processClientPlayers = new HashMap<Character, List<GeneralPlayer>>();
 		chapter.processMaxDuration = new HashMap<Character, Integer>();
 		chapter.processWorkerThreads = new HashMap<Character, WorkerThreads>();
-
+		chapter.processCallbacksCounter = new HashMap<Character, CallbacksCounter>();
+		
 		for (Character myProcess : chapter.myProcesses) {
 
 			// Set Callback calls counter
@@ -177,19 +178,19 @@ public class JXIOProcessTask implements Callable<Integer> {
 		}
 		return 0;
 	}
-	
+
 	/**
-     * Configures the client players of the given process.
-     * 
-     * @param myProcess
-     *            A character representing a process.
-     * @return The maximal duration of a client in the given process.
-     */
-	private int configureClients(Chapter chapter, Character myProcess) {
+	 * Configures the client players of the given process.
+	 * 
+	 * @param myProcess
+	 *            A character representing a process.
+	 * @return The maximal duration of a client in the given process.
+	 */
+	protected int configureClients(Chapter chapter, Character myProcess) {
 		int maxDuration = 0;
 		// Configure Clients
 		List<Character> myClients = chapter.processClients.get(myProcess);
-		List<ClientPlayer> clientPlayers = new ArrayList<ClientPlayer>();
+		List<GeneralPlayer> clientPlayers = new ArrayList<GeneralPlayer>();
 		for (Character client : myClients) {
 			int counter = 1;
 			try {
@@ -200,11 +201,11 @@ public class JXIOProcessTask implements Callable<Integer> {
 
 				// Get client parameters
 				int id = Integer.valueOf(client.getAttribute("id"));
-				Character process = Character.getCharacterFromListByAttribute(processes, "id", client
-				        .getAttribute("process"));
+				Character process = Character.getCharacterFromListByAttribute(processes, "id",
+				        client.getAttribute("process"));
 				int duration = Integer.valueOf(client.getAttribute("duration"));
-				Character server = Character.getCharacterFromListByAttribute(servers, "id", client
-				        .getAttribute("server"));
+				Character server = Character.getCharacterFromListByAttribute(servers, "id",
+				        client.getAttribute("server"));
 				int startDelay = Integer.valueOf(client.getAttribute("start_delay"));
 				int tps = Integer.valueOf(client.getAttribute("tps"));
 				int batch = Integer.valueOf(client.getAttribute("batch"));
@@ -266,10 +267,10 @@ public class JXIOProcessTask implements Callable<Integer> {
 					batch = count;
 
 				// Resolve hostname and port
-				Character serverProcess = Character.getCharacterFromListByAttribute(processes, "id", server
-				        .getAttribute("process"));
-				Character machine = Character.getCharacterFromListByAttribute(machines, "id", serverProcess
-				        .getAttribute("machine"));
+				Character serverProcess = Character.getCharacterFromListByAttribute(processes, "id",
+				        server.getAttribute("process"));
+				Character machine = Character.getCharacterFromListByAttribute(machines, "id",
+				        serverProcess.getAttribute("machine"));
 				String hostname = machine.getAttribute("address");
 				int port = Integer.valueOf(server.getAttribute("port"));
 				int reject = Integer.valueOf(client.getAttribute("reject"));
@@ -290,7 +291,7 @@ public class JXIOProcessTask implements Callable<Integer> {
 				// each client will have a his own seed which is a derivative of the story's seed.
 				// repeating client will be added as sevreal sequential clients.
 				int clientStartDelay;
-				for (int i = 0; i < repeats + 1; i++){
+				for (int i = 0; i < repeats + 1; i++) {
 					clientStartDelay = (duration + repeatDelay) * i + startDelay;
 					ClientPlayer cp = new ClientPlayer(id, uri, clientStartDelay, duration, pool, tps, batch,
 					        violentExit, callbacksCounter, seed + counter * 17);
@@ -307,12 +308,12 @@ public class JXIOProcessTask implements Callable<Integer> {
 	}
 
 	/**
-     * Chooses a random miniaml msg_pool from a list a servers.
-     * 
-     * @param clientServers
-     *            The servers the client goes through.
-     * @return MsgPoolData of the choosen server.
-     */
+	 * Chooses a random miniaml msg_pool from a list a servers.
+	 * 
+	 * @param clientServers
+	 *            The servers the client goes through.
+	 * @return MsgPoolData of the choosen server.
+	 */
 	private MsgPoolData chooseServersMsgPool(List<Character> clientServers) {
 		MsgPoolData data;
 		// Randomize a msg_pool from your server
@@ -346,11 +347,11 @@ public class JXIOProcessTask implements Callable<Integer> {
 				int pool_in = Integer.valueOf(pool.getAttribute("msg_pool_size_in"));
 				int pool_out = Integer.valueOf(pool.getAttribute("msg_pool_size_out"));
 				// Check for a smaller msg_pool count
-				if (count > pool_count){
+				if (count > pool_count) {
 					count = pool_count;
 				}
 				// Check for a smaller msg_pool in size
-				if (in > pool_in){
+				if (in > pool_in) {
 					in = pool_in;
 				}
 				// Check for a smaller msg_pool out size
@@ -365,25 +366,25 @@ public class JXIOProcessTask implements Callable<Integer> {
 	}
 
 	/**
-     * Configures the server players of the given process.
-     * 
-     * @param myProcess
-     *            A character representing a process.
-     * @return The maximal duration of a server in the given process, or -1 on error.
-     */
-	private int configureServers(Chapter chapter, Character myProcess) {
+	 * Configures the server players of the given process.
+	 * 
+	 * @param myProcess
+	 *            A character representing a process.
+	 * @return The maximal duration of a server in the given process, or -1 on error.
+	 */
+	protected int configureServers(Chapter chapter, Character myProcess) {
 		int maxDuration = 0;
 		// Configure Servers
 		List<Character> myServers = chapter.processServers.get(myProcess);
-		List<ServerPortalPlayer> serverPlayers = new ArrayList<ServerPortalPlayer>();
+		List<GeneralPlayer> serverPlayers = new ArrayList<GeneralPlayer>();
 		for (Character server : myServers) {
 			int counter = 1;
 			try {
 				// Get server parameters
 				int id = Integer.valueOf(server.getAttribute("id"));
 				int port = Integer.valueOf(server.getAttribute("port"));
-				Character process = Character.getCharacterFromListByAttribute(processes, "id", server
-				        .getAttribute("process"));
+				Character process = Character.getCharacterFromListByAttribute(processes, "id",
+				        server.getAttribute("process"));
 				int duration = Integer.valueOf(server.getAttribute("duration"));
 				int numWorkers = Integer.valueOf(server.getAttribute("num_workers"));
 				int delay = Integer.valueOf(server.getAttribute("delay"));
@@ -414,8 +415,8 @@ public class JXIOProcessTask implements Callable<Integer> {
 				}
 
 				// Resolve hostname
-				Character machine = Character.getCharacterFromListByAttribute(machines, "id", process
-				        .getAttribute("machine"));
+				Character machine = Character.getCharacterFromListByAttribute(machines, "id",
+				        process.getAttribute("machine"));
 				String hostname = machine.getAttribute("address");
 				URI uri = new URI("rdma://" + hostname + ":" + port + "/");
 
@@ -440,9 +441,9 @@ public class JXIOProcessTask implements Callable<Integer> {
 	}
 
 	/**
-     * The function that is invoked when running the forked process. Computes the total running time of the process (can
-     * be used for benchmarking).
-     */
+	 * The function that is invoked when running the forked process. Computes the total running time of the process (can
+	 * be used for benchmarking).
+	 */
 	public Integer call() throws Exception {
 
 		// Set starting time
@@ -463,11 +464,11 @@ public class JXIOProcessTask implements Callable<Integer> {
 			LOG.info("There are " + numWorkerThreads + " working threads");
 
 			// Run Server Players
-			for (ServerPortalPlayer sp : this.serverPlayers) {
+			for (GeneralPlayer sp : this.serverPlayers) {
 				workers.getWorkerThread().addWorkAction(sp.getAttachAction());
 			}
 			// Run Client Players
-			for (ClientPlayer cp : this.clientPlayers) {
+			for (GeneralPlayer cp : this.clientPlayers) {
 				workers.getWorkerThread().addWorkAction(cp.getAttachAction());
 			}
 
@@ -496,7 +497,7 @@ public class JXIOProcessTask implements Callable<Integer> {
 		int runningTime = (int) ((endTime - startTime) / 1000000000);
 		return runningTime;
 	}
-	
+
 	/**
 	 * Checks to is if the number of arguments passed is valid.
 	 * 
@@ -504,7 +505,7 @@ public class JXIOProcessTask implements Callable<Integer> {
 	 *            The command line arguments.
 	 * @return True if number of arguments is valid.
 	 */
-	private static boolean argsCheck(String[] args) {
+	protected static boolean argsCheck(String[] args) {
 		if (args.length < 2) {
 			System.out.println("[ERROR] Wrong number of arguments!\nFirst arugment needs to be the directory of the story XML file."
 			        + "\nSecond arugment needs to be the process ID." + "\nparameters: 'STORY_FILE PROCESS_ID'\n");

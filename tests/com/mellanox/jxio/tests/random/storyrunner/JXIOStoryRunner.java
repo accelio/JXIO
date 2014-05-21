@@ -62,15 +62,15 @@ public class JXIOStoryRunner implements StoryRunner {
 	private int              status = 1;
 
 	/**
-     * Constructs an new StoryRunner
-     */
+	 * Constructs an new StoryRunner
+	 */
 	public JXIOStoryRunner() {
 		this.story = new Story();
 	}
 
 	/**
-     * Reads the story XML file.
-     */
+	 * Reads the story XML file.
+	 */
 	public void read(File storyFile) {
 		try {
 			this.storyFile = storyFile;
@@ -118,8 +118,8 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Runs the story.
-     */
+	 * Runs the story.
+	 */
 	public void run() {
 
 		System.out.println("=============");
@@ -157,7 +157,13 @@ public class JXIOStoryRunner implements StoryRunner {
 					if (!javaCoverageProps.equals("")) {
 						jxioProcessBuilder.command().add(javaCoverageProps);
 					}
-					jxioProcessBuilder.command().add("com.mellanox.jxio.tests.random.storyrunner.JXIOProcessTask");
+					if ((process.getAttribute("jc_support") != null)
+					        && (process.getAttribute("jc_support").compareTo("1") == 0)) {
+						jxioProcessBuilder.command()
+						        .add("com.mellanox.jxio.tests.random.storyrunner.JConnectionProcessTask");
+					} else {
+						jxioProcessBuilder.command().add("com.mellanox.jxio.tests.random.storyrunner.JXIOProcessTask");
+					}
 					// Add JXIO process parameters
 					jxioProcessBuilder.command().add(storyFile.getAbsolutePath());
 					jxioProcessBuilder.command().add(process.getAttribute("id"));
@@ -178,7 +184,8 @@ public class JXIOStoryRunner implements StoryRunner {
 			}
 			// Wait for all processes to finish
 			try {
-				System.out.println("Will now wait " + maxDuration + " seconds plus a small delay for all processes to finish.");
+				System.out.println("Will now wait " + maxDuration
+				        + " seconds plus a small delay for all processes to finish.");
 				// Sleeps for the maximal duration in milliseconds with a a small delay
 				Thread.sleep((maxDuration + 5) * 1000);
 			} catch (InterruptedException e1) {
@@ -216,12 +223,12 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Calculates and returns the maximal time in seconds that will that for the chapter to run.
-     * 
-     * @param processes
-     *            A list of process charachers
-     * @return The maximal duration of the run in milliseconds
-     */
+	 * Calculates and returns the maximal time in seconds that will that for the chapter to run.
+	 * 
+	 * @param processes
+	 *            A list of process charachers
+	 * @return The maximal duration of the run in milliseconds
+	 */
 	private int getMaxDuration(Chapter chpater) {
 		int maxDuration = 0;
 		for (Character process : chpater.myProcesses) {
@@ -239,15 +246,15 @@ public class JXIOStoryRunner implements StoryRunner {
 	}
 
 	/**
-     * Returns true if the story ran successfully.
-     */
+	 * Returns true if the story ran successfully.
+	 */
 	public boolean wasRunSuccessful() {
 		return ((status == 0) ? true : false);
 	}
 
 	/**
-     * Prints a summary of the story.
-     */
+	 * Prints a summary of the story.
+	 */
 	private void printSummary() {
 		System.out.print("Machines:");
 		for (Character machine : machines) {

@@ -33,6 +33,7 @@ public class JxioConnection implements BufferSupplier {
 	private boolean                 close           = false;
 	private int                     count           = 0;
 	private final String            name;
+	private EventName               connectErrorType;
 
 	/**
 	 * Ctor that receives from user the amount of memory to use for the jxio msgpool
@@ -53,18 +54,17 @@ public class JxioConnection implements BufferSupplier {
 	 *            number of messages
 	 */
 	public JxioConnection(URI uri, int msgPoolCount) throws ConnectException {
-		LOG.info("[" + this.toString() + "] " + uri.getHost() + " port " + uri.getPort());
-
 		long startTime = System.nanoTime();
 		eqh = new EventQueueHandler(null);
 		cs = new ClientSession(eqh, uri, new ClientCallbacks());
 		name = "jxioConnection[" + cs.toString() + "]";
+		LOG.info("[" + this.toString() + "] " + uri.getHost() + " port " + uri.getPort());
 		msgPool = JxioResourceManager.getMsgPool(msgPoolCount, msgPoolBuffSize, 0);
 		eqh.runEventLoop(1, -1); // session established event
 
 		if (!established) {
 			throw new ConnectException(this.toString() + " could not connect to " + uri.getHost() + " on port "
-			        + uri.getPort());
+			        + uri.getPort()+", got "+connectErrorType);
 		}
 		long endTime = System.nanoTime();
 
@@ -117,10 +117,10 @@ public class JxioConnection implements BufferSupplier {
 			LOG.debug(this.toString() + " jxioConnection disconnect,got all msgs back, closing session");
 		}
 		try {
-	        input.close();
-        } catch (IOException e) {
-	       LOG.error(this.toString()+" Could not close inputstream");
-        }
+			input.close();
+		} catch (IOException e) {
+			LOG.error(this.toString() + " Could not close inputstream");
+		}
 		cs.close();
 		eqh.runEventLoop(-1, -1);
 
@@ -150,7 +150,9 @@ public class JxioConnection implements BufferSupplier {
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
 			LOG.info(this.toString() + " onSessionEvent " + session_event);
-			if (session_event == EventName.SESSION_CLOSED || session_event == EventName.SESSION_ERROR) { // normal exit
+			if (session_event == EventName.SESSION_CLOSED || session_event == EventName.SESSION_ERROR
+			        || session_event == EventName.SESSION_REJECT) { // normal exit
+				connectErrorType = session_event;
 				eqh.stop();
 				close = true;
 			}

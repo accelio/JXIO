@@ -49,11 +49,12 @@ public class ServerWorker extends Thread implements BufferManager {
 	private boolean                              waitingToClose = false;
 	private Msg                                  msg            = null;
 	private int                                  count          = 0;
-	private ServerSession                        session;
+	private ServerSession                        session        = null;
 	private MultiBufOutputStream                 output;
 	private Thread                               worker;
 	private boolean                              stop           = false;
 	private String                               uri            = null;
+	private boolean                              firstMsg       = true;
 
 	// cTor
 	public ServerWorker(int index, int inMsgSize, int outMsgSize, URI uri, int numMsgs,
@@ -74,19 +75,14 @@ public class ServerWorker extends Thread implements BufferManager {
 
 	public void run() {
 		worker = Thread.currentThread();
-		try {
-			while (!stop) {
-				synchronized (this) {
-					wait();
-				}
-				appCallbacks.newSessionStart(uri, output);
-			}
-		} catch (InterruptedException e) {
-			LOG.error(this.toString() + " " + e.getMessage());
+		while (!stop) {
+			eqh.runEventLoop(1, -1); // to get the forward going
+			appCallbacks.newSessionStart(uri, output);
+
 		}
 	}
 
-	public void startSession(ServerSession ss, SessionKey sk) {
+	public void prepareSession(ServerSession ss, SessionKey sk) {
 		session = ss;
 		sessionClosed = false;
 		waitingToClose = false;
@@ -94,9 +90,7 @@ public class ServerWorker extends Thread implements BufferManager {
 		count = 0;
 		output = new MultiBufOutputStream(this);
 		uri = sk.getUri();
-		synchronized (worker) {
-			worker.notifyAll();
-		}
+		firstMsg = true;
 	}
 
 	public ServerPortal getPortal() {
@@ -109,6 +103,7 @@ public class ServerWorker extends Thread implements BufferManager {
 
 	public void sessionClosed() {
 		LOG.info(this.toString() + " disconnected from a Session");
+		session = null;
 		JxioConnectionServer.updateWorkers(this);
 	}
 
@@ -117,18 +112,20 @@ public class ServerWorker extends Thread implements BufferManager {
 	}
 
 	public ByteBuffer getNextBuffer() throws IOException {
-		if (msg != null) {
-			count++;
-			session.sendResponse(msg);
-			msg = null;
+		if (!firstMsg || msg == null) {
+			if (msg != null) {
+				count++;
+				session.sendResponse(msg);
+				msg = null;
+			}
+			do {
+				eqh.runEventLoop(1, -1);
+			} while (!sessionClosed && msg == null);
+			if (sessionClosed) {
+				throw new IOException("Session was closed, no buffer avaliable");
+			}
 		}
-		do {
-			eqh.runEventLoop(1, -1);
-		} while (!sessionClosed && msg == null);
-
-		if (sessionClosed) {
-			throw new IOException("Session was closed, no buffer avaliable");
-		}
+		firstMsg = false;
 		return msg.getOut();
 	}
 
@@ -140,15 +137,12 @@ public class ServerWorker extends Thread implements BufferManager {
 		}
 	}
 
-	public void setNewBuffer(Msg msg) {
-		this.msg = msg;
-	}
-
 	public void close() {
+		if (waitingToClose || session == null)
+			return;
 		LOG.info(this.toString() + " closing session sent " + count + " msgs");
-
-		session.close();
 		waitingToClose = true;
+		session.close();
 		while (!sessionClosed) {
 			eqh.runEventLoop(-1, -1);
 		}
@@ -157,14 +151,12 @@ public class ServerWorker extends Thread implements BufferManager {
 
 	// session callbacks
 	public class SessionServerCallbacks implements ServerSession.Callbacks {
-		public void onRequest(Msg msg) {
-			if (!waitingToClose) {
-				setNewBuffer(msg);
-			}
+		public void onRequest(Msg m) {
+			msg = m;
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
-			LOG.info(this.toString() + " got event " + session_event.toString() + ", the reason is "
+			LOG.info(ServerWorker.this.toString() + " got event " + session_event.toString() + ", the reason is "
 			        + reason.toString());
 			if (session_event == EventName.SESSION_CLOSED) {
 				eqh.breakEventLoop();

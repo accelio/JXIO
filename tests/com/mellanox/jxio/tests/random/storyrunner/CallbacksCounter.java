@@ -18,7 +18,7 @@ public class CallbacksCounter {
      *            exceptions.
      */
 	public CallbacksCounter(int limit) {
-		this.counter.set(0);
+		this.counter = new AtomicInteger();
 		this.limit = limit;
 		this.limitReached = false;
 		this.exceptionThrown = false;

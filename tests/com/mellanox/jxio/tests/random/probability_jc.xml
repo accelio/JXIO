@@ -1,0 +1,53 @@
+<root>
+	<machines>
+		<machine_amount value="2"/>
+		<machine>
+			 <name value="fatty08"/>
+                        <address value="36.0.0.149"/>
+                        <type value="IB"/>
+		</machine>
+		<machine>
+                       <name value="fatty12"/>
+			<address value="36.0.0.153"/>
+			<type value="IB"/>
+         </machine>
+</machines>
+
+
+<processes>
+		<process_amount value="[0]:1-5, [100]:2"/>
+		<machine value="[50]:1, [50]:2"/>
+		<jc_support value="[100]:1"/>
+		<log_level value="[0]:OFF, [0]:FATAL, [0]:ERROR, [0]:WARN, [100]:INFO, [0]:DEBUG, [0]:TRACE, [0]:ALL"/>
+		<timeout value="[100]:60"/>
+		<num_eqhs value="[100]:-1"/>
+		<throw_exception value="[100]:0"/>
+</processes>
+
+
+<servers>
+		<server_amount value="[100]:1"/>
+		<process value="random"/>
+		<port value="[0]:3000-3010, [100]:3011-65536"/>
+		<start_delay value="[100]:0, [0]:10"/>
+		<duration value="[100]:3-10"/>
+		<violent_exit value="[90]:0, [10]:1"/>
+		<num_workers value="[40]:1-5, [60]:6-10"/>
+		<msg_pool_mem value="[10]:65536-655360, [60]:655361-6553600, [30]:6553601-65536000"/>
+		<rate value="[70]:10-10000, [30]:0"/>
+</servers>
+
+<clients>
+		<client_amount value="[70]:1-5, [30]:6-10"/>
+	    <process value="random"/>
+		<server value="random"/>
+        <start_delay value="[100]:1, [0]:3-10, [0]:10-14"/>
+		<duration value="[100]:1-5"/>
+		<violent_exit value="[90]:0, [10]:1"/>
+		<reject value="[90]:0, [10]:1"/>
+		<rate value="[70]:10-10000, [30]:0"/>
+		<repeats value="[100]:0"/>
+		<repeat_delay value="[100]:0"/>
+		<size value="[20]:65537-6553600, [60]:6553601-1000000000"/>
+</clients>
+</root>

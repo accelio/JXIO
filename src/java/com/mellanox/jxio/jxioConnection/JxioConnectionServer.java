@@ -2,6 +2,7 @@ package com.mellanox.jxio.jxioConnection;
 
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.logging.Log;
@@ -15,7 +16,6 @@ import com.mellanox.jxio.ServerSession;
 import com.mellanox.jxio.ServerSession.SessionKey;
 import com.mellanox.jxio.jxioConnection.JxioConnection;
 import com.mellanox.jxio.jxioConnection.impl.*;
-import com.mellanox.jxio.jxioConnection.impl.MultiBufOutputStream;
 
 public class JxioConnectionServer extends Thread {
 
@@ -28,6 +28,7 @@ public class JxioConnectionServer extends Thread {
 	private final JxioConnectionServer.Callbacks       appCallbacks;
 	private final int                                  numMsg;
 	private int                                        numOfWorkers;
+	private boolean                                    close        = false;
 	private static ConcurrentLinkedQueue<ServerWorker> SPWorkers    = new ConcurrentLinkedQueue<ServerWorker>();
 
 	// private static ConcurrentLinkedQueue<SessionKey> waitingSession;
@@ -46,7 +47,8 @@ public class JxioConnectionServer extends Thread {
 	 *            - application callbacks - what to do on new session event
 	 */
 	public JxioConnectionServer(URI uri, long msgPoolMem, int numWorkers, JxioConnectionServer.Callbacks appCallbacks) {
-		this(uri, numWorkers, appCallbacks, (int) Math.ceil((double) msgPoolMem / (double) JxioConnection.msgPoolBuffSize));
+		this(uri, numWorkers, appCallbacks, (int) Math.ceil((double) msgPoolMem
+		        / (double) JxioConnection.msgPoolBuffSize));
 	}
 
 	/**
@@ -71,13 +73,16 @@ public class JxioConnectionServer extends Thread {
 			SPWorkers.add(new ServerWorker(i, 0, JxioConnection.msgPoolBuffSize, listener.getUriForServer(), numMsg,
 			        appCallbacks));
 		}
-
 		LOG.info(this.toString() + " JxioConnectionServer started, host " + uri.getHost() + " listening on port "
-		        + uri.getPort());
+		        + uri.getPort()+", numWorkers "+numWorkers);
 		// waitingSession = new ConcurrentLinkedQueue<SessionKey>();
 	}
 
 	public void run() {
+		work();
+	}
+
+	public void work() {
 		for (ServerWorker worker : SPWorkers) {
 			worker.start();
 		}
@@ -103,21 +108,24 @@ public class JxioConnectionServer extends Thread {
 
 	private void forwardnewSession(SessionKey ses, ServerWorker s) {
 		ServerSession session = new ServerSession(ses, s.getSessionCallbacks());
+		s.prepareSession(session, ses);
 		listener.forward(s.getPortal(), session);
-		// to get things going - send the established event to client
-		s.getEqh().runEventLoop(1, 0);
-		s.startSession(session, ses);
+		
 	}
 
 	// callbacks for the listener server portal
 	public class PortalServerCallbacks implements ServerPortal.Callbacks {
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
-			LOG.info(this.toString() + " GOT EVENT " + session_event.toString() + "because of " + reason.toString());
+			LOG.info(JxioConnectionServer.this.toString() + " GOT EVENT " + session_event.toString() + "because of " + reason.toString());
 		}
 
 		public void onSessionNew(SessionKey sesKey, String srcIP) {
-
+			if (close || sesKey.getUri().contains("reject=1")) {
+				LOG.info(JxioConnectionServer.this.toString() + "Rejecting session");
+				listener.reject(sesKey, EventReason.NOT_SUPPORTED, "");
+				return;
+			}
 			// forward the created session to the ServerPortal
 			// synchronized (lock) {
 			ServerWorker spw = getNextWorker();
@@ -129,7 +137,7 @@ public class JxioConnectionServer extends Thread {
 				        numMsg, appCallbacks);
 				spw.start();
 			}
-			LOG.info(this.toString() + " Server worker number " + spw.portalIndex + " got new session");
+			LOG.info(JxioConnectionServer.this.toString() + " Server worker number " + spw.portalIndex + " got new session");
 			forwardnewSession(sesKey, spw);
 			// }
 		}
@@ -147,5 +155,13 @@ public class JxioConnectionServer extends Thread {
 	 */
 	public static interface Callbacks {
 		public void newSessionStart(String uri, OutputStream out);
+	}
+
+	public void disconnect() {
+		listen_eqh.stop();
+		close = true;
+		for (Iterator<ServerWorker> it = SPWorkers.iterator(); it.hasNext();) {
+			it.next().close();
+		}
 	}
 }

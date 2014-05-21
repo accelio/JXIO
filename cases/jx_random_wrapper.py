@@ -50,6 +50,7 @@ class JxRandomWrapper(StandaloneWrapper):
         subprocess.call("./DefineTopology.sh ../tests/com/mellanox/jxio/tests/random/ probability_simple.xml " + my_topology, shell=True, cwd=here)
         subprocess.call("./DefineTopology.sh ../tests/com/mellanox/jxio/tests/random/ probability_long_dur_client_long.xml " + my_topology, shell=True, cwd=here)
         subprocess.call("./DefineTopology.sh ../tests/com/mellanox/jxio/tests/random/ probability_client_repeats.xml " + my_topology, shell=True, cwd=here)
+        subprocess.call("./DefineTopology.sh ../tests/com/mellanox/jxio/tests/random/ probability_jc.xml " + my_topology, shell=True, cwd=here)
 	# Copy the new probability xml to players
         for host in hosts:
 		ip = self.topology_api.get_object_attribute(host, "BASE_IP")
@@ -58,6 +59,7 @@ class JxRandomWrapper(StandaloneWrapper):
 		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability_simple.xml root@" + ip + ":/tmp/mars_tests/UDA-JXIO.db/tests/tests/com/mellanox/jxio/tests/random/probability_simple.xml", shell=True, cwd=here)
 		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability_long_dur_client_long.xml root@" + ip + ":/tmp/mars_tests/UDA-JXIO.db/tests/tests/com/mellanox/jxio/tests/random/probability_long_dur_client_long.xml", shell=True, cwd=here)
 		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability_client_repeats.xml root@" + ip + ":/tmp/mars_tests/UDA-JXIO.db/tests/tests/com/mellanox/jxio/tests/random/probability_client_repeats.xml", shell=True, cwd=here)
+		subprocess.call("scp ../tests/com/mellanox/jxio/tests/random/probability_jc.xml root@" + ip + ":/tmp/mars_tests/UDA-JXIO.db/tests/tests/com/mellanox/jxio/tests/random/probability_jc.xml", shell=True, cwd=here)
 	# Delete topology file
 	os.remove(my_topology)	
 

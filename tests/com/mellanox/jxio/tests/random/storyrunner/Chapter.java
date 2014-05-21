@@ -13,16 +13,16 @@ import com.mellanox.jxio.tests.random.storyrunner.WorkerThreads;
  * A chapter from the story, segment of the story matching a machine.
  */
 public class Chapter {
-	public String                                   myIP;
-	public Character                                myMachine;
-	public List<Character>                          myProcesses;
-	public Map<Character, List<Character>>          processServers;
-	public Map<Character, List<Character>>          processClients;
-	public Map<Character, List<ServerPortalPlayer>> processServerPlayers;
-	public Map<Character, List<ClientPlayer>>       processClientPlayers;
-	public Map<Character, Integer>                  processMaxDuration;
-	public Map<Character, WorkerThreads>            processWorkerThreads;
-	public Map<Character, CallbacksCounter>         processCallbacksCounter;
+	public Map<Character, CallbacksCounter>    processCallbacksCounter;
+	public String                              myIP;
+	public Character                           myMachine;
+	public List<Character>                     myProcesses;
+	public Map<Character, List<Character>>     processServers;
+	public Map<Character, List<Character>>     processClients;
+	public Map<Character, List<GeneralPlayer>> processServerPlayers;
+	public Map<Character, List<GeneralPlayer>> processClientPlayers;
+	public Map<Character, Integer>             processMaxDuration;
+	public Map<Character, WorkerThreads>       processWorkerThreads;
 
 	public static Chapter readChapter(List<Character> machines, List<Character> processes, List<Character> clients,
 	        List<Character> servers) {
@@ -46,8 +46,8 @@ public class Chapter {
 		System.out.println("Your name is " + myChapter.myMachine.getAttribute("name"));
 
 		// Fetch my processes
-		myChapter.myProcesses = Character.getCharactersFromListByAttribute(processes, "machine", myChapter.myMachine
-		        .getAttribute("id"));
+		myChapter.myProcesses = Character.getCharactersFromListByAttribute(processes, "machine",
+		        myChapter.myMachine.getAttribute("id"));
 		if (myChapter.myProcesses.size() == 0) {
 			System.out.println("No process found for your machine!");
 		} else {
