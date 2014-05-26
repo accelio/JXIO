@@ -153,14 +153,38 @@ public class StoryTeller {
 		// Do only if this is indeed a range
 		if (range.contains("-") && range.indexOf("-") != 0) {
 			String[] edges = range.split("-");
-			int min = Integer.parseInt(edges[0]);
-			int max = Integer.parseInt(edges[1]);
-			int remainder = max - min;
-			int rand = (remainder <= 0) ? max : random.nextInt(remainder + 1) + min;
+			long min = Integer.parseInt(edges[0]);
+			long max = Integer.parseInt(edges[1]);
+			long remainder = max - min;
+			long rand = (remainder <= 0) ? max : nextLong(random, remainder + 1) + min;
 			return String.valueOf(rand);
 		}
 		// Return the simple value
 		return range;
+	}
+
+	/**
+     * Returns a pseudorandom, uniformly distributed long value between 0 (inclusive) and the specified value
+     * (exclusive), drawn from this random number generator's sequence.
+     * 
+     * @param rng -
+     *            the random number generator.
+     * @param n -
+     *            the bound on the random number to be returned. Must be positive.
+     * @return a pseudorandom, uniformly distributed long value between 0 (inclusive) and n (exclusive).
+     * @throws IllegalArgumentException -
+     *             n is not positive.
+     */
+	long nextLong(Random rng, long n) {
+		if (n <= 0)
+			throw new IllegalArgumentException("n must be positive");
+
+		long bits, val;
+		do {
+			bits = (rng.nextLong() << 1) >>> 1;
+			val = bits % n;
+		} while (bits - val + (n - 1) < 0L);
+		return val;
 	}
 
 	/**
@@ -318,11 +342,11 @@ public class StoryTeller {
 				// Generate inner tags
 				for (Character supportingCharacter : mainCharacter.getSupportingCharacters()) {
 					String singleForm = Story.singleFromPlural(docRead, supportingCharacter.getCharacterType());
-					String att =  singleForm + "_amount";
+					String att = singleForm + "_amount";
 					String occurrences = null;
 					// Check if there is a single from the character
-					if (singleForm != null){
-						 occurrences = supportingCharacter.getAttribute(att);
+					if (singleForm != null) {
+						occurrences = supportingCharacter.getAttribute(att);
 					}
 					// Check if amount is configured
 					if (occurrences != null) {
