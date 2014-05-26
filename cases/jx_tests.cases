@@ -57,7 +57,7 @@
 		<tout>1500</tout>
 		<cmd>
 			<params>
-				<static_args>-m_server 1 -n_server 50 -m_client 1 -n_client 50 -done "; done"</static_args>
+				<static_args>-m_server 1 -n_server 50 -p_server 6412 -m_client 1 -n_client 50 -p_client 6412</static_args>
 			</params>
 		</cmd>
 	</case>
@@ -68,7 +68,7 @@
                 <tout>1500</tout>
                 <cmd>
                         <params>
-                                <static_args>-m_server 0 -n_server 50 -m_client 1 -n_client 50 -done "; done"</static_args>
+                                <static_args>-m_server 0 -n_server 50 -p_server 6412 -m_client 1 -n_client 50 -p_client 6412</static_args>
                         </params>
                 </cmd>
         </case>
@@ -79,7 +79,7 @@
                 <tout>1500</tout>
                 <cmd>
                         <params>
-                                <static_args>-m_server 1 -n_server 50 -m_client 0 -n_client 50 -done "; done"</static_args>
+                                <static_args>-m_server 1 -n_server 50 -p_server 6412 -m_client 0 -n_client 50 -p_client 6412</static_args>
                         </params>
                 </cmd>
         </case>
@@ -90,7 +90,7 @@
                 <tout>1500</tout>
                 <cmd>
                         <params>
-                                <static_args>-m_server 0 -n_server 50 -m_client 0 -n_client 50 -done "; done"</static_args>
+                                <static_args>-m_server 0 -n_server 50 -p_server 6412 -m_client 0 -n_client 50 -p_client 6412</static_args>
                         </params>
                 </cmd>
         </case>

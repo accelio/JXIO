@@ -108,12 +108,12 @@ os.system(cmd)
 
 if(test_type == "server"):
 	print "\n------ Running Server Test Application -----"
-	cmd = 'java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp ":../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.controlPathDuration.CPDTestServer  %s %s %s %s' % (address, port, multi_thread, num_clients)
+	cmd = 'java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "%s:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." %s com.mellanox.jxio.tests.controlPathDuration.CPDTestServer  %s %s %s %s' % (cob_jar_path, cov_command, address, port, multi_thread, num_clients)
 	os.system(cmd)
 else:
 	print "\n------ Running Client Test Application -----"
-	cmd = 'java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp ":../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." com.mellanox.jxio.tests.controlPathDuration.CPDTestClient  %s %s %s %s' % (address, port, multi_thread, num_clients)
-	os.system(cmd)
+	cmd = 'java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "%s:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." %s com.mellanox.jxio.tests.controlPathDuration.CPDTestClient  %s %s %s %s' % (cob_jar_path, cov_command, address, port, multi_thread, num_clients)
+	for x in xrange(0, 100):
+		os.system(cmd)
    
 sys.exit(0)
-    

@@ -14,20 +14,21 @@ class JxConnectionWrapper(ClientServerWrapper):
         return "python ../tests/runControlPathDurationTest.py -s"
 
     def get_client_prog_path(self):
-        return "while [ 1 ]; do python ../tests/runControlPathDurationTest.py -c"
+        return "python ../tests/runControlPathDurationTest.py -c"
 
     def configure_parser(self):
         super(JxConnectionWrapper, self).configure_parser()
  
         # Arguments
-        self.add_dynamic_argument('-a', self.get_server_manage_ip, value_only=True, priority=1)
+        self.add_dynamic_argument('-a', self.get_server_manage_ip, value_only=False, priority=1)
 
-        self.add_client_cmd_argument('-m_client', type=str, alias='-m_client', value_only=False, priority=2)
-        self.add_client_cmd_argument('-n_client', type=str, alias='-n_client', value_only=False, priority=3)
-        self.add_client_cmd_argument('-done', type=str, alias='-done', value_only=True, priority=4)
+        self.add_client_cmd_argument('-m_client', type=str, alias='-m', value_only=False, priority=2)
+        self.add_client_cmd_argument('-n_client', type=str, alias='-n', value_only=False, priority=3)
+        self.add_client_cmd_argument('-p_client', type=str, alias='-p', value_only=False, priority=4)
 
-        self.add_server_cmd_argument('-m_server', type=str, alias='-m_server', value_only=False, priority=2)
-        self.add_server_cmd_argument('-n_server', type=str, alias='-n_server', value_only=False, priority=3)
+        self.add_server_cmd_argument('-m_server', type=str, alias='-m', value_only=False, priority=2)
+        self.add_server_cmd_argument('-n_server', type=str, alias='-n', value_only=False, priority=3)
+        self.add_server_cmd_argument('-p_server', type=str, alias='-p', value_only=False, priority=4)
 
     def get_server_manage_ip(self):
 	 # Get Topology to find ib IP
