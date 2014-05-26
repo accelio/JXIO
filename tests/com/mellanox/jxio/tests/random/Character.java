@@ -71,6 +71,7 @@ public class Character {
 			LOG.warn("Retrieved attribute is NULL!");
 			LOG.warn("This happed when " + stackTrace[2].getClassName() + " called " + stackTrace[1].getMethodName()
 			        + " in line " + stackTrace[2].getLineNumber() + " for the attribute '" + att + "'.");
+			LOG.warn("Check the XML configuration of the " + this.characterType + " tag.");
 		}
 		return attributes.get(att);
 
