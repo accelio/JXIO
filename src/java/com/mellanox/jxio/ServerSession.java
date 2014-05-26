@@ -135,8 +135,8 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	/**
 	 * This method sends the response to client.
 	 * <p>
-	 * The send is asynchronous, therefore even if the function returns, this does not mean that the msg reached the
-	 * client or even was sent to the client. The size send to Client is the current position of the OUT ByteBuffer
+	 * The send is asynchronous, therefore even if the function returns, this does not mean that the msg reached the client or even was sent to the
+	 * client. The size send to Client is the current position of the OUT ByteBuffer
 	 * 
 	 * @param msg
 	 *            - Msg to be sent to Client
@@ -203,8 +203,12 @@ public class ServerSession extends EventQueueHandler.Eventable {
 						// now that the user knows session is closed, object holding session state can be deleted
 						Bridge.deleteSessionServer(this.ptrSesServer);
 					}
-					callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
-
+					try {
+						callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
+					} catch (Exception e) {
+						eventQHandlerMsg.setCaughtException(e);
+						LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
+					}
 				}
 				break;
 
@@ -217,9 +221,14 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					evMsgErr = (EventMsgError) ev;
 					Msg msg = evMsgErr.getMsg();
 					int reason = evMsgErr.getReason();
-					if (callbacks.onMsgError(msg, EventReason.getEventByIndex(reason))) {
-						// the user is finished with the Msg and it can be released
-						this.returnOnMsgError(msg);
+					try {
+						if (callbacks.onMsgError(msg, EventReason.getEventByIndex(reason))) {
+							// the user is finished with the Msg and it can be released
+							this.returnOnMsgError(msg);
+						}
+					} catch (Exception e) {
+						eventQHandlerMsg.setCaughtException(e);
+						LOG.debug(this.toLogString() + " [onMsgError] Callback exception occurred. Msg was " + msg.toString());
 					}
 				} else {
 					LOG.error(this.toLogString() + "Event is not an instance of EventMsgError");
@@ -234,7 +243,12 @@ public class ServerSession extends EventQueueHandler.Eventable {
 				if (ev instanceof EventNewMsg) {
 					evNewMsg = (EventNewMsg) ev;
 					Msg msg = evNewMsg.getMsg();
-					callbacks.onRequest(msg);
+					try {
+						callbacks.onRequest(msg);
+					} catch (Exception e) {
+						eventQHandlerMsg.setCaughtException(e);
+						LOG.debug(this.toLogString() + "[onRequest] Callback exception occurred. Msg was " + msg.toString());
+					}
 				} else {
 					LOG.error(this.toLogString() + "Event is not an instance of EventNewMsg");
 				}
@@ -272,7 +286,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	 * uri that the client wishes to connect to.
 	 */
 	public static class SessionKey {
-		private final long   sessionPtr;
+		private final long sessionPtr;
 		private final String uri;
 
 		/**

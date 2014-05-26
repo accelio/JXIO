@@ -22,6 +22,7 @@ public class Chapter {
 	public Map<Character, List<ClientPlayer>>       processClientPlayers;
 	public Map<Character, Integer>                  processMaxDuration;
 	public Map<Character, WorkerThreads>            processWorkerThreads;
+	public Map<Character, CallbacksCounter>         processCallbacksCounter;
 
 	public static Chapter readChapter(List<Character> machines, List<Character> processes, List<Character> clients,
 	        List<Character> servers) {

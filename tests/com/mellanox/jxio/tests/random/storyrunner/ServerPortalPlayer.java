@@ -44,13 +44,14 @@ public class ServerPortalPlayer extends GeneralPlayer {
 	private final ArrayList<MsgPoolData> msgPoolsData;
 	private ArrayList<MsgPool>           msgPools;
 	private long                         seed;
-	private int                          violent_exit;
+	private int                          violentExit;
 	private final int                    msgRate;
 	private final int                    msgBatchSize;
+	private CallbacksCounter             callbacksCounter;
 
 	public ServerPortalPlayer(int numWorkers, int id, int instance, URI uri, long startDelaySec, long runDurationSec,
-	        WorkerThreads workerThreads, ArrayList<MsgPoolData> msgPoolsData, int violent_exit, int msgRate,
-	        int msgBatch, long seed) {
+	        WorkerThreads workerThreads, ArrayList<MsgPoolData> msgPoolsData, int violentExit, int msgRate,
+	        int msgBatch, CallbacksCounter callbacksCounter, long seed) {
 		this.name = new String("SPP[" + id + ":" + instance + "]");
 		this.id = id;
 		this.uri = uri;
@@ -63,7 +64,8 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		this.msgBatchSize = msgBatch;
 		msgPools = new ArrayList<MsgPool>();
 		this.seed = seed;
-		this.violent_exit = violent_exit;
+		this.violentExit = violentExit;
+		this.callbacksCounter = callbacksCounter;
 		LOG.debug("new " + this.toString() + " done");
 	}
 
@@ -118,7 +120,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 		// workers
 		for (int i = 0; i < numWorkers; i++) {
 			ServerPortalPlayer spp = new ServerPortalPlayer(0, this.id, i + 1, this.listener.getUriForServer(), 0,
-			        runDurationSec, workerThreads, msgPoolsData, this.violent_exit, this.msgRate, this.msgBatchSize,
+			        runDurationSec, workerThreads, msgPoolsData, this.violentExit, this.msgRate, this.msgBatchSize, this.callbacksCounter,
 			        this.seed + (i * 47));
 			workerThreads.getWorkerThread().addWorkAction(spp.getAttachAction());
 		}
@@ -126,7 +128,7 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 	@Override
 	protected void terminate() {
-		if (this.violent_exit == 1) {
+		if (this.violentExit == 1) {
 			LOG.info(this.toString() + ": terminating. Exiting NOW");
 			System.exit(0);
 		}
@@ -166,13 +168,17 @@ public class ServerPortalPlayer extends GeneralPlayer {
 
 				LOG.info("Rejecting session from '" + clientName + "'");
 				outer.listener.reject(sesKey, EventReason.NOT_SUPPORTED, "");
+
+				callbacksCounter.possiblyThrowExecption("[onSessionNew] Callback exception in onSessionNew in ServerSessionPlayer.");
 				return;
 			}
 
 			LOG.info(outer.toString() + ": Establishing new session from '" + clientName + "'");
 			ServerPortalPlayer sp = workerThreads.getPortal(outer.id);
-			ServerSessionPlayer ss = new ServerSessionPlayer(sp, sesKey, srcIP, outer.msgRate, outer.msgBatchSize, seed);
+			ServerSessionPlayer ss = new ServerSessionPlayer(sp, sesKey, srcIP, outer.msgRate, outer.msgBatchSize, callbacksCounter, seed);
 			outer.listener.forward(sp.listener, ss.getServerSession());
+
+			callbacksCounter.possiblyThrowExecption("[onSessionNew] Callback exception in onSessionNew in ServerSessionPlayer.");
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
@@ -189,12 +195,13 @@ public class ServerPortalPlayer extends GeneralPlayer {
 					}
 					break;
 				default:
-					LOG.error(outer.toString() + ": FAILURE, onSessionError: event='" + session_event + "', reason='"
-					        + reason + "'");
+					LOG.error(outer.toString() + ": FAILURE, onSessionError: event='" + session_event + "', reason='" + reason + "'");
 					System.exit(1);
 					break;
 
 			}
+
+			callbacksCounter.possiblyThrowExecption("[onSessionEvent] Callback exception in onSessionEvent in ServerSessionPlayer.");
 		}
 	}
 }

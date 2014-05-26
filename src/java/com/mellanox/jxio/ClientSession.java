@@ -47,9 +47,9 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	private final String            nameForLog;
 
 	/**
-	 * This interface needs to be implemented and passed to ClientSession in c-tor
-	 * 
-	 */
+	* This interface needs to be implemented and passed to ClientSession in c-tor
+	* 
+	*/
 	public static interface Callbacks {
 		/**
 		 * Event triggered when response from server is received. Request and response are on the same
@@ -62,13 +62,12 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		public void onResponse(Msg msg);
 
 		/**
-		 * The client initiates a connection to Server in c-tor. When the connection is established,
-		 * onSessionEstablished event is triggered. It is possible to call method sendRequest before receiving
-		 * onSessionEstablished, however this will only add the requests to internal queue.
-		 * They will be sent only after onSessionEstablished. In order to receive onSessionEstablished
-		 * server must accept the session
-		 * 
-		 */
+         * The client initiates a connection to Server in c-tor. When the connection is established,
+         * onSessionEstablished event is triggered. It is possible to call method sendRequest before receiving
+         * onSessionEstablished, however this will only add the requests to internal queue. They will be sent only after
+         * onSessionEstablished. In order to receive onSessionEstablished server must accept the session
+         * 
+         */
 		public void onSessionEstablished();
 
 		/**
@@ -133,8 +132,8 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	/**
 	 * This method sends the request to server.
 	 * <p>
-	 * The send is asynchronous, therefore even if the function returns, this does not mean that the msg reached the
-	 * server or even was sent to the server. The size send to Server is the current position of the OUT ByteBuffer
+	 * The send is asynchronous, therefore even if the function returns, this does not mean that the msg reached the server or even was sent to the
+	 * server. The size send to Server is the current position of the OUT ByteBuffer
 	 * 
 	 * @param msg
 	 *            - Msg to be sent to Server
@@ -208,7 +207,12 @@ public class ClientSession extends EventQueueHandler.Eventable {
 						default:
 							break;
 					}
-					callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
+					try {
+						callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
+					} catch (Exception e) {
+						eventQHandler.setCaughtException(e);
+						LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
+					}
 				}
 				break;
 
@@ -221,7 +225,12 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					evMsgErr = (EventMsgError) ev;
 					Msg msg = evMsgErr.getMsg();
 					int reason = evMsgErr.getReason();
-					callbacks.onMsgError(msg, EventReason.getEventByIndex(reason));
+					try {
+						callbacks.onMsgError(msg, EventReason.getEventByIndex(reason));
+					} catch (Exception e) {
+						eventQHandler.setCaughtException(e);
+						LOG.debug(this.toLogString() + "[onMsgError] Callback exception occurred. Msg was " + msg.toString());
+					}
 				} else {
 					LOG.error(this.toLogString() + "Event is not an instance of EventMsgError");
 				}
@@ -231,7 +240,12 @@ public class ClientSession extends EventQueueHandler.Eventable {
 				if (LOG.isDebugEnabled()) {
 					LOG.debug(this.toLogString() + "received session established event");
 				}
-				callbacks.onSessionEstablished();
+				try {
+					callbacks.onSessionEstablished();
+				} catch (Exception e) {
+					eventQHandler.setCaughtException(e);
+					LOG.debug(this.toLogString() + "[onSessionEstablished] Callback exception occurred.");
+				}
 				break;
 
 			case 5: // on response
@@ -242,7 +256,12 @@ public class ClientSession extends EventQueueHandler.Eventable {
 				if (ev instanceof EventNewMsg) {
 					evNewMsg = (EventNewMsg) ev;
 					Msg msg = evNewMsg.getMsg();
-					callbacks.onResponse(msg);
+					try {
+						callbacks.onResponse(msg);
+					} catch (Exception e) {
+						eventQHandler.setCaughtException(e);
+						LOG.debug(this.toLogString() + "[onResponse] Callback exception occurred. Msg was " + msg.toString());
+					}
 				} else {
 					LOG.error(this.toLogString() + "Event is not an instance of EventNewMsg");
 				}

@@ -47,11 +47,13 @@ public class JXIOProcessTask implements Callable<Integer> {
 	private List<ClientPlayer>       clientPlayers;
 	private WorkerThreads            workers;
 	private int                      maxDuration;
+	private CallbacksCounter         callbacksCounter;
 
 	/**
-	 * The main JXIO Process Task that runs.
-	 * @param args
-	 */
+     * The main JXIO Process Task that runs.
+     * 
+     * @param args
+     */
 	public static void main(String[] args) {
 		if (!argsCheck(args)) {
 			return;
@@ -85,6 +87,7 @@ public class JXIOProcessTask implements Callable<Integer> {
 		clientPlayers = chapter.processClientPlayers.get(process);
 		workers = chapter.processWorkerThreads.get(process);
 		maxDuration = chapter.processMaxDuration.get(process);
+		callbacksCounter = chapter.processCallbacksCounter.get(process);
 	}
 
 	/**
@@ -146,9 +149,13 @@ public class JXIOProcessTask implements Callable<Integer> {
 
 		for (Character myProcess : chapter.myProcesses) {
 
+			// Set Callback calls counter
+			int throwException = Integer.valueOf(myProcess.getAttribute("throw_exception"));
+			chapter.processCallbacksCounter.put(myProcess, new CallbacksCounter(throwException, true));
+			
 			// Configure Worker Threads
 			int numEqhs = Integer.valueOf(myProcess.getAttribute("num_eqhs"));
-			WorkerThreads myWorkers = new WorkerThreads(numEqhs, chapter.processServers.get(myProcess).size());
+			WorkerThreads myWorkers = new WorkerThreads(numEqhs, chapter.processServers.get(myProcess).size(), chapter.processCallbacksCounter.get(myProcess));
 			chapter.processWorkerThreads.put(myProcess, myWorkers);
 
 			// Configure Servers
@@ -166,6 +173,7 @@ public class JXIOProcessTask implements Callable<Integer> {
 			// Set process' Max Duration
 			int maxDuration = (serversMaxDuration > clientsMaxDuration) ? serversMaxDuration : clientsMaxDuration;
 			chapter.processMaxDuration.put(myProcess, maxDuration);
+			
 		}
 		return 0;
 	}
@@ -284,7 +292,8 @@ public class JXIOProcessTask implements Callable<Integer> {
 				int clientStartDelay;
 				for (int i = 0; i < repeats + 1; i++){
 					clientStartDelay = (duration + repeatDelay) * i + startDelay;
-					ClientPlayer cp = new ClientPlayer(id, uri, clientStartDelay, duration, pool, tps, batch, violentExit, seed + counter * 17);
+					ClientPlayer cp = new ClientPlayer(id, uri, clientStartDelay, duration, pool, tps, batch,
+					        violentExit, callbacksCounter, seed + counter * 17);
 					clientPlayers.add(cp);
 				}
 			} catch (URISyntaxException e) {
@@ -417,7 +426,8 @@ public class JXIOProcessTask implements Callable<Integer> {
 
 				// Add server
 				ServerPortalPlayer sp = new ServerPortalPlayer(numWorkers, id, 0, uri, startDelay, duration,
-				        chapter.processWorkerThreads.get(myProcess), msgPools, violentExit, tps, batch, seed + counter * 3);
+				        chapter.processWorkerThreads.get(myProcess), msgPools, violentExit, tps, batch,
+				        callbacksCounter, seed + counter * 3);
 				serverPlayers.add(sp);
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
@@ -488,17 +498,16 @@ public class JXIOProcessTask implements Callable<Integer> {
 	}
 	
 	/**
-     * Checks to is if the number of arguments passed is valid.
-     * 
-     * @param args
-     *            The command line arguments.
-     * @return True if number of arguments is valid.
-     */
+	 * Checks to is if the number of arguments passed is valid.
+	 * 
+	 * @param args
+	 *            The command line arguments.
+	 * @return True if number of arguments is valid.
+	 */
 	private static boolean argsCheck(String[] args) {
 		if (args.length < 2) {
 			System.out.println("[ERROR] Wrong number of arguments!\nFirst arugment needs to be the directory of the story XML file."
-			        + "\nSecond arugment needs to be the process ID."
-			        + "\nparameters: 'STORY_FILE PROCESS_ID'\n");
+			        + "\nSecond arugment needs to be the process ID." + "\nparameters: 'STORY_FILE PROCESS_ID'\n");
 			return false;
 		}
 		return true;

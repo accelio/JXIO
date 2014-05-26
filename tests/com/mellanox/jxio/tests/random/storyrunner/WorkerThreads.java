@@ -38,9 +38,10 @@ public class WorkerThreads {
 	private ArrayList<ServerPortalPlayer>[] listPortalPlayers;
 	private int                             index             = 0;
 	private Map<Integer, Integer>           idToIndex         = new HashMap<Integer, Integer>();
+	private CallbacksCounter                callbacksCounter;
 
 	@SuppressWarnings("unchecked")
-	public WorkerThreads(int numEQHs, int numListeners) {
+	public WorkerThreads(int numEQHs, int numListeners, CallbacksCounter callbacksCounter) {
 		super();
 		this.num_workers = numEQHs;
 		this.executor = Executors.newCachedThreadPool();
@@ -48,7 +49,7 @@ public class WorkerThreads {
 		for (int i = 0; i < numListeners; i++) {
 			this.listPortalPlayers[i] = new ArrayList<ServerPortalPlayer>();
 		}
-
+		this.callbacksCounter = callbacksCounter;
 		this.rand = new Random();
 	}
 
@@ -105,7 +106,7 @@ public class WorkerThreads {
 	}
 
 	private WorkerThread createWorkerThread() {
-		WorkerThread worker = new WorkerThread();
+		WorkerThread worker = new WorkerThread(this.callbacksCounter);
 		executor.execute(worker);
 		try {
 			Thread.sleep(10);

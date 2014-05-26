@@ -253,7 +253,12 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 							LOG.debug(this.toLogString() + "portal was closed");
 						}
 					}
-					callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
+					try {
+						callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
+					} catch (Exception e) {
+						eventQHndl.setCaughtException(e);
+						LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
+					}
 				}
 				break;
 
@@ -266,7 +271,12 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 					String uri = ((EventNewSession) ev).getUri();
 					String srcIP = ((EventNewSession) ev).getSrcIP();
 					ServerSession.SessionKey sesKey = new ServerSession.SessionKey(ptrSes, uri);
-					this.callbacks.onSessionNew(sesKey, srcIP);
+					try {
+						this.callbacks.onSessionNew(sesKey, srcIP);
+					} catch (Exception e) {
+						eventQHndl.setCaughtException(e);
+						LOG.debug(this.toLogString() + "[onSessionNew] Callback exception occurred. Session Key was " + sesKey.toString() + " and source IP was " + srcIP);
+					}
 				}
 				break;
 
@@ -299,8 +309,8 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		URI newUri = null;
 		try {
 			newUri = new URI(uriForForward.getScheme(), uriForForward.getUserInfo(), new URI(uriIPAddress).getHost(),
-			        uriForForward.getPort(), uriForForward.getPath(), uriForForward.getQuery(),
-			        uriForForward.getFragment());
+ uriForForward.getPort(),
+			        uriForForward.getPath(), uriForForward.getQuery(), uriForForward.getFragment());
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			LOG.error(this.toLogString() + "URISyntaxException occured while trying to create a new URI");

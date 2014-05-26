@@ -36,8 +36,8 @@ import com.mellanox.jxio.impl.EventSession;
 import com.mellanox.jxio.impl.EventSessionEstablished;
 
 /**
- * This class recieves events from accelio. It implements Runnable. Each EventQueueHandle
- * should be run in a different thread.
+ * This class recieves events from accelio. It implements Runnable. Each EventQueueHandle should be run in a different
+ * thread.
  * 
  */
 public class EventQueueHandler implements Runnable {
@@ -56,34 +56,34 @@ public class EventQueueHandler implements Runnable {
 	private volatile boolean       breakLoop             = false;
 	private volatile boolean       stopLoop              = false;
 	private volatile boolean       inRunLoop             = false;
+	private volatile Exception     caughtException       = null;
 	private final String           name;
 	private final String           nameForLog;
 
 	/**
-	 * This interface needs to be implemented and passed to EventQueueHandler in c-tor
-	 * 
-	 */
+     * This interface needs to be implemented and passed to EventQueueHandler in c-tor
+     * 
+     */
 	public static interface Callbacks {
 		/**
-		 * This callback is called on serverSide. If a request from client arrives
-		 * and there are no more Msg list is empty this callback is called. getAdditionalMsgPool
-		 * should return a new unbinded MsgPool
-		 * 
-		 * @param inSize
-		 *            - size of Msg.IN
-		 * @param outSize
-		 *            - size of Msg.Out
-		 * @return an unbinded MsgPool
-		 */
+         * This callback is called on serverSide. If a request from client arrives and there are no more Msg list is
+         * empty this callback is called. getAdditionalMsgPool should return a new unbinded MsgPool
+         * 
+         * @param inSize -
+         *            size of Msg.IN
+         * @param outSize -
+         *            size of Msg.Out
+         * @return an unbinded MsgPool
+         */
 		public MsgPool getAdditionalMsgPool(int inSize, int outSize);
 	}
 
 	/**
-	 * Constructor of EventQueueHandler
-	 * 
-	 * @param callbacks
-	 *            - - implementation of Interface EventQueueHandler.Callbacks
-	 */
+     * Constructor of EventQueueHandler
+     * 
+     * @param callbacks - -
+     *            implementation of Interface EventQueueHandler.Callbacks
+     */
 	public EventQueueHandler(Callbacks callbacks) {
 		DataFromC dataFromC = new DataFromC();
 		boolean statusError = Bridge.createCtx(this, eventQueueSize, dataFromC);
@@ -99,35 +99,41 @@ public class EventQueueHandler implements Runnable {
 	}
 
 	/**
-	 * Entry point for Thread.start() implementation from Runnable interfaces
-	 */
+     * Entry point for Thread.start() implementation from Runnable interfaces
+     */
 	public void run() {
-		while (!this.stopLoop) {
+		while (!this.stopLoop && !didExceptionOccur()) {
 			runEventLoop(-1 /* Infinite events */, -1 /* Infinite duration */);
+		}
+		if (didExceptionOccur()) {
+			// exception occurred
+			LOG.debug(this.toLogString() + " The exception that occurred was:" + getCaughtException().toString());
+			throw new RuntimeException(getCaughtException());
 		}
 	}
 
 	/**
-	 * Stops the running thread which is blocked on the run() interface
-	 */
+     * Stops the running thread which is blocked on the run() interface
+     */
 	public void stop() {
 		this.stopLoop = true;
 		breakEventLoop();
 	}
 
 	/**
-	 * Main progress engine thread entry point.
-	 * This function will cause all depending objects callbacks to be activated respectfully on new event occur.
-	 * the calling thread will block for 'maxEvents' or a total duration of 'timeOutMicroSec.
-	 * 
-	 * @param maxEvents
-	 *            : function will block until processing max events (callbacks) before returning or the timeout reached
-	 *            use '-1' for infinite number of events
-	 * @param timeOutMicroSec
-	 *            : function will block until max duration of timeOut (measured in micro-sec) or maxEvents reached
-	 *            use '-1' for infinite duration
-	 * @return number of events processes or zero if timeout
-	 */
+     * Main progress engine thread entry point. This function will cause all depending objects callbacks to be activated
+     * respectfully on new event occur. the calling thread will block for 'maxEvents' or a total duration of
+     * 'timeOutMicroSec.
+     * 
+     * @param maxEvents :
+     *            function will block until processing max events (callbacks) before returning or the timeout reached
+     *            use '-1' for infinite number of events
+     * @param timeOutMicroSec :
+     *            function will block until max duration of timeOut (measured in micro-sec) or maxEvents reached use
+     *            '-1' for infinite duration
+     * @return number of events processes, '0' if timeout or '-1' if exception occurred, which in this case, the exception
+     *         itself can be accessed by calling getCaughtException().
+     */
 	public int runEventLoop(int maxEvents, long timeOutMicroSec) {
 		if (getId() == 0) {
 			LOG.error(this.toLogString() + "no context opened on C side. can not run event loop");
@@ -186,16 +192,15 @@ public class EventQueueHandler implements Runnable {
 			        + eventsHandled + " events, elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec.");
 		}
 		this.inRunLoop = false;
-		return eventsHandled;
+		return !didExceptionOccur() ? eventsHandled : -1;
 	}
 
 	/**
-	 * Main progress engine thread break point.
-	 * Calling this function will force the runEventLoop() function to return when possible,
-	 * no matter the number of events or duration it still should be blocking.
-	 * 
-	 * This function can be called from any thread context
-	 */
+     * Main progress engine thread break point. Calling this function will force the runEventLoop() function to return
+     * when possible, no matter the number of events or duration it still should be blocking.
+     * 
+     * This function can be called from any thread context
+     */
 	public void breakEventLoop() {
 		if (getId() == 0) {
 			LOG.error(this.toLogString() + "no context opened on C side. can not break event loop");
@@ -209,11 +214,11 @@ public class EventQueueHandler implements Runnable {
 	}
 
 	/**
-	 * Close (and stops) this EQH and release all corresponding Java and Native resources
-	 * (including closing the related ServerSessions, ServerPortal and ClientSession)
-	 * 
-	 * This function Should be called only once no other thread is inside the runEventLoop()
-	 */
+     * Close (and stops) this EQH and release all corresponding Java and Native resources (including closing the related
+     * ServerSessions, ServerPortal and ClientSession)
+     * 
+     * This function Should be called only once no other thread is inside the runEventLoop()
+     */
 	public void close() {
 		if (getId() == 0) {
 			LOG.error(this.toLogString() + "no context opened on C side. can not close event loop");
@@ -449,9 +454,8 @@ public class EventQueueHandler implements Runnable {
 			case 8: // on fd ready
 			{
 				/*
-				 * int fd = eventQueue.getInt();
-				 * int events = eventQueue.getInt();
-				 */
+                 * int fd = eventQueue.getInt(); int events = eventQueue.getInt();
+                 */
 				LOG.error(this.toLogString() + "received FD Ready event - not handled");
 			}
 				break;
@@ -485,8 +489,7 @@ public class EventQueueHandler implements Runnable {
 	}
 
 	/**
-	 * This method binds MsgPool to this EQH. It is necessary for MsgPool on server side
-	 * to be binded to server's EQH
+	 * This method binds MsgPool to this EQH. It is necessary for MsgPool on server side to be binded to server's EQH
 	 * 
 	 * @param msgPool
 	 *            to be binded to this EQH
@@ -558,5 +561,20 @@ public class EventQueueHandler implements Runnable {
 
 	private String toLogString() {
 		return this.nameForLog;
+	}
+
+	public Exception getCaughtException() {
+		// Return the caught exception and clear it.
+		Exception returnedExeption = caughtException;
+		setCaughtException(null);
+		return returnedExeption;
+	}
+
+	public void setCaughtException(Exception caughtException) {
+		this.caughtException = caughtException;
+	}
+
+	public boolean didExceptionOccur() {
+		return (this.caughtException != null);
 	}
 }

@@ -36,13 +36,16 @@ public class WorkerThread implements Runnable {
 	// temporary: needed for the user to allocate pool of the same size
 	private int                              inSize;
 	private int                              outSize;
+	private CallbacksCounter                 callbacksCounter;
+    
 
-	public WorkerThread() {
+	public WorkerThread(CallbacksCounter callbacksCounter) {
 		super();
 		this.eqh = new EventQueueHandler(new JXIOCallbacks());
 		this.timers = new TimerList();
 		this.actions = new LinkedBlockingQueue<QueueAction>();
 		this.msgPools = new ArrayList<MsgPool>();
+		this.callbacksCounter = callbacksCounter;
 		LOG.debug("new " + this.toString() + " done");
 	}
 
@@ -90,7 +93,17 @@ public class WorkerThread implements Runnable {
 			}
 			// block for JXIO events or timer list duration
 			eqh.runEventLoop(-1, timers.getWaitDuration());
-
+			// check for exceptions
+			if (eqh.didExceptionOccur()){
+				LOG.error("Exception occured while running the event queue handler. The exception: " + eqh.getCaughtException().toString());
+				// check if the exception counter for expected result
+				if (this.callbacksCounter.wasExceptionThrown()){
+					LOG.info("This was an expected exception!");
+				} else {
+					LOG.error("This was an unexpected exception! will now exit.");
+					System.exit(1);
+				}
+			}
 			// check Timers
 			timers.checkForTimeOuts();
 		}

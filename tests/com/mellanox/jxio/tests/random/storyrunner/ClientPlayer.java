@@ -52,12 +52,13 @@ public class ClientPlayer extends GeneralPlayer {
 	private int               counterReturnedErrorMsgs;
 	private boolean           isClosing = false;
 	private Random            random;
-	private int               violent_exit;
+	private int               violentExit;
+	private CallbacksCounter  callbacksCounter;
 	private long              maxBandwidthIn;                                                   // in Gb
 	private long              maxBandwidthOut;                                                  // in Gb
 
 	public ClientPlayer(int id, URI uri, long startDelaySec, long runDurationSec, MsgPoolData pool, int msgRate,
-	        int msgBatch, int violent_exit, long seed) {
+	        int msgBatch, int violentExit, CallbacksCounter callbacksCounter, long seed) {
 		this.name = new String("CP[" + id + "]");
 		this.uri = uri;
 		this.runDurationSec = runDurationSec;
@@ -65,7 +66,8 @@ public class ClientPlayer extends GeneralPlayer {
 		this.msgDelayMicroSec = (msgRate > 0) ? (1000000 / msgRate) : 0;
 		this.poolData = pool;
 		this.msgBatchSize = msgBatch;
-		this.violent_exit = violent_exit;
+		this.violentExit = violentExit;
+		this.callbacksCounter = callbacksCounter;
 
 		// count number of nextHop
 		int numHops = 0;
@@ -217,7 +219,7 @@ public class ClientPlayer extends GeneralPlayer {
 			LOG.error(this.toString() + ": FAILURE: not all Msgs returned to MSgPoll: " + mp);
 			System.exit(1); // Failure in test - eject!
 		}
-		if (this.violent_exit == 1) {
+		if (this.violentExit == 1) {
 			LOG.info(this.toString() + ": terminating violently. Exiting NOW");
 			System.exit(0);
 		}
@@ -235,6 +237,8 @@ public class ClientPlayer extends GeneralPlayer {
 			}
 			msg.returnToParentPool();
 			outer.counterReturnedErrorMsgs++;
+			
+			callbacksCounter.possiblyThrowExecption("[onMsgError] Callback exception in onMsgError in ServerSessionPlayer.");
 		}
 
 		public void onSessionEstablished() {
@@ -247,6 +251,8 @@ public class ClientPlayer extends GeneralPlayer {
 			}
 			LOG.info(outer.toString() + ": onSessionEstablished. took " + timeSessionEstablished / 1000 + " usec");
 			outer.sendMsgTimerStart();
+			
+			callbacksCounter.possiblyThrowExecption("[onSessionEstablished] Callback exception in onSessionEstablished in ServerSessionPlayer.");
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
@@ -278,6 +284,8 @@ public class ClientPlayer extends GeneralPlayer {
 				default:
 					break;
 			}
+
+			callbacksCounter.possiblyThrowExecption("[onSessionEvent] Callback exception in onSessionEvent in ServerSessionPlayer.");
 		}
 
 		public void onResponse(Msg msg) {
@@ -290,6 +298,8 @@ public class ClientPlayer extends GeneralPlayer {
 			if (LOG.isTraceEnabled())
 				LOG.trace(outer.toString() + ": onResponse(#" + outer.counterReceivedMsgs + ", " + msg + ")");
 			msg.returnToParentPool();
+
+			callbacksCounter.possiblyThrowExecption("[onResponse] Callback exception in onResponse in ServerSessionPlayer.");
 		}
 
 		private long roundTrip(Msg m) {

@@ -51,9 +51,10 @@ public class ServerSessionPlayer {
 	private Queue<Msg>               queueDelayedMsgs;
 	private boolean                  isClosing    = false;
 	private Random                   random;
+	private CallbacksCounter         callbacksCounter;
 
 	public ServerSessionPlayer(ServerPortalPlayer spp, ServerSession.SessionKey sesKey, String srcIP, int msgRate,
-	        int msgBatch, long seed) {
+	        int msgBatch, CallbacksCounter callbacksCounter, long seed) {
 		this.name = "SSP[" + id++ + "]";
 		this.spp = spp;
 		this.sk = sesKey.getSessionPtr();
@@ -62,6 +63,7 @@ public class ServerSessionPlayer {
 		this.msgBatchSize = msgBatch;
 		prepareForNextHop(sesKey.getUri());
 		this.server = new ServerSession(sesKey, new JXIOServerCallbacks());
+		this.callbacksCounter = callbacksCounter;
 		this.random = new Random(seed);
 		sendMsgTimerStart();
 		LOG.debug("new " + this.toString() + " done");
@@ -145,7 +147,7 @@ public class ServerSessionPlayer {
 			LOG.trace(this.toString() + ": sendResponse(" + msg + ")");
 		if (server.sendResponse(msg) == false) {
 			LOG.error(this.toString() + ": FAILURE: sendResponse with error on msg=" + msg);
-//			System.exit(1);
+			System.exit(1);
 		}
 		this.counterSentMsgs++;
 	}
@@ -220,7 +222,8 @@ public class ServerSessionPlayer {
 				}
 				outer.counterSentMsgs++;
 			}
-
+			
+			callbacksCounter.possiblyThrowExecption("[onRequest] Callback exception in onRequest in ServerSessionPlayer.");
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
@@ -238,6 +241,8 @@ public class ServerSessionPlayer {
 					LOG.error(outer.toString() + " got " + session_event.toString() + " reason='" + reason + "'");
 					break;
 			}
+						
+			callbacksCounter.possiblyThrowExecption("[onSessionEvent] Callback exception in onSessionEvent in ServerSessionPlayer.");
 		}
 
 		public boolean onMsgError(Msg msg, EventReason reason) {
@@ -246,6 +251,8 @@ public class ServerSessionPlayer {
 			} else {
 				LOG.error(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
 			}
+			
+			callbacksCounter.possiblyThrowExecption("[onMsgError] Callback exception in onMsgError in ServerSessionPlayer.");
 			return true;
 		}
 
@@ -282,10 +289,12 @@ public class ServerSessionPlayer {
 		public void onMsgError(Msg msg, EventReason reason) {
 			LOG.info(outer.toString() + ": MsgError in msg " + msg.toString() + " reason='" + reason + "'");
 			msg.returnToParentPool();
+			callbacksCounter.possiblyThrowExecption("[onMsgError] Callback exception in onMsgError in ServerSessionPlayer.");
 		}
 
 		public void onSessionEstablished() {
 			LOG.debug(outer.toString() + ": onSessionEstablished");
+			callbacksCounter.possiblyThrowExecption("[onSessionEstablished] Callback exception in onSessionEstablished in ServerSessionPlayer.");
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
@@ -295,12 +304,12 @@ public class ServerSessionPlayer {
 					LOG.debug(outer.toString() + ": on" + session_event.toString() + ", reason='" + reason + "'");
 					break;
 				default:
-					LOG.error(outer.toString() + ": FAILURE: onSessionError: event='" + session_event + "', reason='"
-					        + reason + "'");
+					LOG.error(outer.toString() + ": FAILURE: onSessionError: event='" + session_event + "', reason='" + reason + "'");
 					System.exit(1); // Failure in test - eject!
 					break;
 			}
 
+			callbacksCounter.possiblyThrowExecption("[onSessionEvent] Callback exception in onSessionEvent in ServerSessionPlayer.");
 		}
 
 		public void onResponse(Msg msg) {
@@ -320,6 +329,8 @@ public class ServerSessionPlayer {
 			if (outer.nextHopMP != null) {
 				msg.returnToParentPool();
 			}
+
+			callbacksCounter.possiblyThrowExecption("[onResponse] Callback exception in onResponse in ServerSessionPlayer.");
 		}
 	}
 }
