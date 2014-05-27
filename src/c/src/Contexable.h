@@ -36,6 +36,9 @@ public:
 			struct xio_session *session) = 0;
 
 	virtual bool isClient() = 0;
+	virtual void deleteObject() = 0;
+
+	bool flag_to_delete;
 
 private:
 	Context* ctx_class;

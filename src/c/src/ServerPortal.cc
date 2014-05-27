@@ -72,6 +72,11 @@ ServerPortal::~ServerPortal()
 	SRVPORTAL_LOG_DBG("DTOR done");
 }
 
+void ServerPortal::deleteObject()
+{
+	this->writeEventAndDelete(true);
+}
+
 void ServerPortal::writeEventAndDelete(bool event_type)
 {
 	Context* ctx = this->get_ctx_class();
@@ -93,6 +98,7 @@ void ServerPortal::writeEventAndDelete(bool event_type)
 Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event, struct xio_session *session)
 {
 	ServerSession* ses = NULL;
+	Context* ctx = NULL;
 	switch (event->event) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
@@ -105,8 +111,13 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
-		xio_connection_destroy(event->conn);
-		return NULL;
+		ses = get_ses_server_for_session(session, false);
+		if (ses->destory_first_connection()){
+			//there was a forward and this is the initial connection
+			xio_connection_destroy(event->conn);
+			return NULL;
+		}
+		return ses->getCtx();
 
 	case XIO_SESSION_NEW_CONNECTION_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_NEW_CONNECTION_EVENT in session %p", session);
@@ -148,7 +159,9 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 			SRVPORTAL_LOG_DBG("there aren't any sessions on this server anymore. Can close");
 			flag_to_delete = true;
 		}
-		return ses->getCtx();
+		ctx = ses->getCtx();
+		delete (ses);
+		return ctx;
 
 	case XIO_SESSION_CONNECTION_ERROR_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_ERROR_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));

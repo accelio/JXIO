@@ -39,13 +39,12 @@ public:
 	Context* ctxForSessionEvent(struct xio_session_event_data * event,
 			struct xio_session *session);
 	bool isClient() {return false;}
-
+	void deleteObject();
 	//this method writes that the portal was closed to the event queue and deletes this
 	void writeEventAndDelete(bool event_type);
 	struct xio_server* server;
 	bool error_creating;
 	bool is_closing;
-	bool flag_to_delete;
 	int sessions; //indicates how many sessions are listening on this server
 	uint16_t port; //indicates the actual port on which the server listens
 };

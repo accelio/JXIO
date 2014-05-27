@@ -106,7 +106,11 @@ int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 int on_msg_error_callback(struct xio_session *session, enum xio_status error,
 		struct xio_msg *msg, void *cb_prv_data)
 {
-	LOG_DBG("got on_msg_error_callback");
+	LOG_DBG("got on_msg_error_callback for msg=%p. error status is %d", msg->user_context, error);
+	if (error == XIO_E_MSG_DISCARDED){
+		//since user discarded this msg, he does not need this notification
+		return 0;
+	}
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
 
@@ -147,33 +151,25 @@ void on_session_event(void * ptr_for_java, Context *ctx, struct xio_session_even
 	done_event_creating(ctx, sizeWritten);
 }
 
-void on_session_event_server(ServerPortal* serverPortal, Context *ctx, struct xio_session *session,
-		struct xio_session_event_data *event_data)
-{
-	on_session_event(session, ctx, event_data);
-	/*in case it is a server, the java object is represented by session */
-	if (serverPortal->flag_to_delete)
-		serverPortal->writeEventAndDelete(true);
-}
-
 int on_session_event_callback(struct xio_session *session,
 		struct xio_session_event_data *event_data, void *cb_prv_data)
 {
 
 	LOG_DBG("got on_session_event_callback. event=%d, cb_prv_data=%p, session=%p, conn=%p",
 			event_data->event, cb_prv_data, session, event_data->conn);
-
+	LOG_ERR("event in on_session_event_callback is %d", event_data->event);
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 
 	Context *ctx = cntxbl->ctxForSessionEvent(event_data, session);
 	if (ctx) {
 		if (cntxbl->isClient()) {
-			Client* client = (Client*)cntxbl;
 			/*in case it is a client, the java object is represented by cb_prv_data */
-			on_session_event(client, ctx, event_data);
+			on_session_event(cntxbl, ctx, event_data);
 		} else { //it's  a server
-			ServerPortal* serverPortal = (ServerPortal*)cntxbl;
-			on_session_event_server(serverPortal, ctx, session, event_data);
+			on_session_event(session, ctx, event_data);
+		}
+		if (cntxbl->flag_to_delete){
+			cntxbl->deleteObject();
 		}
 	}
 	return 0;

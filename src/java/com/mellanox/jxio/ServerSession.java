@@ -24,7 +24,7 @@ import com.mellanox.jxio.impl.Event;
 import com.mellanox.jxio.impl.EventMsgError;
 import com.mellanox.jxio.impl.EventNewMsg;
 import com.mellanox.jxio.impl.EventSession;
-
+import com.mellanox.jxio.impl.EventNameImpl;
 /**
  * ServerSession is the object which receives Msgs from Client and sends responses. This side
  * does not initiate connection. ServerSession receives several events on his lifetime.
@@ -51,6 +51,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	final String              uri;
 	private final String      name;
 	private final String      nameForLog;
+	private int               msgsInUse;
 	private static final Log  LOG = LogFactory.getLog(ServerSession.class.getCanonicalName());
 
 	public static interface Callbacks {
@@ -147,6 +148,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 			LOG.warn(this.toLogString() + "Trying to send message while session is closing");
 			return false;
 		}
+		this.msgsInUse--;
 		boolean ret = Bridge.serverSendResponse(msg.getId(), msg.getOut().position(), ptrSesServer);
 		if (!ret) {
 			LOG.debug(this.toLogString() + "there was an error sending the message");
@@ -172,6 +174,26 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		Bridge.releaseMsgServerSide(msg.getId());
 		this.eventQHandlerMsg.releaseMsgBackToPool(msg);
 	}
+	
+	/** 
+	 * This method releases Msg to pool after SESSION_CLOSED. This method should be called
+	 * for msgs that were not in pool in time of SESSION_CLOSED event arrival 
+	 * @param msg - msg to be discarded
+	 * @return true if msg was discarded and false otherwise
+	 */
+	public boolean discardRequest(Msg msg) {
+		if (this.msgsInUse == 0 || !this.getIsClosing())
+			return false; //to avoid release twice of session server
+		Bridge.discardRequest(msg.getId());
+		this.eventQHandlerMsg.releaseMsgBackToPool(msg);
+		this.msgsInUse--;
+		if ((this.msgsInUse == 0)) {
+			if (LOG.isDebugEnabled()) 
+				LOG.debug(this.toLogString() + "all msgs were discarded. Can delete SessionServer");
+			Bridge.deleteSessionServer(this.ptrSesServer);
+		}
+		return true;
+	}
 
 	void setEventQueueHandlers(EventQueueHandler eqhS, EventQueueHandler eqhM) {
 		this.eventQHandlerMsg = eqhM;
@@ -194,21 +216,37 @@ public class ServerSession extends EventQueueHandler.Eventable {
 				if (ev instanceof EventSession) {
 					int errorType = ((EventSession) ev).getErrorType();
 					int reason = ((EventSession) ev).getReason();
-					EventName eventName = EventName.getEventByIndex(errorType);
-					if (eventName == EventName.SESSION_CLOSED) {
-						removeFromEQHs(); // now we are officially done with this session and it can
-						this.setIsClosing(true);// be deleted from the EQH
-						// need to delete this Session from the set in ServerPortal
-						this.creator.removeSession(this);
-						// now that the user knows session is closed, object holding session state can be deleted
-						Bridge.deleteSessionServer(this.ptrSesServer);
-					}
-					try {
-						callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
-					} catch (Exception e) {
-						eventQHandlerMsg.setCaughtException(e);
-						LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
-					}
+					EventNameImpl eventName = EventNameImpl.getEventByIndex(errorType);
+					switch(eventName){
+						case SESSION_CLOSED:
+							this.setIsClosing(true);
+							// now that the user knows session is closed, object holding session state can be deleted
+							if (this.msgsInUse == 0){
+								if (LOG.isDebugEnabled())
+									LOG.debug(this.toLogString() + "there are no msgs in use, can delete SessionServer");
+								Bridge.deleteSessionServer(this.ptrSesServer);
+							}else{
+								if (LOG.isDebugEnabled())
+									LOG.debug(this.toLogString() + "there are still " + this.msgsInUse + " msgs in use. Can not delete SessionServer");
+							}
+							EventName eventNameForApp = EventName.getEventByIndex(eventName.getIndexPublished());
+							try {
+								callbacks.onSessionEvent(eventNameForApp, EventReason.getEventByIndex(reason));
+							} catch (Exception e) {
+								eventQHandlerMsg.setCaughtException(e);
+								LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
+							}
+							break;
+							//internal event
+						case SESSION_TEARDOWN:
+							// now we are officially done with this session and it can  be deleted from the EQH
+							removeFromEQHs(); 
+							// need to delete this Session from the set in ServerPortal
+							this.creator.removeSession(this);
+							break;
+						default:
+							LOG.error(this.toLogString() + "received an unknown event type" + eventName);
+						}
 				}
 				break;
 
@@ -244,6 +282,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					evNewMsg = (EventNewMsg) ev;
 					Msg msg = evNewMsg.getMsg();
 					try {
+						this.msgsInUse++;
 						callbacks.onRequest(msg);
 					} catch (Exception e) {
 						eventQHandlerMsg.setCaughtException(e);
@@ -272,6 +311,13 @@ public class ServerSession extends EventQueueHandler.Eventable {
 
 	}
 
+	boolean canClose(){
+		if (this.msgsInUse == 0)
+			return true;
+		LOG.warn(this.toLogString() + "can't be closed. there are " + this.msgsInUse + " waiting to be discarded");
+		return false;
+	}
+	
 	public String toString() {
 		return this.name;
 	}

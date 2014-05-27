@@ -299,7 +299,11 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSe
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_deleteClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
 {
 	Client *ses = (Client*)ptrSes;
-	delete (ses);
+	ses->ref_counter--;
+	if (ses->ref_counter == 0){
+		LOG_DBG("deleting client");
+		delete (ses);
+	}
 	return true;
 }
 
@@ -484,6 +488,16 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_serverS
 	return msg->send_response(size);
 }
 
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_discardRequestNative(JNIEnv *env, jclass cls, jlong ptr_msg)
+{
+	Msg * msg = (Msg*) ptr_msg;
+	bool status = xio_send_response(msg->get_xio_msg());
+	if (status == false)
+		LOG_DBG("Got error from releasing xio_msg: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
+	msg->release_to_pool();
+	return status;
+}
+
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_clientSendReqNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_msg, jint size, jboolean is_mirror)
 {
 	Msg * msg = (Msg*) ptr_msg;
@@ -508,7 +522,12 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_bindMsg
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_deleteSessionServerNative(JNIEnv *env, jclass cls, jlong ptr_ses_server)
 {
 	ServerSession * ses = (ServerSession*) ptr_ses_server;
-	delete (ses);
+	xio_session *xio_ses = ses->get_xio_session();
+	xio_connection* con = xio_get_connection(xio_ses, ses->getCtx()->ctx);
+	LOG_DBG("destroying connection %p for session %p", con, xio_ses);
+	if (xio_connection_destroy(con)){
+		LOG_ERR("error destroying connection %p for session %p", con, xio_ses);
+	}
 }
 
 #if _BullseyeCoverage

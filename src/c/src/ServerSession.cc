@@ -41,3 +41,18 @@ bool ServerSession::ignore_first_disconnect()
 	}
 	return false;
 }
+
+void ServerSession::set_ignore_first_disconnect()
+{
+	to_ignore_first_disconnect = true;
+	to_destroy_first_connection = true;
+}
+
+bool ServerSession::destory_first_connection()
+{
+	if (this->to_destroy_first_connection) {
+		this->to_destroy_first_connection = false;
+		return true;
+	}
+	return false;
+}

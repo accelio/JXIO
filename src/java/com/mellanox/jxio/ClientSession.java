@@ -25,6 +25,7 @@ import com.mellanox.jxio.impl.Event;
 import com.mellanox.jxio.impl.EventMsgError;
 import com.mellanox.jxio.impl.EventNewMsg;
 import com.mellanox.jxio.impl.EventSession;
+import com.mellanox.jxio.impl.EventNameImpl;
 
 /**
  * ClientSession is the object that connects to the Server. This object initiates the connection.
@@ -191,24 +192,29 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 					int errorType = ((EventSession) ev).getErrorType();
 					int reason = ((EventSession) ev).getReason();
-					EventName eventName = EventName.getEventByIndex(errorType);
+					EventNameImpl eventName = EventNameImpl.getEventByIndex(errorType);
 					switch (eventName) {
 						case SESSION_CLOSED:
-							this.setIsClosing(true);
-							// now we are officially done with this session and it can be deleted from the EQH
-							eventQHandler.removeEventable(this);
 							Bridge.deleteClient(this.getId());
-							break;
 						case SESSION_REJECT:
 							// SESSION_CLOSED will arrive after SESSION_REJECT and then ClientSeesion will be deleted
 							// from EQH
 							this.setIsClosing(true);
 							break;
+						// Internal event
+						case SESSION_TEARDOWN:
+							// now we are officially done with this session and it can be deleted from the EQH
+							if (LOG.isDebugEnabled()) {
+								LOG.debug(this.toLogString() + "received SESSION_TEARDOWN - internal event");
+							}
+							eventQHandler.removeEventable(this);
+							return;
 						default:
 							break;
 					}
 					try {
-						callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
+						EventName eventNameForApp = EventName.getEventByIndex(eventName.getIndexPublished());
+						callbacks.onSessionEvent(eventNameForApp, EventReason.getEventByIndex(reason));
 					} catch (Exception e) {
 						eventQHandler.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
@@ -271,6 +277,10 @@ public class ClientSession extends EventQueueHandler.Eventable {
 			default:
 				LOG.error(this.toLogString() + "received an unknown event " + ev.getEventType());
 		}
+	}
+
+	boolean canClose() {
+		return true;
 	}
 
 	public String toString() {

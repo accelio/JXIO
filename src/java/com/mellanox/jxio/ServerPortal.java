@@ -23,6 +23,7 @@ import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
 import com.mellanox.jxio.impl.EventNewSession;
 import com.mellanox.jxio.impl.EventSession;
+import com.mellanox.jxio.impl.EventNameImpl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -242,19 +243,17 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 				if (ev instanceof EventSession) {
 					int errorType = ((EventSession) ev).getErrorType();
 					int reason = ((EventSession) ev).getReason();
-					EventName eventName = EventName.getEventByIndex(errorType);
-					if (eventName == EventName.SESSION_CLOSED) {
-						this.eventQHndl.removeEventable(this); // now we are officially done with this session and it
-						                                       // can be deleted from the EQH
-					}
-					if (eventName == EventName.PORTAL_CLOSED) {
+					EventNameImpl eventName = EventNameImpl.getEventByIndex(errorType);
+					
+					if (eventName == EventNameImpl.PORTAL_CLOSED) {
 						this.eventQHndl.removeEventable(this);
 						if (LOG.isDebugEnabled()) {
 							LOG.debug(this.toLogString() + "portal was closed");
 						}
 					}
 					try {
-						callbacks.onSessionEvent(eventName, EventReason.getEventByIndex(reason));
+						EventName eventNameForApp = EventName.getEventByIndex(eventName.getIndexPublished());
+						callbacks.onSessionEvent(eventNameForApp, EventReason.getEventByIndex(reason));
 					} catch (Exception e) {
 						eventQHndl.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
@@ -316,6 +315,10 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 			LOG.error(this.toLogString() + "URISyntaxException occured while trying to create a new URI");
 		}
 		return newUri;
+	}
+	
+	boolean canClose(){
+		return true;
 	}
 
 	private URI getUri() {

@@ -213,20 +213,21 @@ public class EventQueueHandler implements Runnable {
 		}
 	}
 
-	/**
-     * Close (and stops) this EQH and release all corresponding Java and Native resources (including closing the related
-     * ServerSessions, ServerPortal and ClientSession)
-     * 
-     * This function Should be called only once no other thread is inside the runEventLoop()
-     */
-	public void close() {
+	/**  Close (and stops) this EQH and release all corresponding Java and Native resources
+	 * (including closing the related ServerSessions, ServerPortal and ClientSession)
+	 * 
+	 * This function Should be called only once no other thread is inside the runEventLoop()
+	 * 
+	 * @return True if EQH was closed and false otherwise
+	 */
+	public boolean close() {
 		if (getId() == 0) {
 			LOG.error(this.toLogString() + "no context opened on C side. can not close event loop");
-			return;
+			return false;
 		}
 		if (this.inRunLoop) {
 			LOG.error(this.toLogString() + "can not close EQH from within runEventLoop");
-			return;
+			return false;
 		}
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.toLogString() + "closing EQH ");
@@ -241,11 +242,15 @@ public class EventQueueHandler implements Runnable {
 			while (it.hasNext()) {
 				Eventable ev = it.next();
 				if (!ev.getIsClosing()) {
-					if (LOG.isDebugEnabled()) {
-						LOG.debug(this.toLogString() + "closing eventable" + ev.toString() + " with refToCObject "
-						        + ev.getId());
+					if (ev.canClose()){
+						ev.close();
+						if (LOG.isDebugEnabled()) 
+							LOG.debug(this.toLogString() + "closing eventable" + ev.toString() + " with refToCObject "
+							        + ev.getId());
+					}else{
+						LOG.debug(this.toLogString() + "ERROR: User is using resources. object " + ev.toString() + "can not close");
+						return false;
 					}
-					ev.close();
 				}
 				waitForEvent++;
 			}
@@ -261,6 +266,7 @@ public class EventQueueHandler implements Runnable {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.toLogString() + "closing EQH is finished");
 		}
+		return true;
 	}
 
 	static abstract class Eventable {
@@ -287,7 +293,10 @@ public class EventQueueHandler implements Runnable {
 		void setIsClosing(boolean isClosing) {
 			this.isClosing = isClosing;
 		}
-
+		
+		//returns true if eventable can close and false if there are resources to be released by user before close
+		abstract boolean canClose();
+		
 		abstract void onEvent(Event ev);
 
 	}

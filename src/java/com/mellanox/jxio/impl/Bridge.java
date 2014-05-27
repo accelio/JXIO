@@ -20,9 +20,10 @@ import com.mellanox.jxio.MsgPool;
 
 public class Bridge {
 
-	private static final Log  LogFromNative  = LogFactory.getLog("LogFromNative");
-	private static final Log  LOGBridge      = LogFactory.getLog(Bridge.class.getCanonicalName());
-	                                                                             
+	private static final Log                              LogFromNative  = LogFactory.getLog("LogFromNative");
+	private static final Log                              LOGBridge      = LogFactory.getLog(Bridge.class
+	                                                                             .getCanonicalName());
+
 	private static ConcurrentMap<Long, EventQueueHandler> mapIdEQHObject = new ConcurrentHashMap<Long, EventQueueHandler>();
 
 	static {
@@ -102,13 +103,13 @@ public class Bridge {
 	public static void closeSessionClient(final long ptrSes) {
 		closeSessionClientNative(ptrSes);
 	}
-	
+
 	private static native void deleteClientNative(long ptrSes);
 
 	public static void deleteClient(final long ptrSes) {
 		deleteClientNative(ptrSes);
 	}
-	
+
 	private static native long[] startServerPortalNative(String url, long ptrCtx);
 
 	public static long[] startServerPortal(final String url, final long ptrCtx) {
@@ -131,7 +132,8 @@ public class Bridge {
 
 	private static native long forwardSessionNative(String url, long ptrSes, long ptrPortal, long ptrPortalForwarder);
 
-	public static long forwardSession(final String url, final long ptrSes, final long ptrPortal, final long ptrPortalForwarder) {
+	public static long forwardSession(final String url, final long ptrSes, final long ptrPortal,
+	        final long ptrPortalForwarder) {
 		long ptr = forwardSessionNative(url, ptrSes, ptrPortal, ptrPortalForwarder);
 		return ptr;
 	}
@@ -176,13 +178,20 @@ public class Bridge {
 		boolean ret = serverSendResponseNative(ptrMsg, size, ptrSesServer);
 		return ret;
 	}
-	
+
+	private static native boolean discardRequestNative(long ptrMsg);
+
+	public static boolean discardRequest(final long ptrMsg) {
+		boolean ret = discardRequestNative(ptrMsg);
+		return ret;
+	}
+
 	private static native void releaseMsgServerSideNative(long ptrMsg);
 
 	public static void releaseMsgServerSide(final long ptrMsg) {
 		releaseMsgServerSideNative(ptrMsg);
 	}
-	
+
 	private static native boolean bindMsgPoolNative(long ptrMsgPool, long ptrEQH);
 
 	public static boolean bindMsgPool(final long ptrMsgPool, final long ptrEQH) {
@@ -194,8 +203,8 @@ public class Bridge {
 
 	public static void deleteSessionServer(final long ptrSessionServer) {
 		deleteSessionServerNative(ptrSessionServer);
-	}	
-	
+	}
+
 	// callback from C++
 	static public void requestForBoundMsgPool(long ptrEQH, int inSize, int outSize) {
 		EventQueueHandler eqh = mapIdEQHObject.get(ptrEQH);

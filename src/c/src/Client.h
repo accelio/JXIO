@@ -33,7 +33,7 @@ public:
 
 	bool error_creating;
 	bool is_closing;
-
+	int ref_counter;
 	//to move some to private?
 	Client(const char* url, long ptrCtx);
 	~Client();
@@ -43,6 +43,7 @@ public:
 	Context* ctxForSessionEvent(struct xio_session_event_data * event,
 				struct xio_session *session);
 	bool isClient() {return true;}
+	void deleteObject();
 };
 
 #endif // ! Client__H___

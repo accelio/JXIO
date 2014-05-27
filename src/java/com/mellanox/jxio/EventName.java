@@ -41,16 +41,12 @@ public enum EventName {
 	/**
 	 * SESSION_ERROR is received by ClientSession, ServerSession and ServerPortal.
 	 */
-	SESSION_ERROR(9);
+	SESSION_ERROR(3);
 
 	private int index;
 
 	private EventName(int i) {
 		index = i;
-	}
-
-	public int getIndex() {
-		return index;
 	}
 
 	private static EventName[] allEvents = values();

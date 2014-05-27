@@ -166,6 +166,12 @@ public class ServerSessionPlayer {
 			}
 
 			if (outer.isClosing) {
+				if (LOG.isDebugEnabled())
+					LOG.debug(outer.toString() + " is closing, discarding all msgs");
+				while (outer.queueDelayedMsgs.peek() != null){
+					Msg msg = outer.queueDelayedMsgs.poll();
+					outer.server.discardRequest(msg);
+				}
 				return;
 			}
 			// register next send timer
