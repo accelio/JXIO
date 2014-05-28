@@ -1,0 +1,67 @@
+<root>
+	<machines>
+		<machine_amount value="2"/>
+		<machine>
+			<name value="zorro10"/>
+			<address value="36.0.0.120"/>
+			<type value="Eth"/>
+		</machine>
+		<machine>
+                        <name value="zorro11"/>
+                        <address value="36.0.0.121"/>
+                        <type value="Eth"/>
+                </machine>
+	</machines>
+
+	<!-- JXIO process parameters -->
+	<processes>
+		<process_amount value="[100]:4"/>
+		<machine value="random"/>
+		<num_eqhs value="[100]:-1"/>
+		<timeout value="[100]:60"/>
+		<log_level value="[0]:OFF, [0]:FATAL, [0]:ERROR, [0]:WARN, [100]:INFO, [0]:DEBUG, [0]:TRACE, [0]:ALL"/>
+	</processes>
+
+	<!-- Server process parameters -->
+	<servers>
+		<server_amount value="[100]:4"/>
+		<process value="random"/>
+		<port value="[100]:3011-65536"/>
+		<start_delay value="[100]:0"/>
+		<duration value="[100]:30"/>
+		<violent_exit value="[100]:0"/>
+		<num_workers value="[100]:4"/>
+		<msg_pools>
+			<msg_pool_amount value="[100]:1"/>
+			<msg_pool_count value="[100]:1000"/>
+			<msg_pool_size_in value="[100]:1024"/>
+			<msg_pool_size_out value="[100]:1024"/>
+		</msg_pools>
+		<tps value="[100]:0"/> <!--0 represents no delay-->
+		<batch value="[100]:1"/>
+		<delay value="[100]:0"/>
+	</servers>
+
+	<!-- Client process parameters -->
+	<clients>
+		<client_amount value="[100]:8"/>
+	        <process value="random"/>
+		<server value="random"/>
+        	<start_delay value="[100]:10"/>
+		<duration value="[100]:10"/>
+		<violent_exit value="[100]:0"/>
+		<reject value="[100]:0"/>
+		<hops>
+			<hop_amount value="[100]:0"/>
+			<server value="random"/>
+			<use_msg_mirror value="[100]:0"/>
+		</hops>
+		<msg_count_factor_perc value="[100]:20"/>
+		<msg_size_in_factor_perc value="[100]:100"/>
+		<msg_size_out_factor_perc value="[100]:100"/>
+		<tps value="[100]:10"/>
+		<batch value="[100]:1"/>
+		<repeats value="[100]:0"/>
+		<repeat_delay value="[100]:0"/>
+	</clients>
+</root>

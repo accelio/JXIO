@@ -234,55 +234,22 @@
 
   	<case>
 		<info>jx test</info>
-		<name>run r4h story 1</name>
+		<name>run scale test 1 </name>
 		<tout>1500</tout>
 		<cmd>
                         <params>
-				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability_r4h.xml --timeout 300</static_args>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability_large_scale_1.xml --timeout 300</static_args>
 			</params>
 		</cmd>
 	</case>
 
-	<case>
+  	<case>
 		<info>jx test</info>
-		<name>run r4h story 2</name>
+		<name>run scale test 2 </name>
 		<tout>1500</tout>
 		<cmd>
                         <params>
-				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability_r4h.xml --timeout 300</static_args>
-			</params>
-		</cmd>
-	</case>
-
-	<case>
-		<info>jx test</info>
-		<name>run r4h story 3</name>
-		<tout>1500</tout>
-		<cmd>
-                        <params>
-				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability_r4h.xml --timeout 300</static_args>
-			</params>
-		</cmd>
-	</case>
-	
-	<case>
-		<info>jx test</info>
-		<name>run r4h story 4</name>
-		<tout>1500</tout>
-		<cmd>
-                        <params>
-				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability_r4h.xml --timeout 300</static_args>
-			</params>
-		</cmd>
-	</case>
-
-	<case>
-		<info>jx test</info>
-		<name>run r4h story 5</name>
-		<tout>1500</tout>
-		<cmd>
-                        <params>
-				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability_r4h.xml --timeout 300</static_args>
+				<static_args>--path ../tests/com/mellanox/jxio/tests/random --filename probability_large_scale_2.xml --timeout 300</static_args>
 			</params>
 		</cmd>
 	</case>
