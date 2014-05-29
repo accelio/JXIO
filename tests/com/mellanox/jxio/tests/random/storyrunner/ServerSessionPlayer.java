@@ -145,7 +145,7 @@ public class ServerSessionPlayer {
 			LOG.trace(this.toString() + ": sendResponse(" + msg + ")");
 		if (server.sendResponse(msg) == false) {
 			LOG.error(this.toString() + ": FAILURE: sendResponse with error on msg=" + msg);
-			System.exit(1);
+//			System.exit(1);
 		}
 		this.counterSentMsgs++;
 	}
