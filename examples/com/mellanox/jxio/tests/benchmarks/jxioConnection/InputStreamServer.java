@@ -1,4 +1,4 @@
-package com.mellanox.jxio.tests.benchmarks;
+package com.mellanox.jxio.tests.benchmarks.jxioConnection;
 
 import java.net.URI;
 import java.net.URISyntaxException;
