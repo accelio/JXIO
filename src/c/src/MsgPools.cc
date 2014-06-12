@@ -57,7 +57,7 @@ Msg* MsgPools::get_msg_from_pool(int in_size, int out_size)
 {
 	//currently all msgPools have the same message sizes
 	if (this->in_size < in_size){
-		LOG_FATAL("Can not allocate msg with in=%d, while msgPool [%p] is in=%d", in_size, this, this->in_size);
+		LOG_FATAL("Can not allocate msg with in=%d, while msgPools [%p] is in=%d", in_size, this, this->in_size);
 		exit(1);
 	}
 	while (true) {

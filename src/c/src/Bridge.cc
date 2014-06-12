@@ -347,10 +347,10 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_stopServerP
 	ServerPortal *server = (ServerPortal *)ptrServer;
 	server->is_closing = true;
 	if (server->sessions == 0) {
-		LOG_DBG("there aren't any sessions on this server. Can close");
+		LOG_DBG("there aren't any sessions on server %p. Can close", server);
 		server->writeEventAndDelete(false);
 	} else {
-		LOG_DBG("there are more sessions");
+		LOG_DBG("there are %d sessions on server %p", server->sessions, server);
 	}
 }
 
@@ -380,6 +380,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSes
 		return 0;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
+	LOG_DBG("forwarding xio session=%p to portal=%p, whose url=%s", xio_session, portal, url);
 
 	bool ret_val = forward_session(jxio_session, url);
 	env->ReleaseStringUTFChars(jurl, url);
@@ -403,6 +404,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSess
 		return 0;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
+	LOG_DBG("accepting xio session=%p to portal=%p", xio_session, portal);
 
 	bool ret_val = accept_session(jxio_session);
 	if (ret_val) {

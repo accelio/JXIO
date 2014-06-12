@@ -67,7 +67,7 @@ int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 	const int msg_in_size = get_xio_msg_in_size(msg);
 	const int msg_out_size = get_xio_msg_out_size(msg);
 
-	LOG_TRACE("on_msg_callback context=%p, num_iov=%d, len: in=%d out=%d, msg=%p", msg->user_context, msg->in.data_iovlen, msg_in_size, msg_out_size, msg);
+	LOG_TRACE("on_msg_callback contextable=%p, num_iov=%d, len: in=%d out=%d, msg=%p", msg->user_context, msg->in.data_iovlen, msg_in_size, msg_out_size, msg);
 	if (msg->status) {
 		LOG_ERR("xio_msg=%p completed with error.[%s]", msg, xio_strerror(msg->status));
 	}
@@ -157,7 +157,6 @@ int on_session_event_callback(struct xio_session *session,
 
 	LOG_DBG("got on_session_event_callback. event=%d, cb_prv_data=%p, session=%p, conn=%p",
 			event_data->event, cb_prv_data, session, event_data->conn);
-	LOG_ERR("event in on_session_event_callback is %d", event_data->event);
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 
 	Context *ctx = cntxbl->ctxForSessionEvent(event_data, session);

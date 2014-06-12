@@ -165,7 +165,6 @@ bool close_xio_connection(struct xio_session *session, struct xio_context *ctx)
 bool forward_session(ServerSession* jxio_session, const char * url)
 {
 	struct xio_session *xio_session = jxio_session->get_xio_session();
-	LOG_DBG("url before forward is %s. xio_session is %p", url, xio_session);
 
 	int retVal = xio_accept(xio_session, &url, 1, NULL, 0);
 	BULLSEYE_EXCLUDE_BLOCK_START
@@ -182,7 +181,6 @@ bool forward_session(ServerSession* jxio_session, const char * url)
 bool accept_session(ServerSession* jxio_session)
 {
 	struct xio_session *xio_session = jxio_session->get_xio_session();
-	LOG_DBG("before accept xio_session is %p", xio_session);
 
 	int retVal = xio_accept(xio_session, NULL, 0, NULL, 0);
 	BULLSEYE_EXCLUDE_BLOCK_START
