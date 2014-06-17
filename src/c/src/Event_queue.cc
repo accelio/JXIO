@@ -14,8 +14,9 @@
 ** governing permissions and  limitations under the License.
 **
 */
-#include <string.h>
+
 #include <map>
+#include <stdexcept>
 
 #include "bullseye.h"
 #include "Event_queue.h"
@@ -58,8 +59,9 @@ void Event_queue::increase_offset(int increase)
 	this->offset += increase;
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (this->offset > this->size) {
-		LOG_FATAL("There has been overflow in EventQueue buffer. Exiting!");
-		exit(1);
+		const char* fatalErrorStr = "There has been overflow in EventQueue buffer. Aborting!!!";
+		LOG_FATAL("%s", fatalErrorStr);
+		throw std::overflow_error(fatalErrorStr);
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 }

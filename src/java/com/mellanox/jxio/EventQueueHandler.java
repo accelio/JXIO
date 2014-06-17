@@ -549,17 +549,20 @@ public class EventQueueHandler implements Runnable {
 
 	public void getAdditionalMsgPool(int inSize, int outSize) {
 		if (callbacks == null) {
-			LOG.fatal(this.toLogString() + "user did not provide callback for providing additional buffers. aborting");
-			System.exit(1);
+			String fatalErrorStr = this.toLogString() + "user did not provide callback for providing additional buffers. Aborting!!!";
+			LOG.fatal(fatalErrorStr);
+			throw new RuntimeException(fatalErrorStr);
 		}
 		MsgPool pool = this.callbacks.getAdditionalMsgPool(inSize, outSize);
 		if (pool == null) {
-			LOG.fatal(this.toLogString() + "user failed to provide buffer. aborting");
-			System.exit(1);
+			String fatalErrorStr = this.toLogString() + "user failed to provide buffer. Aborting!!!"; 
+			LOG.fatal(fatalErrorStr);
+			throw new RuntimeException(fatalErrorStr);
 		}
 		if (pool.getInSize() < inSize || pool.getOutSize() < outSize) {
-			LOG.fatal(this.toLogString() + "user failed to provide pool with correct sizes. aborting");
-			System.exit(1);
+			String fatalErrorStr = this.toLogString() + "user failed to provide pool with correct sizes. Aborting!!!";
+			LOG.fatal(fatalErrorStr);
+			throw new RuntimeException(fatalErrorStr);
 		}
 		this.bindMsgPool(pool);
 	}

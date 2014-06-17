@@ -209,8 +209,9 @@ public class Bridge {
 	static public void requestForBoundMsgPool(long ptrEQH, int inSize, int outSize) {
 		EventQueueHandler eqh = mapIdEQHObject.get(ptrEQH);
 		if (eqh == null) {
-			LOGBridge.fatal("no EventQueueHandler with id " + ptrEQH + " is found. Aborting");
-			System.exit(1);
+			String fatalErrorStr = "no EventQueueHandler with id " + ptrEQH + " is found. Aborting!!!";
+			LOGBridge.fatal(fatalErrorStr);
+			throw new RuntimeException(fatalErrorStr);
 		}
 		eqh.getAdditionalMsgPool(inSize, outSize);
 	}

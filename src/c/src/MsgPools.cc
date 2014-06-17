@@ -15,6 +15,8 @@
 **
 */
 
+#include <stdexcept>
+
 #include "bullseye.h"
 #include "MsgPools.h"
 
@@ -43,8 +45,10 @@ bool MsgPools::add_msg_pool(MsgPool* pool)
 	} else {
 		BULLSEYE_EXCLUDE_BLOCK_START
 		if (this->in_size != pool->get_in_size() || this->out_size != pool->get_out_size()) {
-			LOG_FATAL("New pool is not of the same size!!! should be in=%d, out=%d and it is in=%d, out=%d", this->in_size, this->out_size, pool->get_in_size(), pool->get_out_size());
-			exit(1);
+			char fatalErrorStr[256];
+			sprintf(fatalErrorStr, "New pool is not of the same size!!! should be in=%d, out=%d and it is in=%d, out=%d. Aborting!!!", this->in_size, this->out_size, pool->get_in_size(), pool->get_out_size());
+			LOG_FATAL("%s", fatalErrorStr);
+			throw std::overflow_error(fatalErrorStr);
 		}
 		BULLSEYE_EXCLUDE_BLOCK_END
 	}
@@ -57,8 +61,10 @@ Msg* MsgPools::get_msg_from_pool(int in_size, int out_size)
 {
 	//currently all msgPools have the same message sizes
 	if (this->in_size < in_size){
-		LOG_FATAL("Can not allocate msg with in=%d, while msgPools [%p] is in=%d", in_size, this, this->in_size);
-		exit(1);
+		char fatalErrorStr[256];
+		sprintf(fatalErrorStr, "Can not allocate msg with in=%d, while msgPools [%p] is in=%d. Aborting!!!", in_size, this, this->in_size);
+		LOG_FATAL("%s", fatalErrorStr);
+		throw std::overflow_error(fatalErrorStr);
 	}
 	while (true) {
 		list_pools::iterator it = msg_pool_list.begin();
