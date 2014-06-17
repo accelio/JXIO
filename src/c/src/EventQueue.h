@@ -16,20 +16,20 @@
 */
 
 
-#ifndef Event_queue__H___
-#define Event_queue__H___
+#ifndef EventQueue__H___
+#define EventQueue__H___
 
 #include <stdlib.h>
 #include <stdio.h>
 #include "Utils.h"
 
 //TODO:: check for overflow of the buffer
-class Event_queue{
+class EventQueue {
 
 
 public:
-	Event_queue(int size);
-	~Event_queue();
+	EventQueue(int size);
+	~EventQueue();
 	char* get_buffer();
 	void reset();
 	void increase_offset(int increase);
@@ -41,11 +41,9 @@ private:
 	int offset;
 	char * buf;
 	int size;
-
-
 };
 
 
 
 
-#endif // ! Event_queue__H___
+#endif // ! EventQueue__H___

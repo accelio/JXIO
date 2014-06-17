@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "Event_queue.h"
+#include "EventQueue.h"
 #include "Events.h"
 #include "MsgPools.h"
 
@@ -42,7 +42,7 @@ public:
 	void add_my_event();
 	void reset_counters();
 
-	Event_queue *event_queue;
+	EventQueue *event_queue;
 	Events *events;
 	bool error_creating;
 	struct xio_context *ctx;

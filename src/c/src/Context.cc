@@ -48,7 +48,7 @@ Context::Context(int eventQSize)
 
 	this->msg_pools.setCtx(this);
 
-	this->event_queue = new Event_queue(eventQSize);
+	this->event_queue = new EventQueue(eventQSize);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (this->event_queue == NULL || this->event_queue->error_creating) {
 		CONTEXT_LOG_ERR("ERROR, fail in create of EventQueue object");

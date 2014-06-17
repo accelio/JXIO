@@ -19,9 +19,9 @@
 #include <stdexcept>
 
 #include "bullseye.h"
-#include "Event_queue.h"
+#include "EventQueue.h"
 
-Event_queue::Event_queue(int size)
+EventQueue::EventQueue(int size)
 {
 	this->offset = 0;
 	this->size = size;
@@ -37,24 +37,24 @@ Event_queue::Event_queue(int size)
 	BULLSEYE_EXCLUDE_BLOCK_END
 }
 
-Event_queue::~Event_queue()
+EventQueue::~EventQueue()
 {
 	if (this->buf != NULL) {
 		free(this->buf);
 	}
 }
 
-void Event_queue::reset()
+void EventQueue::reset()
 {
 	this->offset = 0;
 }
 
-char* Event_queue::get_buffer()
+char* EventQueue::get_buffer()
 {
 	return this->buf + this->offset;
 }
 
-void Event_queue::increase_offset(int increase)
+void EventQueue::increase_offset(int increase)
 {
 	this->offset += increase;
 	BULLSEYE_EXCLUDE_BLOCK_START
