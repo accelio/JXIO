@@ -11,9 +11,7 @@ if [ ! -e ${JAVA_HOME} ]; then
         echo -e "\nError: JAVA_HOME not defined in shell!"
         exit 1
 fi
-echo `ls ../src/lib/commons-logging.jar`
 # Compile
-echo $DIR
 echo -e "\nCompiling JAVA files...."
 javac -cp "../bin/jxio.jar:../src/lib/commons-logging.jar:." com/mellanox/jxio/tests/benchmarks/jxioConnection/*.java
 if [[ $? != 0 ]] ; then
