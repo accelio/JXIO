@@ -29,10 +29,11 @@ class Context;
 
 class ServerSession {
 public:
-	ServerSession(xio_session * session, Context* ctx);
+	ServerSession(xio_session * session, Context* ctx, xio_connection* connection);
 	~ServerSession();
 
-	Context* getCtx() {return ctx;}
+	Context* get_ctx() {return ctx;}
+	void set_ctx(Context* context) {ctx = context;}
 	struct xio_session* get_xio_session() {return session;}
 	bool get_is_closing() {return is_closing;}
 	void set_is_closing(bool b) {is_closing = b;}
@@ -43,8 +44,11 @@ public:
 	//when user chooses to reject the session, the event is not passed to Java, therefore after
 	//session teardown the ServerSession needs to be deleted
 	bool delete_after_teardown;
+	struct xio_connection* get_xio_connection() {return connection;}
+	void set_xio_connection(struct xio_connection* con) {connection = con;}
 private:
 	struct xio_session* session;
+	struct xio_connection* connection;
 	Context* ctx;
 	bool is_closing;
 	bool to_ignore_first_disconnect;

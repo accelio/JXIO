@@ -118,7 +118,7 @@ ServerSession* get_ses_server_for_session(xio_session* session, bool to_delete)
 	pthread_mutex_lock(&mutex_for_map);
 	it = map_sessions.find(session);
 	if (it == map_sessions.end()) {
-		LOG_ERR("session=%p not in map", session);
+		LOG_DBG("session=%p not in map", session);
 		pthread_mutex_unlock(&mutex_for_map);
 		return NULL;
 	}
@@ -143,22 +143,19 @@ void add_ses_server_for_session(xio_session * xio_session, ServerSession* jxio_s
 	pthread_mutex_unlock(&mutex_for_map);
 }
 
-bool close_xio_connection(struct xio_session *session, struct xio_context *ctx)
+bool close_xio_connection(ServerSession* jxio_session)
 {
-	LOG_DBG("closing connection for session=%p, context=%p", session, ctx);
-	xio_connection* con = xio_get_connection(session, ctx);
+	struct xio_session *session = jxio_session->get_xio_session();
+	struct xio_connection *con = jxio_session->get_xio_connection();
+	LOG_DBG("closing connection for session=%p", session);
 	BULLSEYE_EXCLUDE_BLOCK_START
-	if (con == NULL) {
-		LOG_DBG("ERROR, no connection found (xio_session=%p, xio_context=%p)", session, ctx);
-		return false;
-	}
 	if (xio_disconnect(con)) {
-		LOG_DBG("ERROR, xio_disconnect failed with error '%s' (%d) (xio_session=%p, xio_context=%p, conn=%p)",
-				xio_strerror(xio_errno()), xio_errno(), session, ctx, con);
+		LOG_DBG("ERROR, xio_disconnect failed with error '%s' (%d) (xio_session=%p, conn=%p)",
+				xio_strerror(xio_errno()), xio_errno(), session, con);
 		return false;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
-	LOG_DBG("successfully closed connection=%p, for session=%p, context=%p", con, session, ctx);
+	LOG_DBG("successfully closed connection=%p, for session=%p", con, session);
 	return true;
 }
 
@@ -173,7 +170,6 @@ bool forward_session(ServerSession* jxio_session, const char * url)
 		return false;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
-	add_ses_server_for_session(xio_session, jxio_session);
 	jxio_session->set_ignore_first_disconnect();
 	return true;
 }
@@ -189,7 +185,6 @@ bool accept_session(ServerSession* jxio_session)
 		return false;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
-	add_ses_server_for_session(xio_session, jxio_session);
 	return true;
 }
 
@@ -209,7 +204,6 @@ bool reject_session(ServerSession* jxio_session, int reason,
 		return false;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
-	add_ses_server_for_session(xio_session, jxio_session);
 	jxio_session->delete_after_teardown = true;
 	return true;
 }

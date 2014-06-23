@@ -361,9 +361,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSessio
 		LOG_DBG("trying to close session while already closing");
 		return;
 	}
-	struct xio_session *xio_session = jxio_session->get_xio_session();
-	Context * context = jxio_session->getCtx();
-	close_xio_connection(xio_session, context->ctx);
+	close_xio_connection(jxio_session);
 }
 
 extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_portal, jlong ptr_portal_forwarder)
@@ -372,14 +370,8 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSes
 	struct xio_session *xio_session = (struct xio_session *)ptr_session;
 	ServerPortal * portal = (ServerPortal *) ptr_portal;
 	ServerPortal * portal_forwarder = (ServerPortal *) ptr_portal_forwarder;
-	Context * ctx = portal->get_ctx_class();
-	ServerSession *jxio_session = new ServerSession(xio_session, ctx);
-	BULLSEYE_EXCLUDE_BLOCK_START
-	if (jxio_session == NULL) {
-		LOG_ERR("memory allocation failed");
-		return 0;
-	}
-	BULLSEYE_EXCLUDE_BLOCK_END
+	ServerSession *jxio_session = get_ses_server_for_session(xio_session, false);
+	jxio_session->set_ctx(portal->get_ctx_class());
 	LOG_DBG("forwarding xio session=%p to portal=%p, whose url=%s", xio_session, portal, url);
 
 	bool ret_val = forward_session(jxio_session, url);
@@ -396,14 +388,8 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSess
 {
 	struct xio_session *xio_session = (struct xio_session *)ptr_session;
 	ServerPortal * portal = (ServerPortal *) ptr_portal;
-	Context * ctx = portal->get_ctx_class();
-	ServerSession *jxio_session = new ServerSession(xio_session, ctx);
-	BULLSEYE_EXCLUDE_BLOCK_START
-	if (jxio_session == NULL) {
-		LOG_ERR("memory allocation failed");
-		return 0;
-	}
-	BULLSEYE_EXCLUDE_BLOCK_END
+	ServerSession *jxio_session = get_ses_server_for_session(xio_session, false);
+
 	LOG_DBG("accepting xio session=%p to portal=%p", xio_session, portal);
 
 	bool ret_val = accept_session(jxio_session);
@@ -420,13 +406,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_rejectS
 	struct xio_session *xio_session = (struct xio_session *)ptr_session;
 
 	const char *data = env->GetStringUTFChars(jdata, NULL);
-	ServerSession *jxio_session = new ServerSession(xio_session, NULL);
-	BULLSEYE_EXCLUDE_BLOCK_START
-	if (jxio_session == NULL) {
-		LOG_ERR("memory allocation failed");
-		return false;
-	}
-	BULLSEYE_EXCLUDE_BLOCK_END
+	ServerSession *jxio_session = get_ses_server_for_session(xio_session, false);
 	char * data_copy = (char*)malloc (length + 1);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (data_copy == NULL) {
@@ -524,11 +504,10 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_bindMsg
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_deleteSessionServerNative(JNIEnv *env, jclass cls, jlong ptr_ses_server)
 {
 	ServerSession * ses = (ServerSession*) ptr_ses_server;
-	xio_session *xio_ses = ses->get_xio_session();
-	xio_connection* con = xio_get_connection(xio_ses, ses->getCtx()->ctx);
-	LOG_DBG("destroying connection %p for session %p", con, xio_ses);
+	xio_connection* con = ses->get_xio_connection();
+	LOG_DBG("destroying connection %p for session %p", con, ses->get_xio_session());
 	if (xio_connection_destroy(con)){
-		LOG_ERR("error destroying connection %p for session %p", con, xio_ses);
+		LOG_ERR("error destroying connection %p for session %p", con, ses->get_xio_session());
 	}
 }
 

@@ -117,10 +117,24 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 			xio_connection_destroy(event->conn);
 			return NULL;
 		}
-		return ses->getCtx();
+		return ses->get_ctx();
 
 	case XIO_SESSION_NEW_CONNECTION_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_NEW_CONNECTION_EVENT in session %p", session);
+		ses = get_ses_server_for_session(session, false);;
+		if (!ses){
+			ses = new ServerSession(session, this->get_ctx_class(), event->conn);
+			BULLSEYE_EXCLUDE_BLOCK_START
+			if (ses == NULL) {
+				LOG_ERR("memory allocation failed");
+				return NULL;
+			}
+			BULLSEYE_EXCLUDE_BLOCK_END
+			add_ses_server_for_session(session, ses);
+		} else {
+			//after forward
+			ses->set_xio_connection(event->conn);
+		}
 		return NULL;
 
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
@@ -159,7 +173,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 			SRVPORTAL_LOG_DBG("there aren't any sessions on this server anymore. Can close");
 			flag_to_delete = true;
 		}
-		ctx = ses->getCtx();
+		ctx = ses->get_ctx();
 		delete (ses);
 		return ctx;
 
@@ -174,6 +188,6 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 			return NULL;
 		}
 		ses->set_is_closing(true);
-		return ses->getCtx();
+		return ses->get_ctx();
 	}
 }

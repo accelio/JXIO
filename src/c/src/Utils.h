@@ -87,7 +87,7 @@ static pthread_mutex_t mutex_for_map = PTHREAD_MUTEX_INITIALIZER;
 ServerSession* get_ses_server_for_session(xio_session*, bool to_delete);
 void add_ses_server_for_session(xio_session *, ServerSession*);
 
-bool close_xio_connection(struct xio_session *session, struct xio_context *ctx);
+bool close_xio_connection(ServerSession* jxio_session);
 bool forward_session(ServerSession* jxio_session, const char * url);
 bool accept_session(ServerSession* jxio_session);
 bool reject_session(ServerSession* jxio_session, int reason, char *user_context, size_t user_context_len);

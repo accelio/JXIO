@@ -22,13 +22,14 @@
 #define SRVSESSION_LOG_ERR(log_fmt, log_args...)  LOG_BY_MODULE(lsERROR, log_fmt, ##log_args)
 #define SRVSESSION_LOG_DBG(log_fmt, log_args...)  LOG_BY_MODULE(lsDEBUG, log_fmt, ##log_args)
 
-ServerSession::ServerSession(xio_session * session, Context* ctx)
+ServerSession::ServerSession(xio_session * session, Context* ctx, xio_connection* connection)
 {
 	this->is_closing = false;
 	this->session = session;
 	this->ctx = ctx;
 	this->to_ignore_first_disconnect = false;
 	this->delete_after_teardown = false;
+	this->connection = connection;
 }
 
 ServerSession::~ServerSession() {}
