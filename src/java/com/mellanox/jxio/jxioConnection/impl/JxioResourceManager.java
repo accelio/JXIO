@@ -2,18 +2,21 @@ package com.mellanox.jxio.jxioConnection.impl;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.mellanox.jxio.EventQueueHandler;
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
 
 public class JxioResourceManager {
 
-	private final static Log                            LOG      = LogFactory.getLog(JxioResourceManager.class
-	                                                                     .getCanonicalName());
-	private static HashMap<String, LinkedList<MsgPool>> msgPools = new HashMap<String, LinkedList<MsgPool>>();
+	private final static Log                                LOG      = LogFactory.getLog(JxioResourceManager.class
+	                                                                         .getCanonicalName());
+	private static HashMap<String, LinkedList<MsgPool>>     msgPools = new HashMap<String, LinkedList<MsgPool>>();
+	private static ConcurrentLinkedQueue<EventQueueHandler> eqhs     = new ConcurrentLinkedQueue<EventQueueHandler>();
 
 	public static MsgPool getMsgPool(int size, int in, int out) {
 		MsgPool pool = null;
@@ -40,7 +43,6 @@ public class JxioResourceManager {
 	}
 
 	public static void returnMsgPool(MsgPool pool) {
-
 		if (pool == null) {
 			LOG.error("Returning empty pool");
 			return;
@@ -64,5 +66,17 @@ public class JxioResourceManager {
 
 	public static String getMsgPoolKey(int size, int in, int out) {
 		return size + "|" + in + "|" + out;
+	}
+
+	public static EventQueueHandler getEqh() {
+		EventQueueHandler eqh = eqhs.poll();
+		if (eqh == null) {
+			eqh = new EventQueueHandler(null);
+		}
+		return eqh;
+	}
+
+	public static void returnEqh(EventQueueHandler eqh) {
+		eqhs.add(eqh);
 	}
 }

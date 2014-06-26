@@ -55,7 +55,7 @@ public class JxioConnection implements BufferSupplier {
 	 */
 	public JxioConnection(URI uri, int msgPoolCount) throws ConnectException {
 		long startTime = System.nanoTime();
-		eqh = new EventQueueHandler(null);
+		eqh = JxioResourceManager.getEqh();
 		cs = new ClientSession(eqh, uri, new ClientCallbacks());
 		name = "jxioConnection[" + cs.toString() + "]";
 		LOG.info("[" + this.toString() + "] " + uri.getHost() + " port " + uri.getPort());
@@ -64,7 +64,7 @@ public class JxioConnection implements BufferSupplier {
 
 		if (!established) {
 			throw new ConnectException(this.toString() + " could not connect to " + uri.getHost() + " on port "
-			        + uri.getPort()+", got "+connectErrorType);
+			        + uri.getPort() + ", got " + connectErrorType);
 		}
 		long endTime = System.nanoTime();
 
@@ -131,7 +131,7 @@ public class JxioConnection implements BufferSupplier {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.toString() + " jxioConnection releaseResources");
 		}
-		eqh.close();
+		JxioResourceManager.returnEqh(eqh);
 		JxioResourceManager.returnMsgPool(msgPool);
 	}
 
@@ -153,8 +153,14 @@ public class JxioConnection implements BufferSupplier {
 			if (session_event == EventName.SESSION_CLOSED || session_event == EventName.SESSION_ERROR
 			        || session_event == EventName.SESSION_REJECT) { // normal exit
 				connectErrorType = session_event;
-				eqh.stop();
+				eqh.breakEventLoop();
 				close = true;
+				try {
+					input.close();
+				} catch (IOException e) {
+					LOG.error(this.toString() + " Could not close inputstream");
+				}
+				releaseResources();
 			}
 		}
 
