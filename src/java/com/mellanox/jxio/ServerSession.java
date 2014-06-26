@@ -208,7 +208,8 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		this.creator = p;
 	}
 
-	void onEvent(Event ev) {
+	boolean onEvent(Event ev) {
+		boolean userNotified = false;
 		switch (ev.getEventType()) {
 			case 0: // session event
 				if (LOG.isDebugEnabled()) {
@@ -233,6 +234,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 							}
 							EventName eventNameForApp = EventName.getEventByIndex(eventName.getIndexPublished());
 							try {
+								userNotified = true;
 								callbacks.onSessionEvent(eventNameForApp, EventReason.getEventByIndex(reason));
 							} catch (Exception e) {
 								eventQHandlerMsg.setCaughtException(e);
@@ -261,6 +263,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					evMsgErr = (EventMsgError) ev;
 					Msg msg = evMsgErr.getMsg();
 					int reason = evMsgErr.getReason();
+					userNotified = true;
 					try {
 						if (callbacks.onMsgError(msg, EventReason.getEventByIndex(reason))) {
 							// the user is finished with the Msg and it can be released
@@ -285,6 +288,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					Msg msg = evNewMsg.getMsg();
 					try {
 						this.msgsInUse++;
+						userNotified = true;
 						callbacks.onRequest(msg);
 					} catch (Exception e) {
 						eventQHandlerMsg.setCaughtException(e);
@@ -299,6 +303,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 			default:
 				LOG.error(this.toLogString() + "received an unknown event " + ev.getEventType());
 		}
+		return userNotified;
 	}
 
 	private void removeFromEQHs() {

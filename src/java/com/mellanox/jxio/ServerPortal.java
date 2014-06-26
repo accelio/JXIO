@@ -233,7 +233,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		serverSession.setPortal(this);
 	}
 
-	void onEvent(Event ev) {
+	boolean onEvent(Event ev) {
 		switch (ev.getEventType()) {
 
 			case 0: // session error event
@@ -281,7 +281,9 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 
 			default:
 				LOG.error(this.toLogString() + "received an unknown event " + ev.getEventType());
+				return false;
 		}
+		return true;
 	}
 
 	void removeSession(ServerSession s) {

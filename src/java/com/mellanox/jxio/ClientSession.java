@@ -181,7 +181,8 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		return true;
 	}
 
-	void onEvent(Event ev) {
+	boolean onEvent(Event ev) {
+		boolean userNotified = false;
 		switch (ev.getEventType()) {
 
 			case 0: // session error event
@@ -208,12 +209,13 @@ public class ClientSession extends EventQueueHandler.Eventable {
 								LOG.debug(this.toLogString() + "received SESSION_TEARDOWN - internal event");
 							}
 							eventQHandler.removeEventable(this);
-							return;
+							return false;
 						default:
 							break;
 					}
 					try {
 						EventName eventNameForApp = EventName.getEventByIndex(eventName.getIndexPublished());
+						userNotified = true;
 						callbacks.onSessionEvent(eventNameForApp, EventReason.getEventByIndex(reason));
 					} catch (Exception e) {
 						eventQHandler.setCaughtException(e);
@@ -232,6 +234,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					Msg msg = evMsgErr.getMsg();
 					int reason = evMsgErr.getReason();
 					try {
+						userNotified = true;
 						callbacks.onMsgError(msg, EventReason.getEventByIndex(reason));
 					} catch (Exception e) {
 						eventQHandler.setCaughtException(e);
@@ -247,6 +250,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					LOG.debug(this.toLogString() + "received session established event");
 				}
 				try {
+					userNotified = true;
 					callbacks.onSessionEstablished();
 				} catch (Exception e) {
 					eventQHandler.setCaughtException(e);
@@ -263,6 +267,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					evNewMsg = (EventNewMsg) ev;
 					Msg msg = evNewMsg.getMsg();
 					try {
+						userNotified = true;
 						callbacks.onResponse(msg);
 					} catch (Exception e) {
 						eventQHandler.setCaughtException(e);
@@ -277,6 +282,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 			default:
 				LOG.error(this.toLogString() + "received an unknown event " + ev.getEventType());
 		}
+		return userNotified;
 	}
 
 	boolean canClose() {

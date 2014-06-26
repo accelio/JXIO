@@ -180,8 +180,9 @@ public class EventQueueHandler implements Runnable {
 
 			// process in eventQueue pending events
 			if (eventsWaitingInQ > 0) {
-				handleEvent(eventQueue);
-				eventsHandled++;
+				if (handleEvent(eventQueue)) {
+					eventsHandled++;
+				}
 				eventsWaitingInQ--;
 			}
 		}
@@ -297,7 +298,7 @@ public class EventQueueHandler implements Runnable {
 		//returns true if eventable can close and false if there are resources to be released by user before close
 		abstract boolean canClose();
 		
-		abstract void onEvent(Event ev);
+		abstract boolean onEvent(Event ev);
 
 	}
 
@@ -337,11 +338,12 @@ public class EventQueueHandler implements Runnable {
 		return msg;
 	}
 
-	private void handleEvent(ByteBuffer eventQueue) {
+	private boolean handleEvent(ByteBuffer eventQueue) {
 
 		Eventable eventable;
 		int eventType = eventQueue.getInt();
 		long id = eventQueue.getLong();
+		boolean userNotified = false;
 		switch (eventType) {
 
 			case 0: // session error event
@@ -356,7 +358,7 @@ public class EventQueueHandler implements Runnable {
 					LOG.warn(this.toLogString() + "eventable with id " + id + " was not found in map");
 					break;
 				}
-				eventable.onEvent(evSes);
+				userNotified = eventable.onEvent(evSes);
 			}
 				break;
 
@@ -374,7 +376,7 @@ public class EventQueueHandler implements Runnable {
 					break;
 				}
 				EventMsgError evMsgErr = new EventMsgError(eventType, id, msg, reason);
-				eventable.onEvent(evMsgErr);
+				userNotified = eventable.onEvent(evMsgErr);
 			}
 				break;
 
@@ -384,7 +386,7 @@ public class EventQueueHandler implements Runnable {
 				final int reason = eventQueue.getInt();
 				EventMsgError evMsgErr = new EventMsgError(eventType, id, msg, reason);
 				eventable = msg.getClientSession();
-				eventable.onEvent(evMsgErr);
+				userNotified = eventable.onEvent(evMsgErr);
 
 			}
 				break;
@@ -397,7 +399,7 @@ public class EventQueueHandler implements Runnable {
 					LOG.warn(this.toLogString() + "eventable with id " + id + " was not found in map");
 					break;
 				}
-				eventable.onEvent(evSesEstab);
+				userNotified = eventable.onEvent(evSesEstab);
 			}
 				break;
 
@@ -421,7 +423,7 @@ public class EventQueueHandler implements Runnable {
 					break;
 				}
 				EventNewMsg evMsg = new EventNewMsg(eventType, id, msg);
-				eventable.onEvent(evMsg);
+				userNotified = eventable.onEvent(evMsg);
 			}
 				break;
 
@@ -438,7 +440,7 @@ public class EventQueueHandler implements Runnable {
 				if (LOG.isTraceEnabled()) {
 					LOG.trace(this.toLogString() + "eventable is " + eventable);
 				}
-				eventable.onEvent(evMsg);
+				userNotified = eventable.onEvent(evMsg);
 			}
 				break;
 
@@ -456,7 +458,7 @@ public class EventQueueHandler implements Runnable {
 					break;
 				}
 				EventNewSession evNewSes = new EventNewSession(eventType, id, ptrSes, uri, srcIP);
-				eventable.onEvent(evNewSes);
+				userNotified = eventable.onEvent(evNewSes);
 			}
 				break;
 
@@ -473,6 +475,7 @@ public class EventQueueHandler implements Runnable {
 				LOG.error(this.toLogString() + "received an unknown event " + eventType);
 				// TODO: throw exception
 		}
+		return userNotified;
 	}
 
 	private String readString(ByteBuffer buf) {
