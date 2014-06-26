@@ -53,6 +53,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	private final String      nameForLog;
 	private int               msgsInUse;
 	private static final Log  LOG = LogFactory.getLog(ServerSession.class.getCanonicalName());
+	private boolean 		  receivedClosed = false;
 
 	public static interface Callbacks {
 		/**
@@ -187,7 +188,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		Bridge.discardRequest(msg.getId());
 		this.eventQHandlerMsg.releaseMsgBackToPool(msg);
 		this.msgsInUse--;
-		if ((this.msgsInUse == 0)) {
+		if ((this.msgsInUse == 0) && this.getReceivedClosed()) {
 			if (LOG.isDebugEnabled()) 
 				LOG.debug(this.toLogString() + "all msgs were discarded. Can delete SessionServer");
 			Bridge.deleteSessionServer(this.ptrSesServer);
@@ -220,6 +221,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					switch(eventName){
 						case SESSION_CLOSED:
 							this.setIsClosing(true);
+							this.setReceivedClosed(true);
 							// now that the user knows session is closed, object holding session state can be deleted
 							if (this.msgsInUse == 0){
 								if (LOG.isDebugEnabled())
@@ -324,6 +326,14 @@ public class ServerSession extends EventQueueHandler.Eventable {
 
 	private String toLogString() {
 		return this.nameForLog;
+	}
+
+	private void setReceivedClosed(boolean receivedClosed) {
+		this.receivedClosed = receivedClosed;
+	}
+
+	private boolean getReceivedClosed() {
+		return receivedClosed;
 	}
 
 	/**

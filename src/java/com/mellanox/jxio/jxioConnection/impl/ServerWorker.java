@@ -76,9 +76,10 @@ public class ServerWorker extends Thread implements BufferManager {
 	public void run() {
 		worker = Thread.currentThread();
 		while (!stop) {
+			LOG.info("waiting for a new connection");
 			eqh.runEventLoop(1, -1); // to get the forward going
 			appCallbacks.newSessionStart(uri, output);
-
+			close();
 		}
 	}
 
@@ -153,14 +154,18 @@ public class ServerWorker extends Thread implements BufferManager {
 	public class SessionServerCallbacks implements ServerSession.Callbacks {
 		public void onRequest(Msg m) {
 			msg = m;
+			if (waitingToClose) {
+				session.discardRequest(m);
+			}
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
 			LOG.info(ServerWorker.this.toString() + " got event " + session_event.toString() + ", the reason is "
 			        + reason.toString());
 			if (session_event == EventName.SESSION_CLOSED) {
-				eqh.breakEventLoop();
 				sessionClosed = true;
+				waitingToClose = true;
+				eqh.breakEventLoop();
 			}
 		}
 
