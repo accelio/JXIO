@@ -136,9 +136,9 @@ public class HelloServer {
 			} else {
 				LOG.error("");
 			}
-			// Un-comment here if case you want to exit the server, stop the EQH
-			// LOG.info("Stopping the main EQH loop...");
-			// eqh.stop();
+			// Comment here if case you don't want to exit the server, stop the EQH
+			LOG.info("Stopping the main EQH loop...");
+			eqh.stop();
 		}
 
 		public boolean onMsgError(Msg msg, EventReason reason) {
