@@ -9,13 +9,13 @@ import org.apache.commons.logging.LogFactory;
 
 public class MultiBufOutputStream extends OutputStream {
 
-	private static final Log    LOG            = LogFactory.getLog(MultiBufOutputStream.class);
-	private final BufferManager bufManager;
-	private ByteBuffer          outBuf         = null;
-	private boolean             connectionOpen = true;
+	private static final Log     LOG            = LogFactory.getLog(MultiBufOutputStream.class);
+	private final BufferSupplier supplier;
+	private ByteBuffer           outBuf         = null;
+	private boolean              connectionOpen = true;
 
-	public MultiBufOutputStream(BufferManager man) {
-		bufManager = man;
+	public MultiBufOutputStream(BufferSupplier sup) {
+		supplier = sup;
 	}
 
 	@Override
@@ -40,12 +40,12 @@ public class MultiBufOutputStream extends OutputStream {
 			throw new ArrayIndexOutOfBoundsException();
 		}
 		if (outBuf == null) {
-			outBuf = bufManager.getNextBuffer();
+			outBuf = supplier.getNextBuffer();
 		}
 		while (totalWrite < len) {
 			// bring new buffer if full
 			if (!outBuf.hasRemaining()) {
-				outBuf = bufManager.getNextBuffer();
+				outBuf = supplier.getNextBuffer();
 			}
 			bytesWrite = Math.min(len - totalWrite, outBuf.remaining());
 			outBuf.put(b, off, bytesWrite);
@@ -56,34 +56,37 @@ public class MultiBufOutputStream extends OutputStream {
 
 	@Override
 	public synchronized void flush() throws IOException {
-		bufManager.flush();
+		supplier.flush();
 		outBuf = null;
 	}
 
 	@Override
 	public void close() throws IOException {
-		flush();
-		connectionOpen = false;
-		bufManager.close();
+		if (connectionOpen) {
+			connectionOpen = false;
+			flush();
+		}
 	}
 
-	// FOR TESTING!
-	public synchronized long skip(long n) throws IOException {
-		long numSkipped = 0;
-		long skip;
-
-		if (outBuf == null) {
-			outBuf = bufManager.getNextBuffer();
-		}
-		while (numSkipped < n) {
-			// bring new buffer if empty
-			if (!outBuf.hasRemaining()) {
-				outBuf = bufManager.getNextBuffer();
-			}
-			skip = Math.min(n - numSkipped, outBuf.remaining());
-			outBuf.position(outBuf.position() + (int) skip);
-			numSkipped += skip;
-		}
-		return numSkipped;
-	}
+	/*
+	 * // FOR TESTING!
+	 * public synchronized long skip(long n) throws IOException {
+	 * long numSkipped = 0;
+	 * long skip;
+	 * 
+	 * if (outBuf == null) {
+	 * outBuf = bufManager.getNextBuffer();
+	 * }
+	 * while (numSkipped < n) {
+	 * // bring new buffer if empty
+	 * if (!outBuf.hasRemaining()) {
+	 * outBuf = bufManager.getNextBuffer();
+	 * }
+	 * skip = Math.min(n - numSkipped, outBuf.remaining());
+	 * outBuf.position(outBuf.position() + (int) skip);
+	 * numSkipped += skip;
+	 * }
+	 * return numSkipped;
+	 * }
+	 */
 }

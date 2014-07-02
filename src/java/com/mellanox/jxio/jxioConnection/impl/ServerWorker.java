@@ -1,4 +1,5 @@
 /*
+
  ** Copyright (C) 2013 Mellanox Technologies
  **
  ** Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,10 +32,10 @@ import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
 import com.mellanox.jxio.ServerPortal;
 import com.mellanox.jxio.ServerSession;
-import com.mellanox.jxio.ServerSession.SessionKey;
 import com.mellanox.jxio.jxioConnection.JxioConnectionServer;
+import com.mellanox.jxio.jxioConnection.JxioConnectionServer.Callbacks;
 
-public class ServerWorker extends Thread implements BufferManager {
+public class ServerWorker extends Thread implements BufferSupplier {
 
 	private final static Log                     LOG            = LogFactory.getLog(ServerWorker.class
 	                                                                    .getCanonicalName());
@@ -50,48 +51,82 @@ public class ServerWorker extends Thread implements BufferManager {
 	private Msg                                  msg            = null;
 	private int                                  count          = 0;
 	private ServerSession                        session        = null;
-	private MultiBufOutputStream                 output;
-	private Thread                               worker;
 	private boolean                              stop           = false;
-	private String                               uri            = null;
+	private URI                                  uri            = null;
 	private boolean                              firstMsg       = true;
+	private StreamWorker                         streamWorker;
 
-	// cTor
-	public ServerWorker(int index, int inMsgSize, int outMsgSize, URI uri, int numMsgs,
-	        JxioConnectionServer.Callbacks appCallbacks) {
+	/**
+	 * CTOR of a server worker, each worker is connected to only 1 client at a time
+	 * 
+	 * @param index
+	 *            - used as worker id
+	 * @param uri
+	 *            - uri from client, is used also to pass data between client and server
+	 * @param numMsgs
+	 *            - number of msgs in msgpool
+	 * @param appCallbacks
+	 *            - callbacks that are called when a new session is started
+	 */
+	public ServerWorker(int index, URI uri, JxioConnectionServer.Callbacks appCallbacks) {
 		portalIndex = index;
 		name = "[ServerWorker " + portalIndex + " ]";
-		eqh = new EventQueueHandler(new EqhCallbacks(numMsgs, inMsgSize, outMsgSize));
+		eqh = new EventQueueHandler(new EqhCallbacks(JxioConnectionServer.msgPoolnumMsgs,
+		        JxioConnectionServer.msgPoolBuffSize, JxioConnectionServer.msgPoolBuffSize));
 		this.msgPools = new ArrayList<MsgPool>();
-		MsgPool pool = new MsgPool(numMsgs, inMsgSize, outMsgSize);
+		MsgPool pool = new MsgPool(JxioConnectionServer.msgPoolnumMsgs, JxioConnectionServer.msgPoolBuffSize,
+		        JxioConnectionServer.msgPoolBuffSize);
 		msgPools.add(pool);
 		eqh.bindMsgPool(pool);
 		sp = new ServerPortal(eqh, uri);
 		callbacks = new SessionServerCallbacks();
 		this.appCallbacks = appCallbacks;
-
 		LOG.info(this.toString() + " is up and waiting for requests");
 	}
 
+	/**
+	 * Main loop of worker thread.
+	 * waits in eqh until first msgs is recieved
+	 */
 	public void run() {
-		worker = Thread.currentThread();
 		while (!stop) {
-			LOG.info("waiting for a new connection");
+			LOG.info(this.toString()+" waiting for a new connection");
 			eqh.runEventLoop(1, -1); // to get the forward going
-			appCallbacks.newSessionStart(uri, output);
+			streamWorker.callUserCallback(uri);
 			close();
 		}
 	}
 
-	public void prepareSession(ServerSession ss, SessionKey sk) {
+	private String getStreamType() {
+		String[] queries = uri.getQuery().split("&");
+		return queries[0].split("stream=")[1];
+	}
+
+	/**
+	 * This function is called just before the server listener forwards a new connection to the worker
+	 * Reset all variables
+	 * 
+	 * @param ss
+	 *            - the new session that was constructod for this connection
+	 * @param sk
+	 *            - session key to get the uri
+	 */
+	public void prepareSession(ServerSession ss, URI uri) {
 		session = ss;
 		sessionClosed = false;
 		waitingToClose = false;
 		msg = null;
 		count = 0;
-		output = new MultiBufOutputStream(this);
-		uri = sk.getUri();
+		this.uri = uri;
 		firstMsg = true;
+		String type = getStreamType();
+		if (type.compareTo("input") == 0) {
+			streamWorker = new OSWorker(this, appCallbacks);
+		} else if (type.compareTo("output") == 0) {
+			streamWorker = new ISWorker(this, appCallbacks);
+		} else {
+			throw new UnsupportedOperationException("Stream type is not recognized");
+		}
 	}
 
 	public ServerPortal getPortal() {
@@ -102,7 +137,10 @@ public class ServerWorker extends Thread implements BufferManager {
 		return callbacks;
 	}
 
-	public void sessionClosed() {
+	/**
+	 * clears the session and return worker to pool
+	 */
+	private void sessionClosed() {
 		LOG.info(this.toString() + " disconnected from a Session");
 		session = null;
 		JxioConnectionServer.updateWorkers(this);
@@ -112,13 +150,14 @@ public class ServerWorker extends Thread implements BufferManager {
 		return eqh;
 	}
 
+	/**
+	 * Called from MultiBuffInputStream when an empty buffer is needed.
+	 * Send the previous msg (that now it's buffer is full - since we requested an empty one)
+	 * wait on eqh until a new msg is recieved
+	 */
 	public ByteBuffer getNextBuffer() throws IOException {
 		if (!firstMsg || msg == null) {
-			if (msg != null) {
-				count++;
-				session.sendResponse(msg);
-				msg = null;
-			}
+			sendMsg();
 			do {
 				eqh.runEventLoop(1, -1);
 			} while (!sessionClosed && msg == null);
@@ -127,10 +166,10 @@ public class ServerWorker extends Thread implements BufferManager {
 			}
 		}
 		firstMsg = false;
-		return msg.getOut();
+		return streamWorker.getMsgBuffer(msg);
 	}
 
-	public void flush() {
+	public void sendMsg() {
 		if (msg != null) {
 			count++;
 			session.sendResponse(msg);
@@ -138,9 +177,24 @@ public class ServerWorker extends Thread implements BufferManager {
 		}
 	}
 
+	/**
+	 * Send msg even if it's buffers is not full
+	 */
+	public void flush() {
+		if (streamWorker.canFlush()) {
+			sendMsg();
+		} else {
+			throw new UnsupportedOperationException("flush is not supported");
+		}
+	}
+
+	/**
+	 * Close the session and wait until all msgs are returned to the msgpoll
+	 */
 	public void close() {
 		if (waitingToClose || session == null)
 			return;
+		sendMsg(); //free last msg if needed
 		LOG.info(this.toString() + " closing session sent " + count + " msgs");
 		waitingToClose = true;
 		session.close();
@@ -150,7 +204,10 @@ public class ServerWorker extends Thread implements BufferManager {
 		sessionClosed();
 	}
 
-	// session callbacks
+	/**
+	 * Session Callbacks
+	 * 
+	 */
 	public class SessionServerCallbacks implements ServerSession.Callbacks {
 		public void onRequest(Msg m) {
 			msg = m;
@@ -198,5 +255,59 @@ public class ServerWorker extends Thread implements BufferManager {
 
 	public String toString() {
 		return this.name;
+	}
+
+	private class OSWorker implements StreamWorker {
+
+		private ServerWorker worker;
+		private Callbacks    appCallbacks;
+
+		public OSWorker(ServerWorker worker, Callbacks appCallbacks) {
+			this.worker = worker;
+			this.appCallbacks = appCallbacks;
+		}
+
+		public ByteBuffer getMsgBuffer(Msg m) {
+			return m.getOut();
+		}
+
+		public void callUserCallback(URI uri) {
+			appCallbacks.newSessionOS(uri, new MultiBufOutputStream(worker));
+		}
+
+		public boolean canFlush() {
+			return true;
+		}
+	}
+
+	private class ISWorker implements StreamWorker {
+
+		private ServerWorker worker;
+		private Callbacks    appCallbacks;
+
+		public ISWorker(ServerWorker worker, Callbacks appCallbacks) {
+			this.worker = worker;
+			this.appCallbacks = appCallbacks;
+		}
+
+		public ByteBuffer getMsgBuffer(Msg m) {
+			return m.getIn();
+		}
+
+		public void callUserCallback(URI uri) {
+			appCallbacks.newSessionIS(uri, new MultiBuffInputStream(worker));
+		}
+
+		public boolean canFlush() {
+			return false;
+		}
+	}
+
+	private interface StreamWorker {
+		public ByteBuffer getMsgBuffer(Msg m);
+
+		public boolean canFlush();
+
+		public void callUserCallback(URI uri);
 	}
 }

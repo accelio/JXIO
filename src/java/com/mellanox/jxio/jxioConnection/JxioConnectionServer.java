@@ -1,7 +1,9 @@
 package com.mellanox.jxio.jxioConnection;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -18,38 +20,20 @@ import com.mellanox.jxio.jxioConnection.JxioConnection;
 import com.mellanox.jxio.jxioConnection.impl.*;
 
 public class JxioConnectionServer extends Thread {
-
-	private static final Log                           LOG          = LogFactory.getLog(JxioConnectionServer.class
-	                                                                        .getCanonicalName());
+	public static final int                            msgPoolBuffSize = 64 * 1024;
+	public static final int                            msgPoolnumMsgs  = 164;
+	private static final Log                           LOG             = LogFactory.getLog(JxioConnectionServer.class
+	                                                                           .getCanonicalName());
 	private final String                               name;
-	private final int                                  numMsgsToAdd = 64;
 	private final EventQueueHandler                    listen_eqh;
 	private final ServerPortal                         listener;
 	private final JxioConnectionServer.Callbacks       appCallbacks;
-	private final int                                  numMsg;
 	private int                                        numOfWorkers;
-	private boolean                                    close        = false;
-	private static ConcurrentLinkedQueue<ServerWorker> SPWorkers    = new ConcurrentLinkedQueue<ServerWorker>();
+	private boolean                                    close           = false;
+	private static ConcurrentLinkedQueue<ServerWorker> SPWorkers       = new ConcurrentLinkedQueue<ServerWorker>();
 
 	// private static ConcurrentLinkedQueue<SessionKey> waitingSession;
 	// private static Object lock = new Object();
-
-	/**
-	 * Ctor that receives from user the amount of memory to use for the jxio msgpool
-	 * 
-	 * @param uri
-	 * @param msgPoolMem
-	 *            - actual amount of memory that will be used for msgs is msgPoolMem -
-	 *            numMsgsToAdd*JxioConnection.msgPollBuffSize
-	 * @param numWorkers
-	 *            - number of worker threads to start with (this number will grow on demand
-	 * @param appCallbacks
-	 *            - application callbacks - what to do on new session event
-	 */
-	public JxioConnectionServer(URI uri, long msgPoolMem, int numWorkers, JxioConnectionServer.Callbacks appCallbacks) {
-		this(uri, numWorkers, appCallbacks, (int) Math.ceil((double) msgPoolMem
-		        / (double) JxioConnection.msgPoolBuffSize));
-	}
 
 	/**
 	 * Ctor that receives from user number of messages to use in the jxio msgpool
@@ -62,26 +46,30 @@ public class JxioConnectionServer extends Thread {
 	 * @param msgPoolCount
 	 *            - actual amount of messages that will be used is msgPoolCount - numMsgsToAdd
 	 */
-	public JxioConnectionServer(URI uri, int numWorkers, JxioConnectionServer.Callbacks appCallbacks, int msgPoolCount) {
+	public JxioConnectionServer(URI uri, int numWorkers, JxioConnectionServer.Callbacks appCallbacks) {
 		this.appCallbacks = appCallbacks;
 		numOfWorkers = numWorkers;
-		this.numMsg = msgPoolCount;
 		listen_eqh = new EventQueueHandler(null);
 		listener = new ServerPortal(listen_eqh, uri, new PortalServerCallbacks());
 		name = "[JxioConnectionServer " + listener.toString() + " ]";
 		for (int i = 1; i <= numWorkers; i++) {
-			SPWorkers.add(new ServerWorker(i, 0, JxioConnection.msgPoolBuffSize, listener.getUriForServer(), numMsg,
-			        appCallbacks));
+			SPWorkers.add(new ServerWorker(i, listener.getUriForServer(), appCallbacks));
 		}
 		LOG.info(this.toString() + " JxioConnectionServer started, host " + uri.getHost() + " listening on port "
-		        + uri.getPort()+", numWorkers "+numWorkers);
+		        + uri.getPort() + ", numWorkers " + numWorkers);
 		// waitingSession = new ConcurrentLinkedQueue<SessionKey>();
 	}
 
+	/**
+	 * Thread entry point when running as a new thread
+	 */
 	public void run() {
 		work();
 	}
 
+	/**
+	 * Entry point when running on the user thread
+	 */
 	public void work() {
 		for (ServerWorker worker : SPWorkers) {
 			worker.start();
@@ -108,16 +96,24 @@ public class JxioConnectionServer extends Thread {
 
 	private void forwardnewSession(SessionKey ses, ServerWorker s) {
 		ServerSession session = new ServerSession(ses, s.getSessionCallbacks());
-		s.prepareSession(session, ses);
-		listener.forward(s.getPortal(), session);
-		
+		URI uri;
+		try {
+			uri = new URI(ses.getUri());
+			s.prepareSession(session, uri);
+			listener.forward(s.getPortal(), session);
+		} catch (URISyntaxException e) {
+			LOG.fatal("URI could not be parsed");
+		}
 	}
 
-	// callbacks for the listener server portal
+	/**
+	 * Callbacks for the listener server portal
+	 */
 	public class PortalServerCallbacks implements ServerPortal.Callbacks {
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
-			LOG.info(JxioConnectionServer.this.toString() + " GOT EVENT " + session_event.toString() + "because of " + reason.toString());
+			LOG.info(JxioConnectionServer.this.toString() + " GOT EVENT " + session_event.toString() + "because of "
+			        + reason.toString());
 		}
 
 		public void onSessionNew(SessionKey sesKey, String srcIP) {
@@ -133,11 +129,11 @@ public class JxioConnectionServer extends Thread {
 				LOG.info(this.toString() + " No free workers, adding new worker");
 				// waitingSession.add(sesKey);
 				numOfWorkers++;
-				spw = new ServerWorker(numOfWorkers, 0, JxioConnection.msgPoolBuffSize, listener.getUriForServer(),
-				        numMsg, appCallbacks);
+				spw = new ServerWorker(numOfWorkers, listener.getUriForServer(), appCallbacks);
 				spw.start();
 			}
-			LOG.info(JxioConnectionServer.this.toString() + " Server worker number " + spw.portalIndex + " got new session");
+			LOG.info(JxioConnectionServer.this.toString() + " Server worker number " + spw.portalIndex
+			        + " got new session");
 			forwardnewSession(sesKey, spw);
 			// }
 		}
@@ -148,15 +144,18 @@ public class JxioConnectionServer extends Thread {
 	}
 
 	/**
-	 * The object that implements this interface nedds to be a thread
 	 * 
-	 * @author dinal
-	 * 
+	 * The object that implements this interface needs to be a thread
 	 */
 	public static interface Callbacks {
-		public void newSessionStart(String uri, OutputStream out);
+		public void newSessionOS(URI uri, OutputStream out);
+
+		public void newSessionIS(URI uri, InputStream in);
 	}
 
+	/**
+	 * Disconnect the server and all worker threads, This can't be undone
+	 */
 	public void disconnect() {
 		listen_eqh.stop();
 		close = true;

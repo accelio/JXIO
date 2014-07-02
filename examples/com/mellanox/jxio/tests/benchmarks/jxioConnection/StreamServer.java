@@ -5,7 +5,7 @@ import java.net.URISyntaxException;
 
 import com.mellanox.jxio.jxioConnection.JxioConnectionServer;
 
-public class InputStreamServer {
+public class StreamServer {
 
 	public static void main(String[] args) {
 
@@ -18,8 +18,8 @@ public class InputStreamServer {
 				e.printStackTrace();
 			}
 
-			JxioConnectionServer conServer = new JxioConnectionServer(uri, Integer.parseInt(args[3]),
-			        new ServerReader(), Integer.parseInt(args[2]));
+			JxioConnectionServer conServer = new JxioConnectionServer(uri, Integer.parseInt(args[2]),
+			        new UserServerCallbacks());
 			conServer.start();
 		} catch (Throwable t) {
 			t.printStackTrace();

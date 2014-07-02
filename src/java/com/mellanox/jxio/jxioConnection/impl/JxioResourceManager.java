@@ -13,10 +13,10 @@ import com.mellanox.jxio.MsgPool;
 
 public class JxioResourceManager {
 
-	private final static Log                                LOG      = LogFactory.getLog(JxioResourceManager.class
-	                                                                         .getCanonicalName());
-	private static HashMap<String, LinkedList<MsgPool>>     msgPools = new HashMap<String, LinkedList<MsgPool>>();
-	private static ConcurrentLinkedQueue<EventQueueHandler> eqhs     = new ConcurrentLinkedQueue<EventQueueHandler>();
+	private final static Log                            LOG      = LogFactory.getLog(JxioResourceManager.class
+	                                                                     .getCanonicalName());
+	private static HashMap<String, LinkedList<MsgPool>> msgPools = new HashMap<String, LinkedList<MsgPool>>();
+	private static ConcurrentLinkedQueue<EventQueueHandler> eqhs = new ConcurrentLinkedQueue<EventQueueHandler>();
 
 	public static MsgPool getMsgPool(int size, int in, int out) {
 		MsgPool pool = null;

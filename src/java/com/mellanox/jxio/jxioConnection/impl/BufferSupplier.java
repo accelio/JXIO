@@ -6,4 +6,5 @@ import java.nio.ByteBuffer;
 public interface BufferSupplier {
 
 	ByteBuffer getNextBuffer() throws IOException;
+	void flush();
 }
