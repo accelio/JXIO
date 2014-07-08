@@ -87,6 +87,9 @@ public class JxioConnection {
 		}
 
 		public ByteBuffer getNextBuffer() throws IOException {
+			if (msg != null) {
+				msg.resetPositions();
+			}
 			sendMsg();
 			do {
 				eqh.runEventLoop(1, -1);
