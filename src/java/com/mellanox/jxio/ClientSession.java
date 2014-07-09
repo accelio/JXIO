@@ -209,7 +209,10 @@ public class ClientSession extends EventQueueHandler.Eventable {
 								LOG.debug(this.toLogString() + "received SESSION_TEARDOWN - internal event");
 							}
 							eventQHandler.removeEventable(this);
-							return false;
+							//if eqh is in state of closing that means we are waiting for the teardown event to close the eqh,
+							//so we need to count it in the runeventloop.
+							//if not closing than no need to count the event since it's not going up to the user
+							return eventQHandler.isClosing;
 						default:
 							break;
 					}

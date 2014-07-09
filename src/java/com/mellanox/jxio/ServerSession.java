@@ -247,6 +247,12 @@ public class ServerSession extends EventQueueHandler.Eventable {
 							removeFromEQHs(); 
 							// need to delete this Session from the set in ServerPortal
 							this.creator.removeSession(this);
+							//if eqh is in state of closing that means we are waiting for the teardown event to close the eqh,
+							//so we need to count it in the runeventloop.
+							//if not closing than no need to count the event since it's not going up to the user
+							if (eventQHandlerSession.isClosing) {
+								userNotified = true;
+							}
 							break;
 						default:
 							LOG.error(this.toLogString() + "received an unknown event type" + eventName);

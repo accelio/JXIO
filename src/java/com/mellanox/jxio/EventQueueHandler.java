@@ -59,6 +59,7 @@ public class EventQueueHandler implements Runnable {
 	private volatile Exception     caughtException       = null;
 	private final String           name;
 	private final String           nameForLog;
+	public volatile boolean        isClosing             = false;
 
 	/**
      * This interface needs to be implemented and passed to EventQueueHandler in c-tor
@@ -233,6 +234,7 @@ public class EventQueueHandler implements Runnable {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.toLogString() + "closing EQH ");
 		}
+		isClosing = true;
 		while (!this.eventables.isEmpty()) {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug(this.toLogString() + "attempting to close EQH while objects " + this.eventables.keySet()
