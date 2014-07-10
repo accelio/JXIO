@@ -53,24 +53,28 @@ void Msg::set_xio_msg_client_fields()
 
 	this->xio_msg.out.header.iov_base = NULL;
 	this->xio_msg.out.header.iov_len = 0;
+	this->xio_msg.in.sgl_type           = XIO_SGL_TYPE_IOV;
+	this->xio_msg.in.data_iov.max_nents = XIO_IOVLEN;
 	if (this->out_buf_size == 0) {
-		this->xio_msg.out.data_iovlen = 0;
+		this->xio_msg.out.data_iov.nents = 0;
 	} else {
-		this->xio_msg.out.data_iovlen = 1;
-		this->xio_msg.out.data_iov[0].iov_base = this->buf_out;
-		this->xio_msg.out.data_iov[0].iov_len = this->out_buf_size;
-		this->xio_msg.out.data_iov[0].mr = this->xio_mr;
+		this->xio_msg.out.data_iov.nents = 1;
+		this->xio_msg.out.data_iov.sglist[0].iov_base = this->buf_out;
+		this->xio_msg.out.data_iov.sglist[0].iov_len = this->out_buf_size;
+		this->xio_msg.out.data_iov.sglist[0].mr = this->xio_mr;
 	}
 
 	this->xio_msg.in.header.iov_base = NULL;
 	this->xio_msg.in.header.iov_len = 0;
+	this->xio_msg.out.sgl_type           = XIO_SGL_TYPE_IOV;
+	this->xio_msg.out.data_iov.max_nents = XIO_IOVLEN;
 	if (this->in_buf_size == 0) {
-		this->xio_msg.in.data_iovlen = 0;
+		this->xio_msg.in.data_iov.nents = 0;
 	} else {
-		this->xio_msg.in.data_iovlen = 1;
-		this->xio_msg.in.data_iov[0].iov_base = this->buf;
-		this->xio_msg.in.data_iov[0].iov_len = this->in_buf_size;
-		this->xio_msg.in.data_iov[0].mr = this->xio_mr;
+		this->xio_msg.in.data_iov.nents = 1;
+		this->xio_msg.in.data_iov.sglist[0].iov_base = this->buf;
+		this->xio_msg.in.data_iov.sglist[0].iov_len = this->in_buf_size;
+		this->xio_msg.in.data_iov.sglist[0].mr = this->xio_mr;
 	}
 }
 
@@ -84,23 +88,23 @@ void Msg::set_xio_msg_mirror_fields()
 
 void Msg::set_xio_msg_server_fields()
 {
-	this->xio_msg.out.data_iovlen = 1;
-	this->xio_msg.out.data_iov[0].iov_base = this->buf_out;
-	this->xio_msg.out.data_iov[0].iov_len = this->out_buf_size;
-	this->xio_msg.out.data_iov[0].mr = this->xio_mr;
+	this->xio_msg.out.data_iov.nents = 1;
+	this->xio_msg.out.data_iov.sglist[0].iov_base = this->buf_out;
+	this->xio_msg.out.data_iov.sglist[0].iov_len = this->out_buf_size;
+	this->xio_msg.out.data_iov.sglist[0].mr = this->xio_mr;
 
 	this->xio_msg.in.header.iov_base = NULL;
-	this->xio_msg.in.data_iovlen = 1;
-	this->xio_msg.in.data_iov[0].iov_base = this->buf;
-	this->xio_msg.in.data_iov[0].iov_len = this->in_buf_size;
-	this->xio_msg.in.data_iov[0].mr = this->xio_mr;
+	this->xio_msg.in.data_iov.nents = 1;
+	this->xio_msg.in.data_iov.sglist[0].iov_base = this->buf;
+	this->xio_msg.in.data_iov.sglist[0].iov_len = this->in_buf_size;
+	this->xio_msg.in.data_iov.sglist[0].mr = this->xio_mr;
 }
 
 void Msg::set_xio_msg_fields_for_assign(struct xio_msg *msg)
 {
-	msg->in.data_iov[0].iov_base = this->buf;
-	msg->in.data_iov[0].iov_len = this->in_buf_size;
-	msg->in.data_iov[0].mr = this->xio_mr;
+	msg->in.data_iov.sglist[0].iov_base = this->buf;
+	msg->in.data_iov.sglist[0].iov_len = this->in_buf_size;
+	msg->in.data_iov.sglist[0].mr = this->xio_mr;
 	msg->user_context = this;
 	this->set_xio_msg_req(msg);
 }
@@ -114,20 +118,20 @@ void Msg::set_xio_msg_req(struct xio_msg *msg)
 void Msg::set_xio_msg_out_size(struct xio_msg *xio_msg, const int out_size)
 {
 	if (out_size > 0) {
-		xio_msg->out.data_iovlen = 1;
-		xio_msg->out.data_iov[0].iov_len = out_size;
+		xio_msg->out.data_iov.nents = 1;
+		xio_msg->out.data_iov.sglist[0].iov_len = out_size;
 	} else {
-		xio_msg->out.data_iovlen = 0;
+		xio_msg->out.data_iov.nents = 0;
 	}
 }
 
 void Msg::set_xio_msg_in_size(struct xio_msg *xio_msg, const int in_size)
 {
 	if (in_size > 0) {
-		xio_msg->in.data_iovlen = 1;
-		xio_msg->in.data_iov[0].iov_len = in_size;
+		xio_msg->in.data_iov.nents = 1;
+		xio_msg->in.data_iov.sglist[0].iov_len = in_size;
 	} else {
-		xio_msg->in.data_iovlen = 0;
+		xio_msg->in.data_iov.nents = 0;
 	}
 }
 
@@ -166,14 +170,14 @@ void Msg::dump(struct xio_msg *xio_msg)
 		MSG_LOG_TRACE("response:%p, serial number:%ld", xio_msg->request, ((xio_msg->request) ? xio_msg->request->sn : -1));
 
 	MSG_LOG_TRACE("in header: length:%d, address:%p", xio_msg->in.header.iov_len, xio_msg->in.header.iov_base);
-	MSG_LOG_TRACE("in data size:%d \n", xio_msg->in.data_iovlen);
-	for (int i = 0; i < xio_msg->in.data_iovlen; i++)
-		MSG_LOG_TRACE("in data[%d]: length:%d, address:%p, mr:%p", i, xio_msg->in.data_iov[i].iov_len, xio_msg->in.data_iov[i].iov_base, xio_msg->in.data_iov[i].mr);
+	MSG_LOG_TRACE("in data size:%d \n", xio_msg->in.data_iov.nents);
+	for (int i = 0; i < xio_msg->in.data_iov.nents; i++)
+		MSG_LOG_TRACE("in data[%d]: length:%d, address:%p, mr:%p", i, xio_msg->in.data_iov.sglist[i].iov_len, xio_msg->in.data_iov.sglist[i].iov_base, xio_msg->in.data_iov.sglist[i].mr);
 
 	MSG_LOG_TRACE("out header: length:%d, address:%p", xio_msg->out.header.iov_len, xio_msg->out.header.iov_base);
-	MSG_LOG_TRACE("out data size:%d", xio_msg->out.data_iovlen);
-	for (int i = 0; i < xio_msg->out.data_iovlen; i++)
-		MSG_LOG_TRACE("out data[%d]: length:%d, address:%p, mr:%p", i, xio_msg->out.data_iov[i].iov_len, xio_msg->out.data_iov[i].iov_base, xio_msg->out.data_iov[i].mr);
+	MSG_LOG_TRACE("out data size:%d", xio_msg->out.data_iov.nents);
+	for (int i = 0; i < xio_msg->out.data_iov.nents; i++)
+		MSG_LOG_TRACE("out data[%d]: length:%d, address:%p, mr:%p", i, xio_msg->out.data_iov.sglist[i].iov_len, xio_msg->out.data_iov.sglist[i].iov_base, xio_msg->out.data_iov.sglist[i].mr);
 	MSG_LOG_TRACE("*********************************************");
 }
 #if _BullseyeCoverage

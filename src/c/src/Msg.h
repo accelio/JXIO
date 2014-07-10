@@ -23,6 +23,13 @@
 
 class MsgPool;
 
+#define vmsg_sglist(vmsg)					\
+		(((vmsg)->sgl_type == XIO_SGL_TYPE_IOV) ?	\
+		 (vmsg)->data_iov.sglist :			\
+		 (((vmsg)->sgl_type ==  XIO_SGL_TYPE_IOV_PTR) ?	\
+		 (vmsg)->pdata_iov.sglist : NULL))
+
+
 class Msg {
 public:
 	Msg(char * buf, struct xio_mr *xio_mr, int in_buf_size, int out_buf_size, MsgPool* pool);
@@ -58,13 +65,15 @@ private:
 
 inline const int get_xio_msg_in_size(struct xio_msg *msg)
 {
-	const int msg_in_size = (msg->in.data_iovlen > 0) ? msg->in.data_iov[0].iov_len : 0;
+	struct xio_iovec_ex *sglist = vmsg_sglist(&msg->in);
+	const int msg_in_size = (msg->in.data_iov.nents > 0) ? sglist[0].iov_len : 0;
 	return msg_in_size;
 }
 
 inline const int get_xio_msg_out_size(struct xio_msg *msg)
 {
-	const int msg_out_size = (msg->out.data_iovlen > 0) ? msg->out.data_iov[0].iov_len : 0;
+	struct xio_iovec_ex *sglist = vmsg_sglist(&msg->out);
+	const int msg_out_size = (msg->out.data_iov.nents > 0) ? sglist[0].iov_len : 0;
 	return msg_out_size;
 }
 

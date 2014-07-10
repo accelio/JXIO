@@ -67,18 +67,19 @@ int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 	const int msg_in_size = get_xio_msg_in_size(msg);
 	const int msg_out_size = get_xio_msg_out_size(msg);
 
-	LOG_TRACE("on_msg_callback contextable=%p, num_iov=%d, len: in=%d out=%d, msg=%p", msg->user_context, msg->in.data_iovlen, msg_in_size, msg_out_size, msg);
+	LOG_TRACE("on_msg_callback contextable=%p, num_iov=%d, len: in=%d out=%d, msg=%p", msg->user_context, msg->in.data_iov.nents, msg_in_size, msg_out_size, msg);
 	if (msg->status) {
 		LOG_ERR("xio_msg=%p completed with error.[%s]", msg, xio_strerror(msg->status));
 	}
 
 	Contexable *cntxbl = (Contexable*) cb_prv_data;
 	Context *ctx = cntxbl->get_ctx_class();
+	struct xio_iovec_ex *sglist = vmsg_sglist(&msg->in);
 
 	if (msg->user_context == NULL) { //it's a request with a small buffer on server side
 		Msg* msg_from_pool = ctx->msg_pools.get_msg_from_pool(msg_in_size, msg_out_size);
 		if (msg_in_size > 0)
-			memcpy(msg_from_pool->get_buf(), msg->in.data_iov[0].iov_base, msg_in_size);
+			memcpy(msg_from_pool->get_buf(), sglist[0].iov_base, msg_in_size);
 		msg->user_context = msg_from_pool;
 		msg_from_pool->set_xio_msg_req(msg);
 		LOG_TRACE("xio_msg is %p", msg);
