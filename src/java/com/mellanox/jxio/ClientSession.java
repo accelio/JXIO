@@ -197,6 +197,8 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					switch (eventName) {
 						case SESSION_CLOSED:
 							Bridge.deleteClient(this.getId());
+							this.setIsClosing(true);
+							break;
 						case SESSION_REJECT:
 							// SESSION_CLOSED will arrive after SESSION_REJECT and then ClientSeesion will be deleted
 							// from EQH
