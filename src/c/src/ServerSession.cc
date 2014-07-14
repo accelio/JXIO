@@ -28,6 +28,7 @@ ServerSession::ServerSession(xio_session * session, Context* ctx, xio_connection
 	this->session = session;
 	this->ctx = ctx;
 	this->to_ignore_first_disconnect = false;
+	this->to_destroy_first_connection = false;
 	this->delete_after_teardown = false;
 	this->connection = connection;
 }
