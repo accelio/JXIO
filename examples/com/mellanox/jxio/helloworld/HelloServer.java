@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.*;
+import com.mellanox.jxio.WorkerCache.Worker;
 
 public class HelloServer {
 
@@ -86,7 +87,7 @@ public class HelloServer {
 			this.server = server;
 		}
 
-		public void onSessionNew(ServerSession.SessionKey sesID, String srcIP) {
+		public void onSessionNew(ServerSession.SessionKey sesID, String srcIP, Worker hint) {
 			LOG.info("[SUCCESS] Got event onSessionNew from " + srcIP + ", URI='" + sesID.getUri() + "'");
 			this.server.session = new ServerSession(sesID, new MySessionCallbacks(server));
 			this.server.server.accept(session);

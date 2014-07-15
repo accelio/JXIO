@@ -9,7 +9,7 @@ TARGET=jxio.jar
 BIN_FOLDER=$TOP_DIR/bin
 LIB_FOLDER=$TOP_DIR/src/lib
 SRC_JAVA_FOLDER=$TOP_DIR/src/java
-SRC_JAVA_FILES="$SRC_JAVA_FOLDER/com/mellanox/jxio/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/impl/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/jxioConnection/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/jxioConnection/impl/*.java"
+SRC_JAVA_FILES="$SRC_JAVA_FOLDER/com/mellanox/jxio/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/impl/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/jxioConnection/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/jxioConnection/impl/*.java $SRC_JAVA_FOLDER/org/apache/lucene/facet/taxonomy/LRUHashMap.java"
 NATIVE_LIBS="libjxio.so libxio.so"
 
 export PATH=$BULLSEYE_DIR:$PATH
@@ -72,7 +72,7 @@ if [[ $? != 0 ]] ; then
 fi
 
 echo "Creating JXIO jar..."
-cd $BIN_FOLDER && jar -cfm $TARGET ../manifest.txt com $NATIVE_LIBS
+cd $BIN_FOLDER && jar -cfm $TARGET ../manifest.txt com org $NATIVE_LIBS
 if [[ $? != 0 ]] ; then
     echo "FAILURE! stopped JXIO build"
     exit 1

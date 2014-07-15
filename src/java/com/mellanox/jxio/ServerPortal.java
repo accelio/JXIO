@@ -19,6 +19,8 @@ package com.mellanox.jxio;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.mellanox.jxio.WorkerCache.Worker;
+import com.mellanox.jxio.WorkerCache.WorkerProvider;
 import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
 import com.mellanox.jxio.impl.EventNewSession;
@@ -54,6 +56,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	private final String            name;
 	private final String            nameForLog;
 	private static final Log        LOG      = LogFactory.getLog(ServerPortal.class.getCanonicalName());
+	private WorkerCache 			cache = null;
 
 	public static interface Callbacks {
 
@@ -66,7 +69,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		 * @param srcIP
 		 *            - IP of the Client
 		 */
-		public void onSessionNew(ServerSession.SessionKey sesKey, String srcIP);
+		public void onSessionNew(ServerSession.SessionKey sesKey, String srcIP, Worker workerHint);
 
 		/**
 		 * This event is triggered when PORTAL_CLOSED event arrives
@@ -80,7 +83,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	}
 
 	/**
-	 * This constructor is for the ServerPortal listener. He istens on a well known port and redirects
+	 * This constructor is for the ServerPortal listener that doesn't use worker cache. It listens on a well known port and redirects
 	 * the request for a new session to ServerPortal worker
 	 * 
 	 * @param eventQHandler
@@ -92,6 +95,24 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	 *            - implementation of Interface ServerPortal.Callbacks
 	 */
 	public ServerPortal(EventQueueHandler eventQHandler, URI uri, Callbacks callbacks) {
+		this(eventQHandler, uri, callbacks, null);
+	}
+
+	/**
+	 * This constructor is for the ServerPortal listener that uses worker cache. It listens on a well known port and redirects
+	 * the request for a new session to ServerPortal worker
+	 * 
+	 * @param eventQHandler
+	 *            - EventQueueHAndler on which the events
+	 *            (onSessionNew, onSessionEvent etc) of this portal will arrive
+	 * @param uri
+	 *            - on which the ServerPortal will listen. Should contain a well known port
+	 * @param callbacks
+	 *            - implementation of Interface ServerPortal.Callbacks
+	 * @param workerProvider
+	 *            - implementation of Interface WorkerCache.WorkerProvider
+	 */
+	public ServerPortal(EventQueueHandler eventQHandler, URI uri, Callbacks callbacks, WorkerCache.WorkerProvider workerProvider) {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("SP CTOR entry");
 		}
@@ -122,6 +143,9 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.toLogString() + "SP CTOR done");
 		}
+		if (workerProvider != null) {
+			this.cache = new WorkerCache(workerProvider);
+		}
 	}
 
 	/**
@@ -133,7 +157,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	 *            - Should be uri for listener from ServerPortal listener; listener.getUriForServer()
 	 */
 	public ServerPortal(EventQueueHandler eventQHandler, URI uri) {
-		this(eventQHandler, uri, null);
+		this(eventQHandler, uri, null, null);
 	}
 
 	/**
@@ -276,9 +300,16 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 					long ptrSes = ((EventNewSession) ev).getPtrSes();
 					String uri = ((EventNewSession) ev).getUri();
 					String srcIP = ((EventNewSession) ev).getSrcIP();
-					ServerSession.SessionKey sesKey = new ServerSession.SessionKey(ptrSes, uri);
+					Worker workerHint = null;
+					String[] arr = uri.split(WorkerCache.CACHE_TAG+"=");
+					if (arr.length > 1 && cache != null) {
+						String key = srcIP+"|"+arr[1];
+						workerHint = cache.getCachedWorker(key);
+					}
+					String uriStr = arr[0].substring(0,arr[0].length() - 1);
+					ServerSession.SessionKey sesKey = new ServerSession.SessionKey(ptrSes, uriStr);
 					try {
-						this.callbacks.onSessionNew(sesKey, srcIP);
+						this.callbacks.onSessionNew(sesKey, srcIP, workerHint);
 					} catch (Exception e) {
 						eventQHndl.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onSessionNew] Callback exception occurred. Session Key was " + sesKey.toString() + " and source IP was " + srcIP);

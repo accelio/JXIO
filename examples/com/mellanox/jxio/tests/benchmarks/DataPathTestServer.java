@@ -27,8 +27,10 @@ import com.mellanox.jxio.EventQueueHandler;
 import com.mellanox.jxio.EventReason;
 import com.mellanox.jxio.ServerPortal;
 import com.mellanox.jxio.ServerSession;
+import com.mellanox.jxio.WorkerCache.Worker;
+import com.mellanox.jxio.WorkerCache.WorkerProvider;
 
-public class DataPathTestServer extends DataPathTest {
+public class DataPathTestServer extends DataPathTest implements WorkerProvider {
 
 	private final EventQueueHandler listen_eqh;
 	private final TestServerCallbacks tsc;
@@ -45,7 +47,7 @@ public class DataPathTestServer extends DataPathTest {
 		super(args);
 		listen_eqh = new EventQueueHandler(null);
 		tsc = new TestServerCallbacks();
-		listener = new ServerPortal(listen_eqh, uri, tsc);
+		listener = new ServerPortal(listen_eqh, uri, tsc, this);
 		SPWorkers = new PriorityQueue<ServerPortalWorker>(num_of_threads);
 		//adding 64 to num_of_buffers_per_thread due to ACCELLIO demand
 		for (int i = 0; i < num_of_threads; i++) {
@@ -80,10 +82,14 @@ public class DataPathTestServer extends DataPathTest {
 	// callbacks for the listener server portal
 	public class TestServerCallbacks implements ServerPortal.Callbacks {
 
-		public void onSessionNew(ServerSession.SessionKey sesKey, String srcIP) {
+		public void onSessionNew(ServerSession.SessionKey sesKey, String srcIP, Worker hint) {
+			if (hint == null) {
+				listener.reject(sesKey, EventReason.CONNECT_ERROR, "No worker was found");
+				return;
+			}
 			LOG.debug("New session created, forwarding to the next Server Portal");
 			// forward the created session to the ServerPortal
-			ServerPortalWorker spw = getNextWorker();
+			ServerPortalWorker spw = (ServerPortalWorker)hint;
 			listener.forward(spw.getPortal(), (new ServerSessionHandle(sesKey, spw)).getSession());
 		}
 
@@ -97,4 +103,9 @@ public class DataPathTestServer extends DataPathTest {
 		DataPathTestServer test = new DataPathTestServer(args);
 		test.run_test();
 	}
+
+	@Override
+    public Worker getWorker() {
+	    return getNextWorker();
+    }
 }

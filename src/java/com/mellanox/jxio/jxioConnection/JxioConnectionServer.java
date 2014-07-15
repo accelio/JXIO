@@ -16,10 +16,11 @@ import com.mellanox.jxio.EventReason;
 import com.mellanox.jxio.ServerPortal;
 import com.mellanox.jxio.ServerSession;
 import com.mellanox.jxio.ServerSession.SessionKey;
-import com.mellanox.jxio.jxioConnection.JxioConnection;
+import com.mellanox.jxio.WorkerCache.Worker;
+import com.mellanox.jxio.WorkerCache.WorkerProvider;
 import com.mellanox.jxio.jxioConnection.impl.*;
 
-public class JxioConnectionServer extends Thread {
+public class JxioConnectionServer extends Thread implements WorkerProvider {
 	public static final int                            msgPoolBuffSize = 64 * 1024;
 	public static final int                            msgPoolnumMsgs  = 164;
 	private static final Log                           LOG             = LogFactory.getLog(JxioConnectionServer.class
@@ -31,9 +32,6 @@ public class JxioConnectionServer extends Thread {
 	private int                                        numOfWorkers;
 	private boolean                                    close           = false;
 	private static ConcurrentLinkedQueue<ServerWorker> SPWorkers       = new ConcurrentLinkedQueue<ServerWorker>();
-
-	// private static ConcurrentLinkedQueue<SessionKey> waitingSession;
-	// private static Object lock = new Object();
 
 	/**
 	 * Ctor that receives from user number of messages to use in the jxio msgpool
@@ -50,14 +48,13 @@ public class JxioConnectionServer extends Thread {
 		this.appCallbacks = appCallbacks;
 		numOfWorkers = numWorkers;
 		listen_eqh = new EventQueueHandler(null);
-		listener = new ServerPortal(listen_eqh, uri, new PortalServerCallbacks());
+		listener = new ServerPortal(listen_eqh, uri, new PortalServerCallbacks(), this);
 		name = "[JxioConnectionServer " + listener.toString() + " ]";
 		for (int i = 1; i <= numWorkers; i++) {
 			SPWorkers.add(new ServerWorker(i, listener.getUriForServer(), appCallbacks));
 		}
 		LOG.info(this.toString() + " JxioConnectionServer started, host " + uri.getHost() + " listening on port "
 		        + uri.getPort() + ", numWorkers " + numWorkers);
-		// waitingSession = new ConcurrentLinkedQueue<SessionKey>();
 	}
 
 	/**
@@ -77,35 +74,6 @@ public class JxioConnectionServer extends Thread {
 		listen_eqh.run();
 	}
 
-	private static ServerWorker getNextWorker() {
-		ServerWorker s = SPWorkers.poll();
-		return s;
-	}
-
-	public static void updateWorkers(ServerWorker s) {
-		// synchronized (lock) {
-		// SessionKey ses = waitingSession.poll();
-		// if (ses != null) {
-		// forwardnewSession(ses, s);
-		// } else {
-		SPWorkers.add(s);
-		// }
-		// }
-
-	}
-
-	private void forwardnewSession(SessionKey ses, ServerWorker s) {
-		ServerSession session = new ServerSession(ses, s.getSessionCallbacks());
-		URI uri;
-		try {
-			uri = new URI(ses.getUri());
-			s.prepareSession(session, uri);
-			listener.forward(s.getPortal(), session);
-		} catch (URISyntaxException e) {
-			LOG.fatal("URI could not be parsed");
-		}
-	}
-
 	/**
 	 * Callbacks for the listener server portal
 	 */
@@ -116,26 +84,25 @@ public class JxioConnectionServer extends Thread {
 			        + reason.toString());
 		}
 
-		public void onSessionNew(SessionKey sesKey, String srcIP) {
-			if (close || sesKey.getUri().contains("reject=1")) {
+		public void onSessionNew(SessionKey sesKey, String srcIP, Worker workerHint) {
+			if (close) {
 				LOG.info(JxioConnectionServer.this.toString() + "Rejecting session");
-				listener.reject(sesKey, EventReason.NOT_SUPPORTED, "");
+				listener.reject(sesKey, EventReason.CONNECT_ERROR, "Server is closed");
 				return;
 			}
-			// forward the created session to the ServerPortal
-			// synchronized (lock) {
-			ServerWorker spw = getNextWorker();
-			if (spw == null) {
-				LOG.info(this.toString() + " No free workers, adding new worker");
-				// waitingSession.add(sesKey);
-				numOfWorkers++;
-				spw = new ServerWorker(numOfWorkers, listener.getUriForServer(), appCallbacks);
-				spw.start();
+			ServerWorker spw;
+			if (workerHint == null) {
+				listener.reject(sesKey, EventReason.CONNECT_ERROR, "No availabe worker was found in cache");
+				return;
+			} else {
+				spw = (ServerWorker) workerHint;
 			}
+			// add last
+			SPWorkers.remove(spw);
+			SPWorkers.add(spw);
 			LOG.info(JxioConnectionServer.this.toString() + " Server worker number " + spw.portalIndex
 			        + " got new session");
 			forwardnewSession(sesKey, spw);
-			// }
 		}
 	}
 
@@ -162,5 +129,35 @@ public class JxioConnectionServer extends Thread {
 		for (Iterator<ServerWorker> it = SPWorkers.iterator(); it.hasNext();) {
 			it.next().close();
 		}
+	}
+
+	@Override
+	public Worker getWorker() {
+		for (Worker w : SPWorkers) {
+			if (w.isFree()) {
+				return w;
+			}
+		}
+		return createNewWorker();
+	}
+
+	private void forwardnewSession(SessionKey ses, ServerWorker s) {
+		ServerSession session = new ServerSession(ses, s.getSessionCallbacks());
+		URI uri;
+		try {
+			uri = new URI(ses.getUri());
+			s.prepareSession(session, uri);
+			listener.forward(s.getPortal(), session);
+		} catch (URISyntaxException e) {
+			LOG.fatal("URI could not be parsed");
+		}
+	}
+
+	private ServerWorker createNewWorker() {
+		LOG.info(this.toString() + " Creating new worker");
+		numOfWorkers++;
+		ServerWorker spw = new ServerWorker(numOfWorkers, listener.getUriForServer(), appCallbacks);
+		spw.start();
+		return spw;
 	}
 }

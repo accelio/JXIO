@@ -19,7 +19,6 @@ package com.mellanox.jxio;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import java.net.URI;
-
 import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
 import com.mellanox.jxio.impl.EventMsgError;
@@ -116,8 +115,17 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		if (!uri.getScheme().equals("rdma") && !uri.getScheme().equals("tcp")) {
 			LOG.fatal("mal formatted URI: " + uri);
 		}
-
-		final long id = Bridge.startSessionClient(uri.toString(), eventQHandler.getId());
+		String uriStr = uri.toString();
+        long cacheId = eventQHandler.getId();
+        if (uri.getPath().compareTo("") == 0) {
+        	 uriStr+="/";
+        }
+        if (uri.getQuery() == null) {
+        	uriStr+="?"+WorkerCache.CACHE_TAG+"="+cacheId;
+        } else {
+        	uriStr+="&"+WorkerCache.CACHE_TAG+"="+cacheId;
+        }
+		final long id = Bridge.startSessionClient(uriStr, eventQHandler.getId());
 		this.name = "jxio.CS[" + Long.toHexString(id) + "]";
 		this.nameForLog = this.name + ": ";
 		if (id == 0) {
@@ -125,7 +133,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		}
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug(this.toLogString() + "connecting to " + uri);
+			LOG.debug(this.toLogString() + "connecting to " + uriStr);
 		}
 		this.setId(id);
 

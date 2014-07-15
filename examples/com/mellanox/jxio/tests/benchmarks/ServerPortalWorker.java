@@ -26,8 +26,9 @@ import org.apache.commons.logging.LogFactory;
 import com.mellanox.jxio.EventQueueHandler;
 import com.mellanox.jxio.MsgPool;
 import com.mellanox.jxio.ServerPortal;
+import com.mellanox.jxio.WorkerCache.Worker;
 
-public class ServerPortalWorker extends Thread implements Comparable<ServerPortalWorker> {
+public class ServerPortalWorker extends Thread implements Comparable<ServerPortalWorker>, Worker {
 
 	private final ServerPortal sp;
 	private final EventQueueHandler eqh;
@@ -93,4 +94,9 @@ public class ServerPortalWorker extends Thread implements Comparable<ServerPorta
 			return 1;
 		}
 	}
+
+	@Override
+    public boolean isFree() {
+	    return true;
+    }
 }

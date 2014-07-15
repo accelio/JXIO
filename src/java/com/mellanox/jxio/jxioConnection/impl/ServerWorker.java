@@ -32,10 +32,11 @@ import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
 import com.mellanox.jxio.ServerPortal;
 import com.mellanox.jxio.ServerSession;
+import com.mellanox.jxio.WorkerCache.Worker;
 import com.mellanox.jxio.jxioConnection.JxioConnectionServer;
 import com.mellanox.jxio.jxioConnection.JxioConnectionServer.Callbacks;
 
-public class ServerWorker extends Thread implements BufferSupplier {
+public class ServerWorker extends Thread implements BufferSupplier, Worker {
 
 	private final static Log                     LOG            = LogFactory.getLog(ServerWorker.class
 	                                                                    .getCanonicalName());
@@ -90,7 +91,7 @@ public class ServerWorker extends Thread implements BufferSupplier {
 	 */
 	public void run() {
 		while (!stop) {
-			LOG.info(this.toString()+" waiting for a new connection");
+			LOG.info(this.toString() + " waiting for a new connection");
 			eqh.runEventLoop(1, -1); // to get the forward going
 			streamWorker.callUserCallback(uri);
 			close();
@@ -143,7 +144,6 @@ public class ServerWorker extends Thread implements BufferSupplier {
 	private void sessionClosed() {
 		LOG.info(this.toString() + " disconnected from a Session");
 		session = null;
-		JxioConnectionServer.updateWorkers(this);
 	}
 
 	public EventQueueHandler getEqh() {
@@ -194,7 +194,7 @@ public class ServerWorker extends Thread implements BufferSupplier {
 	public void close() {
 		if (waitingToClose || session == null)
 			return;
-		sendMsg(); //free last msg if needed
+		sendMsg(); // free last msg if needed
 		LOG.info(this.toString() + " closing session sent " + count + " msgs");
 		waitingToClose = true;
 		session.close();
@@ -251,6 +251,11 @@ public class ServerWorker extends Thread implements BufferSupplier {
 			return mp;
 		}
 
+	}
+
+	@Override
+	public boolean isFree() {
+		return (session == null);
 	}
 
 	public String toString() {

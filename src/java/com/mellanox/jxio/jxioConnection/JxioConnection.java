@@ -6,23 +6,12 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.util.Iterator;
-import java.util.LinkedList;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import com.mellanox.jxio.ClientSession;
-import com.mellanox.jxio.ClientSession.Callbacks;
-import com.mellanox.jxio.EventName;
-import com.mellanox.jxio.EventQueueHandler;
-import com.mellanox.jxio.EventReason;
 import com.mellanox.jxio.Msg;
-import com.mellanox.jxio.MsgPool;
 import com.mellanox.jxio.jxioConnection.impl.BufferSupplier;
 import com.mellanox.jxio.jxioConnection.impl.MultiBufOutputStream;
 import com.mellanox.jxio.jxioConnection.impl.MultiBuffInputStream;
-import com.mellanox.jxio.jxioConnection.impl.JxioResourceManager;
 import com.mellanox.jxio.jxioConnection.impl.SimpleConnection;
 
 public class JxioConnection {

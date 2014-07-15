@@ -25,10 +25,10 @@ public abstract class SimpleConnection {
 	protected Msg                 msg         = null;
 
 	public SimpleConnection(URI uri, int msgIn, int msgOut, int msgCount) throws ConnectException {
-		long startTime = System.nanoTime();
 		eqh = JxioResourceManager.getEqh();
-		cs = new ClientSession(eqh, uri, new ClientCallbacks());
 		msgPool = JxioResourceManager.getMsgPool(msgCount, msgIn, msgOut);
+		long startTime = System.nanoTime();
+		cs = new ClientSession(eqh, uri, new ClientCallbacks());
 		eqh.runEventLoop(1, -1); // session established event
 		if (!established) {
 			throw new ConnectException(this.toString() + " could not connect to " + uri.getHost() + " on port "

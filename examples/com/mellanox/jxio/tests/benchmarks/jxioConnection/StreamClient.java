@@ -23,32 +23,42 @@ public class StreamClient extends Thread {
 	private final String     name;
 	private JxioConnection   connection;
 	private String           type;
+	private int              repeats;
 
-	public StreamClient(URI uri, String type, int index) {
+	public StreamClient(URI uri, String type, int index, int repeats) {
 		this.uri = uri;
 		this.type = type;
-		name = "[" + type + " StreamClient_"+index+"]";
+		name = "[" + type + " StreamClient_" + index + "]";
 		bytes = Long.parseLong(uri.getQuery().split("size=")[1]);
+		this.repeats = repeats;
 	}
 
 	public void run() {
-		try {
-			long time = System.nanoTime();
-			connection = new JxioConnection(uri);
-			if (type.compareTo("input") == 0)
-				read();
-			else if (type.compareTo("output") == 0)
-				write();
-			else
-				throw new UnsupportedOperationException("stream type " + type + " is not supported");
-			calcBW(time);
-			connection.disconnect();
-		} catch (ConnectException e1) {
-			e1.printStackTrace();
-			System.exit(1);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
+		for (int i=0; i<repeats; i++) {
+    		try {
+    			long time = System.nanoTime();
+    			connection = new JxioConnection(uri);
+    			if (type.compareTo("input") == 0)
+    				read();
+    			else if (type.compareTo("output") == 0)
+    				write();
+    			else
+    				throw new UnsupportedOperationException("stream type " + type + " is not supported");
+    			calcBW(time);
+    			connection.disconnect();
+    		} catch (ConnectException e1) {
+    			e1.printStackTrace();
+    			System.exit(1);
+    		} catch (IOException e) {
+    			e.printStackTrace();
+    			System.exit(1);
+    		}
+    		try {
+	            Thread.currentThread().sleep(100);
+            } catch (InterruptedException e) {
+	            e.printStackTrace();
+	            System.exit(1);
+            }
 		}
 	}
 
@@ -93,14 +103,14 @@ public class StreamClient extends Thread {
 			for (int i = 0; i < Integer.parseInt(args[3]); i++) {
 				uriString = String.format("rdma://%s:%s/data?stream=input&size=%s", args[0], args[1], args[2]);
 				uri = new URI(uriString);
-				StreamClient client = new StreamClient(uri, "input", i);
+				StreamClient client = new StreamClient(uri, "input", i, Integer.parseInt(args[5]));
 				client.start();
 			}
 			// output
 			for (int i = 0; i < Integer.parseInt(args[4]); i++) {
 				uriString = String.format("rdma://%s:%s/data?stream=output&size=%s", args[0], args[1], args[2]);
 				uri = new URI(uriString);
-				StreamClient client = new StreamClient(uri, "output", i);
+				StreamClient client = new StreamClient(uri, "output", i, Integer.parseInt(args[5]));
 				client.start();
 			}
 		} catch (URISyntaxException e) {
@@ -112,5 +122,4 @@ public class StreamClient extends Thread {
 	public String toString() {
 		return this.name;
 	}
-
 }
