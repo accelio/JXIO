@@ -170,7 +170,7 @@ bool forward_session(ServerSession* jxio_session, const char * url)
 		return false;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
-	jxio_session->set_ignore_first_disconnect();
+	jxio_session->set_forward(true);
 	return true;
 }
 

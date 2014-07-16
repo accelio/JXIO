@@ -38,21 +38,21 @@ public:
 	bool get_is_closing() {return is_closing;}
 	void set_is_closing(bool b) {is_closing = b;}
 	//when user chooses to forward the session, connection_disconnected event is received
-	bool ignore_first_disconnect();
-	bool destory_first_connection();
-	void set_ignore_first_disconnect();
+	bool ignore_disconnect(xio_connection* connection);
+	void set_forward(bool forward) {forward_mode = forward;}
+	bool is_forward() { return forward_mode;}
 	//when user chooses to reject the session, the event is not passed to Java, therefore after
 	//session teardown the ServerSession needs to be deleted
 	bool delete_after_teardown;
-	struct xio_connection* get_xio_connection() {return connection;}
-	void set_xio_connection(struct xio_connection* con) {connection = con;}
+	struct xio_connection* get_xio_connection();
+	void set_xio_connection(struct xio_connection* con) {second_conn = con;}
 private:
 	struct xio_session* session;
-	struct xio_connection* connection;
+	struct xio_connection* first_conn;
+	struct xio_connection* second_conn;
 	Context* ctx;
 	bool is_closing;
-	bool to_ignore_first_disconnect;
-	bool to_destroy_first_connection;
+	bool forward_mode;
 };
 
 #endif

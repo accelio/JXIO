@@ -27,34 +27,29 @@ ServerSession::ServerSession(xio_session * session, Context* ctx, xio_connection
 	this->is_closing = false;
 	this->session = session;
 	this->ctx = ctx;
-	this->to_ignore_first_disconnect = false;
-	this->to_destroy_first_connection = false;
 	this->delete_after_teardown = false;
-	this->connection = connection;
+	this->forward_mode = false;
+	this->first_conn = connection;
 }
 
 ServerSession::~ServerSession() {}
 
-bool ServerSession::ignore_first_disconnect()
+bool ServerSession::ignore_disconnect(xio_connection* conn)
 {
-	if (this->to_ignore_first_disconnect) {
-		this->to_ignore_first_disconnect = false;
-		return true;
+	if (!forward_mode){
+		SRVSESSION_LOG_ERR("this is accept");
+		//accept mode
+		return false;
 	}
+	//this is forward mode
+	if (this->first_conn == conn)
+		return true;
 	return false;
 }
 
-void ServerSession::set_ignore_first_disconnect()
+struct xio_connection* ServerSession::get_xio_connection()
 {
-	to_ignore_first_disconnect = true;
-	to_destroy_first_connection = true;
-}
-
-bool ServerSession::destory_first_connection()
-{
-	if (this->to_destroy_first_connection) {
-		this->to_destroy_first_connection = false;
-		return true;
-	}
-	return false;
+	if (forward_mode)
+		return this->second_conn;
+	return this->first_conn;
 }

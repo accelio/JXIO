@@ -104,7 +104,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
 		//no need to delete session from map since we haven't received session_teardown yet
 		ses = get_ses_server_for_session(session, false);
-		if (!ses->ignore_first_disconnect()){
+		if (!ses->ignore_disconnect(event->conn)){
 			ses->set_is_closing(true);
 		}
 		return NULL;
@@ -112,7 +112,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
 		ses = get_ses_server_for_session(session, false);
-		if (ses->destory_first_connection()){
+		if (ses->ignore_disconnect(event->conn)){
 			//there was a forward and this is the initial connection
 			xio_connection_destroy(event->conn);
 			return NULL;
@@ -141,7 +141,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
 		//no need to delete session from map since we haven't received session_teardown yet
 		ses = get_ses_server_for_session(session, false);
-		if (ses && !ses->ignore_first_disconnect()) {
+		if (ses && !ses->ignore_disconnect(event->conn)) {
 			ses->set_is_closing(true);
 		}
 		return NULL;
@@ -163,9 +163,6 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 		if (ses->delete_after_teardown) {
 			delete ses;
 			return NULL;
-		}
-		if (!ses->get_is_closing()) {
-			SRVPORTAL_LOG_ERR("Got session teardown without getting connection/close/disconnected");
 		}
 		this->sessions--;
 		if (this->is_closing && this->sessions == 0) {
