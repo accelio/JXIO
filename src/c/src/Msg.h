@@ -48,6 +48,7 @@ public:
 	bool send_response(const int size);
 	int get_in_size(){return this->in_buf_size;}
 	int get_out_size(){return this->out_buf_size;}
+	bool was_assign_called() {return this->assign_called;}
 	void dump(struct xio_msg *m); //func for debugging only
 
 private:
@@ -59,6 +60,7 @@ private:
 	int in_buf_size;
 	int out_buf_size;
 	MsgPool* pool;
+	bool assign_called;
 };
 
 

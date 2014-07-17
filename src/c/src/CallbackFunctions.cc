@@ -76,13 +76,25 @@ int on_msg_callback(struct xio_session *session, struct xio_msg *msg,
 	Context *ctx = cntxbl->get_ctx_class();
 	struct xio_iovec_ex *sglist = vmsg_sglist(&msg->in);
 
-	if (msg->user_context == NULL) { //it's a request with a small buffer on server side
-		Msg* msg_from_pool = ctx->msg_pools.get_msg_from_pool(msg_in_size, msg_out_size);
-		if (msg_in_size > 0)
-			memcpy(msg_from_pool->get_buf(), sglist[0].iov_base, msg_in_size);
-		msg->user_context = msg_from_pool;
-		msg_from_pool->set_xio_msg_req(msg);
-		LOG_TRACE("xio_msg is %p", msg);
+	//checking if it's a request with a small buffer on server side
+	if (msg->type == XIO_MSG_TYPE_REQ){
+		bool need_copy = false;
+		Msg* msg_from_pool;
+		if (msg->user_context == NULL){
+			//first time ever that this xio_msg is received -
+			//assign was not called
+			need_copy = true;
+			msg_from_pool = ctx->msg_pools.get_msg_from_pool(msg_in_size, msg_out_size);
+		}else{
+			msg_from_pool = (Msg*)msg->user_context;
+			need_copy = !(msg_from_pool->was_assign_called());
+		}
+		if (need_copy){
+			if (msg_in_size > 0)
+				memcpy(msg_from_pool->get_buf(), sglist[0].iov_base, msg_in_size);
+			msg->user_context = msg_from_pool;
+			msg_from_pool->set_xio_msg_req(msg);
+		}
 	}
 
 	char* buf = ctx->event_queue->get_buffer();

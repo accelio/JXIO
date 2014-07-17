@@ -40,6 +40,7 @@ Msg::Msg(char* buf, struct xio_mr* xio_mr, int in_buf_size, int out_buf_size, Ms
 	memset(&this->xio_msg_mirror, 0, sizeof(this->xio_msg_mirror));
 	this->set_xio_msg_client_fields();
 	this->set_xio_msg_mirror_fields();
+	this->assign_called = false;
 }
 
 Msg::~Msg()
@@ -88,16 +89,19 @@ void Msg::set_xio_msg_mirror_fields()
 
 void Msg::set_xio_msg_server_fields()
 {
-	this->xio_msg.out.data_iov.nents = 1;
-	this->xio_msg.out.data_iov.sglist[0].iov_base = this->buf_out;
-	this->xio_msg.out.data_iov.sglist[0].iov_len = this->out_buf_size;
-	this->xio_msg.out.data_iov.sglist[0].mr = this->xio_mr;
+	xio_iovec_ex *sglist = vmsg_sglist(&this->xio_msg.out);
 
+	this->xio_msg.out.data_iov.nents = 1;
+	sglist[0].iov_base = this->buf_out;
+	sglist[0].iov_len = this->out_buf_size;
+	sglist[0].mr = this->xio_mr;
+
+	sglist = vmsg_sglist(&this->xio_msg.in);
 	this->xio_msg.in.header.iov_base = NULL;
 	this->xio_msg.in.data_iov.nents = 1;
-	this->xio_msg.in.data_iov.sglist[0].iov_base = this->buf;
-	this->xio_msg.in.data_iov.sglist[0].iov_len = this->in_buf_size;
-	this->xio_msg.in.data_iov.sglist[0].mr = this->xio_mr;
+	sglist[0].iov_base = this->buf;
+	sglist[0].iov_len = this->in_buf_size;
+	sglist[0].mr = this->xio_mr;
 }
 
 void Msg::set_xio_msg_fields_for_assign(struct xio_msg *msg)
@@ -109,6 +113,7 @@ void Msg::set_xio_msg_fields_for_assign(struct xio_msg *msg)
 	sglist[0].mr = this->xio_mr;
 	msg->user_context = this;
 	this->set_xio_msg_req(msg);
+	this->assign_called = true;
 }
 
 void Msg::set_xio_msg_req(struct xio_msg *msg)
@@ -154,6 +159,7 @@ bool Msg::send_response(const int out_size)
 		MSG_LOG_DBG("Got error from sending xio_msg: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
+	this->assign_called = false;
 	BULLSEYE_EXCLUDE_BLOCK_END
 	return true;
 }
