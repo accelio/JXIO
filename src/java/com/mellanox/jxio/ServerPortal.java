@@ -95,7 +95,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		this.eventQHndl = eventQHandler;
 		this.callbacks = callbacks;
 
-		if (!uri.getScheme().equals("rdma")) {
+		if (!uri.getScheme().equals("rdma") && !uri.getScheme().equals("tcp") ) {
 			LOG.fatal("mal formatted URI: " + uri);
 		}
 

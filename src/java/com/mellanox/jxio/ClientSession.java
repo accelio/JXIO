@@ -110,7 +110,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	public ClientSession(EventQueueHandler eventQHandler, URI uri, Callbacks callbacks) {
 		this.eventQHandler = eventQHandler;
 		this.callbacks = callbacks;
-		if (!uri.getScheme().equals("rdma")) {
+		if (!uri.getScheme().equals("rdma") && !uri.getScheme().equals("tcp")) {
 			LOG.fatal("mal formatted URI: " + uri);
 		}
 
