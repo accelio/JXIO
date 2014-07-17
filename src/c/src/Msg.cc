@@ -102,9 +102,11 @@ void Msg::set_xio_msg_server_fields()
 
 void Msg::set_xio_msg_fields_for_assign(struct xio_msg *msg)
 {
-	msg->in.data_iov.sglist[0].iov_base = this->buf;
-	msg->in.data_iov.sglist[0].iov_len = this->in_buf_size;
-	msg->in.data_iov.sglist[0].mr = this->xio_mr;
+	xio_iovec_ex *sglist = vmsg_sglist(&msg->in); 
+
+	sglist[0].iov_base = this->buf;
+	sglist[0].iov_len = this->in_buf_size;
+	sglist[0].mr = this->xio_mr;
 	msg->user_context = this;
 	this->set_xio_msg_req(msg);
 }
