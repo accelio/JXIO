@@ -36,11 +36,9 @@ ServerSession::~ServerSession() {}
 
 bool ServerSession::ignore_disconnect(xio_connection* conn)
 {
-	if (!forward_mode){
-		SRVSESSION_LOG_ERR("this is accept");
+	if (!forward_mode)
 		//accept mode
 		return false;
-	}
 	//this is forward mode
 	if (this->first_conn == conn)
 		return true;
