@@ -1,10 +1,8 @@
 JDK = $(JAVA_HOME)
 topdir=../../
 
-GIT_VERSION = $(shell git describe --long --always)
-
-# additi-onal include paths necessary to compile the C library
-AM_CPPFLAGS = -fPIC -DPIC -DGIT_VERSION=\"$(GIT_VERSION)\" -Werror 				\
+# additional include paths necessary to compile the C library
+AM_CPPFLAGS = -fPIC -DPIC -DGIT_VERSION=\"`git describe --long --always`\" -Werror \
 		-I$(JDK)/include -I$(JDK)/include/linux \
 		-I$(topdir)/accelio/include
 	    @AM_CFLAGS@
