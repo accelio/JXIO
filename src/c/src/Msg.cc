@@ -72,10 +72,11 @@ void Msg::set_xio_msg_client_fields()
 	if (this->in_buf_size == 0) {
 		this->xio_msg.in.data_iov.nents = 0;
 	} else {
+		xio_iovec_ex *sglist = vmsg_sglist(&this->xio_msg.in);
 		this->xio_msg.in.data_iov.nents = 1;
-		this->xio_msg.in.data_iov.sglist[0].iov_base = this->buf;
-		this->xio_msg.in.data_iov.sglist[0].iov_len = this->in_buf_size;
-		this->xio_msg.in.data_iov.sglist[0].mr = this->xio_mr;
+		sglist[0].iov_base = this->buf;
+		sglist[0].iov_len = this->in_buf_size;
+		sglist[0].mr = this->xio_mr;
 	}
 }
 
