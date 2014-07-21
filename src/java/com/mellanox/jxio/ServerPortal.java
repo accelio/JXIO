@@ -92,6 +92,9 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	 *            - implementation of Interface ServerPortal.Callbacks
 	 */
 	public ServerPortal(EventQueueHandler eventQHandler, URI uri, Callbacks callbacks) {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("SP CTOR entry");
+		}
 		this.eventQHndl = eventQHandler;
 		this.callbacks = callbacks;
 
@@ -115,6 +118,10 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		this.uri = replacePortInURI(uri, this.port);
 
 		this.eventQHndl.addEventable(this);
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(this.toLogString() + "SP CTOR done");
+		}
 	}
 
 	/**

@@ -108,6 +108,9 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	 *            - implementation of Interface ClientSession.Callbacks
 	 */
 	public ClientSession(EventQueueHandler eventQHandler, URI uri, Callbacks callbacks) {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("CS CTOR entry");
+		}
 		this.eventQHandler = eventQHandler;
 		this.callbacks = callbacks;
 		if (!uri.getScheme().equals("rdma") && !uri.getScheme().equals("tcp")) {
@@ -128,6 +131,9 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 		this.eventQHandler.addEventable(this);
 
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(this.toLogString() + "CS CTOR done");
+		}
 	}
 
 	/**

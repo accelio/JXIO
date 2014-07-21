@@ -63,6 +63,9 @@ public class MsgPool {
 	 * 
 	 */
 	public MsgPool(int capacity, int inSize, int outSize) {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("MP CTOR entry");
+		}
 		if (capacity > MsgPool.MAX_CAPACITY) {
 			LOG.warn("Can't create pool with capacity bigger than maximum. Creating pool with capacity "
 			        + MsgPool.MAX_CAPACITY);
@@ -89,6 +92,9 @@ public class MsgPool {
 			partialBuffer.limit(msgBufferSize);
 			Msg m = new Msg(partialBuffer, inSize, outSize, refToCObjects[i + 1], this);
 			listMsg.add(m);
+		}
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(this.toLogString() + "MP CTOR done");
 		}
 	}
 

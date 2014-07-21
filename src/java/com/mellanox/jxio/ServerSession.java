@@ -102,6 +102,9 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	 *            - implementation of Interface ServerSession.Callbacks
 	 */
 	public ServerSession(SessionKey sessionKey, Callbacks callbacks) {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("SS CTOR entry");
+		}
 		this.callbacks = callbacks;
 		setId(sessionKey.getSessionPtr());
 		this.uri = sessionKey.getUri();
@@ -109,6 +112,9 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		this.nameForLog = this.name + ": ";
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.toLogString() + "listening to " + sessionKey.getUri());
+		}
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(this.toLogString() + "SS CTOR done");
 		}
 	}
 

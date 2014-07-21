@@ -86,6 +86,9 @@ public class EventQueueHandler implements Runnable {
      *            implementation of Interface EventQueueHandler.Callbacks
      */
 	public EventQueueHandler(Callbacks callbacks) {
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("EQH CTOR entry");
+		}
 		DataFromC dataFromC = new DataFromC();
 		boolean statusError = Bridge.createCtx(this, eventQueueSize, dataFromC);
 		if (statusError) {
@@ -97,6 +100,9 @@ public class EventQueueHandler implements Runnable {
 		this.callbacks = callbacks;
 		this.name = "jxio.EQH[" + Long.toHexString(this.refToCObject) + "]";
 		this.nameForLog = this.name + ": ";
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(this.toLogString() + "EQH CTOR done");
+		}
 	}
 
 	/**
