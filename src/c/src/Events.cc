@@ -46,14 +46,8 @@ int Events::writeOnSessionErrorEvent(char *buf, void *ptrForJava, struct xio_ses
 	event->type = htonl(EVENT_SESSION_ERROR);
 	event->ptr = htobe64(intptr_t(ptrForJava));
 	event->event_specific.session_error.error_type = htonl(event_data->event);
-	int reason = 0;
-	if (event_data->reason) {
-		reason = event_data->reason - XIO_BASE_STATUS + 1;
-	}
-	event->event_specific.session_error.error_reason = htonl (reason);
-
+	event->event_specific.session_error.error_reason = htonl(event_data->reason);
 	this->size = sizeof(struct event_session_error) + sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
-
 	return this->size;
 }
 
@@ -135,8 +129,7 @@ int Events::writeOnMsgErrorEventServer(char *buf, void *ptrForJavaMsg, void* ptr
 
 	event->type = htonl(EVENT_MSG_ERROR_SERVER);
 	event->ptr = htobe64(intptr_t(ptrForJavaMsg));
-	int reason = error - XIO_BASE_STATUS + 1;
-	event->event_specific.msg_error_server.error_reason = htonl(reason);
+	event->event_specific.msg_error_server.error_reason = htonl(error);
 	event->event_specific.msg_error_server.ptr_session = htobe64(intptr_t(ptrForJavaSession));
 	this->size = sizeof(struct event_msg_error_server) + sizeof((event_struct *) 0)->type + sizeof((event_struct *) 0)->ptr;
 	return this->size;
@@ -148,10 +141,7 @@ int Events::writeOnMsgErrorEventClient(char *buf, void *ptrForJavaMsg, enum xio_
 	struct event_struct* event = (struct event_struct*)buf;
 	event->type = htonl(EVENT_MSG_ERROR_CLIENT);
 	event->ptr = htobe64(intptr_t(ptrForJavaMsg));
-
-	int reason = error - XIO_BASE_STATUS + 1;
-	event->event_specific.msg_error_client.error_reason = htonl (reason);
-
+	event->event_specific.msg_error_client.error_reason = htonl(error);
 	this->size = sizeof(struct event_msg_error_client) + sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
 	return this->size;
  }

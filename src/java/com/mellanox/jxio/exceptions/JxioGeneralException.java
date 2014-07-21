@@ -25,8 +25,8 @@ public class JxioGeneralException extends IOException {
 	String      s;
 
 	public JxioGeneralException(int reason, String methodName) {
-		this.reason = EventReason.getEventByIndex(reason);
-		this.s = "Got exception " + this.reason.toString() + " while calling " + methodName;
+		this.reason = EventReason.getEventByXioIndex(reason);
+		this.s = "Got exception '" + this.reason.toString() + "' while calling '" + methodName + "'";
 	}
 
 	public EventReason getReason() {

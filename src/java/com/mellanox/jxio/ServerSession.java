@@ -248,9 +248,10 @@ public class ServerSession extends EventQueueHandler.Eventable {
 									LOG.debug(this.toLogString() + "there are still " + this.msgsInUse + " msgs in use. Can not delete SessionServer");
 							}
 							EventName eventNameForApp = EventName.getEventByIndex(eventName.getIndexPublished());
+							EventReason eventReason = EventReason.getEventByXioIndex(reason);
 							try {
 								userNotified = true;
-								callbacks.onSessionEvent(eventNameForApp, EventReason.getEventByIndex(reason));
+								callbacks.onSessionEvent(eventNameForApp, eventReason);
 							} catch (Exception e) {
 								eventQHandlerMsg.setCaughtException(e);
 								LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
@@ -284,9 +285,10 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					evMsgErr = (EventMsgError) ev;
 					Msg msg = evMsgErr.getMsg();
 					int reason = evMsgErr.getReason();
-					userNotified = true;
+					EventReason eventReason = EventReason.getEventByXioIndex(reason);
 					try {
-						if (callbacks.onMsgError(msg, EventReason.getEventByIndex(reason))) {
+						userNotified = true;
+						if (callbacks.onMsgError(msg, eventReason)) {
 							// the user is finished with the Msg and it can be released
 							this.returnOnMsgError(msg);
 						}
@@ -307,8 +309,8 @@ public class ServerSession extends EventQueueHandler.Eventable {
 				if (ev instanceof EventNewMsg) {
 					evNewMsg = (EventNewMsg) ev;
 					Msg msg = evNewMsg.getMsg();
+					this.msgsInUse++;
 					try {
-						this.msgsInUse++;
 						userNotified = true;
 						callbacks.onRequest(msg);
 					} catch (Exception e) {

@@ -290,9 +290,10 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 							LOG.debug(this.toLogString() + "portal was closed");
 						}
 					}
+					EventName eventNameForApp = EventName.getEventByIndex(eventName.getIndexPublished());
+					EventReason eventReason = EventReason.getEventByXioIndex(reason);
 					try {
-						EventName eventNameForApp = EventName.getEventByIndex(eventName.getIndexPublished());
-						callbacks.onSessionEvent(eventNameForApp, EventReason.getEventByIndex(reason));
+						callbacks.onSessionEvent(eventNameForApp, eventReason);
 					} catch (Exception e) {
 						eventQHndl.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());

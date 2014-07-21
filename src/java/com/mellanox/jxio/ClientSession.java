@@ -18,7 +18,9 @@ package com.mellanox.jxio;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import java.net.URI;
+
 import com.mellanox.jxio.impl.Bridge;
 import com.mellanox.jxio.impl.Event;
 import com.mellanox.jxio.impl.EventMsgError;
@@ -32,10 +34,10 @@ import com.mellanox.jxio.exceptions.*;
  * ClientSession receives several events on his lifetime. On each of them a method of interface
  * Callbacks is invoked. User must implement this interface and pass it in c-tor.
  * The events are:
- * 1. onSessionEstablished.
- * 2. onSessionEvent.
+ * 1. onSessionEstablished
+ * 2. onSessionEvent
  * 3. onResponse
- * 4. onMsgError.
+ * 4. onMsgError
  * 
  */
 public class ClientSession extends EventQueueHandler.Eventable {
@@ -75,12 +77,12 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		 * Server initiated close or because of an internal error),
 		 * SESSION_REJECTED (if Server chose to reject the session), SESSION_ERROR (due to internal error)
 		 * 
-		 * @param session_event
+		 * @param event
 		 *            - the event that was triggered
 		 * @param reason
 		 *            - the object containing the reason for triggering session_event
 		 */
-		public void onSessionEvent(EventName session_event, EventReason reason);
+		public void onSessionEvent(EventName event, EventReason reason);
 
 		/**
 		 * This event is triggered if there is an error in Msg send/receive. Once the user is done
@@ -239,10 +241,11 @@ public class ClientSession extends EventQueueHandler.Eventable {
 						default:
 							break;
 					}
+					EventName eventNameForApp = EventName.getEventByIndex(eventName.getIndexPublished());
+					EventReason eventReason = EventReason.getEventByXioIndex(reason);
 					try {
-						EventName eventNameForApp = EventName.getEventByIndex(eventName.getIndexPublished());
 						userNotified = true;
-						callbacks.onSessionEvent(eventNameForApp, EventReason.getEventByIndex(reason));
+						callbacks.onSessionEvent(eventNameForApp, eventReason);
 					} catch (Exception e) {
 						eventQHandler.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
@@ -259,9 +262,10 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					evMsgErr = (EventMsgError) ev;
 					Msg msg = evMsgErr.getMsg();
 					int reason = evMsgErr.getReason();
+					EventReason eventReason = EventReason.getEventByXioIndex(reason);
 					try {
 						userNotified = true;
-						callbacks.onMsgError(msg, EventReason.getEventByIndex(reason));
+						callbacks.onMsgError(msg, eventReason);
 					} catch (Exception e) {
 						eventQHandler.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onMsgError] Callback exception occurred. Msg was " + msg.toString());
