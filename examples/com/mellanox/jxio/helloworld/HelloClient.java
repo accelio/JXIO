@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import java.io.IOException;
 
 import com.mellanox.jxio.*;
 
@@ -74,7 +75,12 @@ public class HelloClient {
 		} catch (UnsupportedEncodingException e) {
 			// Just suppress the exception handling in this demo code
 		}
-		client.sendRequest(msg);
+		try{
+			client.sendRequest(msg);
+		}catch(IOException e){
+			//all exceptions thrown extend IOException
+			LOG.error(e.toString());
+		}
 	}
 
 	public void run() {

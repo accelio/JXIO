@@ -458,16 +458,21 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_deleteMsgPo
 	delete pool;
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_serverSendResponseNative(JNIEnv *env, jclass cls, jlong ptr_msg, jint size, jlong ptr_ses_server)
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_serverSendResponseNative(JNIEnv *env, jclass cls, jlong ptr_msg, jint size, jlong ptr_ses_server)
 {
 	ServerSession *ses = (ServerSession*) ptr_ses_server;
 	Msg * msg = (Msg*) ptr_msg;
 	if (ses->get_is_closing()) {
 		LOG_DBG("trying to send message while session is closing. Releasing msg back to pool");
 		msg->release_to_pool();
-		return false;
+		return XIO_E_SESSION_DISCONECTED - XIO_BASE_STATUS + 1; //SESSION_DISCONNECTED
 	}
-	return msg->send_response(size);
+	int ret = msg->send_response(size);
+	if (ret){//ret value of send_response is negative error
+		LOG_DBG("!!!!!!!ret is %d", ret);
+		ret = -(ret + XIO_BASE_STATUS -1);
+	}
+	return ret;
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_discardRequestNative(JNIEnv *env, jclass cls, jlong ptr_msg)
@@ -480,7 +485,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_discard
 	return status;
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_clientSendReqNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_msg, jint size, jboolean is_mirror)
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_clientSendReqNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_msg, jint size, jboolean is_mirror)
 {
 	Msg * msg = (Msg*) ptr_msg;
 	Client * client = (Client*)ptr_session;

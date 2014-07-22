@@ -17,6 +17,8 @@
 package com.mellanox.jxio.helloworld;
 
 import java.io.UnsupportedEncodingException;
+import java.io.IOException;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -124,7 +126,12 @@ public class HelloServer {
 			}
 
 			// Send the response
-			this.server.session.sendResponse(msg);
+			try{
+				this.server.session.sendResponse(msg);
+			}catch(IOException e){
+				//all exceptions thrown extend IOException
+				LOG.error(e.toString());
+			}
 
 			// Un-comment here if case you want to close the connection from Server side...
 			// LOG.info("Closing the session...");

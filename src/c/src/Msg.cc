@@ -148,21 +148,20 @@ void Msg::release_to_pool()
 	this->pool->add_msg_to_pool(this);
 }
 
-bool Msg::send_response(const int out_size)
+int Msg::send_response(const int out_size)
 {
 	MSG_LOG_TRACE("sending %d bytes, xio_msg is %p", out_size, this->get_xio_msg());
 	//TODO : make sure that this function is not called in the fast path
 	this->set_xio_msg_server_fields();
 	set_xio_msg_out_size(this->get_xio_msg(), out_size);
 
+	int ret = xio_send_response(this->get_xio_msg());
 	BULLSEYE_EXCLUDE_BLOCK_START
-	if (xio_send_response(this->get_xio_msg())) {
+	if (ret)
 		MSG_LOG_DBG("Got error from sending xio_msg: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
-		return false;
-	}
-	this->assign_called = false;
 	BULLSEYE_EXCLUDE_BLOCK_END
-	return true;
+	this->assign_called = false;
+	return ret;
 }
 
 #if _BullseyeCoverage
