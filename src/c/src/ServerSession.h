@@ -41,6 +41,8 @@ public:
 	bool ignore_disconnect(xio_connection* connection);
 	void set_forward(bool forward) {forward_mode = forward;}
 	bool is_forward() { return forward_mode;}
+	void set_reject() {reject_mode = true;}
+	bool is_reject() {return reject_mode;}
 	//when user chooses to reject the session, the event is not passed to Java, therefore after
 	//session teardown the ServerSession needs to be deleted
 	bool delete_after_teardown;
@@ -53,6 +55,7 @@ private:
 	Context* ctx;
 	bool is_closing;
 	bool forward_mode;
+	bool reject_mode;
 };
 
 #endif

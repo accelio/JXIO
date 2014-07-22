@@ -30,6 +30,7 @@ ServerSession::ServerSession(xio_session * session, Context* ctx, xio_connection
 	this->delete_after_teardown = false;
 	this->forward_mode = false;
 	this->first_conn = connection;
+	this->reject_mode = false;
 }
 
 ServerSession::~ServerSession() {}

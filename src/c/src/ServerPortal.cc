@@ -117,6 +117,8 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 			xio_connection_destroy(event->conn);
 			return NULL;
 		}
+		if (ses->is_reject())
+			return NULL;
 		return ses->get_ctx();
 
 	case XIO_SESSION_NEW_CONNECTION_EVENT:

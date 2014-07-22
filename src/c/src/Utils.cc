@@ -193,6 +193,7 @@ bool reject_session(ServerSession* jxio_session, int reason,
 		char *user_context, size_t user_context_len)
 {
 	struct xio_session *xio_session = jxio_session->get_xio_session();
+	jxio_session->set_reject();
 	LOG_DBG("before reject xio_session=%p. reason is %d", xio_session, reason);
 
 	enum xio_status s = (enum xio_status)(reason + XIO_BASE_STATUS -1);
