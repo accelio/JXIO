@@ -44,6 +44,11 @@ import java.util.Set;
  * 1. onSessionNew.
  * 2. onSessionEvent.
  * 
+ * To initialize worker cache for faster connection establish time -
+ * 1. each server worker should implement WorkerCache.Worker interface
+ * 2. when creating new listener pass in ctor an implementation for WorkerCache.WorkerProvider
+ * interface
+ *
  */
 public class ServerPortal extends EventQueueHandler.Eventable {
 
@@ -68,6 +73,9 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		 *            Needs to be passed to ServerSession c-tor.
 		 * @param srcIP
 		 *            - IP of the Client
+		 * @param workerHint
+		 *            - Hint from cache on what server portal worker the client should connect to
+		 *            if cache is not initialized the hint will be null
 		 */
 		public void onSessionNew(ServerSession.SessionKey sesKey, String srcIP, Worker workerHint);
 

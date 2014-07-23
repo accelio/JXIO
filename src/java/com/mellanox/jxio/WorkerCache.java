@@ -6,6 +6,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.facet.taxonomy.LRUHashMap;
 
+/**
+ * For faster connection establish time
+ *
+ */
 public class WorkerCache {
 	public static final String                  CACHE_TAG    = "cacheId";
 	private final int                           MAX_ENTRY_WORKERS  = 5;
@@ -14,14 +18,34 @@ public class WorkerCache {
 	private HashMap<String, LinkedList<Worker>> workersCache = new LRUHashMap<String, LinkedList<Worker>>(MAX_HASH);
 	private WorkerProvider                      wp;
 
+
+	/**
+	 * The worker provider is used by the cache to get a new worker when no free worker is found
+	 * @param wp
+	 */
 	public interface WorkerProvider {
+		/**
+		 * @return free worker that client connection can be forwarded to
+		 */
 		public Worker getWorker();
 	}
 
+	/**
+	 * Each server portal worker that will be in the cache should implement this interface.
+	 */
 	public interface Worker {
+		/**
+		 * Indicate if the server worker is free and the cache can pass it as an hint
+		 * @return
+		 */
 		public boolean isFree();
 	}
 
+	/**
+	 * The worker provider is used by the cache to get a new worker when there's no free
+	 *  worker from previous connections
+	 * @param wp
+	 */
 	public WorkerCache(WorkerProvider wp) {
 		this.wp = wp;
 	}
