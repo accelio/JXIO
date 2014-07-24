@@ -5,10 +5,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import com.mellanox.jxio.WorkerCache;
+
 import com.mellanox.jxio.Msg;
+import com.mellanox.jxio.jxioConnection.JxioConnectionServer;
 import com.mellanox.jxio.jxioConnection.impl.BufferSupplier;
 import com.mellanox.jxio.jxioConnection.impl.MultiBufOutputStream;
 import com.mellanox.jxio.jxioConnection.impl.MultiBuffInputStream;
@@ -36,9 +41,24 @@ public class JxioConnection {
 		this.uri = uri;
 	}
 
+	private URI appendStreamType(String type) throws ConnectException{
+		String uriStr = uri.toString();
+		if (uri.getQuery() == null) {
+        	uriStr+="?stream="+type;
+        } else {
+        	uriStr+="&stream="+type;
+        }
+		try {
+		uri=new URI(uriStr);
+		} catch (URISyntaxException e) {
+			throw new ConnectException("could not append the stream type");
+		}
+		return uri;
+	}
+
 	public InputStream getInputStream() throws ConnectException {
 		if (input == null) {
-			isCon = new ISConnection(uri, JxioConnectionServer.msgPoolBuffSize, 0, isMsgPoolCount);
+			isCon = new ISConnection(appendStreamType("input"), JxioConnectionServer.msgPoolBuffSize, 0, isMsgPoolCount);
 			input = new MultiBuffInputStream(isCon);
 		}
 		return input;
@@ -46,7 +66,7 @@ public class JxioConnection {
 
 	public OutputStream getOutputStream() throws ConnectException {
 		if (output == null) {
-			osCon = new OSConnection(uri, 0, JxioConnectionServer.msgPoolBuffSize, osMsgPoolCount);
+			osCon = new OSConnection(appendStreamType("output"), 0, JxioConnectionServer.msgPoolBuffSize, osMsgPoolCount);
 			output = new MultiBufOutputStream(osCon);
 		}
 		return output;

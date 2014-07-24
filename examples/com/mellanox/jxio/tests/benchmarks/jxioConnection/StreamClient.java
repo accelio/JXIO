@@ -101,14 +101,14 @@ public class StreamClient extends Thread {
 		try {
 			// input
 			for (int i = 0; i < Integer.parseInt(args[3]); i++) {
-				uriString = String.format("rdma://%s:%s/data?stream=input&size=%s", args[0], args[1], args[2]);
+				uriString = String.format("rdma://%s:%s/data?size=%s", args[0], args[1], args[2]);
 				uri = new URI(uriString);
 				StreamClient client = new StreamClient(uri, "input", i, Integer.parseInt(args[5]));
 				client.start();
 			}
 			// output
 			for (int i = 0; i < Integer.parseInt(args[4]); i++) {
-				uriString = String.format("rdma://%s:%s/data?stream=output&size=%s", args[0], args[1], args[2]);
+				uriString = String.format("rdma://%s:%s/data?size=%s", args[0], args[1], args[2]);
 				uri = new URI(uriString);
 				StreamClient client = new StreamClient(uri, "output", i, Integer.parseInt(args[5]));
 				client.start();

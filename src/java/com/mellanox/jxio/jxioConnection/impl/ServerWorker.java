@@ -98,9 +98,9 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 		}
 	}
 
-	private String getStreamType() {
-		String[] queries = uri.getQuery().split("&");
-		return queries[0].split("stream=")[1];
+	private String getStreamType() {;
+		String[] data = uri.getQuery().split("stream=");
+		return data[1].split("&")[0];
 	}
 
 	/**
