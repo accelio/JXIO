@@ -357,6 +357,10 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_stopServerP
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSessionServerNative(JNIEnv *env, jclass cls, jlong ptr_ses_server)
 {
 	ServerSession *jxio_session = (ServerSession*) ptr_ses_server;
+	if (!jxio_session){
+		LOG_DBG("ERROR. closing empty session");
+		return;
+	}
 	if (jxio_session->get_is_closing()) {
 		LOG_DBG("trying to close session while already closing");
 		return;
