@@ -36,7 +36,6 @@ public class WorkerCache {
 	public interface Worker {
 		/**
 		 * Indicate if the server worker is free and the cache can pass it as an hint
-		 * @return
 		 */
 		public boolean isFree();
 	}
