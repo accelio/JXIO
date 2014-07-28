@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import com.mellanox.jxio.Msg;
+import com.mellanox.jxio.jxioConnection.JxioConnectionServer;
 import com.mellanox.jxio.jxioConnection.impl.BufferSupplier;
 import com.mellanox.jxio.jxioConnection.impl.MultiBufOutputStream;
 import com.mellanox.jxio.jxioConnection.impl.MultiBuffInputStream;
@@ -68,9 +69,13 @@ public class JxioConnection {
 		public ISConnection(URI uri, int msgIn, int msgOut, int msgCount) throws ConnectException {
 			super(uri, msgIn, msgOut, msgCount);
 			name = "ISConnection[" + cs.toString() + "]";
-			for (int i = 0; i < msgPool.capacity(); i++) {
-				Msg msg = msgPool.getMsg();
-				cs.sendRequest(msg);
+			try {
+				for (int i = 0; i < msgPool.capacity(); i++) {
+					Msg msg = msgPool.getMsg();
+					cs.sendRequest(msg);
+				}
+			} catch (Exception e) {
+				throw new ConnectException(this.toString() + " Error connecting to server: " + e.getMessage());
 			}
 			LOG.info(this.toString() + " created");
 		}

@@ -172,7 +172,12 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 	public void sendMsg() {
 		if (msg != null) {
 			count++;
-			session.sendResponse(msg);
+			try {
+				session.sendResponse(msg);
+			} catch (Exception e) {
+				LOG.error(this.toString() + " Error sending message: " + e.getMessage());
+				session.discardRequest(msg);
+			}
 			msg = null;
 		}
 	}

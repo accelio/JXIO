@@ -12,6 +12,8 @@ import com.mellanox.jxio.EventQueueHandler;
 import com.mellanox.jxio.EventReason;
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
+import com.mellanox.jxio.exceptions.JxioGeneralException;
+import com.mellanox.jxio.exceptions.JxioSessionClosedException;
 
 public abstract class SimpleConnection {
 
@@ -107,11 +109,17 @@ public abstract class SimpleConnection {
 
 	public void sendMsg() {
 		if (msg != null) {
-			cs.sendRequest(msg);
+			try {
+				cs.sendRequest(msg);
+			} catch (Exception e) {
+				LOG.error(this.toString() + " Error sending message: " + e.getMessage());
+				msgPool.releaseMsg(msg);
+			}
 			msg = null;
 		}
 	}
 
 	public abstract void closeStream();
+
 	public abstract void handleLastMsg();
 }
