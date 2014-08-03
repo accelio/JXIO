@@ -71,7 +71,10 @@ public class Msg {
 	 * @return true if Msg was returned to pool and false if this msg can not be returned to pool
 	 */
 	public boolean returnToParentPool() {
-		return msgPool.releaseMsg(this);
+		if (!isMirror)
+			return msgPool.releaseMsg(this);
+		else
+			return false;
 	}
 
 	/**
