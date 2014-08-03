@@ -24,6 +24,7 @@ import com.mellanox.jxio.EventName;
 import com.mellanox.jxio.EventReason;
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.ServerSession;
+import com.mellanox.jxio.exceptions.*;
 
 public class ServerSessionHandle {
 
@@ -52,8 +53,12 @@ public class ServerSessionHandle {
 		public void onRequest(Msg msg) {
 			// answer back with the same message that was received
 			msg.getOut().position(msg.getOut().capacity()); // simulate 'out_msgSize' was written into buffer
-			if (!ss.sendResponse(msg)) {
-				LOG.error("request was not handled");
+			try{
+				ss.sendResponse(msg);
+			}catch(JxioSessionClosedException e){
+				LOG.error("request was not handled. session already closed!");
+			}catch(JxioGeneralException e){
+				LOG.error("request was not handled: " + e.toString());
 			}
 		}
 

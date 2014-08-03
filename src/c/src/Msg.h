@@ -45,7 +45,7 @@ public:
 	void* get_buf() { return buf; }
 	struct xio_msg* get_xio_msg() {return &xio_msg;}
 	struct xio_msg* get_mirror_xio_msg() {return &xio_msg_mirror;}
-	bool send_response(const int size);
+	int send_response(const int size);
 	int get_in_size(){return this->in_buf_size;}
 	int get_out_size(){return this->out_buf_size;}
 	bool was_assign_called() {return this->assign_called;}

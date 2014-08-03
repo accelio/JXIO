@@ -25,6 +25,7 @@ import com.mellanox.jxio.impl.EventMsgError;
 import com.mellanox.jxio.impl.EventNewMsg;
 import com.mellanox.jxio.impl.EventSession;
 import com.mellanox.jxio.impl.EventNameImpl;
+import com.mellanox.jxio.exceptions.*;
 /**
  * ServerSession is the object which receives Msgs from Client and sends responses. This side
  * does not initiate connection. ServerSession receives several events on his lifetime.
@@ -148,25 +149,33 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	 * 
 	 * @param msg
 	 *            - Msg to be sent to Client
-	 * @return true if queuing of the msg was successful and false otherwise
+	 * @throws JxioSessionClosedException if session already closed. In case exception is thrown, discardRequest 
+	 * must be called for this message after SESSION_CLOSED	event is officially recieved. 
+	 * @throws JxioGeneralException if send failed for any other reason
 	 */
-	public boolean sendResponse(Msg msg) {
+	public void sendResponse(Msg msg) throws JxioGeneralException, JxioSessionClosedException {
 		if (this.getIsClosing()) {
 			LOG.warn(this.toLogString() + "Trying to send message while session is closing");
-			return false;
+			throw new JxioSessionClosedException("sendResponse");
 		}
+		int ret = Bridge.serverSendResponse(msg.getId(), msg.getOut().position(), ptrSesServer);
+		if (ret>0){
+			if (ret != EventReason.SESSION_DISCONNECTED.getIndex()) {
+				LOG.debug(this.toLogString() + "there was an error sending the message because of reason " + ret);
+				LOG.debug(this.toLogString() + "unhandled exception. reason is " + ret);
+				throw new JxioGeneralException(ret, "sendResponse");
+			}else{
+				LOG.debug(this.toLogString() + "message send failed because the session is already closed!");
+				throw new JxioSessionClosedException("sendResponse");
+			}
+		}	
 		this.msgsInUse--;
-		boolean ret = Bridge.serverSendResponse(msg.getId(), msg.getOut().position(), ptrSesServer);
-		if (!ret) {
-			LOG.debug(this.toLogString() + "there was an error sending the message");
-		}
-		this.eventQHandlerMsg.releaseMsgBackToPool(msg);
 		/*
 		 * this message should be released back to pool.
 		 * even though the message might not reached the client yet, it's ok since this pool is
 		 * used only for matching of id to object. the actual release to pool is done on c side
 		 */
-		return ret;
+		this.eventQHandlerMsg.releaseMsgBackToPool(msg);
 	}
 
 	/**

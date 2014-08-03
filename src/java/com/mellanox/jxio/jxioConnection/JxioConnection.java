@@ -88,9 +88,13 @@ public class JxioConnection {
 		public ISConnection(URI uri, int msgIn, int msgOut, int msgCount) throws ConnectException {
 			super(uri, msgIn, msgOut, msgCount);
 			name = "ISConnection[" + cs.toString() + "]";
-			for (int i = 0; i < msgPool.capacity(); i++) {
-				Msg msg = msgPool.getMsg();
-				cs.sendRequest(msg);
+			try {
+				for (int i = 0; i < msgPool.capacity(); i++) {
+					Msg msg = msgPool.getMsg();
+					cs.sendRequest(msg);
+				}
+			} catch (Exception e) {
+				throw new ConnectException(this.toString() + " Error connecting to server: " + e.getMessage());
 			}
 			LOG.info(this.toString() + " created");
 		}

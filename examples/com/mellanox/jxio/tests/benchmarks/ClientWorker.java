@@ -29,6 +29,7 @@ import com.mellanox.jxio.EventQueueHandler;
 import com.mellanox.jxio.EventReason;
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
+import com.mellanox.jxio.exceptions.*;
 
 public class ClientWorker implements Callable<double[]> {
 	private final ClientSession cs;
@@ -83,8 +84,13 @@ public class ClientWorker implements Callable<double[]> {
 				break;
 			}
 			msg.getOut().position(msg.getOut().capacity()); // simulate 'out_msgSize' was written into buffer
-			if (!cs.sendRequest(msg)) {
-				LOG.error("Error sending");
+			try{
+				cs.sendRequest(msg);
+			}catch(JxioGeneralException e){
+				LOG.error("Error sending: " + e.toString());
+				pool.releaseMsg(msg);
+			}catch(JxioSessionClosedException e){
+				LOG.error("Error sending: session closed " + e.toString());
 				pool.releaseMsg(msg);
 			}
 		}
@@ -151,11 +157,17 @@ public class ClientWorker implements Callable<double[]> {
 				cnt = 0;
 				startTime = System.nanoTime();
 			}
-			if (!ClientWorker.this.cs.getIsClosing()) {
-				if (!cs.sendRequest(msg)) {
-					pool.releaseMsg(msg);
-				}
+			if (!ClientWorker.this.cs.getIsClosing()){
+    			try{
+    				cs.sendRequest(msg);
+    			}catch(JxioGeneralException e){
+    				LOG.error("Error sending: " + e.toString());
+    				pool.releaseMsg(msg);
+    			}catch(JxioSessionClosedException e){
+    				pool.releaseMsg(msg);
+    			}
 			}
+
 		}
 	}
 }

@@ -25,7 +25,7 @@ import com.mellanox.jxio.impl.EventMsgError;
 import com.mellanox.jxio.impl.EventNewMsg;
 import com.mellanox.jxio.impl.EventSession;
 import com.mellanox.jxio.impl.EventNameImpl;
-
+import com.mellanox.jxio.exceptions.*;
 /**
  * ClientSession is the object that connects to the Server. This object initiates the connection.
  * The application uses it to send requests to the server and receive responses.
@@ -152,21 +152,28 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	 * 
 	 * @param msg
 	 *            - Msg to be sent to Server
-	 * @return true if queuing of the msg was successful and false otherwise
+	 * @throws JxioSessionClosedException if session already closed. In case exception is thrown, msg needs to be returned to pool
+	 * @throws JxioGeneralException if send failed for any other reason	 * 
 	 */
-	public boolean sendRequest(Msg msg) {
+	public void sendRequest(Msg msg) throws JxioGeneralException, JxioSessionClosedException {
 		if (this.getIsClosing()) {
 			LOG.warn(this.toLogString() + "Trying to send message while session is closing");
-			return false;
+			throw new JxioSessionClosedException("sendRequest");
 		}
-		if (!Bridge.clientSendReq(this.getId(), msg.getId(), msg.getOut().position(), msg.getIsMirror())) {
-			LOG.error(this.toLogString() + "there was an error sending the message");
-			return false;
+		int ret = Bridge.clientSendReq(this.getId(), msg.getId(), msg.getOut().position(), msg.getIsMirror());
+		if (ret>0){
+			if (ret != EventReason.SESSION_DISCONNECTED.getIndex()) {
+				LOG.debug(this.toLogString() + "there was an error sending the message because of reason " + ret);
+				LOG.debug(this.toLogString() + "unhandled exception. reason is " + ret);
+				throw new JxioGeneralException(ret, "sendResponse");
+			}else{
+				LOG.debug(this.toLogString() + "message send failed because the session is already closed!");
+				throw new JxioSessionClosedException("sendResponse");
+			}
 		}
 		msg.setClientSession(this);
 		// only if the send was successful the msg needs to be added to the "pending response" list
 		eventQHandler.addMsgInUse(msg);
-		return true;
 	}
 
 	/**
