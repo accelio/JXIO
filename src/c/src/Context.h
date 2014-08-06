@@ -41,6 +41,7 @@ public:
 	static void on_event_loop_handler(int fd, int events, void *priv_data);
 	void add_my_event();
 	void reset_counters();
+	void done_event_creating(int sizeWritten);
 
 	EventQueue *event_queue;
 	Events *events;

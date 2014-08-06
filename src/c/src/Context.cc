@@ -18,7 +18,6 @@
 #include "bullseye.h"
 #include "Utils.h"
 #include "Context.h"
-#include "CallbackFunctions.h"
 
 #define MODULE_NAME		"Context"
 #define CONTEXT_LOG_ERR(log_fmt, log_args...)  LOG_BY_MODULE(lsERROR, log_fmt, ##log_args)
@@ -121,29 +120,6 @@ void Context::break_event_loop(int is_self_thread)
 	CONTEXT_LOG_TRACE("after break event loop (is_self_thread=%d)", is_self_thread);
 }
 
-#if _BullseyeCoverage
-    #pragma BullseyeCoverage off
-#endif
-int Context::add_event_loop_fd(int fd, int events, void *priv_data)
-{
-	return xio_context_add_ev_handler(this->ctx, fd, events, Context::on_event_loop_handler, priv_data);
-}
-
-int Context::del_event_loop_fd(int fd)
-{
-	return xio_context_del_ev_handler(this->ctx, fd);
-}
-
-void Context::on_event_loop_handler(int fd, int events, void *data)
-{
-	Context *ctx = (Context *)data;
-
-	// Pass an 'FD Ready' event to Java
-	on_fd_ready_event_callback(ctx, fd, events);
-}
-#if _BullseyeCoverage
-    #pragma BullseyeCoverage on
-#endif
 
 void Context::add_msg_pool(MsgPool* msg_pool)
 {
@@ -164,4 +140,17 @@ void Context::reset_counters()
 	this->event_queue->reset();
 	this->events_num = 0;
 	this->offset_read_for_java = 0;
+}
+
+
+void Context::done_event_creating(int sizeWritten)
+{
+	this->event_queue->increase_offset(sizeWritten);
+
+	//need to stop the event queue only if this is the first callback
+	if (!this->events_num) {
+		LOG_TRACE("inside a callback - stopping the event queue");
+		this->break_event_loop(1); // always 'self thread = true' since JXIO break from within callback
+	}
+	this->events_num++;
 }

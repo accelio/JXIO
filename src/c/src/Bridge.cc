@@ -25,7 +25,6 @@
 #include <libxio.h>
 
 #include "bullseye.h"
-#include "CallbackFunctions.h"
 #include "Client.h"
 #include "ServerPortal.h"
 #include "Context.h"

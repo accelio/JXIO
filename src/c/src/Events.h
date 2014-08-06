@@ -25,8 +25,6 @@
 #include "Utils.h"
 
 
-class Contexable;
-
 struct  event_new_session {
 	int64_t 	ptr_session;
 	int32_t 	uri_len;

@@ -23,13 +23,12 @@
 #include <stdio.h>
 
 
-#include "CallbackFunctions.h"
-#include "Contexable.h"
+#include "CallbackFunctionsServer.h"
 #include "Events.h"
 class Context;
 
 
-class ServerPortal: public Contexable {
+class ServerPortal {
 public:
 	//to move some to private?
 	ServerPortal(const char *url, long ptrCtx);
@@ -47,6 +46,10 @@ public:
 	bool is_closing;
 	int sessions; //indicates how many sessions are listening on this server
 	uint16_t port; //indicates the actual port on which the server listens
+	bool flag_to_delete;
+	Context* get_ctx_class() {return ctx_class;}
+private:
+	Context *ctx_class;
 };
 
 #endif // ! ServerManager

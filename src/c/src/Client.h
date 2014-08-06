@@ -21,12 +21,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "CallbackFunctions.h"
+#include "CallbackFunctionsClient.h"
 #include "Context.h"
-#include "Contexable.h"
 #include "Msg.h"
 
-class Client: public Contexable {
+class Client {
 public:
 	struct xio_session* session;
 	struct xio_connection* con;
@@ -34,6 +33,7 @@ public:
 	bool error_creating;
 	bool is_closing;
 	int ref_counter;
+	bool flag_to_delete;
 	//to move some to private?
 	Client(const char* url, long ptrCtx);
 	~Client();
@@ -44,6 +44,9 @@ public:
 				struct xio_session *session);
 	bool isClient() {return true;}
 	void deleteObject();
+	Context* get_ctx_class() {return ctx_class;}
+private:
+	Context *ctx_class;
 };
 
 #endif // ! Client__H___

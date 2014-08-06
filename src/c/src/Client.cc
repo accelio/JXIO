@@ -40,13 +40,13 @@ Client::Client(const char* url, long ptrCtx)
 	struct xio_msg *req;
 
 	Context *ctxClass = (Context *) ptrCtx;
-	set_ctx_class(ctxClass);
+	this->ctx_class = ctxClass;
 
 	//defining structs to send to xio library
-	ses_ops.on_session_event = on_session_event_callback;
+	ses_ops.on_session_event = on_session_event_callback_client;
 	ses_ops.on_session_established = on_session_established_callback;
-	ses_ops.on_msg = on_msg_callback;
-	ses_ops.on_msg_error = on_msg_error_callback;
+	ses_ops.on_msg = on_msg_callback_client;
+	ses_ops.on_msg_error = on_msg_error_callback_client;
 
 	attr.ses_ops = &ses_ops; /* callbacks structure */
 	attr.user_context = NULL; /* no need to pass the server private data */
