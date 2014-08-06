@@ -367,20 +367,19 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSessio
 	close_xio_connection(jxio_session);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_portal, jlong ptr_portal_forwarder)
+extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_portal)
 {
 	const char *url = env->GetStringUTFChars(jurl, NULL);
-	struct xio_session *xio_session = (struct xio_session *)ptr_session;
+	ServerSession* jxio_session = (ServerSession*)ptr_session;
+	struct xio_session *xio_session = jxio_session->get_xio_session();
 	ServerPortal * portal = (ServerPortal *) ptr_portal;
-	ServerPortal * portal_forwarder = (ServerPortal *) ptr_portal_forwarder;
-	ServerSession *jxio_session = get_ses_server_for_session(xio_session, false);
-	jxio_session->set_ctx(portal->get_ctx_class());
+	jxio_session->set_portal(portal, portal->get_ctx_class());
 	LOG_DBG("forwarding xio session=%p to portal=%p, whose url=%s", xio_session, portal, url);
 
 	bool ret_val = forward_session(jxio_session, url);
 	env->ReleaseStringUTFChars(jurl, url);
 	if (ret_val) {
-		portal_forwarder->sessions++;
+		portal->sessions++;
 		return (jlong)(intptr_t) jxio_session;
 	} else {
 		return 0;
@@ -389,9 +388,9 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSes
 
 extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSessionNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_portal)
 {
-	struct xio_session *xio_session = (struct xio_session *)ptr_session;
+	ServerSession* jxio_session = (ServerSession*)ptr_session;
+	struct xio_session *xio_session = jxio_session->get_xio_session();
 	ServerPortal * portal = (ServerPortal *) ptr_portal;
-	ServerSession *jxio_session = get_ses_server_for_session(xio_session, false);
 
 	LOG_DBG("accepting xio session=%p to portal=%p", xio_session, portal);
 
@@ -406,10 +405,10 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSess
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_rejectSessionNative(JNIEnv *env, jclass cls, jlong ptr_session, jint reason, jstring jdata, jint length)
 {
-	struct xio_session *xio_session = (struct xio_session *)ptr_session;
+	ServerSession* jxio_session = (ServerSession*)ptr_session;
+	struct xio_session *xio_session = jxio_session->get_xio_session();
 
 	const char *data = env->GetStringUTFChars(jdata, NULL);
-	ServerSession *jxio_session = get_ses_server_for_session(xio_session, false);
 	char * data_copy = (char*)malloc (length + 1);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (data_copy == NULL) {

@@ -130,11 +130,10 @@ public class Bridge {
 		return ret;
 	}
 
-	private static native long forwardSessionNative(String url, long ptrSes, long ptrPortal, long ptrPortalForwarder);
+	private static native long forwardSessionNative(String url, long ptrSes, long ptrPortal);
 
-	public static long forwardSession(final String url, final long ptrSes, final long ptrPortal,
-	        final long ptrPortalForwarder) {
-		long ptr = forwardSessionNative(url, ptrSes, ptrPortal, ptrPortalForwarder);
+	public static long forwardSession(final String url, final long ptrSes, final long ptrPortal) {
+		long ptr = forwardSessionNative(url, ptrSes, ptrPortal);
 		return ptr;
 	}
 

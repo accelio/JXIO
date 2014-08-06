@@ -67,15 +67,14 @@ int Events::writeOnSessionEstablishedEvent (char *buf, void *ptrForJava, struct 
 	return this->size;
 }
 
-int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, struct xio_session *session,
+int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, void *serverSession,
 			struct xio_new_session_req *req)
 {
-	void* p1 =  session;
 	struct event_struct* event = (struct event_struct*)buf;
 
 	event->type = htonl(EVENT_SESSION_NEW);
 	event->ptr = htobe64(intptr_t(ptrForJava));
-	event->event_specific.new_session.ptr_session = htobe64(intptr_t(p1));
+	event->event_specific.new_session.ptr_session = htobe64(intptr_t(serverSession));
 	event->event_specific.new_session.uri_len = htonl(req->uri_len);
 
 	//copy data so far

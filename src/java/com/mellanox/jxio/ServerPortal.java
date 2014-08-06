@@ -248,7 +248,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		}
 
 		serverSession.setEventQueueHandlers(this.eventQHndl, portal.eventQHndl);
-		long ptrSesServer = Bridge.forwardSession(uriForForward.toString(), serverSession.getId(), portal.getId(), this.getId());
+		long ptrSesServer = Bridge.forwardSession(uriForForward.toString(), serverSession.getId(), portal.getId());
 		serverSession.setPtrServerSession(ptrSesServer);
 		portal.setSession(serverSession);
 	}
@@ -306,6 +306,9 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 				}
 				if (ev instanceof EventNewSession) {
 					long ptrSes = ((EventNewSession) ev).getPtrSes();
+					if (ptrSes == 0){
+						throw new RuntimeException("malloc of class in C failed");
+					}
 					String uri = ((EventNewSession) ev).getUri();
 					String srcIP = ((EventNewSession) ev).getSrcIP();
 					Worker workerHint = null;

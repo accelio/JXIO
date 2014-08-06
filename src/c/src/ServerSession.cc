@@ -22,16 +22,18 @@
 #define SRVSESSION_LOG_ERR(log_fmt, log_args...)  LOG_BY_MODULE(lsERROR, log_fmt, ##log_args)
 #define SRVSESSION_LOG_DBG(log_fmt, log_args...)  LOG_BY_MODULE(lsDEBUG, log_fmt, ##log_args)
 
-ServerSession::ServerSession(xio_session * session, Context* ctx, xio_connection* connection)
+ServerSession::ServerSession(xio_session * session, ServerPortal* portal, Context * ctx)
 {
 	this->is_closing = false;
 	this->session = session;
+	this->forwarder = portal;
 	this->ctx = ctx;
 	this->delete_after_teardown = false;
 	this->forward_mode = false;
-	this->first_conn = connection;
+	this->first_conn = NULL;
 	this->second_conn = NULL;
 	this->reject_mode = false;
+	this->forwardee = NULL;
 }
 
 ServerSession::~ServerSession() {}
@@ -52,4 +54,50 @@ struct xio_connection* ServerSession::get_xio_connection()
 	if (forward_mode)
 		return this->second_conn;
 	return this->first_conn;
+}
+
+void ServerSession::set_xio_connection(struct xio_connection* con)
+{
+	if (this->first_conn == NULL)
+		this->first_conn = con;
+	else
+		this->second_conn = con;
+}
+
+
+ServerPortal * ServerSession::get_portal_session_event(struct xio_connection* con)
+{
+	if (con == NULL){
+		//the event is Session teardown
+		if (this->forwardee)
+			return this->forwardee;
+		else
+			return this->forwarder;
+	}
+	if (this->first_conn == NULL)
+		//this is the first event: new connection
+		return this->forwarder;
+	if (forward_mode && !this->second_conn)
+		//this is new connection after forward
+		return this->forwardee;
+
+	if (this->first_conn == con)
+		return this->forwarder;
+	else
+		return this->forwardee;
+}
+
+ServerPortal * ServerSession::get_portal_msg_event()
+{
+	if (forward_mode)
+		return this->forwardee;
+	return this->forwarder;
+}
+
+
+void ServerSession::set_portal(ServerPortal * portal, Context * ctx)
+{
+	this->forwardee = portal;
+	this->ctx = ctx;
+
 }

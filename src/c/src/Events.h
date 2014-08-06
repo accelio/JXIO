@@ -98,7 +98,7 @@ public:
 	int writeOnSessionErrorEvent(char *buf, void *ptrForJava, struct xio_session_event_data *event_data);
 	int writeOnSessionEstablishedEvent (char *buf, void *ptrForJava, struct xio_session *session,
 			struct xio_new_session_rsp *rsp);
-	int writeOnNewSessionEvent(char *buf, void *ptrForJava, struct xio_session *session,
+	int writeOnNewSessionEvent(char *buf, void *ptrForJava, void *serverSession,
 			struct xio_new_session_req *req);
 	int writeOnMsgSendCompleteEvent(char *buf, void *ptrForJava, struct xio_session *session,
 			struct xio_msg *msg);

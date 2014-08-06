@@ -36,7 +36,7 @@ public:
 
 	//this method will return ctx if the event should be written to event queue. Otherwise will return null
 	Context* ctxForSessionEvent(struct xio_session_event_data * event,
-			struct xio_session *session);
+			ServerSession* ses);
 	bool isClient() {return false;}
 	void deleteObject();
 	//this method writes that the portal was closed to the event queue and deletes this

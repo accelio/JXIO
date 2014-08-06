@@ -25,15 +25,16 @@
 #include <libxio.h>
 
 class Context;
+class ServerPortal;
 
 
 class ServerSession {
 public:
-	ServerSession(xio_session * session, Context* ctx, xio_connection* connection);
+	ServerSession(xio_session * session, ServerPortal* portal, Context * ctx);
 	~ServerSession();
 
 	Context* get_ctx() {return ctx;}
-	void set_ctx(Context* context) {ctx = context;}
+	void set_portal(ServerPortal *, Context *);
 	struct xio_session* get_xio_session() {return session;}
 	bool get_is_closing() {return is_closing;}
 	void set_is_closing(bool b) {is_closing = b;}
@@ -47,11 +48,15 @@ public:
 	//session teardown the ServerSession needs to be deleted
 	bool delete_after_teardown;
 	struct xio_connection* get_xio_connection();
-	void set_xio_connection(struct xio_connection* con) {second_conn = con;}
+	void set_xio_connection(struct xio_connection* con);
+	ServerPortal * get_portal_session_event(struct xio_connection* con);
+	ServerPortal * get_portal_msg_event();
 private:
 	struct xio_session* session;
 	struct xio_connection* first_conn;
 	struct xio_connection* second_conn;
+	ServerPortal *forwarder; //or accepter in case of accept
+	ServerPortal *forwardee; //will be null in case of accept
 	Context* ctx;
 	bool is_closing;
 	bool forward_mode;

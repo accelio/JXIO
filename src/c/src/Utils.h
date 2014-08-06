@@ -77,16 +77,6 @@ void logs_from_xio_callback_register();
 void logs_from_xio_callback_unregister();
 void logs_from_xio_set_threshold(log_severity_t threshold);
 
-typedef std::pair<xio_session*, ServerSession*> pair_ses_ctx_t;
-typedef std::map<xio_session*, ServerSession*> map_ses_ctx_t;
-
-static map_ses_ctx_t map_sessions;//maps xio_session to appopriate ServerSession
-
-static pthread_mutex_t mutex_for_map = PTHREAD_MUTEX_INITIALIZER;
-
-ServerSession* get_ses_server_for_session(xio_session*, bool to_delete);
-void add_ses_server_for_session(xio_session *, ServerSession*);
-
 bool close_xio_connection(ServerSession* jxio_session);
 bool forward_session(ServerSession* jxio_session, const char * url);
 bool accept_session(ServerSession* jxio_session);

@@ -20,20 +20,33 @@
 // implementation of the XIO callbacks for server
 //
 
-int on_new_session_callback(struct xio_session *session,
+int on_new_session_callback(struct xio_session *xio_session,
 		struct xio_new_session_req *req, void *cb_prv_data)
 {
-	LOG_DBG("got on_new_session_callback for session=%p", session);
+	LOG_DBG("got on_new_session_callback for session=%p", xio_session);
 
 	ServerPortal *portal = (ServerPortal*)cb_prv_data;
 	Context *ctx = portal->get_ctx_class();
+
+	ServerSession *jxio_session = new ServerSession(xio_session, portal, portal->get_ctx_class());
+
+	/*modifying private data of the session, so we would be able to retrive the
+	 * ServerSession when events are received
+	 */
+	struct xio_session_attr ses_attr;
+	ses_attr.user_context = jxio_session;
+	if (xio_modify_session(xio_session, &ses_attr,XIO_SESSION_ATTR_USER_CTX)){
+		LOG_ERR("xio_modify_session for session=%p failed\n",xio_session);
+	}
+	LOG_DBG("xio_modify_session for session=%p to %p\n",xio_session, jxio_session);
+
 	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnNewSessionEvent(buf, portal, session, req);
+	int sizeWritten = ctx->events->writeOnNewSessionEvent(buf, portal, jxio_session, req);
 	ctx->done_event_creating(sizeWritten);
 	return 0;
 }
 
-int on_msg_send_complete_callback(struct xio_session *session,
+int on_msg_send_complete_callback(struct xio_session *xio_session,
 		struct xio_msg *msg, void *cb_prv_data)
 {
 	LOG_TRACE("got on_msg_send_complete_callback for msg=%p", msg->user_context);
@@ -46,7 +59,7 @@ int on_msg_send_complete_callback(struct xio_session *session,
 	return 0;
 }
 
-int on_msg_callback_server(struct xio_session *session, struct xio_msg *msg,
+int on_msg_callback_server(struct xio_session *xio_session, struct xio_msg *msg,
 		int more_in_batch, void *cb_prv_data)
 {
 	const int msg_in_size = get_xio_msg_in_size(msg);
@@ -57,7 +70,9 @@ int on_msg_callback_server(struct xio_session *session, struct xio_msg *msg,
 		LOG_ERR("xio_msg=%p completed with error.[%s]", msg, xio_strerror(msg->status));
 	}
 
-	ServerPortal *portal = (ServerPortal*)cb_prv_data;
+	ServerSession *jxio_session = (ServerSession*)cb_prv_data;
+	ServerPortal *portal = jxio_session->get_portal_msg_event();
+
 	Context *ctx = portal->get_ctx_class();
 	struct xio_iovec_ex *sglist = vmsg_sglist(&msg->in);
 
@@ -82,14 +97,14 @@ int on_msg_callback_server(struct xio_session *session, struct xio_msg *msg,
 	}
 
 	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnRequestReceivedEvent(buf, msg->user_context, msg_in_size, msg_out_size, session);
+	int sizeWritten = ctx->events->writeOnRequestReceivedEvent(buf, msg->user_context, msg_in_size, msg_out_size, jxio_session);
 
 	ctx->done_event_creating(sizeWritten);
 
 	return 0;
 }
 
-int on_msg_error_callback_server(struct xio_session *session, enum xio_status error,
+int on_msg_error_callback_server(struct xio_session *xio_session, enum xio_status error,
 		struct xio_msg *msg, void *cb_prv_data)
 {
 	LOG_DBG("got on_msg_error_callback for msg=%p. error status is %d", msg->user_context, error);
@@ -98,30 +113,33 @@ int on_msg_error_callback_server(struct xio_session *session, enum xio_status er
 		return 0;
 	}
 
-	ServerPortal *portal = (ServerPortal*)cb_prv_data;
+	ServerSession *jxio_session = (ServerSession*)cb_prv_data;
+	ServerPortal *portal = jxio_session->get_portal_msg_event();
+
 	Context *ctx = portal->get_ctx_class();
 
 	char* buf = ctx->event_queue->get_buffer();
 	//this is server side - send of the response failed
 	int sizeWritten  = ctx->events->writeOnMsgErrorEventServer(buf, msg->user_context,
-						session, error);
+			jxio_session, error);
 	ctx->done_event_creating(sizeWritten);
 
 	return 0;
 }
 
-int on_session_event_callback_server(struct xio_session *session,
+int on_session_event_callback_server(struct xio_session *xio_session,
 		struct xio_session_event_data *event_data, void *cb_prv_data)
 {
 
 	LOG_DBG("got on_session_event_callback. event=%d, cb_prv_data=%p, session=%p, conn=%p",
-			event_data->event, cb_prv_data, session, event_data->conn);
-	ServerPortal *portal = (ServerPortal*)cb_prv_data;
+			event_data->event, cb_prv_data, xio_session, event_data->conn);
+	ServerSession *jxio_session = (ServerSession*)cb_prv_data;
+	ServerPortal *portal = jxio_session->get_portal_session_event(event_data->conn);
 
-	Context *ctx = portal->ctxForSessionEvent(event_data, session);
+	Context *ctx = portal->ctxForSessionEvent(event_data, jxio_session);
 	if (ctx) {
 		char* buf = ctx->event_queue->get_buffer();
-		int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, session, event_data);
+		int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, jxio_session, event_data);
 		ctx->done_event_creating(sizeWritten);
 		if (portal->flag_to_delete){
 			portal->deleteObject();
@@ -132,8 +150,9 @@ int on_session_event_callback_server(struct xio_session *session,
 
 int on_buffer_request_callback(struct xio_msg *msg, void *cb_user_context)
 {
-	LOG_TRACE("got on_buffer_request_callback");
-	ServerPortal *portal = (ServerPortal*)cb_user_context;
+	LOG_TRACE("got on_buffer_request_callback for msg=%p, user_context=%p", msg, cb_user_context);
+	ServerSession *jxio_session = (ServerSession*)cb_user_context;
+	ServerPortal *portal = jxio_session->get_portal_msg_event();
 	Context *ctx = portal->get_ctx_class();
 	const int msg_in_size = get_xio_msg_in_size(msg);
 	const int msg_out_size = get_xio_msg_out_size(msg);

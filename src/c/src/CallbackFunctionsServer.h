@@ -22,6 +22,7 @@
 #include <libxio.h>
 #include "Context.h"
 #include "ServerPortal.h"
+#include "ServerSession.h"
 
 
 /*
