@@ -39,22 +39,22 @@ import com.mellanox.jxio.exceptions.*;
  */
 public class ServerSession extends EventQueueHandler.Eventable {
 
-	private final Callbacks   callbacks;
 	/*
 	 * events that are session related will arrive on eqh that received the original
 	 * onSessionNew events. msg events will arrive on the eqh to which the session was
 	 * forwarded
 	 */
-	private EventQueueHandler eventQHandlerMsg;
-	private EventQueueHandler eventQHandlerSession;
-	private long              ptrSesServer;
-	private ServerPortal      creator;
-	final String              uri;
+	private final Callbacks   callbacks;
+	private final String      uri;
 	private final String      name;
 	private final String      nameForLog;
+	private EventQueueHandler eqhMsg;
+	private EventQueueHandler eqhSession;
+	private long              ptrSesServer;
+	private ServerPortal      creator;
 	private int               msgsInUse;
-	private static final Log  LOG = LogFactory.getLog(ServerSession.class.getCanonicalName());
 	private boolean 		  receivedClosed = false;
+	private static final Log  LOG = LogFactory.getLog(ServerSession.class.getCanonicalName());
 
 	public static interface Callbacks {
 		/**
@@ -175,7 +175,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		 * even though the message might not reached the client yet, it's ok since this pool is
 		 * used only for matching of id to object. the actual release to pool is done on c side
 		 */
-		this.eventQHandlerMsg.releaseMsgBackToPool(msg);
+		this.eqhMsg.releaseMsgBackToPool(msg);
 	}
 
 	/**
@@ -188,7 +188,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	public void returnOnMsgError(Msg msg) {
 		// the user finished with the Msg. It can now be released on C side
 		Bridge.releaseMsgServerSide(msg.getId());
-		this.eventQHandlerMsg.releaseMsgBackToPool(msg);
+		this.eqhMsg.releaseMsgBackToPool(msg);
 	}
 	
 	/** 
@@ -201,7 +201,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		if (this.msgsInUse == 0 || !this.getIsClosing())
 			return false; //to avoid release twice of session server
 		Bridge.discardRequest(msg.getId());
-		this.eventQHandlerMsg.releaseMsgBackToPool(msg);
+		this.eqhMsg.releaseMsgBackToPool(msg);
 		this.msgsInUse--;
 		if ((this.msgsInUse == 0) && this.getReceivedClosed()) {
 			if (LOG.isDebugEnabled()) 
@@ -211,11 +211,15 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		return true;
 	}
 
+	final String getUri() {
+		return uri;
+	}
+
 	void setEventQueueHandlers(EventQueueHandler eqhS, EventQueueHandler eqhM) {
-		this.eventQHandlerMsg = eqhM;
-		this.eventQHandlerMsg.addEventable(this);
-		this.eventQHandlerSession = eqhS;
-		this.eventQHandlerSession.addEventable(this); // if eqhS==eqhM, EventQueueHandler.eventables will contain only
+		this.eqhMsg = eqhM;
+		this.eqhMsg.addEventable(this);
+		this.eqhSession = eqhS;
+		this.eqhSession.addEventable(this); // if eqhS==eqhM, EventQueueHandler.eventables will contain only
 		                                              // one value
 	}
 
@@ -253,7 +257,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 								userNotified = true;
 								callbacks.onSessionEvent(eventNameForApp, eventReason);
 							} catch (Exception e) {
-								eventQHandlerMsg.setCaughtException(e);
+								eqhMsg.setCaughtException(e);
 								LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
 							}
 							break;
@@ -266,7 +270,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 							//if eqh is in state of closing that means we are waiting for the teardown event to close the eqh,
 							//so we need to count it in the runeventloop.
 							//if not closing than no need to count the event since it's not going up to the user
-							if (eventQHandlerSession.isClosing) {
+							if (eqhSession.isClosing) {
 								userNotified = true;
 							}
 							break;
@@ -293,7 +297,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 							this.returnOnMsgError(msg);
 						}
 					} catch (Exception e) {
-						eventQHandlerMsg.setCaughtException(e);
+						eqhMsg.setCaughtException(e);
 						LOG.debug(this.toLogString() + " [onMsgError] Callback exception occurred. Msg was " + msg.toString());
 					}
 				} else {
@@ -314,7 +318,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 						userNotified = true;
 						callbacks.onRequest(msg);
 					} catch (Exception e) {
-						eventQHandlerMsg.setCaughtException(e);
+						eqhMsg.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onRequest] Callback exception occurred. Msg was " + msg.toString());
 					}
 				} else {
@@ -330,9 +334,9 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	}
 
 	private void removeFromEQHs() {
-		eventQHandlerSession.removeEventable(this);
-		if (eventQHandlerSession != eventQHandlerMsg) {
-			eventQHandlerMsg.removeEventable(this);
+		eqhSession.removeEventable(this);
+		if (eqhSession != eqhMsg) {
+			eqhMsg.removeEventable(this);
 		}
 	}
 

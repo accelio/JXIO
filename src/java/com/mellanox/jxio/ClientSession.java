@@ -42,9 +42,9 @@ import com.mellanox.jxio.exceptions.*;
  */
 public class ClientSession extends EventQueueHandler.Eventable {
 
-	private final Callbacks         callbacks;
-	private final EventQueueHandler eventQHandler;
 	private static final Log        LOG = LogFactory.getLog(ClientSession.class.getCanonicalName());
+	private final Callbacks         callbacks;
+	private final EventQueueHandler eqh;
 	private final String            name;
 	private final String            nameForLog;
 
@@ -99,7 +99,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	/**
 	 * Constructor of ClientSession.
 	 * 
-	 * @param eventQHandler
+	 * @param eqh
 	 *            - EventQueueHAndler on which the events
 	 *            (onResponse, onSessionEstablished etc) of this client will arrive
 	 * @param uri
@@ -108,26 +108,26 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	 * @param callbacks
 	 *            - implementation of Interface ClientSession.Callbacks
 	 */
-	public ClientSession(EventQueueHandler eventQHandler, URI uri, Callbacks callbacks) {
+	public ClientSession(EventQueueHandler eqh, URI uri, Callbacks callbacks) {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("CS CTOR entry");
 		}
-		this.eventQHandler = eventQHandler;
+		this.eqh = eqh;
 		this.callbacks = callbacks;
 		if (!uri.getScheme().equals("rdma") && !uri.getScheme().equals("tcp")) {
 			LOG.fatal("mal formatted URI: " + uri);
 		}
 		String uriStr = uri.toString();
-        long cacheId = eventQHandler.getId();
-        if (uri.getPath().compareTo("") == 0) {
-        	 uriStr+="/";
-        }
-        if (uri.getQuery() == null) {
-        	uriStr+="?"+WorkerCache.CACHE_TAG+"="+cacheId;
-        } else {
-        	uriStr+="&"+WorkerCache.CACHE_TAG+"="+cacheId;
-        }
-		final long id = Bridge.startSessionClient(uriStr, eventQHandler.getId());
+		long cacheId = eqh.getId();
+		if (uri.getPath().compareTo("") == 0) {
+			uriStr+="/";
+		}
+		if (uri.getQuery() == null) {
+			uriStr+="?"+WorkerCache.CACHE_TAG+"="+cacheId;
+		} else {
+			uriStr+="&"+WorkerCache.CACHE_TAG+"="+cacheId;
+		}
+		final long id = Bridge.startSessionClient(uriStr, eqh.getId());
 		this.name = "jxio.CS[" + Long.toHexString(id) + "]";
 		this.nameForLog = this.name + ": ";
 		if (id == 0) {
@@ -139,7 +139,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		}
 		this.setId(id);
 
-		this.eventQHandler.addEventable(this);
+		this.eqh.addEventable(this);
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.toLogString() + "CS CTOR done");
@@ -175,7 +175,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		}
 		msg.setClientSession(this);
 		// only if the send was successful the msg needs to be added to the "pending response" list
-		eventQHandler.addMsgInUse(msg);
+		eqh.addMsgInUse(msg);
 	}
 
 	/**
@@ -233,11 +233,11 @@ public class ClientSession extends EventQueueHandler.Eventable {
 							if (LOG.isDebugEnabled()) {
 								LOG.debug(this.toLogString() + "received SESSION_TEARDOWN - internal event");
 							}
-							eventQHandler.removeEventable(this);
+							eqh.removeEventable(this);
 							//if eqh is in state of closing that means we are waiting for the teardown event to close the eqh,
 							//so we need to count it in the runeventloop.
 							//if not closing than no need to count the event since it's not going up to the user
-							return eventQHandler.isClosing;
+							return eqh.isClosing;
 						default:
 							break;
 					}
@@ -247,7 +247,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 						userNotified = true;
 						callbacks.onSessionEvent(eventNameForApp, eventReason);
 					} catch (Exception e) {
-						eventQHandler.setCaughtException(e);
+						eqh.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
 					}
 				}
@@ -267,7 +267,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 						userNotified = true;
 						callbacks.onMsgError(msg, eventReason);
 					} catch (Exception e) {
-						eventQHandler.setCaughtException(e);
+						eqh.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onMsgError] Callback exception occurred. Msg was " + msg.toString());
 					}
 				} else {
@@ -283,7 +283,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					userNotified = true;
 					callbacks.onSessionEstablished();
 				} catch (Exception e) {
-					eventQHandler.setCaughtException(e);
+					eqh.setCaughtException(e);
 					LOG.debug(this.toLogString() + "[onSessionEstablished] Callback exception occurred.");
 				}
 				break;
@@ -300,7 +300,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 						userNotified = true;
 						callbacks.onResponse(msg);
 					} catch (Exception e) {
-						eventQHandler.setCaughtException(e);
+						eqh.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onResponse] Callback exception occurred. Msg was " + msg.toString());
 					}
 				} else {

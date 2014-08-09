@@ -53,15 +53,15 @@ import java.util.Set;
 public class ServerPortal extends EventQueueHandler.Eventable {
 
 	private final Callbacks         callbacks;
-	private final EventQueueHandler eventQHndl;
-	private URI                     uri;
-	private URI                     uriPort0;
+	private final EventQueueHandler eqh;
 	private final int               port;
-	private Set<ServerSession>      sessions = new HashSet<ServerSession>();
 	private final String            name;
 	private final String            nameForLog;
 	private static final Log        LOG      = LogFactory.getLog(ServerPortal.class.getCanonicalName());
+	private Set<ServerSession>      sessions = new HashSet<ServerSession>();
 	private WorkerCache 			cache = null;
+	private URI                     uri;
+	private URI                     uriPort0;
 
 	public static interface Callbacks {
 
@@ -94,7 +94,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	 * This constructor is for the ServerPortal listener that doesn't use worker cache. It listens on a well known port and redirects
 	 * the request for a new session to ServerPortal worker
 	 * 
-	 * @param eventQHandler
+	 * @param eqh
 	 *            - EventQueueHAndler on which the events
 	 *            (onSessionNew, onSessionEvent etc) of this portal will arrive
 	 * @param uri
@@ -102,15 +102,15 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	 * @param callbacks
 	 *            - implementation of Interface ServerPortal.Callbacks
 	 */
-	public ServerPortal(EventQueueHandler eventQHandler, URI uri, Callbacks callbacks) {
-		this(eventQHandler, uri, callbacks, null);
+	public ServerPortal(EventQueueHandler eqh, URI uri, Callbacks callbacks) {
+		this(eqh, uri, callbacks, null);
 	}
 
 	/**
 	 * This constructor is for the ServerPortal listener that uses worker cache. It listens on a well known port and redirects
 	 * the request for a new session to ServerPortal worker
 	 * 
-	 * @param eventQHandler
+	 * @param eqh
 	 *            - EventQueueHAndler on which the events
 	 *            (onSessionNew, onSessionEvent etc) of this portal will arrive
 	 * @param uri
@@ -120,18 +120,18 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	 * @param workerProvider
 	 *            - implementation of Interface WorkerCache.WorkerProvider
 	 */
-	public ServerPortal(EventQueueHandler eventQHandler, URI uri, Callbacks callbacks, WorkerCache.WorkerProvider workerProvider) {
+	public ServerPortal(EventQueueHandler eqh, URI uri, Callbacks callbacks, WorkerCache.WorkerProvider workerProvider) {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("SP CTOR entry");
 		}
-		this.eventQHndl = eventQHandler;
+		this.eqh = eqh;
 		this.callbacks = callbacks;
 
 		if (!uri.getScheme().equals("rdma") && !uri.getScheme().equals("tcp") ) {
 			LOG.fatal("mal formatted URI: " + uri);
 		}
 
-		long[] ar = Bridge.startServerPortal(uri.toString(), eventQHandler.getId());
+		long[] ar = Bridge.startServerPortal(uri.toString(), eqh.getId());
 		this.setId(ar[0]);
 		this.port = (int) ar[1];
 		this.name = "jxio.SP[" + Long.toHexString(getId()) + "]";
@@ -146,7 +146,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		this.uriPort0 = replacePortInURI(uri, 0);
 		this.uri = replacePortInURI(uri, this.port);
 
-		this.eventQHndl.addEventable(this);
+		this.eqh.addEventable(this);
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.toLogString() + "SP CTOR done");
@@ -159,13 +159,13 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	/**
 	 * This constructor is for the ServerPortal worker. A new session is redirected here by ServerPortal listener
 	 * 
-	 * @param eventQHandler
+	 * @param eqh
 	 *            - EventQueueHandler on which events of the session will arrive
 	 * @param uri
 	 *            - Should be uri for listener from ServerPortal listener; listener.getUriForServer()
 	 */
-	public ServerPortal(EventQueueHandler eventQHandler, URI uri) {
-		this(eventQHandler, uri, null, null);
+	public ServerPortal(EventQueueHandler eqh, URI uri) {
+		this(eqh, uri, null, null);
 	}
 
 	/**
@@ -219,7 +219,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	 *            - serverSession that will be accepted
 	 */
 	public void accept(ServerSession serverSession) {
-		serverSession.setEventQueueHandlers(this.eventQHndl, this.eventQHndl);
+		serverSession.setEventQueueHandlers(this.eqh, this.eqh);
 		long ptrSesServer = Bridge.acceptSession(serverSession.getId(), this.getId());
 		serverSession.setPtrServerSession(ptrSesServer);
 		this.setSession(serverSession);
@@ -244,10 +244,10 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		}
 		URI uriForForward = portal.getUri();
 		if (uriForForward.getHost().equals("0.0.0.0")) {
-			uriForForward = this.replaceIPinURI(uriForForward, serverSession.uri);
+			uriForForward = this.replaceIPinURI(uriForForward, serverSession.getUri());
 		}
 
-		serverSession.setEventQueueHandlers(this.eventQHndl, portal.eventQHndl);
+		serverSession.setEventQueueHandlers(this.eqh, portal.eqh);
 		long ptrSesServer = Bridge.forwardSession(uriForForward.toString(), serverSession.getId(), portal.getId());
 		serverSession.setPtrServerSession(ptrSesServer);
 		portal.setSession(serverSession);
@@ -283,9 +283,9 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 					int errorType = ((EventSession) ev).getErrorType();
 					int reason = ((EventSession) ev).getReason();
 					EventNameImpl eventName = EventNameImpl.getEventByIndex(errorType);
-					
+
 					if (eventName == EventNameImpl.PORTAL_CLOSED) {
-						this.eventQHndl.removeEventable(this);
+						this.eqh.removeEventable(this);
 						if (LOG.isDebugEnabled()) {
 							LOG.debug(this.toLogString() + "portal was closed");
 						}
@@ -295,7 +295,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 					try {
 						callbacks.onSessionEvent(eventNameForApp, eventReason);
 					} catch (Exception e) {
-						eventQHndl.setCaughtException(e);
+						eqh.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
 					}
 				}
@@ -323,7 +323,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 					try {
 						this.callbacks.onSessionNew(sesKey, srcIP, workerHint);
 					} catch (Exception e) {
-						eventQHndl.setCaughtException(e);
+						eqh.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onSessionNew] Callback exception occurred. Session Key was " + sesKey.toString() + " and source IP was " + srcIP);
 					}
 				}
