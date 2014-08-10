@@ -17,14 +17,14 @@ import com.mellanox.jxio.exceptions.JxioSessionClosedException;
 
 public abstract class SimpleConnection {
 
-	private static final Log      LOG         = LogFactory.getLog(SimpleConnection.class.getCanonicalName());
-	private boolean               established = false;
+	private static final Log      LOG              = LogFactory.getLog(SimpleConnection.class.getCanonicalName());
+	private boolean               established      = false;
 	protected EventQueueHandler   eqh;
 	protected final ClientSession cs;
 	protected MsgPool             msgPool;
-	protected EventName           connectErrorType;
-	protected boolean             close       = false;
-	protected Msg                 msg         = null;
+	protected EventName           connectErrorType = null;
+	protected boolean             close            = false;
+	protected Msg                 msg              = null;
 
 	public SimpleConnection(URI uri, int msgIn, int msgOut, int msgCount) throws ConnectException {
 		eqh = JxioResourceManager.getEqh();

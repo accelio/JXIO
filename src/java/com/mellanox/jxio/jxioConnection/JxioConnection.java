@@ -93,7 +93,7 @@ public class JxioConnection {
 					Msg msg = msgPool.getMsg();
 					cs.sendRequest(msg);
 				}
-			} catch (Exception e) {
+			} catch (IOException e) {
 				throw new ConnectException(this.toString() + " Error connecting to server: " + e.getMessage());
 			}
 			LOG.info(this.toString() + " created");
@@ -160,7 +160,7 @@ public class JxioConnection {
 						releaseResources();
 						throw new IOException("Session was closed, no buffer avaliable");
 					}
-				} while (msg == null && !close);
+				} while (msg == null);
 			}
 			msg.resetPositions();
 			return msg.getOut();

@@ -267,7 +267,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 		return this.name;
 	}
 
-	private class OSWorker implements StreamWorker {
+	private static class OSWorker implements StreamWorker {
 
 		private ServerWorker worker;
 		private Callbacks    appCallbacks;
@@ -290,7 +290,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 		}
 	}
 
-	private class ISWorker implements StreamWorker {
+	private static class ISWorker implements StreamWorker {
 
 		private ServerWorker worker;
 		private Callbacks    appCallbacks;
