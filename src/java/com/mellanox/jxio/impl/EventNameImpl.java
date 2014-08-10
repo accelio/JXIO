@@ -20,6 +20,9 @@ package com.mellanox.jxio.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * SessionEvents that are received by ClientSession, ServerSession and ServerPortal
  * 
@@ -55,29 +58,33 @@ public enum EventNameImpl {
 	 */
 	UNKNOWN_EVENT(10, -1);
 
-	private int                                  indexAccelio;
-	private int                                  indexPublished;
+	private int                                  xioIndex;
+	private int                                  publishedIndex;
+
+	private static final Log LOG = LogFactory.getLog(EventNameImpl.class.getCanonicalName());
 
 	private static final Map<Integer, EventNameImpl> intToTypeMap = new HashMap<Integer, EventNameImpl>();
 	static {
-		for (EventNameImpl type : EventNameImpl.values()) {
-			intToTypeMap.put(type.indexAccelio, type);
+		for (EventNameImpl eventNameImpl : EventNameImpl.values()) {
+			intToTypeMap.put(eventNameImpl.xioIndex, eventNameImpl);
 		}
 	}
 
-	private EventNameImpl(int indexAccelio, int indexPublished) {
-		this.indexAccelio = indexAccelio;
-		this.indexPublished = indexPublished;
+	private EventNameImpl(int xioIndex, int publishedIndex) {
+		this.xioIndex = xioIndex;
+		this.publishedIndex = publishedIndex;
 	}
 
-	public int getIndexPublished() {
-		return indexPublished;
+	public int getPublishedIndex() {
+		return publishedIndex;
 	}
-	
-	public static EventNameImpl getEventByIndex(int indexAccelio) {
-		EventNameImpl type = intToTypeMap.get(Integer.valueOf(indexAccelio));
-		if (type == null)
+
+	public static EventNameImpl getEventByIndex(int xioIndex) {
+		EventNameImpl eventNameImpl = intToTypeMap.get(Integer.valueOf(xioIndex));
+		if (eventNameImpl == null) {
+			LOG.warn("Unmapped XIO event index = '" + xioIndex + "'. Returning with UNKNOWN_EVENT");
 			return EventNameImpl.UNKNOWN_EVENT;
-		return type;
+		}
+		return eventNameImpl;
 	}
 }

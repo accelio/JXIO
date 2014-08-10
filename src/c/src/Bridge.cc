@@ -467,14 +467,10 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_serverSendR
 	if (ses->get_is_closing()) {
 		LOG_DBG("trying to send message while session is closing. Releasing msg back to pool");
 		msg->release_to_pool();
-		return XIO_E_SESSION_DISCONECTED - XIO_BASE_STATUS + 1; //SESSION_DISCONNECTED
+		return XIO_E_SESSION_DISCONECTED;
 	}
 	int ret = msg->send_response(size);
-	if (ret){//ret value of send_response is negative error
-		LOG_DBG("!!!!!!!ret is %d", ret);
-		ret = -(ret + XIO_BASE_STATUS -1);
-	}
-	return ret;
+	return -ret; //ret value of send_response is negative error (while '-0' == '0')
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_discardRequestNative(JNIEnv *env, jclass cls, jlong ptr_msg)

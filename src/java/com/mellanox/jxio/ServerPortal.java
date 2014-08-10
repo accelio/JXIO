@@ -41,8 +41,8 @@ import java.util.Set;
  * ServerPortal receives several events on his lifetime. On each of them a method of interface
  * Callbacks is invoked. User must implement this interface and pass it in c-tor.
  * The events are:
- * 1. onSessionNew.
- * 2. onSessionEvent.
+ * 1. onSessionNew
+ * 2. onSessionEvent
  * 
  * To initialize worker cache for faster connection establish time -
  * 1. each server worker should implement WorkerCache.Worker interface
@@ -290,7 +290,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 							LOG.debug(this.toLogString() + "portal was closed");
 						}
 					}
-					EventName eventNameForApp = EventName.getEventByIndex(eventName.getIndexPublished());
+					EventName eventNameForApp = EventName.getEventByIndex(eventName.getPublishedIndex());
 					EventReason eventReason = EventReason.getEventByXioIndex(reason);
 					try {
 						callbacks.onSessionEvent(eventNameForApp, eventReason);

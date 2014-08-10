@@ -241,7 +241,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 						default:
 							break;
 					}
-					EventName eventNameForApp = EventName.getEventByIndex(eventName.getIndexPublished());
+					EventName eventNameForApp = EventName.getEventByIndex(eventName.getPublishedIndex());
 					EventReason eventReason = EventReason.getEventByXioIndex(reason);
 					try {
 						userNotified = true;

@@ -181,7 +181,7 @@ int Client::send_msg(Msg *msg, const int out_size, bool is_mirror)
 {
 	if (this->is_closing) {
 		CLIENT_LOG_DBG("attempting to send a message while client session is closing");
-		return XIO_E_SESSION_DISCONECTED - XIO_BASE_STATUS + 1; //SESSION_DISCONNECTED
+		return XIO_E_SESSION_DISCONECTED;
 	}
 	CLIENT_LOG_TRACE("##################### sending msg=%p, size=%d", msg, out_size);
 	struct xio_msg *xio_msg;
@@ -198,9 +198,8 @@ int Client::send_msg(Msg *msg, const int out_size, bool is_mirror)
 	int ret_val = xio_send_request(this->con, xio_msg);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (ret_val) {
-		CLIENT_LOG_ERR("Error in sending xio_msg: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
-		ret_val = -(ret_val + XIO_BASE_STATUS -1);
+		CLIENT_LOG_ERR("Error in sending xio_msg: '%s' (%d) (ret_val=%d)", xio_strerror(xio_errno()), xio_errno(), ret_val);
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
-	return ret_val;
+	return -ret_val;  //ret value of send_request is negative error (while '-0' == '0')
 }

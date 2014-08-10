@@ -163,11 +163,9 @@ bool reject_session(ServerSession* jxio_session, int reason,
 {
 	struct xio_session *xio_session = jxio_session->get_xio_session();
 	jxio_session->set_reject();
-	LOG_DBG("before reject xio_session=%p. reason is %d", xio_session, reason);
+	LOG_DBG("before reject xio_session=%p. reason is %s (%d)", xio_session, xio_strerror(reason), reason);
 
-	enum xio_status s = (enum xio_status)(reason + XIO_BASE_STATUS -1);
-
-	int retVal = xio_reject(xio_session, s, user_context, user_context_len);
+	int retVal = xio_reject(xio_session, (enum xio_status)reason, user_context, user_context_len);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (retVal) {
 		LOG_DBG("ERROR, rejecting session=%p. error '%s' (%d)",xio_session, xio_strerror(xio_errno()), xio_errno());

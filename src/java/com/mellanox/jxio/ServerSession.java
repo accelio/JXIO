@@ -251,7 +251,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 								if (LOG.isDebugEnabled())
 									LOG.debug(this.toLogString() + "there are still " + this.msgsInUse + " msgs in use. Can not delete SessionServer");
 							}
-							EventName eventNameForApp = EventName.getEventByIndex(eventName.getIndexPublished());
+							EventName eventNameForApp = EventName.getEventByIndex(eventName.getPublishedIndex());
 							EventReason eventReason = EventReason.getEventByXioIndex(reason);
 							try {
 								userNotified = true;

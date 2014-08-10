@@ -11,10 +11,13 @@
  ** distributed under the License is distributed on an "AS IS" BASIS,
  ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
  ** either express or implied. See the License for the specific language
- ** governing permissions and  limitations under the License.
+ ** governing permissions and limitations under the License.
  **
  */
 package com.mellanox.jxio;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -112,7 +115,7 @@ public enum EventReason {
 	EPROTO(71),
 	ETIME(62),
 
-	JXIO_GENERAL_ERROR(1000),
+	JXIO_GENERAL_ERROR(1247689300),
 	NOT_SUPPORTED(JXIO_GENERAL_ERROR.getIndex() + 1),
 	NO_BUFS(JXIO_GENERAL_ERROR.getIndex() + 2),
 	CONNECT_ERROR(JXIO_GENERAL_ERROR.getIndex() + 3),
@@ -159,21 +162,20 @@ public enum EventReason {
 		return index;
 	}
 
-	private static EventReason[] allReasons = values();
-
-	private static final int XIO_BASE_STATUS = 1247689300;
 	private static final Log LOG = LogFactory.getLog(EventReason.class.getCanonicalName());
 
-	public static EventReason getEventByXioIndex(int xioIndex) {
-		EventReason returnEventReason = JXIO_GENERAL_ERROR;
-
-		if (xioIndex >= XIO_BASE_STATUS)
-			xioIndex = xioIndex - XIO_BASE_STATUS + JXIO_GENERAL_ERROR.getIndex();
-		try {
-			returnEventReason = allReasons[xioIndex];
+	private static final Map<Integer, EventReason> eventReasonMap = new HashMap<Integer, EventReason>();
+	static {
+		for (EventReason eventReason : EventReason.values()) {
+			eventReasonMap.put(eventReason.getIndex(), eventReason);
 		}
-		catch (ArrayIndexOutOfBoundsException e) {
-			LOG.warn("ArrayIndexOutOfBoundsException on XIO index '" + xioIndex + "'. Returning with JXIO_GENERAL_ERROR");
+	}
+
+	public static EventReason getEventByXioIndex(int xioIndex) {
+		EventReason returnEventReason = eventReasonMap.get(xioIndex);
+		if (returnEventReason == null) {
+			LOG.warn("Unmapped XIO event index = '" + xioIndex + "'. Returning with JXIO_GENERAL_ERROR");
+			return JXIO_GENERAL_ERROR;
 		}
 		return returnEventReason;
 	}
