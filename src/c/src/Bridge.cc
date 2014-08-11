@@ -406,7 +406,6 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSess
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_rejectSessionNative(JNIEnv *env, jclass cls, jlong ptr_session, jint reason, jstring jdata, jint length)
 {
 	ServerSession* jxio_session = (ServerSession*)ptr_session;
-	struct xio_session *xio_session = jxio_session->get_xio_session();
 
 	const char *data = env->GetStringUTFChars(jdata, NULL);
 	char * data_copy = (char*)malloc (length + 1);
