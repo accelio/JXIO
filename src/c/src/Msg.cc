@@ -171,7 +171,6 @@ void Msg::dump(struct xio_msg *xio_msg)
 {
 	MSG_LOG_TRACE("*********************************************");
 	MSG_LOG_TRACE("type:0x%x", xio_msg->type);
-	MSG_LOG_TRACE("status:%d", xio_msg->status);
 	if (xio_msg->type == XIO_MSG_TYPE_REQ)
 		MSG_LOG_TRACE("serial number:%ld", xio_msg->sn);
 	else if (xio_msg->type == XIO_MSG_TYPE_RSP)

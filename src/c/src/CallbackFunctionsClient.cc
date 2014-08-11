@@ -28,9 +28,6 @@ int on_msg_callback_client(struct xio_session *session, struct xio_msg *msg,
 	const int msg_out_size = get_xio_msg_out_size(msg);
 
 	LOG_TRACE("on_msg_callback client=%p, num_iov=%d, len: in=%d out=%d, msg=%p", msg->user_context, msg->in.data_iov.nents, msg_in_size, msg_out_size, msg);
-	if (msg->status) {
-		LOG_ERR("xio_msg=%p completed with error.[%s]", msg, xio_strerror(msg->status));
-	}
 	Client *client = (Client*)cb_prv_data;
 	Context *ctx = client->get_ctx_class();
 	struct xio_iovec_ex *sglist = vmsg_sglist(&msg->in);
