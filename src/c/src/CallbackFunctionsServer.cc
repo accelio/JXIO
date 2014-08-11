@@ -130,6 +130,10 @@ int on_session_event_callback_server(struct xio_session *xio_session,
 
 	LOG_DBG("got on_session_event_callback. event=%d, cb_prv_data=%p, session=%p, conn=%p",
 			event_data->event, cb_prv_data, xio_session, event_data->conn);
+	if (cb_prv_data == NULL){
+		LOG_ERR("cb_prv_data is NULL making jxio_session of type ServerSession NULL");
+		return 1;
+	}
 	ServerSession *jxio_session = (ServerSession*)cb_prv_data;
 	ServerPortal *portal = jxio_session->get_portal_session_event(event_data->conn);
 

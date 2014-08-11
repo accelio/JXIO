@@ -134,7 +134,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
 		//no need to delete session from map since we haven't received session_teardown yet
-		if (ses && !ses->ignore_disconnect(event->conn)) {
+		if (!ses->ignore_disconnect(event->conn)) {
 			ses->set_is_closing(true);
 		}
 		return NULL;
@@ -148,9 +148,6 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 		}
 		BULLSEYE_EXCLUDE_BLOCK_END
 		//last event for this session EVER: ses can be deleted from the map, but not deleted
-		if (!ses) {
-			return NULL;
-		}
 		//this teardown is after user did reject. He does not need to get this event
 		if (ses->delete_after_teardown) {
 			delete ses;
@@ -172,9 +169,6 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 
 	default:
 		SRVPORTAL_LOG_WARN("UNHANDLED event in session %p: got event '%s' (%d)", session, xio_session_event_str(event->event), event->event);
-		if (ses == NULL) {
-			return NULL;
-		}
 		ses->set_is_closing(true);
 		return ses->get_ctx();
 	}
