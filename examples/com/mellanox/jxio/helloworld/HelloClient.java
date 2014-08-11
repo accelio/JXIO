@@ -128,11 +128,12 @@ public class HelloClient {
 		}
 
 		public void onSessionEvent(EventName session_event, EventReason reason) {
+			String str = "[EVENT] Got event " + session_event + " because of " + reason;
 			if (session_event == EventName.SESSION_CLOSED) { // normal exit
-				LOG.info("[EVENT] Got event SESSION_CLOSED");
+				LOG.info(str);
 			} else {
 				this.client.exitStatus = 1; // Failure on any kind of error
-				LOG.error("");
+				LOG.error(str);
 			}
 			this.client.eqh.stop();
 		}
