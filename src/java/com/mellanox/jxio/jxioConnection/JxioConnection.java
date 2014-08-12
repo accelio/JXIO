@@ -96,7 +96,7 @@ public class JxioConnection {
 			} catch (IOException e) {
 				throw new ConnectException(this.toString() + " Error connecting to server: " + e.getMessage());
 			}
-			LOG.info(this.toString() + " created");
+			LOG.debug(this.toString() + " created");
 		}
 
 		public ByteBuffer getNextBuffer() throws IOException {

@@ -111,8 +111,12 @@ public abstract class SimpleConnection {
 		if (msg != null) {
 			try {
 				cs.sendRequest(msg);
-			} catch (Exception e) {
-				LOG.error(this.toString() + " Error sending message: " + e.getMessage());
+			} catch (JxioSessionClosedException e) {
+				LOG.debug(this.toString() + " Error sending message: " + e.toString());
+				msgPool.releaseMsg(msg);
+			}
+			catch (JxioGeneralException e) {
+				LOG.error(this.toString() + " Error sending message: " + e.toString());
 				msgPool.releaseMsg(msg);
 			}
 			msg = null;

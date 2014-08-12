@@ -33,6 +33,8 @@ import com.mellanox.jxio.MsgPool;
 import com.mellanox.jxio.ServerPortal;
 import com.mellanox.jxio.ServerSession;
 import com.mellanox.jxio.WorkerCache.Worker;
+import com.mellanox.jxio.exceptions.JxioGeneralException;
+import com.mellanox.jxio.exceptions.JxioSessionClosedException;
 import com.mellanox.jxio.jxioConnection.JxioConnectionServer;
 import com.mellanox.jxio.jxioConnection.JxioConnectionServer.Callbacks;
 
@@ -98,7 +100,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 		}
 	}
 
-	private String getStreamType() {;
+	private String getStreamType() {
 		String[] data = uri.getQuery().split("stream=");
 		return data[1].split("&")[0];
 	}
@@ -174,8 +176,11 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 			count++;
 			try {
 				session.sendResponse(msg);
-			} catch (Exception e) {
-				LOG.error(this.toString() + " Error sending message: " + e.getMessage());
+			} catch (JxioSessionClosedException e) {
+				LOG.debug(this.toString() + " Error sending message: " + e.toString());
+				session.discardRequest(msg);
+			} catch (JxioGeneralException e) {
+				LOG.error(this.toString() + " Error sending message: " + e.toString());
 				session.discardRequest(msg);
 			}
 			msg = null;
