@@ -28,6 +28,7 @@ import com.mellanox.jxio.impl.EventNewMsg;
 import com.mellanox.jxio.impl.EventSession;
 import com.mellanox.jxio.impl.EventNameImpl;
 import com.mellanox.jxio.exceptions.*;
+
 /**
  * ClientSession is the object that connects to the Server. This object initiates the connection.
  * The application uses it to send requests to the server and receive responses.
@@ -47,11 +48,12 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	private final EventQueueHandler eqh;
 	private final String            name;
 	private final String            nameForLog;
+	private boolean                 rejected;
 
 	/**
-	* This interface needs to be implemented and passed to ClientSession in c-tor
-	* 
-	*/
+	 * This interface needs to be implemented and passed to ClientSession in c-tor
+	 * 
+	 */
 	public static interface Callbacks {
 		/**
 		 * Event triggered when response from server is received. Request and response are on the same
@@ -64,12 +66,12 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		public void onResponse(Msg msg);
 
 		/**
-         * The client initiates a connection to Server in c-tor. When the connection is established,
-         * onSessionEstablished event is triggered. It is possible to call method sendRequest before receiving
-         * onSessionEstablished, however this will only add the requests to internal queue. They will be sent only after
-         * onSessionEstablished. In order to receive onSessionEstablished server must accept the session
-         * 
-         */
+		 * The client initiates a connection to Server in c-tor. When the connection is established,
+		 * onSessionEstablished event is triggered. It is possible to call method sendRequest before receiving
+		 * onSessionEstablished, however this will only add the requests to internal queue. They will be sent only after
+		 * onSessionEstablished. In order to receive onSessionEstablished server must accept the session
+		 * 
+		 */
 		public void onSessionEstablished();
 
 		/**
@@ -120,12 +122,12 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		String uriStr = uri.toString();
 		long cacheId = eqh.getId();
 		if (uri.getPath().compareTo("") == 0) {
-			uriStr+="/";
+			uriStr += "/";
 		}
 		if (uri.getQuery() == null) {
-			uriStr+="?"+WorkerCache.CACHE_TAG+"="+cacheId;
+			uriStr += "?" + WorkerCache.CACHE_TAG + "=" + cacheId;
 		} else {
-			uriStr+="&"+WorkerCache.CACHE_TAG+"="+cacheId;
+			uriStr += "&" + WorkerCache.CACHE_TAG + "=" + cacheId;
 		}
 		final long id = Bridge.startSessionClient(uriStr, eqh.getId());
 		this.name = "jxio.CS[" + Long.toHexString(id) + "]";
@@ -149,13 +151,15 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	/**
 	 * This method sends the request to server.
 	 * <p>
-	 * The send is asynchronous, therefore even if the function returns, this does not mean that the msg reached the server or even was sent to the
-	 * server. The size send to Server is the current position of the OUT ByteBuffer
+	 * The send is asynchronous, therefore even if the function returns, this does not mean that the msg reached the
+	 * server or even was sent to the server. The size send to Server is the current position of the OUT ByteBuffer
 	 * 
 	 * @param msg
 	 *            - Msg to be sent to Server
-	 * @throws JxioSessionClosedException if session already closed. In case exception is thrown, msg needs to be returned to pool
-	 * @throws JxioGeneralException if send failed for any other reason	 * 
+	 * @throws JxioSessionClosedException
+	 *             if session already closed. In case exception is thrown, msg needs to be returned to pool
+	 * @throws JxioGeneralException
+	 *             if send failed for any other reason *
 	 */
 	public void sendRequest(Msg msg) throws JxioGeneralException, JxioSessionClosedException {
 		if (this.getIsClosing()) {
@@ -163,12 +167,12 @@ public class ClientSession extends EventQueueHandler.Eventable {
 			throw new JxioSessionClosedException("sendRequest");
 		}
 		int ret = Bridge.clientSendReq(this.getId(), msg.getId(), msg.getOut().position(), msg.getIsMirror());
-		if (ret>0){
+		if (ret > 0) {
 			if (ret != EventReason.SESSION_DISCONNECTED.getIndex()) {
 				LOG.debug(this.toLogString() + "there was an error sending the message because of reason " + ret);
 				LOG.debug(this.toLogString() + "unhandled exception. reason is " + ret);
 				throw new JxioGeneralException(ret, "sendResponse");
-			}else{
+			} else {
 				LOG.debug(this.toLogString() + "message send failed because the session is already closed!");
 				throw new JxioSessionClosedException("sendResponse");
 			}
@@ -221,11 +225,15 @@ public class ClientSession extends EventQueueHandler.Eventable {
 						case SESSION_CLOSED:
 							Bridge.deleteClient(this.getId());
 							this.setIsClosing(true);
+							if (this.rejected)
+								//last event for this client
+								eqh.removeEventable(this);
 							break;
 						case SESSION_REJECT:
 							// SESSION_CLOSED will arrive after SESSION_REJECT and then ClientSeesion will be deleted
 							// from EQH
 							this.setIsClosing(true);
+							this.rejected = true;
 							break;
 						// Internal event
 						case SESSION_TEARDOWN:
@@ -234,9 +242,10 @@ public class ClientSession extends EventQueueHandler.Eventable {
 								LOG.debug(this.toLogString() + "received SESSION_TEARDOWN - internal event");
 							}
 							eqh.removeEventable(this);
-							//if eqh is in state of closing that means we are waiting for the teardown event to close the eqh,
-							//so we need to count it in the runeventloop.
-							//if not closing than no need to count the event since it's not going up to the user
+							// if eqh is in state of closing that means we are waiting for the teardown event to close
+							// the eqh,
+							// so we need to count it in the runeventloop.
+							// if not closing than no need to count the event since it's not going up to the user
 							return eqh.isClosing;
 						default:
 							break;
@@ -248,7 +257,8 @@ public class ClientSession extends EventQueueHandler.Eventable {
 						callbacks.onSessionEvent(eventNameForApp, eventReason);
 					} catch (Exception e) {
 						eqh.setCaughtException(e);
-						LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
+						LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was "
+						        + eventName.toString());
 					}
 				}
 				break;
@@ -268,7 +278,8 @@ public class ClientSession extends EventQueueHandler.Eventable {
 						callbacks.onMsgError(msg, eventReason);
 					} catch (Exception e) {
 						eqh.setCaughtException(e);
-						LOG.debug(this.toLogString() + "[onMsgError] Callback exception occurred. Msg was " + msg.toString());
+						LOG.debug(this.toLogString() + "[onMsgError] Callback exception occurred. Msg was "
+						        + msg.toString());
 					}
 				} else {
 					LOG.error(this.toLogString() + "Event is not an instance of EventMsgError");
@@ -301,7 +312,8 @@ public class ClientSession extends EventQueueHandler.Eventable {
 						callbacks.onResponse(msg);
 					} catch (Exception e) {
 						eqh.setCaughtException(e);
-						LOG.debug(this.toLogString() + "[onResponse] Callback exception occurred. Msg was " + msg.toString());
+						LOG.debug(this.toLogString() + "[onResponse] Callback exception occurred. Msg was "
+						        + msg.toString());
 					}
 				} else {
 					LOG.error(this.toLogString() + "Event is not an instance of EventNewMsg");
