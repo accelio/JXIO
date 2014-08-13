@@ -189,6 +189,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		// the user finished with the Msg. It can now be released on C side
 		Bridge.releaseMsgServerSide(msg.getId());
 		this.eqhMsg.releaseMsgBackToPool(msg);
+		this.msgsInUse--;
 	}
 	
 	/** 
