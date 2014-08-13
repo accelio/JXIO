@@ -41,15 +41,15 @@ public class JxioConnection {
 		this.uri = uri;
 	}
 
-	private URI appendStreamType(String type) throws ConnectException{
+	private URI appendStreamType(String type) throws ConnectException {
 		String uriStr = uri.toString();
 		if (uri.getQuery() == null) {
-        	uriStr+="?stream="+type;
-        } else {
-        	uriStr+="&stream="+type;
-        }
+			uriStr += "?stream=" + type;
+		} else {
+			uriStr += "&stream=" + type;
+		}
 		try {
-		uri=new URI(uriStr);
+			uri = new URI(uriStr);
 		} catch (URISyntaxException e) {
 			throw new ConnectException("could not append the stream type");
 		}
@@ -66,7 +66,8 @@ public class JxioConnection {
 
 	public OutputStream getOutputStream() throws ConnectException {
 		if (output == null) {
-			osCon = new OSConnection(appendStreamType("output"), 0, JxioConnectionServer.msgPoolBuffSize, osMsgPoolCount);
+			osCon = new OSConnection(appendStreamType("output"), 0, JxioConnectionServer.msgPoolBuffSize,
+			        osMsgPoolCount);
 			output = new MultiBufOutputStream(osCon);
 		}
 		return output;

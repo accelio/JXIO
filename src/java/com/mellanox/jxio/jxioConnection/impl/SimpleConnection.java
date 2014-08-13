@@ -61,7 +61,6 @@ public abstract class SimpleConnection {
 			        || session_event == EventName.SESSION_REJECT) { // normal exit
 				connectErrorType = session_event;
 				close = true;
-				closeStream();
 				eqh.breakEventLoop();
 				releaseResources();
 			}
@@ -114,8 +113,7 @@ public abstract class SimpleConnection {
 			} catch (JxioSessionClosedException e) {
 				LOG.debug(this.toString() + " Error sending message: " + e.toString());
 				msgPool.releaseMsg(msg);
-			}
-			catch (JxioGeneralException e) {
+			} catch (JxioGeneralException e) {
 				LOG.error(this.toString() + " Error sending message: " + e.toString());
 				msgPool.releaseMsg(msg);
 			}

@@ -205,7 +205,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 		if (waitingToClose || session == null)
 			return;
 		sendMsg(); // free last msg if needed
-		LOG.info(this.toString() + " closing session sent " + count + " msgs");
+		LOG.info(this.toString() + " closing session processed " + count + " msgs");
 		waitingToClose = true;
 		session.close();
 		while (!sessionClosed) {

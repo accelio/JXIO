@@ -48,22 +48,27 @@ public class MultiBuffInputStream extends InputStream {
 			}
 			throw new ArrayIndexOutOfBoundsException();
 		}
-		if (inputBuff == null) {
-			inputBuff = supplier.getNextBuffer();
-		}
-		while (totalRead < len) {
-			// bring new buffer if empty
-			if (!inputBuff.hasRemaining()) {
-				inputBuff = supplier.getNextBuffer();
-			}
-			bytesRead = Math.min(len - totalRead, inputBuff.remaining());
-			inputBuff.get(b, off, bytesRead);
-			totalRead += bytesRead;
-			off += bytesRead;
-			if (inputBuff.limit() <= inputBuff.position() && inputBuff.position() != inputBuff.capacity()) {
-				eof = true;
-				return totalRead;
-			}
+		try {
+    		if (inputBuff == null) {
+    			inputBuff = supplier.getNextBuffer();
+    		}
+    		while (totalRead < len) {
+    			// bring new buffer if empty
+    			if (!inputBuff.hasRemaining()) {
+    				inputBuff = supplier.getNextBuffer();
+    			}
+    			bytesRead = Math.min(len - totalRead, inputBuff.remaining());
+    			inputBuff.get(b, off, bytesRead);
+    			totalRead += bytesRead;
+    			off += bytesRead;
+    			if (inputBuff.limit() <= inputBuff.position() && inputBuff.position() != inputBuff.capacity()) {
+    				eof = true;
+    				return totalRead;
+    			}
+    		}
+		} catch (IOException e) {
+			// no buffer available because the other side closed the connection
+			eof = true;
 		}
 		return totalRead;
 	}
