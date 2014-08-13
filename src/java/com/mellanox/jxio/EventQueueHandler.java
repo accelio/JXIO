@@ -569,9 +569,9 @@ public class EventQueueHandler implements Runnable {
 			LOG.fatal(fatalErrorStr);
 			throw new RuntimeException(fatalErrorStr);
 		}
-		if (pool.getInSize() < inSize || pool.getOutSize() > outSize) {
+		if (pool.getInSize() < inSize) {
 			String fatalErrorStr = this.toLogString() + "user failed to provide pool with correct sizes. Expected pool with in=" + 
-					inSize + " out=" + outSize + ". Got: pool with in=" + pool.getInSize() + " out=" + pool.getOutSize() + ".Aborting!!!";
+					inSize + ". Got: pool with in=" + pool.getInSize() + ".Aborting!!!";
 			LOG.fatal(fatalErrorStr);
 			throw new RuntimeException(fatalErrorStr);
 		}
