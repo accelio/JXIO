@@ -114,7 +114,7 @@ public class EventQueueHandler implements Runnable {
 		}
 		if (didExceptionOccur()) {
 			// exception occurred
-			LOG.debug(this.toLogString() + " The exception that occurred was:" + getCaughtException().toString());
+			LOG.debug(this.toLogString() + " The exception that occurred was:" + this.caughtException.toString());
 			throw new RuntimeException(getCaughtException());
 		}
 	}
@@ -588,8 +588,11 @@ public class EventQueueHandler implements Runnable {
 
 	public Exception getCaughtException() {
 		// Return the caught exception and clear it.
-		Exception returnedExeption = caughtException;
-		setCaughtException(null);
+		Exception returnedExeption = null;
+		if (this.caughtException != null){
+			returnedExeption = new Exception(this.caughtException);
+			setCaughtException(null);
+		}
 		return returnedExeption;
 	}
 
