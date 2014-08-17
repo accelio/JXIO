@@ -58,6 +58,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 	private URI                                  uri            = null;
 	private boolean                              firstMsg       = true;
 	private StreamWorker                         streamWorker;
+	private boolean                              notifyClose    = false;
 
 	/**
 	 * CTOR of a server worker, each worker is connected to only 1 client at a time
@@ -95,8 +96,12 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 		while (!stop) {
 			LOG.info(this.toString() + " waiting for a new connection");
 			eqh.runEventLoop(1, -1); // to get the forward going
-			streamWorker.callUserCallback(uri);
-			close();
+			if (notifyClose) {
+				close();
+			} else {
+				streamWorker.callUserCallback(uri);
+				close();
+			}
 		}
 	}
 
@@ -162,6 +167,9 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 			sendMsg();
 			do {
 				eqh.runEventLoop(1, -1);
+				if (notifyClose) {
+					close();
+				}
 			} while (!sessionClosed && msg == null);
 			if (sessionClosed) {
 				throw new IOException("Session was closed, no buffer avaliable");
@@ -201,7 +209,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 	/**
 	 * Close the session and wait until all msgs are returned to the msgpoll
 	 */
-	public void close() {
+	private synchronized void close() {
 		if (waitingToClose || session == null)
 			return;
 		sendMsg(); // free last msg if needed
@@ -212,6 +220,14 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 			eqh.runEventLoop(-1, -1);
 		}
 		sessionClosed();
+	}
+
+	public void disconnect() {
+		if (waitingToClose)
+			return;
+		notifyClose = true;
+		eqh.breakEventLoop();
+		close();
 	}
 
 	/**
