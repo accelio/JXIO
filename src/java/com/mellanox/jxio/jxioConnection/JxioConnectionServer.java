@@ -127,7 +127,7 @@ public class JxioConnectionServer extends Thread implements WorkerProvider {
 		listen_eqh.stop();
 		close = true;
 		for (Iterator<ServerWorker> it = SPWorkers.iterator(); it.hasNext();) {
-			it.next().close();
+			it.next().disconnect();
 		}
 	}
 
