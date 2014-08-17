@@ -50,9 +50,14 @@ Client::Client(const char* url, long ptrCtx)
 
 	attr.ses_ops = &ses_ops; /* callbacks structure */
 	attr.user_context = NULL; /* no need to pass the server private data */
-	attr.user_context_len = 0;
 
-	this->session = xio_session_create(XIO_SESSION_REQ, &attr, url, 0, 0, this);
+	struct xio_session_params params;
+	memset(&params, 0, sizeof(params));
+	params.type = XIO_SESSION_REQ;
+	params.ses_ops = &ses_ops;
+	params.user_context = this;
+	params.uri = (char*)url;
+	this->session = xio_session_create(&params);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (session == NULL) {
 		CLIENT_LOG_ERR("Error in creating session for Context=%p", ctxClass);
