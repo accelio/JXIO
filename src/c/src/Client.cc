@@ -62,6 +62,7 @@ Client::Client(const char* url, long ptrCtx)
 	if (session == NULL) {
 		CLIENT_LOG_ERR("Error in creating session for Context=%p", ctxClass);
 		error_creating = true;
+		this->con = NULL;
 		return;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
