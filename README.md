@@ -1,6 +1,6 @@
 <h1>JXIO</h1>
 
-JXIO is Java API over AccelIO (C library).</br>
+JXIO is Java API over AccelIO (C library).</br>  
 AccelIO (http://www.accelio.org/) is a high-performance asynchronous reliable messaging and RPC library optimized for hardware acceleration. RDMA and TCP/IP transport are implemented, and other transports, such as shared-memory can take advantage of efficient and convenient API.
 
 
