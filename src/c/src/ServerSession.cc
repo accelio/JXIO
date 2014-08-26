@@ -67,7 +67,7 @@ void ServerSession::set_xio_connection(struct xio_connection* con)
 
 ServerPortal * ServerSession::get_portal_session_event(struct xio_connection* con)
 {
-	if (con == NULL){
+	if (con == NULL) {
 		//the event is Session teardown
 		if (this->forwardee)
 			return this->forwardee;

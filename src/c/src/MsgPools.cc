@@ -60,7 +60,7 @@ bool MsgPools::add_msg_pool(MsgPool* pool)
 Msg* MsgPools::get_msg_from_pool(int in_size, int out_size)
 {
 	//currently all msgPools have the same message sizes
-	if (this->in_size < in_size){
+	if (this->in_size < in_size) {
 		char fatalErrorStr[256];
 		sprintf(fatalErrorStr, "Can not allocate msg with in=%d, while msgPools [%p] is in=%d. Aborting!!!", in_size, this, this->in_size);
 		LOG_FATAL("%s", fatalErrorStr);
@@ -70,7 +70,7 @@ Msg* MsgPools::get_msg_from_pool(int in_size, int out_size)
 		list_pools::iterator it = msg_pool_list.begin();
 		while (it != msg_pool_list.end()) {
 			MsgPool* pool = *it;
-			if (!pool->is_empty()){
+			if (!pool->is_empty()) {
 				return pool->get_msg_from_pool();
 			}
 			it++;

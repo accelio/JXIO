@@ -126,10 +126,10 @@ public class HelloServer {
 			}
 
 			// Send the response
-			try{
+			try {
 				this.server.session.sendResponse(msg);
-			}catch(IOException e){
-				//all exceptions thrown extend IOException
+			} catch (IOException e) {
+				// all exceptions thrown extend IOException
 				LOG.error(e.toString());
 			}
 

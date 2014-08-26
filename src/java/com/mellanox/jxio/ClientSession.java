@@ -208,20 +208,27 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		return true;
 	}
 
+	/**
+	 * @returns true if a user callback was executed due to this event handling
+	 */
 	boolean onEvent(Event ev) {
 		boolean userNotified = false;
 		switch (ev.getEventType()) {
 
 			case 0: // session error event
-				if (LOG.isDebugEnabled()) {
-					LOG.debug(this.toLogString() + "received session event");
-				}
 				if (ev instanceof EventSession) {
 
 					int errorType = ((EventSession) ev).getErrorType();
 					int reason = ((EventSession) ev).getReason();
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(this.toLogString() + "Received Session Event: Type=" + errorType + ", Reason=" + reason);
+					}
 					EventNameImpl eventName = EventNameImpl.getEventByIndex(errorType);
 					switch (eventName) {
+						case SESSION_REJECTED:
+						case SESSION_CLOSING:
+							this.setIsClosing(true);
+							return false;
 						case SESSION_CLOSED:
 							Bridge.deleteClient(this.getId());
 							this.setIsClosing(true);
@@ -264,14 +271,14 @@ public class ClientSession extends EventQueueHandler.Eventable {
 				break;
 
 			case 2: // msg error
-				if (LOG.isDebugEnabled()) {
-					LOG.debug(this.toLogString() + "received msg error event");
-				}
 				EventMsgError evMsgErr;
 				if (ev instanceof EventMsgError) {
 					evMsgErr = (EventMsgError) ev;
 					Msg msg = evMsgErr.getMsg();
 					int reason = evMsgErr.getReason();
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(this.toLogString() + "Received Msg Error Event: Msg=" + msg.toString() + ", Reason=" + reason);
+					}
 					EventReason eventReason = EventReason.getEventByXioIndex(reason);
 					try {
 						userNotified = true;
@@ -288,7 +295,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 			case 3: // session established
 				if (LOG.isDebugEnabled()) {
-					LOG.debug(this.toLogString() + "received session established event");
+					LOG.debug(this.toLogString() + "Received Session Established Event");
 				}
 				try {
 					userNotified = true;
@@ -300,13 +307,13 @@ public class ClientSession extends EventQueueHandler.Eventable {
 				break;
 
 			case 5: // on response
-				if (LOG.isTraceEnabled()) {
-					LOG.trace(this.toLogString() + "received msg event");
-				}
 				EventNewMsg evNewMsg;
 				if (ev instanceof EventNewMsg) {
 					evNewMsg = (EventNewMsg) ev;
 					Msg msg = evNewMsg.getMsg();
+					if (LOG.isTraceEnabled()) {
+						LOG.trace(this.toLogString() + "Received Msg Event: OnResponce Msg=" + msg.toString());
+					}
 					try {
 						userNotified = true;
 						callbacks.onResponse(msg);
@@ -322,7 +329,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 				break;
 
 			default:
-				LOG.error(this.toLogString() + "received an unknown event " + ev.getEventType());
+				LOG.error(this.toLogString() + "Received an un-handled event " + ev.getEventType());
 		}
 		return userNotified;
 	}

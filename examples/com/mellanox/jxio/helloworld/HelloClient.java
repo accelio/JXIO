@@ -75,9 +75,9 @@ public class HelloClient {
 		} catch (UnsupportedEncodingException e) {
 			// Just suppress the exception handling in this demo code
 		}
-		try{
+		try {
 			client.sendRequest(msg);
-		}catch(IOException e){
+		} catch (IOException e) {
 			//all exceptions thrown extend IOException
 			LOG.error(e.toString());
 		}
@@ -140,6 +140,9 @@ public class HelloClient {
 
 		public void onMsgError(Msg msg, EventReason reason) {
 			LOG.info("[ERROR] onMsgErrorCallback. reason=" + reason);
+			if (reason == EventReason.MSG_FLUSHED) {
+				LOG.info("[STATUS] getIsClosing() = " + this.client.client.getIsClosing());
+			}
 			msg.returnToParentPool();
 			this.client.exitStatus = 1; // Failure on any kind of error
 			System.exit(exitStatus);

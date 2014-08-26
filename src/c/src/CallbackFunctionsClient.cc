@@ -44,7 +44,7 @@ int on_msg_error_callback_client(struct xio_session *session, enum xio_status er
 		struct xio_msg *msg, void *cb_prv_data)
 {
 	LOG_DBG("got on_msg_error_callback for msg=%p. error status is %d", msg->user_context, error);
-	if (error == XIO_E_MSG_DISCARDED){
+	if (error == XIO_E_MSG_DISCARDED) {
 		//since user discarded this msg, he does not need this notification
 		return 0;
 	}
@@ -68,13 +68,11 @@ int on_session_established_callback(struct xio_session *session,
 	Context *ctx = client->get_ctx_class();
 
 	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnSessionEstablishedEvent(buf, client,
-			session, rsp);
+	int sizeWritten = ctx->events->writeOnSessionEstablishedEvent(buf, client, session, rsp);
 	ctx->done_event_creating(sizeWritten);
 
 	return 0;
 }
-
 
 int on_session_event_callback_client(struct xio_session *session,
 		struct xio_session_event_data *event_data, void *cb_prv_data)
@@ -90,7 +88,7 @@ int on_session_event_callback_client(struct xio_session *session,
 		char* buf = ctx->event_queue->get_buffer();
 		int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, client, event_data);
 		ctx->done_event_creating(sizeWritten);
-		if (client->flag_to_delete){
+		if (client->flag_to_delete) {
 			client->deleteObject();
 		}
 	}

@@ -32,9 +32,9 @@ import com.mellanox.jxio.exceptions.*;
  * On each of them a method of interface Callbacks is invoked.
  * User must implement this interface and pass it in c-tor.
  * The events are:
- * 1. onRequest.
- * 2. onSessionEvent.
- * 3. onMsgError.
+ * 1. onRequest
+ * 2. onSessionEvent
+ * 3. onMsgError
  * 
  */
 public class ServerSession extends EventQueueHandler.Eventable {
@@ -232,23 +232,23 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		boolean userNotified = false;
 		switch (ev.getEventType()) {
 			case 0: // session event
-				if (LOG.isDebugEnabled()) {
-					LOG.debug(this.toLogString() + "received session event");
-				}
 				if (ev instanceof EventSession) {
 					int errorType = ((EventSession) ev).getErrorType();
 					int reason = ((EventSession) ev).getReason();
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(this.toLogString() + "Received Session Event: Type=" + errorType + ", Reason=" + reason);
+					}
 					EventNameImpl eventName = EventNameImpl.getEventByIndex(errorType);
 					switch(eventName){
 						case SESSION_CLOSED:
 							this.setIsClosing(true);
 							this.setReceivedClosed(true);
 							// now that the user knows session is closed, object holding session state can be deleted
-							if (this.msgsInUse == 0){
+							if (this.msgsInUse == 0) {
 								if (LOG.isDebugEnabled())
 									LOG.debug(this.toLogString() + "there are no msgs in use, can delete SessionServer");
 								Bridge.deleteSessionServer(this.ptrSesServer);
-							}else{
+							} else {
 								if (LOG.isDebugEnabled())
 									LOG.debug(this.toLogString() + "there are still " + this.msgsInUse + " msgs in use. Can not delete SessionServer");
 							}
@@ -276,20 +276,20 @@ public class ServerSession extends EventQueueHandler.Eventable {
 							}
 							break;
 						default:
-							LOG.error(this.toLogString() + "received an unknown event type" + eventName);
+							LOG.error(this.toLogString() + "Received an un-hadnled event type = " + eventName);
 						}
 				}
 				break;
 
 			case 1: // msg error
-				if (LOG.isDebugEnabled()) {
-					LOG.debug(this.toLogString() + "received msg error event");
-				}
 				EventMsgError evMsgErr;
 				if (ev instanceof EventMsgError) {
 					evMsgErr = (EventMsgError) ev;
 					Msg msg = evMsgErr.getMsg();
 					int reason = evMsgErr.getReason();
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(this.toLogString() + "Received Msg Error Event: Msg=" + msg.toString() + ", Reason=" + reason);
+					}
 					EventReason eventReason = EventReason.getEventByXioIndex(reason);
 					try {
 						userNotified = true;
@@ -307,13 +307,13 @@ public class ServerSession extends EventQueueHandler.Eventable {
 				break;
 
 			case 4: // on request
-				if (LOG.isTraceEnabled()) {
-					LOG.trace(this.toLogString() + "received msg event");
-				}
 				EventNewMsg evNewMsg;
 				if (ev instanceof EventNewMsg) {
 					evNewMsg = (EventNewMsg) ev;
 					Msg msg = evNewMsg.getMsg();
+					if (LOG.isTraceEnabled()) {
+						LOG.trace(this.toLogString() + "Received Msg Event: onRequest Msg=" + msg.toString());
+					}
 					this.msgsInUse++;
 					try {
 						userNotified = true;
@@ -329,7 +329,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 				break;
 
 			default:
-				LOG.error(this.toLogString() + "received an unknown event " + ev.getEventType());
+				LOG.error(this.toLogString() + "Received an un-handled event " + ev.getEventType());
 		}
 		return userNotified;
 	}

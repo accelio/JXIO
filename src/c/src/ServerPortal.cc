@@ -103,14 +103,14 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
 		//no need to delete session from map since we haven't received session_teardown yet
-		if (!ses->ignore_disconnect(event->conn)){
+		if (!ses->ignore_disconnect(event->conn)) {
 			ses->set_is_closing(true);
 		}
 		return NULL;
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
-		if (ses->ignore_disconnect(event->conn)){
+		if (ses->ignore_disconnect(event->conn)) {
 			//there was a forward and this is the initial connection
 			xio_connection_destroy(event->conn);
 			return NULL;
@@ -124,7 +124,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 		ses->set_xio_connection(event->conn);
 		struct xio_connection_attr conn_attr;
 		conn_attr.user_context = ses;
-		if (xio_modify_connection(event->conn, &conn_attr,XIO_CONNECTION_ATTR_USER_CTX)){
+		if (xio_modify_connection(event->conn, &conn_attr,XIO_CONNECTION_ATTR_USER_CTX)) {
 			LOG_ERR("xio_modify_connection for session=%p failed\n",session);
 		}
 		LOG_DBG("xio_modify_connection for session=%p to %p\n",session, ses);

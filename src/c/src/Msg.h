@@ -43,12 +43,12 @@ public:
 	void set_xio_msg_in_size(struct xio_msg *xio_msg, const int in_size);
 	void release_to_pool();
 	void* get_buf() { return buf; }
-	struct xio_msg* get_xio_msg() {return &xio_msg;}
-	struct xio_msg* get_mirror_xio_msg() {return &xio_msg_mirror;}
+	struct xio_msg* get_xio_msg() { return &xio_msg; }
+	struct xio_msg* get_mirror_xio_msg() { return &xio_msg_mirror; }
 	int send_response(const int size);
-	int get_in_size(){return this->in_buf_size;}
-	int get_out_size(){return this->out_buf_size;}
-	bool was_assign_called() {return this->assign_called;}
+	int get_in_size() { return this->in_buf_size; }
+	int get_out_size() { return this->out_buf_size; }
+	bool was_assign_called() { return this->assign_called; }
 	void dump(struct xio_msg *m); //func for debugging only
 
 private:

@@ -39,7 +39,6 @@ public class JxioResourceManager {
 			LOG.debug("returning " + pool);
 		}
 		return pool;
-
 	}
 
 	public static void returnMsgPool(MsgPool pool) {

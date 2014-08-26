@@ -303,9 +303,14 @@ public class EventQueueHandler implements Runnable {
 			this.isClosing = isClosing;
 		}
 		
-		//returns true if eventable can close and false if there are resources to be released by user before close
+		/*
+		 * @returns true if eventable can close and false if there are resources to be released by user before close
+		 */
 		abstract boolean canClose();
 		
+		/*
+		 * @returns true if a user callback was executed due to this event handling
+		 */
 		abstract boolean onEvent(Event ev);
 	}
 

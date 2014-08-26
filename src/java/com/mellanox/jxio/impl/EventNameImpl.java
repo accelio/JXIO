@@ -52,6 +52,11 @@ public enum EventNameImpl {
 	/**
 	 * SESSION_ERROR is received by ClientSession, ServerSession and ServerPortal.
 	 */
+	SESSION_CLOSING(6, 4),
+	SESSION_REJECTED(7, 4),
+	/**
+	 * SESSION_ERROR is received by ClientSession, ServerSession and ServerPortal.
+	 */
 	SESSION_ERROR(9, 3),
 	/**
 	 * Unknown event

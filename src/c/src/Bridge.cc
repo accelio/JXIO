@@ -299,7 +299,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_deleteC
 {
 	Client *ses = (Client*)ptrSes;
 	ses->ref_counter--;
-	if (ses->ref_counter == 0){
+	if (ses->ref_counter == 0) {
 		LOG_DBG("deleting client");
 		delete (ses);
 	}
@@ -356,7 +356,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_stopServerP
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSessionServerNative(JNIEnv *env, jclass cls, jlong ptr_ses_server)
 {
 	ServerSession *jxio_session = (ServerSession*) ptr_ses_server;
-	if (!jxio_session){
+	if (!jxio_session) {
 		LOG_DBG("ERROR. closing empty session");
 		return;
 	}
@@ -507,7 +507,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_deleteSessi
 	ServerSession * ses = (ServerSession*) ptr_ses_server;
 	xio_connection* con = ses->get_xio_connection();
 	LOG_DBG("destroying connection %p for session %p", con, ses->get_xio_session());
-	if (xio_connection_destroy(con)){
+	if (xio_connection_destroy(con)) {
 		LOG_ERR("error destroying connection %p for session %p", con, ses->get_xio_session());
 	}
 }
