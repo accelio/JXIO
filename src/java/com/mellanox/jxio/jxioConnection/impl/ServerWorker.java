@@ -58,7 +58,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 	private URI                                  uri            = null;
 	private boolean                              firstMsg       = true;
 	private StreamWorker                         streamWorker;
-	private boolean                              notifyClose    = false;
+	private boolean                              notifyDisconnect    = false;
 
 	/**
 	 * CTOR of a server worker, each worker is connected to only 1 client at a time
@@ -96,12 +96,15 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 		while (!stop) {
 			LOG.info(this.toString() + " waiting for a new connection");
 			eqh.runEventLoop(1, -1); // to get the forward going
-			if (notifyClose) {
+			if (notifyDisconnect) {
 				close();
 			} else {
 				streamWorker.callUserCallback(uri);
 				close();
 			}
+			if (notifyDisconnect) {
+				stop = true;
+			}	
 		}
 	}
 
@@ -121,10 +124,6 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 	 */
 	public void prepareSession(ServerSession ss, URI uri) {
 		session = ss;
-		sessionClosed = false;
-		waitingToClose = false;
-		msg = null;
-		count = 0;
 		this.uri = uri;
 		firstMsg = true;
 		String type = getStreamType();
@@ -150,6 +149,10 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 	 */
 	private void sessionClosed() {
 		LOG.info(this.toString() + " disconnected from a Session");
+		sessionClosed = false;
+		waitingToClose = false;
+		msg = null;
+		count = 0;
 		session = null;
 	}
 
@@ -167,7 +170,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 			sendMsg();
 			do {
 				eqh.runEventLoop(1, -1);
-				if (notifyClose) {
+				if (notifyDisconnect) {
 					close();
 				}
 			} while (!sessionClosed && msg == null);
@@ -223,11 +226,10 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 	}
 
 	public void disconnect() {
+		notifyDisconnect = true;
 		if (waitingToClose)
 			return;
-		notifyClose = true;
 		eqh.breakEventLoop();
-		close();
 	}
 
 	/**

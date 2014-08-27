@@ -124,11 +124,11 @@ public class JxioConnectionServer extends Thread implements WorkerProvider {
 	 * Disconnect the server and all worker threads, This can't be undone
 	 */
 	public void disconnect() {
-		listen_eqh.stop();
 		close = true;
 		for (Iterator<ServerWorker> it = SPWorkers.iterator(); it.hasNext();) {
 			it.next().disconnect();
 		}
+		listen_eqh.stop();
 	}
 
 	@Override
