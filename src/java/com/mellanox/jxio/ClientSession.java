@@ -158,23 +158,28 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	 *            - Msg to be sent to Server
 	 * @throws JxioSessionClosedException
 	 *             if session already closed. In case exception is thrown, msg needs to be returned to pool
+	 * @throws JxioQueueOverflowException
+	 *             if the queue overflowed when trying to send
 	 * @throws JxioGeneralException
 	 *             if send failed for any other reason *
 	 */
-	public void sendRequest(Msg msg) throws JxioGeneralException, JxioSessionClosedException {
+	public void sendRequest(Msg msg) throws JxioGeneralException, JxioSessionClosedException, JxioQueueOverflowException {
 		if (this.getIsClosing()) {
 			LOG.warn(this.toLogString() + "Trying to send message while session is closing");
 			throw new JxioSessionClosedException("sendRequest");
 		}
 		int ret = Bridge.clientSendReq(this.getId(), msg.getId(), msg.getOut().position(), msg.getIsMirror());
 		if (ret > 0) {
-			if (ret != EventReason.SESSION_DISCONNECTED.getIndex()) {
+			if (ret == EventReason.SESSION_DISCONNECTED.getIndex()) {
+				LOG.debug(this.toLogString() + "message send failed because the session is already closed!");
+				throw new JxioSessionClosedException("sendRequest");
+			} else if (ret == EventReason.TX_QUEUE_OVERFLOW.getIndex()) {
+				LOG.debug(this.toLogString() + "queue overflow occurred!");
+				throw new JxioQueueOverflowException("sendRequest");
+			} else {
 				LOG.debug(this.toLogString() + "there was an error sending the message because of reason " + ret);
 				LOG.debug(this.toLogString() + "unhandled exception. reason is " + ret);
-				throw new JxioGeneralException(ret, "sendResponse");
-			} else {
-				LOG.debug(this.toLogString() + "message send failed because the session is already closed!");
-				throw new JxioSessionClosedException("sendResponse");
+				throw new JxioGeneralException(ret, "sendRequest");
 			}
 		}
 		msg.setClientSession(this);

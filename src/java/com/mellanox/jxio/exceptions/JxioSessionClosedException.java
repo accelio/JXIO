@@ -18,8 +18,6 @@ package com.mellanox.jxio.exceptions;
 
 import java.io.IOException;
 
-import com.mellanox.jxio.EventReason;
-
 
 public class JxioSessionClosedException extends IOException {
 	String s;

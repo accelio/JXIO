@@ -13,6 +13,7 @@ import com.mellanox.jxio.EventReason;
 import com.mellanox.jxio.Msg;
 import com.mellanox.jxio.MsgPool;
 import com.mellanox.jxio.exceptions.JxioGeneralException;
+import com.mellanox.jxio.exceptions.JxioQueueOverflowException;
 import com.mellanox.jxio.exceptions.JxioSessionClosedException;
 
 public abstract class SimpleConnection {
@@ -111,6 +112,9 @@ public abstract class SimpleConnection {
 			try {
 				cs.sendRequest(msg);
 			} catch (JxioSessionClosedException e) {
+				LOG.debug(this.toString() + " Error sending message: " + e.toString());
+				msgPool.releaseMsg(msg);
+			} catch (JxioQueueOverflowException e) {
 				LOG.debug(this.toString() + " Error sending message: " + e.toString());
 				msgPool.releaseMsg(msg);
 			} catch (JxioGeneralException e) {
