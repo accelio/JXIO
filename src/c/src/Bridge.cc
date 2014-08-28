@@ -474,9 +474,11 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_serverSendR
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_discardRequestNative(JNIEnv *env, jclass cls, jlong ptr_msg)
 {
 	Msg * msg = (Msg*) ptr_msg;
-	bool status = xio_send_response(msg->get_xio_msg());
-	if (status == false)
+	bool status = true;
+	if (xio_send_response(msg->get_xio_msg())){
 		LOG_DBG("Got error from releasing xio_msg: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
+		status = false;
+	}
 	msg->release_to_pool();
 	return status;
 }
