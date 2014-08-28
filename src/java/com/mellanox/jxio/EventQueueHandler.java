@@ -156,51 +156,31 @@ public class EventQueueHandler implements Runnable {
 		boolean is_infinite_events = (maxEvents == -1) ? true : false;
 
 		this.elapsedTime.resetStartTime();
-		int eventsHandled = 0;
+		int eventsHandledByUser = 0;
 
 		long remainingTimeOutMicroSec = timeOutMicroSec;
-		while (!this.breakLoop && ((is_infinite_events) || (maxEvents > eventsHandled))
+		while (!this.breakLoop && ((is_infinite_events) || (maxEvents > eventsHandledByUser))
 		        && ((is_forever) || (!this.elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
 
+    		remainingTimeOutMicroSec = timeOutMicroSec - this.elapsedTime.getElapsedTimeMicro();
+
 			if (LOG.isTraceEnabled()) {
-				LOG.trace(this.toLogString()
-				        + "in loop with "
-				        + eventsWaitingInQ
-				        + " events in Q. handled "
-				        + eventsHandled
-				        + " events out of "
-				        + maxEvents
-				        + ", "
-				        + "elapsed time is "
-				        + this.elapsedTime.getElapsedTimeMicro()
-				        + " usec (blocking for "
-				        + ((is_forever) ? "infinite duration)" : "a max duration of " + remainingTimeOutMicroSec / 1000
-				                + " msec.)"));
+				LOG.trace(this.toLogString() + "in loop with " + eventsWaitingInQ + " events in Q. handled " + eventsHandledByUser + " events out of "
+				        + maxEvents + ", " + "elapsed time is " + this.elapsedTime.getElapsedTimeMicro() + " usec (blocking for "
+				        + ((is_forever) ? "infinite duration)" : "a max duration of " + remainingTimeOutMicroSec / 1000 + " msec.)"));
 			}
 
-			if (eventsWaitingInQ <= 0) { // the event queue is empty now, get more events from libxio
-				int[] retVal = Bridge.runEventLoop(getId(), remainingTimeOutMicroSec);
-				eventsWaitingInQ = retVal[0];
-				eventQueue.position(retVal[1]);
-			}
-			remainingTimeOutMicroSec = timeOutMicroSec - this.elapsedTime.getElapsedTimeMicro();
-
-			// process in eventQueue pending events
-			if (eventsWaitingInQ > 0) {
-				if (handleEvent(eventQueue)) {
-					eventsHandled++;
-				}
-				eventsWaitingInQ--;
-			}
+    		if (handleQueueEvents(remainingTimeOutMicroSec))
+    			eventsHandledByUser++;
 		}
 
 		this.breakLoop = false;
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(this.toLogString() + "returning with " + eventsWaitingInQ + " events in Q. handled "
-			        + eventsHandled + " events, elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec.");
+			        + eventsHandledByUser + " events, elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec.");
 		}
 		this.inRunLoop = false;
-		return !didExceptionOccur() ? eventsHandled : -1;
+		return !didExceptionOccur() ? eventsHandledByUser : -1;
 	}
 
 	/**
@@ -244,18 +224,17 @@ public class EventQueueHandler implements Runnable {
 		while (!this.eventables.isEmpty()) {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug(this.toLogString() + "attempting to close EQH while objects " + this.eventables.keySet()
-				        + " are still listening.");
+				        + " are still listening");
 			}
 			int waitForEvent = 0;
 			Iterator<Eventable> it = this.eventables.values().iterator();
 			while (it.hasNext()) {
 				Eventable ev = it.next();
 				if (!ev.getIsClosing()) {
-					if (ev.canClose()){
+					if (ev.canClose()) {
 						ev.close();
-						if (LOG.isDebugEnabled()) 
-							LOG.debug(this.toLogString() + "closing eventable" + ev.toString() + " with refToCObject "
-							        + ev.getId());
+						if (LOG.isDebugEnabled())
+							LOG.debug(this.toLogString() + "closing eventable" + ev.toString() + " with refToCObject " + ev.getId());
 					} else {
 						LOG.debug(this.toLogString() + "ERROR: User is using resources. object " + ev.toString() + "can not close");
 						return false;
@@ -263,8 +242,9 @@ public class EventQueueHandler implements Runnable {
 				}
 				waitForEvent++;
 			}
-			if (waitForEvent != 0) {
-				runEventLoop(waitForEvent, -1);
+			while (waitForEvent > 0) {
+				handleQueueEvents(-1);
+				waitForEvent--;
 			}
 		}
 		if (LOG.isDebugEnabled()) {
@@ -348,6 +328,32 @@ public class EventQueueHandler implements Runnable {
 	Msg getAndremoveMsgInUse(long id) {
 		Msg msg = msgsPendingReply.remove(id);
 		return msg;
+	}
+
+	/**
+     * Internal event queue progress helper function. This function will cause all depending objects callbacks to be activated
+     * respectfully on new event occur. the calling thread will handle a single event or block for a total duration of 'timeOutMicroSec' 
+     * 
+     * @param timeOutMicroSec :
+     *            function will block until max duration of timeOut (measured in micro-sec) or at least 1 event was handled
+     * @return 'true'  if a user callback was processed, 
+     *         'false' if a timeout or an internal event was handled (no user callback)
+     */
+	private boolean handleQueueEvents(long timeOutMicroSec) {
+
+		// process a pending events from the eventQueue 
+		if (eventsWaitingInQ > 0) {
+			boolean userCallackIssued = handleEvent(eventQueue);
+			eventsWaitingInQ--;
+			return userCallackIssued;
+		}
+
+		// the event queue is empty now, get more events from libxio or block for maxTimeout duration
+		// if (eventsWaitingInQ <= 0) {
+		int[] retVal = Bridge.runEventLoop(getId(), timeOutMicroSec);
+		eventsWaitingInQ = retVal[0];
+		eventQueue.position(retVal[1]);
+		return false;
 	}
 
 	private boolean handleEvent(ByteBuffer eventQueue) {

@@ -229,7 +229,6 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	}
 
 	boolean onEvent(Event ev) {
-		boolean userNotified = false;
 		switch (ev.getEventType()) {
 			case 0: // session event
 				if (ev instanceof EventSession) {
@@ -255,26 +254,21 @@ public class ServerSession extends EventQueueHandler.Eventable {
 							EventName eventNameForApp = EventName.getEventByIndex(eventName.getPublishedIndex());
 							EventReason eventReason = EventReason.getEventByXioIndex(reason);
 							try {
-								userNotified = true;
 								callbacks.onSessionEvent(eventNameForApp, eventReason);
 							} catch (Exception e) {
 								eqhMsg.setCaughtException(e);
 								LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
 							}
-							break;
-							//internal event
+							return true;
+
+						//internal event
 						case SESSION_TEARDOWN:
 							// now we are officially done with this session and it can  be deleted from the EQH
 							removeFromEQHs(); 
 							// need to delete this Session from the set in ServerPortal
 							this.creator.removeSession(this);
-							//if eqh is in state of closing that means we are waiting for the teardown event to close the eqh,
-							//so we need to count it in the runeventloop.
-							//if not closing than no need to count the event since it's not going up to the user
-							if (eqhSession.isClosing) {
-								userNotified = true;
-							}
-							break;
+							return false;
+						
 						default:
 							LOG.error(this.toLogString() + "Received an un-hadnled event type = " + eventName);
 						}
@@ -292,7 +286,6 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					}
 					EventReason eventReason = EventReason.getEventByXioIndex(reason);
 					try {
-						userNotified = true;
 						if (callbacks.onMsgError(msg, eventReason)) {
 							// the user is finished with the Msg and it can be released
 							this.returnOnMsgError(msg);
@@ -301,6 +294,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 						eqhMsg.setCaughtException(e);
 						LOG.debug(this.toLogString() + " [onMsgError] Callback exception occurred. Msg was " + msg.toString());
 					}
+					return true;
 				} else {
 					LOG.error(this.toLogString() + "Event is not an instance of EventMsgError");
 				}
@@ -316,22 +310,21 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					}
 					this.msgsInUse++;
 					try {
-						userNotified = true;
 						callbacks.onRequest(msg);
 					} catch (Exception e) {
 						eqhMsg.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onRequest] Callback exception occurred. Msg was " + msg.toString());
 					}
+					return true;
 				} else {
 					LOG.error(this.toLogString() + "Event is not an instance of EventNewMsg");
 				}
-
 				break;
 
 			default:
 				LOG.error(this.toLogString() + "Received an un-handled event " + ev.getEventType());
 		}
-		return userNotified;
+		return false;
 	}
 
 	private void removeFromEQHs() {

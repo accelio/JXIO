@@ -217,7 +217,6 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	 * @returns true if a user callback was executed due to this event handling
 	 */
 	boolean onEvent(Event ev) {
-		boolean userNotified = false;
 		switch (ev.getEventType()) {
 
 			case 0: // session error event
@@ -230,10 +229,12 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					}
 					EventNameImpl eventName = EventNameImpl.getEventByIndex(errorType);
 					switch (eventName) {
+						// Internal event
 						case SESSION_REJECTED:
 						case SESSION_CLOSING:
 							this.setIsClosing(true);
 							return false;
+
 						case SESSION_CLOSED:
 							Bridge.deleteClient(this.getId());
 							this.setIsClosing(true);
@@ -241,37 +242,33 @@ public class ClientSession extends EventQueueHandler.Eventable {
 								//last event for this client
 								eqh.removeEventable(this);
 							break;
+
 						case SESSION_REJECT:
 							// SESSION_CLOSED will arrive after SESSION_REJECT and then ClientSeesion will be deleted
 							// from EQH
 							this.setIsClosing(true);
 							this.rejected = true;
 							break;
+
 						// Internal event
 						case SESSION_TEARDOWN:
 							// now we are officially done with this session and it can be deleted from the EQH
-							if (LOG.isDebugEnabled()) {
-								LOG.debug(this.toLogString() + "received SESSION_TEARDOWN - internal event");
-							}
 							eqh.removeEventable(this);
-							// if eqh is in state of closing that means we are waiting for the teardown event to close
-							// the eqh,
-							// so we need to count it in the runeventloop.
-							// if not closing than no need to count the event since it's not going up to the user
-							return eqh.isClosing;
+							return false;
+
 						default:
 							break;
 					}
 					EventName eventNameForApp = EventName.getEventByIndex(eventName.getPublishedIndex());
 					EventReason eventReason = EventReason.getEventByXioIndex(reason);
 					try {
-						userNotified = true;
 						callbacks.onSessionEvent(eventNameForApp, eventReason);
 					} catch (Exception e) {
 						eqh.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was "
 						        + eventName.toString());
 					}
+					return true;
 				}
 				break;
 
@@ -286,13 +283,13 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					}
 					EventReason eventReason = EventReason.getEventByXioIndex(reason);
 					try {
-						userNotified = true;
 						callbacks.onMsgError(msg, eventReason);
 					} catch (Exception e) {
 						eqh.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onMsgError] Callback exception occurred. Msg was "
 						        + msg.toString());
 					}
+					return true;
 				} else {
 					LOG.error(this.toLogString() + "Event is not an instance of EventMsgError");
 				}
@@ -303,13 +300,12 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					LOG.debug(this.toLogString() + "Received Session Established Event");
 				}
 				try {
-					userNotified = true;
 					callbacks.onSessionEstablished();
 				} catch (Exception e) {
 					eqh.setCaughtException(e);
 					LOG.debug(this.toLogString() + "[onSessionEstablished] Callback exception occurred.");
 				}
-				break;
+				return true;
 
 			case 5: // on response
 				EventNewMsg evNewMsg;
@@ -320,13 +316,13 @@ public class ClientSession extends EventQueueHandler.Eventable {
 						LOG.trace(this.toLogString() + "Received Msg Event: OnResponce Msg=" + msg.toString());
 					}
 					try {
-						userNotified = true;
 						callbacks.onResponse(msg);
 					} catch (Exception e) {
 						eqh.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onResponse] Callback exception occurred. Msg was "
 						        + msg.toString());
 					}
+					return true;
 				} else {
 					LOG.error(this.toLogString() + "Event is not an instance of EventNewMsg");
 				}
@@ -336,7 +332,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 			default:
 				LOG.error(this.toLogString() + "Received an un-handled event " + ev.getEventType());
 		}
-		return userNotified;
+		return false;
 	}
 
 	boolean canClose() {
