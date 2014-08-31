@@ -162,12 +162,16 @@ public class EventQueueHandler implements Runnable {
 		while (!this.breakLoop && ((is_infinite_events) || (maxEvents > eventsHandledByUser))
 		        && ((is_forever) || (!this.elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
 
-    		remainingTimeOutMicroSec = timeOutMicroSec - this.elapsedTime.getElapsedTimeMicro();
+			if (is_forever == false) {
+				remainingTimeOutMicroSec = timeOutMicroSec - this.elapsedTime.getElapsedTimeMicro();
+				if (remainingTimeOutMicroSec < 0)
+					remainingTimeOutMicroSec = 0;
+			}
 
 			if (LOG.isTraceEnabled()) {
 				LOG.trace(this.toLogString() + "in loop with " + eventsWaitingInQ + " events in Q. handled " + eventsHandledByUser + " events out of "
-				        + maxEvents + ", " + "elapsed time is " + this.elapsedTime.getElapsedTimeMicro() + " usec (blocking for "
-				        + ((is_forever) ? "infinite duration)" : "a max duration of " + remainingTimeOutMicroSec / 1000 + " msec.)"));
+				        + maxEvents + ", " + "elapsed time is " + String.format("%,d", this.elapsedTime.getElapsedTimeMicro()) + " usec (blocking for "
+				        + ((is_forever) ? "infinite duration)" : "a max duration of " + String.format("%,d", remainingTimeOutMicroSec) + " usec)"));
 			}
 
     		if (handleQueueEvents(remainingTimeOutMicroSec))
@@ -177,7 +181,7 @@ public class EventQueueHandler implements Runnable {
 		this.breakLoop = false;
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(this.toLogString() + "returning with " + eventsWaitingInQ + " events in Q. handled "
-			        + eventsHandledByUser + " events, elapsed time is " + elapsedTime.getElapsedTimeMicro() + " usec.");
+			        + eventsHandledByUser + " events, elapsed time is " + String.format("%,d", elapsedTime.getElapsedTimeMicro()) + " usec.");
 		}
 		this.inRunLoop = false;
 		return !didExceptionOccur() ? eventsHandledByUser : -1;
