@@ -110,13 +110,11 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
-		if (ses->ignore_disconnect(event->conn)) {
-			//there was a forward and this is the initial connection
+		if (ses->is_reject() || ses->ignore_disconnect(event->conn)) {
+			//there was a forward and this is the initial connection or the session was rejected
 			xio_connection_destroy(event->conn);
 			return NULL;
 		}
-		if (ses->is_reject())
-			return NULL;
 		return ses->get_ctx();
 
 	case XIO_SESSION_NEW_CONNECTION_EVENT:
