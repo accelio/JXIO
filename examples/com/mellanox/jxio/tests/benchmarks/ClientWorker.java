@@ -1,5 +1,5 @@
 /*
-cd te	 ** Copyright (C) 2013 Mellanox Technologies
+ ** Copyright (C) 2013 Mellanox Technologies
  **
  ** Licensed under the Apache License, Version 2.0 (the "License");
  ** you may not use this file except in compliance with the License.
@@ -51,7 +51,6 @@ public class ClientWorker implements Callable<double[]> {
 	// logger
 	private static Log LOG = LogFactory.getLog(ClientWorker.class.getCanonicalName());
 
-
 	// cTor
 	public ClientWorker(int inMsg_size, int outMsg_size, URI uri, int burst_size, double[] res) {
 		eqh = new EventQueueHandler(new ClientEQHCallbacks());
@@ -84,13 +83,16 @@ public class ClientWorker implements Callable<double[]> {
 				break;
 			}
 			msg.getOut().position(msg.getOut().capacity()); // simulate 'out_msgSize' was written into buffer
-			try{
+			try {
 				cs.sendRequest(msg);
-			}catch(JxioGeneralException e){
+			} catch (JxioGeneralException e) {
 				LOG.error("Error sending: " + e.toString());
 				pool.releaseMsg(msg);
-			}catch(JxioSessionClosedException e){
+			} catch (JxioSessionClosedException e) {
 				LOG.error("Error sending: session closed " + e.toString());
+				pool.releaseMsg(msg);
+			} catch (JxioQueueOverflowException e) {
+				LOG.error("Error sending: queue overflow " + e.toString());
 				pool.releaseMsg(msg);
 			}
 		}
@@ -100,23 +102,23 @@ public class ClientWorker implements Callable<double[]> {
 		pool.deleteMsgPool();
 		return results;
 	}
-	
+
 	// callbacks for the Client's event queue handler
 	public class ClientEQHCallbacks implements EventQueueHandler.Callbacks {
-		//this method should return an unbinded MsgPool.  
-			public MsgPool getAdditionalMsgPool(int inSize, int outSize){
-				System.out.println("Messages in Client's message pool ran out, Aborting test");
-				return null;
-			}
+		// this method should return an unbinded MsgPool.
+		public MsgPool getAdditionalMsgPool(int inSize, int outSize) {
+			System.out.println("Messages in Client's message pool ran out, Aborting test");
+			return null;
+		}
 	}
 
 	class ClientWorkerCallbacks implements ClientSession.Callbacks {
 
 		public void onMsgError(Msg msg, EventReason reason) {
-			if (ClientWorker.this.cs.getIsClosing()){
-				LOG.debug("On Message Error while closing. Reason is="+reason);
-			}else{
-				LOG.error("On Message Error. Reason is="+reason);
+			if (ClientWorker.this.cs.getIsClosing()) {
+				LOG.debug("On Message Error while closing. Reason is=" + reason);
+			} else {
+				LOG.error("On Message Error. Reason is=" + reason);
 			}
 			msg.returnToParentPool();
 		}
@@ -157,17 +159,20 @@ public class ClientWorker implements Callable<double[]> {
 				cnt = 0;
 				startTime = System.nanoTime();
 			}
-			if (!ClientWorker.this.cs.getIsClosing()){
-    			try{
-    				cs.sendRequest(msg);
-    			}catch(JxioGeneralException e){
-    				LOG.error("Error sending: " + e.toString());
-    				pool.releaseMsg(msg);
-    			}catch(JxioSessionClosedException e){
-    				pool.releaseMsg(msg);
-    			}
+			if (!ClientWorker.this.cs.getIsClosing()) {
+				try {
+					cs.sendRequest(msg);
+				} catch (JxioGeneralException e) {
+					LOG.error("Error sending: " + e.toString());
+					pool.releaseMsg(msg);
+				} catch (JxioSessionClosedException e) {
+					LOG.error("Error sending: session closed " + e.toString());
+					pool.releaseMsg(msg);
+				} catch (JxioQueueOverflowException e) {
+					LOG.error("Error sending: queue overflow " + e.toString());
+					pool.releaseMsg(msg);
+				}
 			}
-
 		}
 	}
 }
