@@ -101,6 +101,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 			} else {
 				streamWorker.callUserCallback(uri);
 				close();
+				sessionClosed();
 			}
 			if (notifyDisconnect) {
 				stop = true;
@@ -173,9 +174,12 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 				if (notifyDisconnect) {
 					close();
 				}
-			} while (!sessionClosed && msg == null);
+			} while (!notifyDisconnect && !sessionClosed && msg == null);
 			if (sessionClosed) {
 				throw new IOException("Session was closed, no buffer avaliable");
+			}
+			if (notifyDisconnect) {
+				throw new IOException("Server was closed");
 			}
 		}
 		firstMsg = false;
@@ -255,7 +259,11 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 		}
 
 		public boolean onMsgError(Msg msg, EventReason reason) {
-			LOG.error(this.toString() + " onMsgErrorCallback. reason is " + reason);
+			if (reason == EventReason.MSG_FLUSHED) {
+				LOG.warn(ServerWorker.this.toString() + " onMsgErrorCallback. reason is " + reason);
+			} else {
+				LOG.error(ServerWorker.this.toString() + " onMsgErrorCallback. reason is " + reason);
+			}
 			return true;
 		}
 	}
@@ -274,7 +282,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 
 		public MsgPool getAdditionalMsgPool(int in, int out) {
 			MsgPool mp = new MsgPool(numMsgs, inMsgSize, outMsgSize);
-			LOG.warn(this.toString() + " " + outer.toString() + ": new MsgPool: " + mp);
+			LOG.warn(this.outer.toString() + " " + outer.toString() + ": new MsgPool: " + mp);
 			outer.msgPools.add(mp);
 			return mp;
 		}
