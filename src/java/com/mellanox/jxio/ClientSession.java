@@ -208,7 +208,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		Bridge.closeSessionClient(getId());
 
 		if (LOG.isDebugEnabled()) {
-			LOG.debug(this.toLogString() + "at the end of SessionClient:close()");
+			LOG.debug(this.toLogString() + "close() Done");
 		}
 		return true;
 	}

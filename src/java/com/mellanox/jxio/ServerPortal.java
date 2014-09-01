@@ -148,11 +148,12 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 
 		this.eqh.addEventable(this);
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug(this.toLogString() + "SP CTOR done");
-		}
 		if (workerProvider != null) {
 			this.cache = new WorkerCache(workerProvider);
+		}
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(this.toLogString() + "SP CTOR done");
 		}
 	}
 
@@ -208,6 +209,10 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 
 		Bridge.stopServerPortal(getId());
 		setIsClosing(true);
+
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(this.toLogString() + "close() Done");
+		}
 		return true;
 	}
 

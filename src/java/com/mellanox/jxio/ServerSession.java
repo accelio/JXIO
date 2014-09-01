@@ -111,10 +111,10 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		this.uri = sessionKey.getUri();
 		this.name = "jxio.SS[" + Long.toHexString(getId()) + "]";
 		this.nameForLog = this.name + ": ";
+
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.toLogString() + "listening to " + sessionKey.getUri());
-		}
-		if (LOG.isDebugEnabled()) {
+
 			LOG.debug(this.toLogString() + "SS CTOR done");
 		}
 	}
@@ -138,6 +138,9 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		setIsClosing(true);
 		Bridge.closeServerSession(ptrSesServer);
 
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(this.toLogString() + "close() Done");
+		}
 		return true;
 	}
 
