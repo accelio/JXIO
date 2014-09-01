@@ -158,7 +158,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	 */
 	public void sendResponse(Msg msg) throws JxioGeneralException, JxioSessionClosedException {
 		if (this.getIsClosing()) {
-			LOG.warn(this.toLogString() + "Trying to send message while session is closing");
+			LOG.debug(this.toLogString() + "Trying to send message while session is closing");
 			throw new JxioSessionClosedException("sendResponse");
 		}
 		int ret = Bridge.serverSendResponse(msg.getId(), msg.getOut().position(), ptrSesServer);
