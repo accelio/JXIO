@@ -204,7 +204,7 @@ int Client::send_msg(Msg *msg, const int out_size, bool is_mirror)
 	int ret_val = xio_send_request(this->con, xio_msg);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (ret_val) {
-		CLIENT_LOG_ERR("Error in sending xio_msg: '%s' (%d) (ret_val=%d)", xio_strerror(xio_errno()), xio_errno(), ret_val);
+		CLIENT_LOG_TRACE("Error in sending xio_msg: '%s' (%d) (ret_val=%d)", xio_strerror(xio_errno()), xio_errno(), ret_val);
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 	if (ret_val){
