@@ -28,7 +28,7 @@ public enum EventName {
 	SESSION_REJECT(0),
 	/**
 	 * SESSION_CLOSED received by ClientSession or ServerSession. This event is received after session was properly
-	 * closed (close method is asyncronous). This event is received if either of the sides initiated the close
+	 * closed (close method is asynchronous). This event is received if either of the sides initiated the close
 	 * or if there is internal error on either of the sides
 	 */
 	SESSION_CLOSED(1),

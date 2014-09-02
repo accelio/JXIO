@@ -39,7 +39,7 @@ import java.util.Set;
  * can also accept the session)
  * 2. worker - sessions are redirected to him. The requests from Client will arrive on this portal
  * ServerPortal receives several events on his lifetime. On each of them a method of interface
- * Callbacks is invoked. User must implement this interface and pass it in c-tor.
+ * Callback is invoked. User must implement this interface and pass it in ctor.
  * The events are:
  * 1. onSessionNew
  * 2. onSessionEvent

@@ -230,8 +230,8 @@ public class ClientSession extends EventQueueHandler.Eventable {
 					EventNameImpl eventName = EventNameImpl.getEventByIndex(errorType);
 					switch (eventName) {
 						// Internal event
-						case SESSION_REJECTED:
-						case SESSION_CLOSING:
+						case CONNECTION_REJECTED:
+						case CONNECTION_CLOSING:
 							this.setIsClosing(true);
 							return false;
 

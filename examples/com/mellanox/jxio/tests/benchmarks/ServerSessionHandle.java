@@ -53,11 +53,11 @@ public class ServerSessionHandle {
 		public void onRequest(Msg msg) {
 			// answer back with the same message that was received
 			msg.getOut().position(msg.getOut().capacity()); // simulate 'out_msgSize' was written into buffer
-			try{
+			try {
 				ss.sendResponse(msg);
-			}catch(JxioSessionClosedException e){
+			} catch (JxioSessionClosedException e) {
 				LOG.error("request was not handled. session already closed!");
-			}catch(JxioGeneralException e){
+			} catch (JxioGeneralException e) {
 				LOG.error("request was not handled: " + e.toString());
 			}
 		}
@@ -71,10 +71,10 @@ public class ServerSessionHandle {
 		}
 
 		public boolean onMsgError(Msg msg, EventReason reason) {
-			if (ServerSessionHandle.this.ss.getIsClosing()){
-				LOG.debug("On Message Error while closing. Reason is="+reason);
-			}else{
-				LOG.error("On Message Error. Reason is="+reason);
+			if (ServerSessionHandle.this.ss.getIsClosing()) {
+				LOG.debug("On Message Error while closing. Reason is=" + reason);
+			} else {
+				LOG.error("On Message Error. Reason is=" + reason);
 			}
 			return true;
 		}

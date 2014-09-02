@@ -71,12 +71,12 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		 * Client initiated close or because of an internal error),
 		 * SESSION_ERROR (due to internal error)
 		 * 
-		 * @param session_event
+		 * @param sessionEvent
 		 *            - the event that was triggered
 		 * @param reason
 		 *            - the object containing the reason for triggering session_event
 		 */
-		public void onSessionEvent(EventName session_event, EventReason reason);
+		public void onSessionEvent(EventName sessionEvent, EventReason reason);
 
 		/**
 		 * This event is triggered if there is an error in Msg send/receive. The method returns true
@@ -162,12 +162,12 @@ public class ServerSession extends EventQueueHandler.Eventable {
 			throw new JxioSessionClosedException("sendResponse");
 		}
 		int ret = Bridge.serverSendResponse(msg.getId(), msg.getOut().position(), ptrSesServer);
-		if (ret>0){
+		if (ret > 0) {
 			if (ret != EventReason.SESSION_DISCONNECTED.getIndex()) {
 				LOG.debug(this.toLogString() + "there was an error sending the message because of reason " + ret);
 				LOG.debug(this.toLogString() + "unhandled exception. reason is " + ret);
 				throw new JxioGeneralException(ret, "sendResponse");
-			}else{
+			} else {
 				LOG.debug(this.toLogString() + "message send failed because the session is already closed!");
 				throw new JxioSessionClosedException("sendResponse");
 			}
