@@ -78,13 +78,12 @@ public class ServerPortalWorker extends Thread implements Comparable<ServerPorta
 	
 	// callbacks for the Server's event queue handler
 	public class ServerEQHCallbacks implements EventQueueHandler.Callbacks {
-		//this method should return an unbinded MsgPool.  
-			public MsgPool getAdditionalMsgPool(int inSize, int outSize){
-				System.out.println("Messages in Client's message pool ran out, Aborting test");
-				return null;
-			}
-	}	
-	
+		// this method should return an unbinded MsgPool.
+		public MsgPool getAdditionalMsgPool(int inSize, int outSize) {
+			System.out.println("Messages in Client's message pool ran out, Aborting test");
+			return null;
+		}
+	}
 	
 	@Override
 	public int compareTo(ServerPortalWorker s) {

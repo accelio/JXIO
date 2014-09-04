@@ -79,8 +79,8 @@ public class JxioConnectionServer extends Thread implements WorkerProvider {
 	 */
 	public class PortalServerCallbacks implements ServerPortal.Callbacks {
 
-		public void onSessionEvent(EventName session_event, EventReason reason) {
-			LOG.info(JxioConnectionServer.this.toString() + " GOT EVENT " + session_event.toString() + "because of "
+		public void onSessionEvent(EventName event, EventReason reason) {
+			LOG.info(JxioConnectionServer.this.toString() + " GOT EVENT " + event.toString() + "because of "
 			        + reason.toString());
 		}
 

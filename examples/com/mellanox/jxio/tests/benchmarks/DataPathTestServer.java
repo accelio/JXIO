@@ -93,8 +93,8 @@ public class DataPathTestServer extends DataPathTest implements WorkerProvider {
 			listener.forward(spw.getPortal(), (new ServerSessionHandle(sesKey, spw)).getSession());
 		}
 
-		public void onSessionEvent(EventName session_event, EventReason reason) {
-			LOG.debug("GOT EVENT " + session_event.toString() + "because of " + reason.toString());
+		public void onSessionEvent(EventName event, EventReason reason) {
+			LOG.debug("GOT EVENT " + event.toString() + "because of " + reason.toString());
 		}
 	}
 	

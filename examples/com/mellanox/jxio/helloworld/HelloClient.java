@@ -127,9 +127,9 @@ public class HelloClient {
 			exitStatus = 0; // Success, we got our message response back
 		}
 
-		public void onSessionEvent(EventName session_event, EventReason reason) {
-			String str = "[EVENT] Got event " + session_event + " because of " + reason;
-			if (session_event == EventName.SESSION_CLOSED) { // normal exit
+		public void onSessionEvent(EventName event, EventReason reason) {
+			String str = "[EVENT] Got event " + event + " because of " + reason;
+			if (event == EventName.SESSION_CLOSED) { // normal exit
 				LOG.info(str);
 			} else {
 				this.client.exitStatus = 1; // Failure on any kind of error

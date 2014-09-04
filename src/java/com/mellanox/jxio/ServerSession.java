@@ -71,12 +71,12 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		 * Client initiated close or because of an internal error),
 		 * SESSION_ERROR (due to internal error)
 		 * 
-		 * @param sessionEvent
+		 * @param event
 		 *            - the event that was triggered
 		 * @param reason
-		 *            - the object containing the reason for triggering session_event
+		 *            - the object containing the reason for triggering event
 		 */
-		public void onSessionEvent(EventName sessionEvent, EventReason reason);
+		public void onSessionEvent(EventName event, EventReason reason);
 
 		/**
 		 * This event is triggered if there is an error in Msg send/receive. The method returns true
@@ -241,7 +241,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 						LOG.debug(this.toLogString() + "Received Session Event: Type=" + errorType + ", Reason=" + reason);
 					}
 					EventNameImpl eventName = EventNameImpl.getEventByIndex(errorType);
-					switch(eventName){
+					switch (eventName) {
 						case SESSION_CLOSED:
 							this.setIsClosing(true);
 							this.setReceivedClosed(true);
@@ -273,8 +273,9 @@ public class ServerSession extends EventQueueHandler.Eventable {
 							return false;
 						
 						default:
-							LOG.error(this.toLogString() + "Received an un-hadnled event type = " + eventName);
+							break;
 						}
+					LOG.error(this.toLogString() + "Received an un-hadnled event type = " + eventName);
 				}
 				break;
 
@@ -298,9 +299,8 @@ public class ServerSession extends EventQueueHandler.Eventable {
 						LOG.debug(this.toLogString() + " [onMsgError] Callback exception occurred. Msg was " + msg.toString());
 					}
 					return true;
-				} else {
-					LOG.error(this.toLogString() + "Event is not an instance of EventMsgError");
 				}
+				LOG.error(this.toLogString() + "Event is not an instance of EventMsgError");
 				break;
 
 			case 4: // on request
@@ -319,14 +319,14 @@ public class ServerSession extends EventQueueHandler.Eventable {
 						LOG.debug(this.toLogString() + "[onRequest] Callback exception occurred. Msg was " + msg.toString());
 					}
 					return true;
-				} else {
-					LOG.error(this.toLogString() + "Event is not an instance of EventNewMsg");
 				}
+				LOG.error(this.toLogString() + "Event is not an instance of EventNewMsg");
 				break;
 
 			default:
-				LOG.error(this.toLogString() + "Received an un-handled event " + ev.getEventType());
+				break;
 		}
+		LOG.error(this.toLogString() + "Received an un-handled event " + ev.getEventType());
 		return false;
 	}
 
@@ -342,7 +342,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 
 	}
 
-	boolean canClose(){
+	boolean canClose() {
 		if (this.msgsInUse == 0)
 			return true;
 		LOG.warn(this.toLogString() + "can't be closed. there are " + this.msgsInUse + " waiting to be discarded");

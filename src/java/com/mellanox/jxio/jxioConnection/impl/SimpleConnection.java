@@ -56,11 +56,11 @@ public abstract class SimpleConnection {
 			established = true;
 		}
 
-		public void onSessionEvent(EventName session_event, EventReason reason) {
-			LOG.info(SimpleConnection.this.toString() + " onSessionEvent " + session_event);
-			if (session_event == EventName.SESSION_CLOSED || session_event == EventName.SESSION_ERROR
-			        || session_event == EventName.SESSION_REJECT) { // normal exit
-				connectErrorType = session_event;
+		public void onSessionEvent(EventName event, EventReason reason) {
+			LOG.info(SimpleConnection.this.toString() + " onSessionEvent " + event);
+			if (event == EventName.SESSION_CLOSED || event == EventName.SESSION_ERROR
+			        || event == EventName.SESSION_REJECT) { // normal exit
+				connectErrorType = event;
 				close = true;
 				eqh.breakEventLoop();
 				releaseResources();

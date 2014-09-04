@@ -82,17 +82,16 @@ public class StatClientSession {
 			clients[session_num].close();
 		}
 
-        public void onSessionEvent(EventName session_event, EventReason reason) {
-        	
-        	if (session_event == EventName.SESSION_TEARDOWN){
-        		print(session_num + " Session Teardown");
+		public void onSessionEvent(EventName event, EventReason reason) {
+			if (event == EventName.SESSION_TEARDOWN) {
+				print(session_num + " Session Teardown");
 				clients_count++;
 				if (clients_count == clients.length) {
 					print(session_num + " Stopping Event Loop");
 					eqh.breakEventLoop();
 				}
-        	}
-			print(session_num + "GOT EVENT " + session_event.toString() + " because of " + reason.toString());
+			}
+			print(session_num + "GOT EVENT " + event.toString() + " because of " + reason.toString());
 		}
 
 		public void onResponse(Msg msg) {

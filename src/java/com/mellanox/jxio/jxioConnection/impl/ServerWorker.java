@@ -248,10 +248,10 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 			}
 		}
 
-		public void onSessionEvent(EventName session_event, EventReason reason) {
-			LOG.info(ServerWorker.this.toString() + " got event " + session_event.toString() + ", the reason is "
+		public void onSessionEvent(EventName event, EventReason reason) {
+			LOG.info(ServerWorker.this.toString() + " got event " + event.toString() + ", the reason is "
 			        + reason.toString());
-			if (session_event == EventName.SESSION_CLOSED) {
+			if (event == EventName.SESSION_CLOSED) {
 				sessionClosed = true;
 				waitingToClose = true;
 				eqh.breakEventLoop();

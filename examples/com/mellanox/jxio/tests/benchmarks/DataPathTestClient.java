@@ -67,15 +67,15 @@ public class DataPathTestClient extends DataPathTest {
 			workers.add(new FutureTask<double[]>(cw));
 		}
 		// Create/Open file
-		if(!file_path.equals("no_file")){
+		if (!file_path.equals("no_file")) {
 			write_to_file = true;
-    		try {
-    			fstream = new FileWriter(file_path, true);
-    			out = new BufferedWriter(fstream);
-    		} catch (Exception e) {
-    			LOG.error("Error in opening the results file");
-    			e.printStackTrace();
-    		}
+			try {
+				fstream = new FileWriter(file_path, true);
+				out = new BufferedWriter(fstream);
+			} catch (Exception e) {
+				LOG.error("Error in opening the results file");
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -111,7 +111,7 @@ public class DataPathTestClient extends DataPathTest {
 			double av_TPS = 0;
 			double av_OutBW = 0;
 			double av_InBW = 0;
-			//for(int i=0; i<results.length; i++){
+			//for(int i=0; i<results.length; i++) {
 			//	System.out.println(Arrays.toString(results[i]));
 			//}
 			for (int j = 0; j < (test_iterations * 3) - 1; j += 3) {
@@ -145,17 +145,17 @@ public class DataPathTestClient extends DataPathTest {
 
 	// writes test results into file path given in command line
 	private void writeResultsToFile(double av_TPS, double av_OutBW, double av_InBW) {
-		if(write_to_file){
-    		try {
-    			out.write(inMsg_size + "," + outMsg_size + "," + av_TPS + "," + av_OutBW + "," + av_InBW + "\n");
-    			out.close();
-    		} catch (IOException e) {
-    			LOG.error("error in writing results to file : " + file_path);
-    			e.printStackTrace();
-    		}
-		}else{
-			return;
+		if (write_to_file) {
+			try {
+				out.write(inMsg_size + "," + outMsg_size + "," + av_TPS + "," + av_OutBW + "," + av_InBW + "\n");
+				out.close();
+			} catch (IOException e) {
+				LOG.error("error in writing results to file : " + file_path);
+				e.printStackTrace();
 			}
+		} else {
+			return;
+		}
 	}
 
 	public static void main(String[] args) {

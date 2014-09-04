@@ -604,7 +604,7 @@ public class EventQueueHandler implements Runnable {
 	public Exception getCaughtException() {
 		// Return the caught exception and clear it.
 		Exception returnedExeption = null;
-		if (this.caughtException != null){
+		if (this.caughtException != null) {
 			returnedExeption = new Exception(this.caughtException);
 			setCaughtException(null);
 		}

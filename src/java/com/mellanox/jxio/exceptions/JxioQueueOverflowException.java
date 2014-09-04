@@ -21,12 +21,11 @@ import java.io.IOException;
 public class JxioQueueOverflowException extends IOException {
 	String s;
 
-	public JxioQueueOverflowException(String methodName){
+	public JxioQueueOverflowException(String methodName) {
 		this.s = "A queue overflow occurred. " + methodName + " failed";
 	}
 
-	public String toString(){
+	public String toString() {
 		return this.s;
 	}
-
 }

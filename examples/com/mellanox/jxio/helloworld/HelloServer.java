@@ -95,8 +95,8 @@ public class HelloServer {
 			this.server.server.accept(session);
 		}
 
-		public void onSessionEvent(EventName session_event, EventReason reason) {
-			LOG.info("[EVENT] Got event " + session_event + " because of " + reason);
+		public void onSessionEvent(EventName event, EventReason reason) {
+			LOG.info("[EVENT] Got event " + event + " because of " + reason);
 		}
 	}
 
@@ -138,9 +138,9 @@ public class HelloServer {
 			// this.server.session.close();
 		}
 
-		public void onSessionEvent(EventName session_event, EventReason reason) {
-			String str = "[EVENT] Got event " + session_event + " because of " + reason;
-			if (session_event == EventName.SESSION_CLOSED) { // normal exit
+		public void onSessionEvent(EventName event, EventReason reason) {
+			String str = "[EVENT] Got event " + event + " because of " + reason;
+			if (event == EventName.SESSION_CLOSED) { // normal exit
 				LOG.info(str);
 			} else {
 				LOG.error(str);

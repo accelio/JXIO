@@ -39,7 +39,7 @@ import java.util.Set;
  * can also accept the session)
  * 2. worker - sessions are redirected to him. The requests from Client will arrive on this portal
  * ServerPortal receives several events on his lifetime. On each of them a method of interface
- * Callback is invoked. User must implement this interface and pass it in ctor.
+ * Callbacks is invoked. User must implement this interface and pass it in ctor.
  * The events are:
  * 1. onSessionNew
  * 2. onSessionEvent
@@ -82,12 +82,12 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		/**
 		 * This event is triggered when PORTAL_CLOSED event arrives
 		 * 
-		 * @param session_event
+		 * @param event
 		 *            - the event that was triggered
 		 * @param reason
-		 *            - the object containing the reason for triggerring session_event
+		 *            - the object containing the reason for triggerring event
 		 */
-		public void onSessionEvent(EventName session_event, EventReason reason);
+		public void onSessionEvent(EventName event, EventReason reason);
 	}
 
 	/**
@@ -281,12 +281,12 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		switch (ev.getEventType()) {
 
 			case 0: // session error event
-				if (LOG.isDebugEnabled()) {
-					LOG.debug(this.toLogString() + "received session error event");
-				}
 				if (ev instanceof EventSession) {
 					int errorType = ((EventSession) ev).getErrorType();
 					int reason = ((EventSession) ev).getReason();
+					if (LOG.isDebugEnabled()) {
+						LOG.debug(this.toLogString() + "Received Session Event: Type=" + errorType + ", Reason=" + reason);
+					}
 					EventNameImpl eventName = EventNameImpl.getEventByIndex(errorType);
 
 					if (eventName == EventNameImpl.PORTAL_CLOSED) {
@@ -303,16 +303,17 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 						eqh.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onSessionEvent] Callback exception occurred. Event was " + eventName.toString());
 					}
+					return true;
 				}
 				break;
 
 			case 6: // on new session
 				if (LOG.isDebugEnabled()) {
-					LOG.debug(this.toLogString() + "received new session event");
+					LOG.debug(this.toLogString() + "Received New Session Event");
 				}
 				if (ev instanceof EventNewSession) {
 					long ptrSes = ((EventNewSession) ev).getPtrSes();
-					if (ptrSes == 0){
+					if (ptrSes == 0) {
 						throw new RuntimeException("malloc of class in C failed");
 					}
 					String uri = ((EventNewSession) ev).getUri();
@@ -331,14 +332,15 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 						eqh.setCaughtException(e);
 						LOG.debug(this.toLogString() + "[onSessionNew] Callback exception occurred. Session Key was " + sesKey.toString() + " and source IP was " + srcIP);
 					}
+					return true;
 				}
 				break;
 
 			default:
-				LOG.error(this.toLogString() + "received an unknown event " + ev.getEventType());
-				return false;
+				break;
 		}
-		return true;
+		LOG.error(this.toLogString() + "Received an un-handled event " + ev.getEventType());
+		return false;
 	}
 
 	void removeSession(ServerSession s) {
@@ -374,7 +376,7 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		return newUri;
 	}
 	
-	boolean canClose(){
+	boolean canClose() {
 		return true;
 	}
 

@@ -127,8 +127,8 @@ public class ClientWorker implements Callable<double[]> {
 			LOG.debug("Session established");
 		}
 
-		public void onSessionEvent(EventName session_event, EventReason reason) {
-			if (session_event == EventName.SESSION_CLOSED) {
+		public void onSessionEvent(EventName event, EventReason reason) {
+			if (event == EventName.SESSION_CLOSED) {
 				LOG.debug("closing eqh");
 				eqh.stop();
 			}

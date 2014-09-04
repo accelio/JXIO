@@ -22,13 +22,11 @@ import java.io.IOException;
 public class JxioSessionClosedException extends IOException {
 	String s;
 	
-	public JxioSessionClosedException(String methodName){
+	public JxioSessionClosedException(String methodName) {
 		this.s = "Session is already closed. " + methodName + " failed";
 	}
 	
-	public String toString(){
+	public String toString() {
 		return this.s;
 	}
-
-	
 }

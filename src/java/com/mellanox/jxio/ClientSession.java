@@ -82,7 +82,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		 * @param event
 		 *            - the event that was triggered
 		 * @param reason
-		 *            - the object containing the reason for triggering session_event
+		 *            - the object containing the reason for triggering event
 		 */
 		public void onSessionEvent(EventName event, EventReason reason);
 
@@ -330,8 +330,9 @@ public class ClientSession extends EventQueueHandler.Eventable {
 				break;
 
 			default:
-				LOG.error(this.toLogString() + "Received an un-handled event " + ev.getEventType());
+				break;
 		}
+		LOG.error(this.toLogString() + "Received an un-handled event " + ev.getEventType());
 		return false;
 	}
 
