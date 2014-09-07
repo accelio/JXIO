@@ -168,6 +168,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 				LOG.debug(this.toLogString() + "unhandled exception. reason is " + ret);
 				throw new JxioGeneralException(ret, "sendResponse");
 			} else {
+				setIsClosing(true);
 				LOG.debug(this.toLogString() + "message send failed because the session is already closed!");
 				throw new JxioSessionClosedException("sendResponse");
 			}
