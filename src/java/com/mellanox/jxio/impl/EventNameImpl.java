@@ -34,9 +34,12 @@ public enum EventNameImpl {
 	SESSION_REJECT(0, 0),
 
 	/**
-	 * Session TEARDOWN - Internal event
+	 * SESSION_CLOSED received by ClientSession or ServerSession. 
+	 * This event is received after session was properly
+	 * closed (close method is asynchronous). This event is received if either of the sides initiated the close
+	 * or if there is internal error on either of the sides. Matches connection teardown in Accelio
 	 */
-	SESSION_TEARDOWN(1, -1),
+	SESSION_CLOSED(4, 1),
 
 	/**
 	 * PORTAL_CLOSED is received by ServerPortal. In case the user initiated close
@@ -46,23 +49,21 @@ public enum EventNameImpl {
 	PORTAL_CLOSED(2, 2),
 
 	/**
-	 * SESSION_CLOSED received by ClientSession or ServerSession. 
-	 * This event is received after session was properly
-	 * closed (close method is asynchronous). This event is received if either of the sides initiated the close
-	 * or if there is internal error on either of the sides. Matches connection teardown in Accelio
-	 */
-	SESSION_CLOSED(4, 1),
-
-	/**
 	 * SESSION_ERROR is received by ClientSession, ServerSession and ServerPortal.
 	 */
 	SESSION_ERROR(9, 3),
 
 	/**
-	 * CONNECTION_CLOSING & CONNECTION_REJECTED is an internal event indicating start of XIO CONNECTION CLOSING/REJECTED
+	 * Session TEARDOWN is an internal event
 	 */
-	CONNECTION_CLOSING(6, 4),
-	CONNECTION_REJECTED(7, 5),
+	SESSION_TEARDOWN(1, 4),
+
+	/**
+	 * CONNECTION_CLOSED/DISCONNECTED/REFUSED are internal event indicating start of XIO_SESSION_CONNECTION_CLOSED/DISCONNECTED/REFUSED
+	 */
+	CONNECTION_CLOSED(5, 5),
+	CONNECTION_DISCONNECTED(6, 6),
+	CONNECTION_REFUSED(7, 7),
 
 	/**
 	 * Unknown event

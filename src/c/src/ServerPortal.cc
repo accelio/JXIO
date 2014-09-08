@@ -105,6 +105,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 		//no need to delete session from map since we haven't received session_teardown yet
 		if (!ses->ignore_disconnect(event->conn)) {
 			ses->set_is_closing(true);
+			return ses->get_ctx();
 		}
 		return NULL;
 

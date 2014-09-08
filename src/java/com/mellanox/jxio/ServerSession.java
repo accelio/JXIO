@@ -243,6 +243,12 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					}
 					EventNameImpl eventName = EventNameImpl.getEventByIndex(errorType);
 					switch (eventName) {
+						// Internal event
+						case CONNECTION_CLOSED:
+						case CONNECTION_DISCONNECTED:
+							this.setIsClosing(true);
+							return false;
+
 						case SESSION_CLOSED:
 							this.setIsClosing(true);
 							this.setReceivedClosed(true);

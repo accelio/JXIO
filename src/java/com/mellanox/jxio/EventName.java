@@ -26,18 +26,21 @@ public enum EventName {
 	 * SESSION_REJECT is received by ClientSession in case the server chose to reject the session
 	 */
 	SESSION_REJECT(0),
+
 	/**
 	 * SESSION_CLOSED received by ClientSession or ServerSession. This event is received after session was properly
 	 * closed (close method is asynchronous). This event is received if either of the sides initiated the close
 	 * or if there is internal error on either of the sides
 	 */
 	SESSION_CLOSED(1),
+
 	/**
 	 * PORTAL_CLOSED is received by ServerPortal. In case the user initiated close
 	 * of ServerPortal when there are still ServerSessions that are listening on him, all those ServerSessions are
 	 * closed. When all ServerSessions are closed, PORTAL_CLOSED event is received.
 	 */
 	PORTAL_CLOSED(2),
+
 	/**
 	 * SESSION_ERROR is received by ClientSession, ServerSession and ServerPortal.
 	 */
