@@ -164,10 +164,10 @@ public class Bridge {
 		deleteMsgPoolNative(ptrMsgPool);
 	}
 
-	private static native int clientSendReqNative(long ptrSession, long ptrMsg, int size, boolean isMirror);
+	private static native int clientSendReqNative(long ptrSession, long ptrMsg, int out_size, int in_size, boolean is_mirror);
 
-	public static int clientSendReq(final long ptrSession, final long ptrMsg, final int size, boolean isMirror) {
-		int ret = clientSendReqNative(ptrSession, ptrMsg, size, isMirror);
+	public static int clientSendReq(final long ptrSession, final long ptrMsg, final int out_size, final int in_size, final boolean is_mirror) {
+		int ret = clientSendReqNative(ptrSession, ptrMsg, out_size, in_size, is_mirror);
 		return ret;
 	}
 

@@ -182,22 +182,20 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 	}
 }
 
-int Client::send_msg(Msg *msg, const int out_size, bool is_mirror)
+int Client::send_msg(Msg *msg, const int out_size, const int in_size, const bool is_mirror)
 {
 	if (this->is_closing) {
 		CLIENT_LOG_DBG("attempting to send a message while client session is closing");
 		return XIO_E_SESSION_DISCONECTED;
 	}
-	CLIENT_LOG_TRACE("##################### sending msg=%p, size=%d", msg, out_size);
+	CLIENT_LOG_TRACE("sending msg=%p, out_size=%d, in_size=%d", msg, out_size, in_size);
+
 	struct xio_msg *xio_msg;
-	int in_size;
-	if (is_mirror) {
+	if (is_mirror)
 		xio_msg = msg->get_mirror_xio_msg();
-		in_size = msg->get_out_size();
-	} else {
+	else
 		xio_msg = msg->get_xio_msg();
-		in_size = msg->get_in_size();
-	}
+
 	msg->set_xio_msg_out_size(xio_msg, out_size);
 	msg->set_xio_msg_in_size(xio_msg, in_size);
 	int ret_val = xio_send_request(this->con, xio_msg);
