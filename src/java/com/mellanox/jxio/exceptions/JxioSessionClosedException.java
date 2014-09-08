@@ -18,7 +18,7 @@ package com.mellanox.jxio.exceptions;
 
 import java.io.IOException;
 
-
+@SuppressWarnings("serial")
 public class JxioSessionClosedException extends IOException {
 	String s;
 	

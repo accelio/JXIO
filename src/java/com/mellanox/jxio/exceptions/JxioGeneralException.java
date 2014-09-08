@@ -20,13 +20,19 @@ import java.io.IOException;
 
 import com.mellanox.jxio.EventReason;
 
+@SuppressWarnings("serial")
 public class JxioGeneralException extends IOException {
 	EventReason reason;
 	String      s;
 
 	public JxioGeneralException(int reason, String methodName) {
 		this.reason = EventReason.getEventByXioIndex(reason);
-		this.s = "Got exception '" + this.reason.toString() + "' while calling '" + methodName + "'";
+		formatString(methodName);
+	}
+
+	public JxioGeneralException(EventReason reason, String methodName) {
+		this.reason = reason;
+		formatString(methodName);
 	}
 
 	public EventReason getReason() {
@@ -35,5 +41,9 @@ public class JxioGeneralException extends IOException {
 
 	public String toString() {
 		return this.s;
+	}
+
+	private void formatString(String methodName) {
+		this.s = "Got exception '" + this.reason.toString() + "' while calling '" + methodName + "'";
 	}
 }

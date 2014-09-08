@@ -18,6 +18,7 @@ package com.mellanox.jxio.exceptions;
 
 import java.io.IOException;
 
+@SuppressWarnings("serial")
 public class JxioQueueOverflowException extends IOException {
 	String s;
 

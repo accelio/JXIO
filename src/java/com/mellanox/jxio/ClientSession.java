@@ -171,8 +171,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		if (this.getId() == 0)
 		{
 			LOG.warn(this.toLogString() + "can not send, error in session create");
-			//connect error
-			throw new JxioGeneralException(EventReason.JXIO_GENERAL_ERROR.getIndex() + 3, "sendRequest");
+			throw new JxioGeneralException(EventReason.CONNECT_ERROR, "sendRequest");
 		}
 		final int in_size = msg.getIsMirror() ? msg.getMirror(false).getOut().limit() : msg.getIn().capacity();
 		int ret = Bridge.clientSendReq(this.getId(), msg.getId(), msg.getOut().position(), in_size, msg.getIsMirror());
