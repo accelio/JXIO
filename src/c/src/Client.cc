@@ -60,7 +60,7 @@ Client::Client(const char* url, long ptrCtx)
 	this->session = xio_session_create(&params);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (session == NULL) {
-		CLIENT_LOG_ERR("Error in creating session for Context=%p", ctxClass);
+		CLIENT_LOG_ERR("Error in creating session for Context=%p '%s' (%d)", ctxClass, xio_strerror(xio_errno()), xio_errno());
 		error_creating = true;
 		this->con = NULL;
 		return;
@@ -71,9 +71,8 @@ Client::Client(const char* url, long ptrCtx)
 	this->con = xio_connect(session, ctxClass->ctx, 0, NULL, this);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (con == NULL) {
-		CLIENT_LOG_ERR("Error in creating connection for Context=%p", ctxClass);
+		CLIENT_LOG_ERR("Error in creating connection for Context=%p, session=%p '%s' (%d)", ctxClass, this->session, xio_strerror(xio_errno()), xio_errno());
 		goto cleanupSes;
-
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 
