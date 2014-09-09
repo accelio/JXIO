@@ -197,7 +197,8 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	}
 	
 	/** 
-	 * This method releases Msg to pool after SESSION_CLOSED. This method should be called
+	 * This method releases Msg to pool once session is closing (getIsClosing()==true or 
+	 * after SESSION_CLOSED event). This method should be called
 	 * for msgs that were not in pool in time of SESSION_CLOSED event arrival 
 	 * @param msg - msg to be discarded
 	 * @return true if msg was discarded and false otherwise
@@ -296,6 +297,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 						LOG.debug(this.toLogString() + "Received Msg Error Event: Msg=" + msg.toString() + ", Reason=" + reason);
 					}
 					EventReason eventReason = EventReason.getEventByXioIndex(reason);
+					this.msgsInUse++;
 					try {
 						if (callbacks.onMsgError(msg, eventReason)) {
 							// the user is finished with the Msg and it can be released
