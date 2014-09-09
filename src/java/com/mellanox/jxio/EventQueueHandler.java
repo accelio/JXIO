@@ -566,13 +566,9 @@ public class EventQueueHandler implements Runnable {
 	 * 
 	 * @param msgPool
 	 *            to be released
-	 * @return True if MsgPool was released and false if it wasn't released (for example if EQH is not closing)
 	 */
 
-	public boolean releaseMsgPool(MsgPool msgPool) {
-		if (!this.isClosing)
-			return false;
-		return true;
+	public void releaseMsgPool(MsgPool msgPool) {
 		// TODO implement!
 	}
 
