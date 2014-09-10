@@ -103,11 +103,10 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
 		//no need to delete session from map since we haven't received session_teardown yet
-		if (!ses->ignore_disconnect(event->conn)) {
-			ses->set_is_closing(true);
-			return ses->get_ctx();
-		}
-		return NULL;
+		if (ses->is_reject() || ses->ignore_disconnect(event->conn)) 
+			return NULL;
+		ses->set_is_closing(true);
+		return ses->get_ctx();
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
