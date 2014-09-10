@@ -146,6 +146,9 @@ void Msg::set_xio_msg_in_size(struct xio_msg *xio_msg, const int in_size)
 void Msg::release_to_pool()
 {
 	this->pool->add_msg_to_pool(this);
+	this->assign_called = false;
+	if (this->get_xio_msg()->request)
+		this->get_xio_msg()->request->user_context = NULL;
 }
 
 int Msg::send_response(const int out_size)
