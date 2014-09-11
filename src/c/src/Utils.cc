@@ -116,15 +116,20 @@ bool close_xio_connection(ServerSession* jxio_session)
 {
 	struct xio_session *session = jxio_session->get_xio_session();
 	struct xio_connection *con = jxio_session->get_xio_connection();
-	LOG_DBG("closing connection for session=%p", session);
+	if (!con)
+	{
+		LOG_DBG("ERROR, con is null for jxio_session %p xio_session %p", jxio_session, session);
+		return false;
+	}
+	LOG_DBG("closing connection %p for xio_session=%p, jxio_session=%p", con, session, jxio_session);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (xio_disconnect(con)) {
-		LOG_DBG("ERROR, xio_disconnect failed with error '%s' (%d) (xio_session=%p, conn=%p)",
-				xio_strerror(xio_errno()), xio_errno(), session, con);
+		LOG_DBG("ERROR, xio_disconnect failed with error '%s' (%d) (xio_session=%p, conn=%p, jxio_session=%p)",
+				xio_strerror(xio_errno()), xio_errno(), session, con, jxio_session);
 		return false;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
-	LOG_DBG("successfully closed connection=%p, for session=%p", con, session);
+	LOG_DBG("successfully closed connection=%p, for xio_session=%p, jxio_session=%p", con, session, jxio_session);
 	return true;
 }
 
