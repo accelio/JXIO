@@ -18,6 +18,7 @@
 #include "bullseye.h"
 #include "Utils.h"
 #include "Context.h"
+#include "ServerPortal.h"
 
 #define MODULE_NAME		"Context"
 #define CONTEXT_LOG_ERR(log_fmt, log_args...)  LOG_BY_MODULE(lsERROR, log_fmt, ##log_args)
@@ -33,8 +34,6 @@ Context::Context(int eventQSize)
 	this->event_queue = NULL;
 	this->events = NULL;
 	this->events_num = 0;
-
-	this->offset_read_for_java = 0;
 
 	ctx = xio_context_create(NULL, 0, -1);
 	BULLSEYE_EXCLUDE_BLOCK_START
@@ -67,6 +66,7 @@ Context::Context(int eventQSize)
 
 cleanupEventQueue:
 	delete(this->event_queue);
+	this->internal_event_queue.clear();
 
 cleanupCtx:
 	xio_context_destroy(ctx);
@@ -83,6 +83,7 @@ Context::~Context()
 	}
 
 	delete(this->event_queue);
+	this->internal_event_queue.clear();
 	delete(this->events);
 
 	xio_context_destroy(ctx);
@@ -92,8 +93,13 @@ Context::~Context()
 
 int Context::run_event_loop(long timeout_micro_sec)
 {
-	if (this->events_num !=  0) {
-		CONTEXT_LOG_DBG("there are events that were not created by epoll. no need to call ev_loop_run");
+	if (!this->internal_event_queue.empty()) {
+		CONTEXT_LOG_DBG("there are %d internal events. no need to call ev_loop_run", internal_event_queue.size());
+		while (!this->internal_event_queue.empty()) {
+			// Write internal events to event queue
+                        this->internal_event_queue.front()->writeEventAndDelete();
+			this->internal_event_queue.pop_front();
+		}
 		return this->events_num;
 	}
 
@@ -127,19 +133,11 @@ void Context::add_msg_pool(MsgPool* msg_pool)
 	this->msg_pools.add_msg_pool(msg_pool);
 }
 
-void Context::add_my_event()
-{
-	if (this->events_num == 0) {
-		this->offset_read_for_java = event_queue->get_offset();
-	}
-}
-
 void Context::reset_counters()
 {
 	//update offset to 0: for indication if this is the first callback called
 	this->event_queue->reset();
 	this->events_num = 0;
-	this->offset_read_for_java = 0;
 }
 
 

@@ -64,11 +64,10 @@ public class Bridge {
 
 	}
 
-	private static native int[] runEventLoopNative(long ptr, long timeOutMicroSec);
+	private static native int runEventLoopNative(long ptr, long timeOutMicroSec);
 
-	public static int[] runEventLoop(final long ptrCtx, final long timeOutMicroSec) {
-		int[] ret = runEventLoopNative(ptrCtx, timeOutMicroSec);
-		return ret;
+	public static int runEventLoop(final long ptrCtx, final long timeOutMicroSec) {
+		return runEventLoopNative(ptrCtx, timeOutMicroSec);
 	}
 
 	private static native void breakEventLoopNative(long ptrCtx);

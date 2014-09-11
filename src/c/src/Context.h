@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <deque>
 #include "EventQueue.h"
 #include "Events.h"
 #include "MsgPools.h"
@@ -39,18 +40,16 @@ public:
 	int del_event_loop_fd(int fd);
 	void add_msg_pool(MsgPool* msg_pool);
 	static void on_event_loop_handler(int fd, int events, void *priv_data);
-	void add_my_event();
 	void reset_counters();
 	void done_event_creating(int sizeWritten);
 
 	EventQueue *event_queue;
+	std::deque<ServerPortal*> internal_event_queue;
 	Events *events;
 	bool error_creating;
 	struct xio_context *ctx;
 	int events_num;
 	MsgPools msg_pools;
-	//represents offset from which java will begin to read
-	int offset_read_for_java;
 };
 
 #endif // ! Context__H___

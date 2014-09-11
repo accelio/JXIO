@@ -243,21 +243,10 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeCtxNat
 	LOG_DBG("end of closeCTX");
 }
 
-extern "C" JNIEXPORT jintArray JNICALL Java_com_mellanox_jxio_impl_Bridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx, jlong timeOutMicroSec)
+extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx, jlong timeOutMicroSec)
 {
-	jint temp [2];
 	Context *ctx = (Context *)ptrCtx;
-	jintArray dataToJava = env->NewIntArray(2);
-	BULLSEYE_EXCLUDE_BLOCK_START
-	if (dataToJava == NULL) {
-		return NULL; /* out of memory error thrown */
-	}
-	BULLSEYE_EXCLUDE_BLOCK_END
-	temp[0] = ctx->run_event_loop((long)timeOutMicroSec);
-	temp[1] = ctx->offset_read_for_java;
-	ctx->reset_counters();
-	env->SetIntArrayRegion(dataToJava,0, 2, temp);
-	return dataToJava;
+	return ctx->run_event_loop((long)timeOutMicroSec);
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_breakEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx)
@@ -347,7 +336,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_stopServerP
 	server->is_closing = true;
 	if (server->sessions == 0) {
 		LOG_DBG("there aren't any sessions on server %p. Can close", server);
-		server->writeEventAndDelete(false);
+		server->scheduleWriteEventAndDelete();
 	} else {
 		LOG_DBG("there are %d sessions on server %p", server->sessions, server);
 	}

@@ -354,9 +354,8 @@ public class EventQueueHandler implements Runnable {
 
 		// the event queue is empty now, get more events from libxio or block for maxTimeout duration
 		// if (eventsWaitingInQ <= 0) {
-		int[] retVal = Bridge.runEventLoop(getId(), timeOutMicroSec);
-		eventsWaitingInQ = retVal[0];
-		eventQueue.position(retVal[1]);
+		eventQueue.rewind();
+		eventsWaitingInQ = Bridge.runEventLoop(getId(), timeOutMicroSec);
 		return false;
 	}
 
