@@ -97,7 +97,7 @@ int Context::run_event_loop(long timeout_micro_sec)
 		CONTEXT_LOG_DBG("there are %d internal events. no need to call ev_loop_run", internal_event_queue.size());
 		while (!this->internal_event_queue.empty()) {
 			// Write internal events to event queue
-                        this->internal_event_queue.front()->writeEventAndDelete();
+			this->internal_event_queue.front()->writeEventAndDelete();
 			this->internal_event_queue.pop_front();
 		}
 		return this->events_num;
