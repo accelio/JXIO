@@ -66,7 +66,7 @@ Context::Context(int eventQSize)
 
 cleanupEventQueue:
 	delete(this->event_queue);
-	this->internal_event_queue.clear();
+	this->scheduled_events_queue.clear();
 
 cleanupCtx:
 	xio_context_destroy(ctx);
@@ -83,7 +83,7 @@ Context::~Context()
 	}
 
 	delete(this->event_queue);
-	this->internal_event_queue.clear();
+	this->scheduled_events_queue.clear();
 	delete(this->events);
 
 	xio_context_destroy(ctx);
@@ -93,29 +93,25 @@ Context::~Context()
 
 int Context::run_event_loop(long timeout_micro_sec)
 {
-	if (!this->internal_event_queue.empty()) {
-		CONTEXT_LOG_DBG("there are %d internal events. no need to call ev_loop_run", internal_event_queue.size());
-		while (!this->internal_event_queue.empty()) {
-			// Write internal events to event queue
-			this->internal_event_queue.front()->writeEventAndDelete();
-			this->internal_event_queue.pop_front();
+	reset_counters();
+
+	if (scheduled_events_count() == 0) {
+
+		int timeout_msec = -1; // infinite timeout as default
+		if (timeout_micro_sec == -1) {
+			CONTEXT_LOG_TRACE("before ev_loop_run. requested infinite timeout");
+		} else {
+			timeout_msec = timeout_micro_sec/1000;
+			CONTEXT_LOG_TRACE("before ev_loop_run. requested timeout is %d msec", timeout_msec);
 		}
-		return this->events_num;
+
+		// enter Accelio's event loop
+		xio_context_run_loop(this->ctx, timeout_msec);
 	}
 
-	int timeout_msec = -1; // infinite timeout as default
-	if (timeout_micro_sec == -1) {
-		CONTEXT_LOG_TRACE("before ev_loop_run. requested infinite timeout");
-	} else {
-		timeout_msec = timeout_micro_sec/1000;
-		CONTEXT_LOG_TRACE("before ev_loop_run. requested timeout is %d msec", timeout_msec);
-	}
-
-	// enter Accelio's event loop
-	xio_context_run_loop(this->ctx, timeout_msec);
+	scheduled_events_process();
 
 	CONTEXT_LOG_TRACE("after ev_loop_run. there are %d events", this->events_num);
-
 	return this->events_num;
 }
 
@@ -125,7 +121,6 @@ void Context::break_event_loop(int is_self_thread)
 	xio_context_stop_loop(this->ctx, is_self_thread);
 	CONTEXT_LOG_TRACE("after break event loop (is_self_thread=%d)", is_self_thread);
 }
-
 
 void Context::add_msg_pool(MsgPool* msg_pool)
 {
@@ -140,7 +135,6 @@ void Context::reset_counters()
 	this->events_num = 0;
 }
 
-
 void Context::done_event_creating(int sizeWritten)
 {
 	this->event_queue->increase_offset(sizeWritten);
@@ -151,4 +145,22 @@ void Context::done_event_creating(int sizeWritten)
 		this->break_event_loop(1); // always 'self thread = true' since JXIO break from within callback
 	}
 	this->events_num++;
+}
+
+int Context::scheduled_events_process()
+{
+	CONTEXT_LOG_DBG("going to process %d scheduled events from queue", scheduled_events_count());
+	while (scheduled_events_count() > 0) {
+		// Write internal events to event queue
+		this->scheduled_events_queue.front()->writeEventAndDelete();
+		this->scheduled_events_queue.pop_front();
+	}
+	return this->events_num;
+}
+
+void Context::scheduled_events_add(ServerPortal* sp)
+{
+	CONTEXT_LOG_DBG("adding %p to scheduled event queue. there are already %d scheduled events", scheduled_events_count());
+	this->scheduled_events_queue.push_back(sp);
+	this->break_event_loop(false);
 }

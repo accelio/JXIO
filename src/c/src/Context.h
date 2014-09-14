@@ -42,9 +42,12 @@ public:
 	static void on_event_loop_handler(int fd, int events, void *priv_data);
 	void reset_counters();
 	void done_event_creating(int sizeWritten);
+	inline int scheduled_events_count() { return this->scheduled_events_queue.size(); };
+	void scheduled_events_add(ServerPortal* sp);
+	int scheduled_events_process();
 
 	EventQueue *event_queue;
-	std::deque<ServerPortal*> internal_event_queue;
+	std::deque<ServerPortal*> scheduled_events_queue;
 	Events *events;
 	bool error_creating;
 	struct xio_context *ctx;

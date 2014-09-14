@@ -246,7 +246,6 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeCtxNat
 extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_runEventLoopNative(JNIEnv *env, jclass cls, jlong ptrCtx, jlong timeOutMicroSec)
 {
 	Context *ctx = (Context *)ptrCtx;
-	ctx->reset_counters();
 	return ctx->run_event_loop((long)timeOutMicroSec);
 }
 
