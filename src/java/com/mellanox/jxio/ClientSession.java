@@ -49,6 +49,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	private final String            name;
 	private final String            nameForLog;
 	private boolean                 rejected;
+	private boolean 		established;
 
 	/**
 	 * This interface needs to be implemented and passed to ClientSession in c-tor
@@ -209,6 +210,10 @@ public class ClientSession extends EventQueueHandler.Eventable {
 			LOG.error(this.toLogString() + "closing Session with empty id");
 			return false;
 		}
+		if (!this.established){
+			LOG.warn(this.toLogString() + "attempting to close client that wasn't established yet");
+			return false;
+		}
 		setIsClosing(true);
 
 		Bridge.closeSessionClient(getId());
@@ -306,6 +311,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 				if (LOG.isDebugEnabled()) {
 					LOG.debug(this.toLogString() + "Received Session Established Event");
 				}
+				this.established = true;
 				try {
 					callbacks.onSessionEstablished();
 				} catch (Exception e) {
