@@ -272,6 +272,15 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		Bridge.rejectSession(sesKey.getSessionPtr(), reason.getIndex(), data, data.length());
 	}
 
+	/**
+	 * Get URI server is listening on
+	 * Needed when port is set to 0 on bring up and server chooses a random port
+	 * @return actual uri server is listening on
+	 */
+	public URI getUri() {
+		return uri;
+	}
+
 	private void setSession(ServerSession serverSession) {
 		this.sessions.add(serverSession);
 		serverSession.setPortal(this);
@@ -378,10 +387,6 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	
 	boolean canClose() {
 		return true;
-	}
-
-	private URI getUri() {
-		return uri;
 	}
 
 	public String toString() {
