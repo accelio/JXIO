@@ -149,7 +149,7 @@ void Context::done_event_creating(int sizeWritten)
 
 int Context::scheduled_events_process()
 {
-	CONTEXT_LOG_DBG("going to process %d scheduled events from queue", scheduled_events_count());
+	CONTEXT_LOG_TRACE("going to process %d scheduled events from queue", scheduled_events_count());
 	while (scheduled_events_count() > 0) {
 		// Write internal events to event queue
 		this->scheduled_events_queue.front()->writeEventAndDelete();
@@ -160,7 +160,7 @@ int Context::scheduled_events_process()
 
 void Context::scheduled_events_add(ServerPortal* sp)
 {
-	CONTEXT_LOG_DBG("adding %p to scheduled event queue. there are already %d scheduled events", scheduled_events_count());
+	CONTEXT_LOG_TRACE("adding %p to scheduled event queue. there are already %d scheduled events", sp, scheduled_events_count());
 	this->scheduled_events_queue.push_back(sp);
 	this->break_event_loop(false);
 }
