@@ -1,7 +1,9 @@
 package com.mellanox.jxio.jxioConnection.impl;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.logging.Log;
@@ -13,10 +15,10 @@ import com.mellanox.jxio.MsgPool;
 
 public class JxioResourceManager {
 
-	private final static Log                            LOG      = LogFactory.getLog(JxioResourceManager.class
-	                                                                     .getCanonicalName());
-	private static HashMap<String, LinkedList<MsgPool>> msgPools = new HashMap<String, LinkedList<MsgPool>>();
-	private static ConcurrentLinkedQueue<EventQueueHandler> eqhs = new ConcurrentLinkedQueue<EventQueueHandler>();
+	private final static Log                                LOG      = LogFactory.getLog(JxioResourceManager.class
+	                                                                         .getCanonicalName());
+	private static HashMap<String, LinkedList<MsgPool>>     msgPools = new HashMap<String, LinkedList<MsgPool>>();
+	private static ConcurrentLinkedQueue<EventQueueHandler> eqhs     = new ConcurrentLinkedQueue<EventQueueHandler>();
 
 	public static MsgPool getMsgPool(int size, int in, int out) {
 		MsgPool pool = null;
@@ -77,5 +79,21 @@ public class JxioResourceManager {
 
 	public static void returnEqh(EventQueueHandler eqh) {
 		eqhs.add(eqh);
+	}
+
+	public static void cleanCache() {
+		Iterator<Map.Entry<String, LinkedList<MsgPool>>> iterator = msgPools.entrySet().iterator();
+		while (iterator.hasNext()) {
+			Map.Entry<String, LinkedList<MsgPool>> entry = iterator.next();
+			LinkedList<MsgPool> mps = entry.getValue();
+			for (MsgPool mp : mps) {
+				mp.deleteMsgPool();
+			}
+		}
+		for (EventQueueHandler eqh : eqhs) {
+			eqh.close();
+		}
+		msgPools.clear();
+		eqhs.clear();
 	}
 }
