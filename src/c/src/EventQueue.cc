@@ -15,38 +15,29 @@
 **
 */
 
-#include <map>
 #include <stdexcept>
 
 #include "bullseye.h"
+#include "Utils.h"
 #include "EventQueue.h"
 
-EventQueue::EventQueue(int size)
+EventQueue::EventQueue(size_t size) : size(size)
 {
-	this->offset = 0;
-	this->size = size;
-
-	error_creating = false;
-	this->buf = (char*)malloc(size * sizeof(char));
-	BULLSEYE_EXCLUDE_BLOCK_START
-	if (this->buf== NULL) {
-		LOG_DBG("ERROR, could not allocate memory for Event Queue buffer");
-		error_creating = true;
-		return;
-	}
-	BULLSEYE_EXCLUDE_BLOCK_END
+	this->buf = new char[size]; // might throw a std::bad_alloc() exception
+	reset();
 }
 
 EventQueue::~EventQueue()
 {
-	if (this->buf != NULL) {
-		free(this->buf);
-	}
+	reset();
+	delete this->buf;
 }
 
 void EventQueue::reset()
 {
+	//update offset to 0: for indication if this is the first callback called
 	this->offset = 0;
+	this->count = 0;
 }
 
 char* EventQueue::get_buffer()
@@ -59,9 +50,11 @@ void EventQueue::increase_offset(int increase)
 	this->offset += increase;
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (this->offset > this->size) {
-		const char* fatalErrorStr = "There has been overflow in EventQueue buffer. Aborting!!!";
+		char fatalErrorStr[256];
+		sprintf(fatalErrorStr, "EventQueue buffer overflow ERROR (there are already %d events in queue). Aborting!!!", get_count());
 		LOG_FATAL("%s", fatalErrorStr);
 		throw std::overflow_error(fatalErrorStr);
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
+	this->count++;
 }

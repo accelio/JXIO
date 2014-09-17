@@ -42,12 +42,12 @@ ServerPortal::ServerPortal(const char *url, long ptrCtx)
 	server_ops.on_msg_error = on_msg_error_callback_server;
 
 	struct xio_context *ctx;
-	Context *ctxClass = (Context *) ptrCtx;
-	this->ctx_class =ctxClass;
+	Context *ctxClass = (Context *)ptrCtx;
+	this->ctx_class = ctxClass;
 	this->is_closing = false;
 	this->sessions = 0;
 
-	this->server = xio_bind(ctxClass->ctx, &server_ops, url, &this->port, 0, this);
+	this->server = xio_bind(ctxClass->get_xio_context(), &server_ops, url, &this->port, 0, this);
 
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (this->server == NULL) {
@@ -80,13 +80,12 @@ void ServerPortal::deleteObject()
 void ServerPortal::writeEventAndDelete()
 {
 	Context* ctx = this->get_ctx_class();
-	char* buf = ctx->event_queue->get_buffer();
+	char* buf = ctx->get_buffer();
 	struct xio_session_event_data event_data;
 	event_data.event = static_cast<xio_session_event>(2); // PORTAL_CLOSED
-	event_data.reason = static_cast<xio_status>(0); // SUCCESS
-	ctx->events_num++;
-	int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, this, &event_data);
-	ctx->event_queue->increase_offset(sizeWritten);
+	event_data.reason = static_cast<xio_status>(XIO_E_SUCCESS);
+	int sizeWritten = ctx->events.writeOnSessionErrorEvent(buf, this, &event_data);
+	ctx->done_event_creating(sizeWritten);
 
 	delete this;
 }

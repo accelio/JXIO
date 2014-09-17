@@ -46,14 +46,11 @@ public class Bridge {
 		setLogLevelNative(logLevel);
 	}
 
-	private static native boolean createCtxNative(int eventQueueSize, Object dataFromC);
+	private static native void createCtxNative(int eventQueueSize, Object dataFromC);
 
-	public static boolean createCtx(EventQueueHandler eqh, int eventQueueSize, EventQueueHandler.DataFromC dataFromC) {
-		boolean ret = createCtxNative(eventQueueSize, dataFromC);
-		if (!ret) {
-			Bridge.mapIdEQHObject.put(dataFromC.getPtrCtx(), eqh);
-		}
-		return ret;
+	public static void createCtx(EventQueueHandler eqh, int eventQueueSize, EventQueueHandler.DataFromC dataFromC) {
+		createCtxNative(eventQueueSize, dataFromC);
+		Bridge.mapIdEQHObject.put(dataFromC.getPtrCtx(), eqh);
 	}
 
 	private static native void closeCtxNative(long ptr);
@@ -61,7 +58,6 @@ public class Bridge {
 	public static void closeCtx(final long ptrCtx) {
 		closeCtxNative(ptrCtx);
 		Bridge.mapIdEQHObject.remove(ptrCtx);
-
 	}
 
 	private static native int runEventLoopNative(long ptr, long timeOutMicroSec);

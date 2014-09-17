@@ -25,66 +25,33 @@
 #define CONTEXT_LOG_DBG(log_fmt, log_args...)  LOG_BY_MODULE(lsDEBUG, log_fmt, ##log_args)
 #define CONTEXT_LOG_TRACE(log_fmt, log_args...)  LOG_BY_MODULE(lsTRACE, log_fmt, ##log_args)
 
-Context::Context(int eventQSize)
+Context::Context(size_t events_queue_size) : events_queue(events_queue_size)
 {
 	CONTEXT_LOG_DBG("CTOR start");
 
-	error_creating = false;
-	this->ctx = NULL;
-	this->event_queue = NULL;
-	this->events = NULL;
-	this->events_num = 0;
-
-	ctx = xio_context_create(NULL, 0, -1);
+	this->ctx = xio_context_create(NULL, 0, -1);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (ctx == NULL) {
 		CONTEXT_LOG_ERR("ERROR, xio_context_create failed");
-		error_creating = true;
-		return;
+		throw std::bad_alloc();
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 
 	this->msg_pools.setCtx(this);
 
-	this->event_queue = new EventQueue(eventQSize);
-	BULLSEYE_EXCLUDE_BLOCK_START
-	if (this->event_queue == NULL || this->event_queue->error_creating) {
-		CONTEXT_LOG_ERR("ERROR, fail in create of EventQueue object");
-		goto cleanupCtx;
-	}
-	BULLSEYE_EXCLUDE_BLOCK_END
-
-	this->events = new Events();
-	BULLSEYE_EXCLUDE_BLOCK_START
-	if (this->events == NULL) {
-		goto cleanupEventQueue;
-	}
-	BULLSEYE_EXCLUDE_BLOCK_END
-
 	CONTEXT_LOG_DBG("CTOR done");
 	return;
 
 cleanupEventQueue:
-	delete(this->event_queue);
 	this->scheduled_events_queue.clear();
 
 cleanupCtx:
 	xio_context_destroy(ctx);
-	if (this->event_queue)
-		delete(this->event_queue);
-	error_creating = true;
-
 }
 
 Context::~Context()
 {
-	if (error_creating) {
-		return;
-	}
-
-	delete(this->event_queue);
 	this->scheduled_events_queue.clear();
-	delete(this->events);
 
 	xio_context_destroy(ctx);
 
@@ -93,7 +60,7 @@ Context::~Context()
 
 int Context::run_event_loop(long timeout_micro_sec)
 {
-	reset_counters();
+	reset_events_counters();
 
 	if (scheduled_events_count() == 0) {
 
@@ -111,8 +78,8 @@ int Context::run_event_loop(long timeout_micro_sec)
 
 	scheduled_events_process();
 
-	CONTEXT_LOG_TRACE("after ev_loop_run. there are %d events", this->events_num);
-	return this->events_num;
+	CONTEXT_LOG_TRACE("after ev_loop_run. there are %d events", get_events_count());
+	return get_events_count();
 }
 
 void Context::break_event_loop(int is_self_thread)
@@ -128,23 +95,15 @@ void Context::add_msg_pool(MsgPool* msg_pool)
 	this->msg_pools.add_msg_pool(msg_pool);
 }
 
-void Context::reset_counters()
+void Context::done_event_creating(int size_written)
 {
-	//update offset to 0: for indication if this is the first callback called
-	this->event_queue->reset();
-	this->events_num = 0;
-}
+	this->events_queue.increase_offset(size_written);
 
-void Context::done_event_creating(int sizeWritten)
-{
-	this->event_queue->increase_offset(sizeWritten);
-
-	//need to stop the event queue only if this is the first callback
-	if (!this->events_num) {
+	// need to stop the event queue only if this is the first callback
+	if (get_events_count() == 1) {
 		LOG_TRACE("inside a callback - stopping the event queue");
 		this->break_event_loop(1); // always 'self thread = true' since JXIO break from within callback
 	}
-	this->events_num++;
 }
 
 int Context::scheduled_events_process()
@@ -155,7 +114,7 @@ int Context::scheduled_events_process()
 		this->scheduled_events_queue.front()->writeEventAndDelete();
 		this->scheduled_events_queue.pop_front();
 	}
-	return this->events_num;
+	return get_events_count();
 }
 
 void Context::scheduled_events_add(ServerPortal* sp)

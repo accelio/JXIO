@@ -31,28 +31,36 @@ class MsgPool;
 class Context {
 public:
 	//to move some to private?
-	Context(int size);
+	Context(size_t events_queue_size);
 	~Context();
+
+	inline xio_context* get_xio_context() { return ctx; };
 
 	int run_event_loop(long timeout_micro_sec);
 	void break_event_loop(int is_self_thread);
-	int add_event_loop_fd(int fd, int events, void *priv_data);
-	int del_event_loop_fd(int fd);
+
 	void add_msg_pool(MsgPool* msg_pool);
-	static void on_event_loop_handler(int fd, int events, void *priv_data);
-	void reset_counters();
-	void done_event_creating(int sizeWritten);
+
+	char* get_buffer() { return events_queue.get_buffer(); };
+	void done_event_creating(int size_written);
+	inline int get_events_count() { return events_queue.get_count(); };
+	void reset_events_counters() { this->events_queue.reset();	};
+
 	inline int scheduled_events_count() { return this->scheduled_events_queue.size(); };
 	void scheduled_events_add(ServerPortal* sp);
 	int scheduled_events_process();
 
-	EventQueue *event_queue;
-	std::deque<ServerPortal*> scheduled_events_queue;
-	Events *events;
-	bool error_creating;
-	struct xio_context *ctx;
-	int events_num;
+	int add_event_loop_fd(int fd, int events, void *priv_data);
+	int del_event_loop_fd(int fd);
+	static void on_event_loop_handler(int fd, int events, void *priv_data);
+
+	Events events;
 	MsgPools msg_pools;
+
+private:
+	EventQueue events_queue;
+	std::deque<ServerPortal*> scheduled_events_queue;
+	struct xio_context *ctx;
 };
 
 #endif // ! Context__H___

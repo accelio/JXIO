@@ -39,8 +39,8 @@ int on_new_session_callback(struct xio_session *xio_session, struct xio_new_sess
 	}
 	LOG_DBG("xio_modify_session for session=%p to %p", xio_session, jxio_session);
 
-	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnNewSessionEvent(buf, portal, jxio_session, req);
+	char* buf = ctx->get_buffer();
+	int sizeWritten = ctx->events.writeOnNewSessionEvent(buf, portal, jxio_session, req);
 	ctx->done_event_creating(sizeWritten);
 	return 0;
 }
@@ -90,8 +90,8 @@ int on_msg_callback_server(struct xio_session *xio_session, struct xio_msg *msg,
 		msg_from_pool->set_xio_msg_req(msg);
 	}
 
-	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnRequestReceivedEvent(buf, msg->user_context, msg_in_size, msg_out_size, jxio_session);
+	char* buf = ctx->get_buffer();
+	int sizeWritten = ctx->events.writeOnRequestReceivedEvent(buf, msg->user_context, msg_in_size, msg_out_size, jxio_session);
 
 	ctx->done_event_creating(sizeWritten);
 
@@ -111,9 +111,9 @@ int on_msg_error_callback_server(struct xio_session *xio_session, enum xio_statu
 
 	Context *ctx = portal->get_ctx_class();
 
-	char* buf = ctx->event_queue->get_buffer();
+	char* buf = ctx->get_buffer();
 	//this is server side - send of the response failed
-	int sizeWritten = ctx->events->writeOnMsgErrorEventServer(buf, msg->user_context, jxio_session, error);
+	int sizeWritten = ctx->events.writeOnMsgErrorEventServer(buf, msg->user_context, jxio_session, error);
 	ctx->done_event_creating(sizeWritten);
 
 	return 0;
@@ -132,8 +132,8 @@ int on_session_event_callback_server(struct xio_session *xio_session, struct xio
 
 	Context *ctx = portal->ctxForSessionEvent(event_data, jxio_session);
 	if (ctx) {
-		char* buf = ctx->event_queue->get_buffer();
-		int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, jxio_session, event_data);
+		char* buf = ctx->get_buffer();
+		int sizeWritten = ctx->events.writeOnSessionErrorEvent(buf, jxio_session, event_data);
 		ctx->done_event_creating(sizeWritten);
 		if (portal->flag_to_delete) {
 			portal->deleteObject();

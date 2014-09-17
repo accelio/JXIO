@@ -193,7 +193,7 @@ void Bridge_invoke_logToJava_callback(const int severity, const char* log_messag
 	env->DeleteLocalRef(j_message);
 }
 
-void Bridge_invoke_requestForBoundMsgPool_callback (Context* ctx, int inSize, int outSize)
+void Bridge_invoke_requestForBoundMsgPool_callback(Context* ctx, int inSize, int outSize)
 {
 	JNIEnv *env;
 	BULLSEYE_EXCLUDE_BLOCK_START
@@ -202,7 +202,7 @@ void Bridge_invoke_requestForBoundMsgPool_callback (Context* ctx, int inSize, in
 		return;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
-	long ptrEQH = (jlong)(intptr_t)ctx;
+	long ptrEQH = (jlong) (intptr_t) ctx;
 	env->CallStaticLongMethod(jclassBridge, jmethodID_requestForBoundMsgPool, ptrEQH, inSize, outSize);
 }
 
@@ -212,28 +212,21 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_setLogLevel
 	logs_from_xio_set_threshold(g_log_threshold);
 }
 
-extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_createCtxNative(JNIEnv *env, jclass cls, jint eventQueueSize, jobject dataToC)
+extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_createCtxNative(JNIEnv *env, jclass cls, jint eventQueueSize, jobject dataToC)
 {
 	int size = eventQueueSize;
-	Context *ctx = new Context (size);
-	BULLSEYE_EXCLUDE_BLOCK_START
-	if (ctx == NULL) {
-		LOG_ERR("memory allocation failed");
-		return true;
+	Context *ctx = NULL;
+	jobject jbuf = NULL;
+	try {
+		ctx = new Context(size);
+		jbuf = env->NewDirectByteBuffer(ctx->get_buffer(), eventQueueSize);
+	} catch (std::exception e) {
+		LOG_ERR("failure on new Context()");
+		return;
 	}
-	BULLSEYE_EXCLUDE_BLOCK_END
-	if (ctx->error_creating) {
-		delete (ctx);
-		return true;
-	}
-	jobject jbuf = env->NewDirectByteBuffer(ctx->event_queue->get_buffer(), eventQueueSize );
-
-	jlong ptr = (jlong)(intptr_t) ctx;
-
+	jlong ptr = (jlong)(intptr_t)ctx;
 	env->SetLongField(dataToC, fidPtr, ptr);
 	env->SetObjectField(dataToC, fidBuf, jbuf);
-
-	return ctx->error_creating;
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeCtxNative(JNIEnv *env, jclass cls, jlong ptrCtx)
@@ -262,7 +255,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_startSessi
 		return 0;
 	}
 	const char *url = env->GetStringUTFChars(jurl, NULL);
-	Client * ses = new Client(url, ptrCtx);
+	Client* ses = new Client(url, ptrCtx);
 	env->ReleaseStringUTFChars(jurl, url);
 
 	BULLSEYE_EXCLUDE_BLOCK_START
@@ -275,7 +268,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_startSessi
 		delete (ses);
 		return 0;
 	}
-	return (jlong)(intptr_t) ses;
+	return (jlong)(intptr_t)ses;
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
@@ -418,7 +411,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_rejectS
 extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMsgPoolNative(JNIEnv *env, jclass cls, jint msg_num, jint in_size, jint out_size, jlongArray ptr)
 {
 	jlong temp[msg_num+1];
-	MsgPool *pool = new MsgPool(msg_num, in_size, out_size);
+	MsgPool* pool = new MsgPool(msg_num, in_size, out_size);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (pool == NULL) {
 		LOG_ERR("memory allocation failed");

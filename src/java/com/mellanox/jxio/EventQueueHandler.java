@@ -90,10 +90,7 @@ public class EventQueueHandler implements Runnable {
 			LOG.debug("EQH CTOR entry");
 		}
 		DataFromC dataFromC = new DataFromC();
-		boolean statusError = Bridge.createCtx(this, eventQueueSize, dataFromC);
-		if (statusError) {
-			LOG.error("there was an error creating ctx on c side!");
-		}
+		Bridge.createCtx(this, eventQueueSize, dataFromC);
 		this.eventQueue = dataFromC.eventQueue;
 		this.refToCObject = dataFromC.getPtrCtx();
 		this.elapsedTime = new ElapsedTimeMeasurement();

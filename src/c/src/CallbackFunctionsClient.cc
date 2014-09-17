@@ -32,8 +32,8 @@ int on_msg_callback_client(struct xio_session *session, struct xio_msg *msg,
 	Context *ctx = client->get_ctx_class();
 	struct xio_iovec_ex *sglist = vmsg_sglist(&msg->in);
 
-	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnResponseReceivedEvent(buf, msg->user_context, msg_in_size);
+	char* buf = ctx->get_buffer();
+	int sizeWritten = ctx->events.writeOnResponseReceivedEvent(buf, msg->user_context, msg_in_size);
 	ctx->done_event_creating(sizeWritten);
 	xio_release_response(msg);
 
@@ -51,9 +51,9 @@ int on_msg_error_callback_client(struct xio_session *session, enum xio_status er
 	Client *client = (Client*)cb_prv_data;
 	Context *ctx = client->get_ctx_class();
 
-	char* buf = ctx->event_queue->get_buffer();
+	char* buf = ctx->get_buffer();
 	//this is client side - send of the request failed
-	int sizeWritten = ctx->events->writeOnMsgErrorEventClient(buf, msg->user_context, error);
+	int sizeWritten = ctx->events.writeOnMsgErrorEventClient(buf, msg->user_context, error);
 	ctx->done_event_creating(sizeWritten);
 
 	return 0;
@@ -67,8 +67,8 @@ int on_session_established_callback(struct xio_session *session,
 	Client *client = (Client*)cb_prv_data;
 	Context *ctx = client->get_ctx_class();
 
-	char* buf = ctx->event_queue->get_buffer();
-	int sizeWritten = ctx->events->writeOnSessionEstablishedEvent(buf, client, session, rsp);
+	char* buf = ctx->get_buffer();
+	int sizeWritten = ctx->events.writeOnSessionEstablishedEvent(buf, client, session, rsp);
 	ctx->done_event_creating(sizeWritten);
 
 	return 0;
@@ -85,8 +85,8 @@ int on_session_event_callback_client(struct xio_session *session,
 	Context *ctx = client->ctxForSessionEvent(event_data, session);
 	if (ctx) {
 		/*in case it is a client, the java object is represented by cb_prv_data */
-		char* buf = ctx->event_queue->get_buffer();
-		int sizeWritten = ctx->events->writeOnSessionErrorEvent(buf, client, event_data);
+		char* buf = ctx->get_buffer();
+		int sizeWritten = ctx->events.writeOnSessionErrorEvent(buf, client, event_data);
 		ctx->done_event_creating(sizeWritten);
 		if (client->flag_to_delete) {
 			client->deleteObject();
