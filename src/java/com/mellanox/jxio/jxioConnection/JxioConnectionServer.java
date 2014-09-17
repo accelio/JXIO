@@ -62,6 +62,7 @@ public class JxioConnectionServer extends Thread implements WorkerProvider {
 	 */
 	public void run() {
 		work();
+		listen_eqh.close();
 	}
 
 	/**
@@ -125,9 +126,11 @@ public class JxioConnectionServer extends Thread implements WorkerProvider {
 	 */
 	public void disconnect() {
 		close = true;
+
 		for (Iterator<ServerWorker> it = SPWorkers.iterator(); it.hasNext();) {
 			it.next().disconnect();
 		}
+
 		listen_eqh.stop();
 	}
 

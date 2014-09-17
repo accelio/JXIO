@@ -107,6 +107,8 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 				stop = true;
 			}	
 		}
+		eqh.stop();
+		eqh.close();
 	}
 
 	private String getStreamType() {
