@@ -44,9 +44,9 @@ bool ServerSession::ignore_disconnect(xio_connection* conn)
 		//accept mode
 		return false;
 	//this is forward mode
-	if (this->first_conn == conn)
-		return true;
-	return false;
+	if (this->second_conn == conn)
+		return false;
+	return true;
 }
 
 struct xio_connection* ServerSession::get_xio_connection()
