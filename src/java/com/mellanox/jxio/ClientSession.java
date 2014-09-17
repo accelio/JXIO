@@ -48,7 +48,6 @@ public class ClientSession extends EventQueueHandler.Eventable {
 	private final EventQueueHandler eqh;
 	private final String            name;
 	private final String            nameForLog;
-	private boolean                 rejected;
 	private boolean 		established;
 
 	/**
@@ -247,19 +246,12 @@ public class ClientSession extends EventQueueHandler.Eventable {
 							this.setIsClosing(true);
 							return false;
 
+						case SESSION_REJECT:
+							eqh.removeEventable(this);
+
 						case SESSION_CLOSED:
 							Bridge.deleteClient(this.getId());
 							this.setIsClosing(true);
-							if (this.rejected)
-								//last event for this client
-								eqh.removeEventable(this);
-							break;
-
-						case SESSION_REJECT:
-							// SESSION_CLOSED will arrive after SESSION_REJECT and then ClientSeesion will be deleted
-							// from EQH
-							this.setIsClosing(true);
-							this.rejected = true;
 							break;
 
 						// Internal event
