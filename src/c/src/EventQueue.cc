@@ -23,14 +23,14 @@
 
 EventQueue::EventQueue(size_t size) : size(size)
 {
-	this->buf = new char[size]; // might throw a std::bad_alloc() exception
+	this->buffer = new char[size]; // might throw a std::bad_alloc() exception
 	reset();
 }
 
 EventQueue::~EventQueue()
 {
 	reset();
-	delete this->buf;
+	delete this->buffer;
 }
 
 void EventQueue::reset()
@@ -40,10 +40,13 @@ void EventQueue::reset()
 	this->count = 0;
 }
 
-char* EventQueue::get_buffer()
+char* EventQueue::get_buffer_offset()
 {
-	return this->buf + this->offset;
-}
+	if (this->offset + EVENTQUEUE_HEADROOM_BUFFER > this->size) {
+		return NULL;
+	}
+	return this->buffer + this->offset;
+};
 
 void EventQueue::increase_offset(int increase)
 {

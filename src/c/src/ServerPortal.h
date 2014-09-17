@@ -40,7 +40,7 @@ public:
 	bool isClient() {return false;}
 	void deleteObject();
 	//this method writes that the portal was closed to the event queue and deletes this
-	void writeEventAndDelete();
+	void writeEventAndDelete(bool force_scheduled = false);
 	void scheduleWriteEventAndDelete();
 	struct xio_server* server;
 	bool error_creating;

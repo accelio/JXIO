@@ -28,6 +28,11 @@
 class Client;
 class MsgPool;
 
+struct __attribute__ ((packed)) scheduled_event_t {
+	char* queued_event;
+	size_t size;
+};
+
 class Context {
 public:
 	//to move some to private?
@@ -41,13 +46,14 @@ public:
 
 	void add_msg_pool(MsgPool* msg_pool);
 
-	char* get_buffer() { return events_queue.get_buffer(); };
+	char* get_buffer_raw();
+	char* get_buffer(bool force_scheduled = false);
 	void done_event_creating(int size_written);
 	inline int get_events_count() { return events_queue.get_count(); };
 	void reset_events_counters() { this->events_queue.reset();	};
 
 	inline int scheduled_events_count() { return this->scheduled_events_queue.size(); };
-	void scheduled_events_add(ServerPortal* sp);
+	void scheduled_events_add(scheduled_event_t& scheduled_event);
 	int scheduled_events_process();
 
 	int add_event_loop_fd(int fd, int events, void *priv_data);
@@ -58,9 +64,11 @@ public:
 	MsgPools msg_pools;
 
 private:
-	EventQueue events_queue;
-	std::deque<ServerPortal*> scheduled_events_queue;
 	struct xio_context *ctx;
+	EventQueue events_queue;
+	bool staging_scheduled_event_in_use;
+	char* staging_scheduled_event_buffer;
+	std::deque<scheduled_event_t> scheduled_events_queue;
 };
 
 #endif // ! Context__H___

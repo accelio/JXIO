@@ -42,29 +42,29 @@ Events::Events()
 
 int Events::writeOnSessionErrorEvent(char *buf, void *ptrForJava, struct xio_session_event_data *event_data)
 {
-	struct event_struct* event = (struct event_struct*)buf;
+	struct queued_event_t* event = (struct queued_event_t*)buf;
 	event->type = htonl(EVENT_SESSION_ERROR);
 	event->ptr = htobe64(intptr_t(ptrForJava));
 	event->event_specific.session_error.error_type = htonl(event_data->event);
 	event->event_specific.session_error.error_reason = htonl(event_data->reason);
-	this->size = sizeof(struct event_session_error) + sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+	this->size = sizeof(struct event_session_error) + sizeof((queued_event_t *)0)->type + sizeof((queued_event_t *)0)->ptr;
 	return this->size;
 }
 
 int Events::writeOnSessionEstablishedEvent (char *buf, void *ptrForJava, struct xio_session *session,
 			struct xio_new_session_rsp *rsp)
 {
-	struct event_struct* event = (struct event_struct*)buf;
+	struct queued_event_t* event = (struct queued_event_t*)buf;
 	event->type = htonl(EVENT_SESSION_ESTABLISHED);
 	event->ptr = htobe64(intptr_t(ptrForJava));
-	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+	this->size = sizeof((queued_event_t *)0)->type + sizeof((queued_event_t *)0)->ptr;
 	return this->size;
 }
 
 int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, void *serverSession,
 			struct xio_new_session_req *req)
 {
-	struct event_struct* event = (struct event_struct*)buf;
+	struct queued_event_t* event = (struct queued_event_t*)buf;
 
 	event->type = htonl(EVENT_SESSION_NEW);
 	event->ptr = htobe64(intptr_t(ptrForJava));
@@ -72,7 +72,7 @@ int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, void *serverSess
 	event->event_specific.new_session.uri_len = htonl(req->uri_len);
 
 	//copy data so far
-	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr +
+	this->size = sizeof((queued_event_t *)0)->type + sizeof((queued_event_t *)0)->ptr +
 			sizeof((struct event_new_session *)0)->ptr_session + sizeof((struct event_new_session *)0)->uri_len;
 
 	//copy first string
@@ -115,57 +115,57 @@ int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, void *serverSess
 int Events::writeOnMsgSendCompleteEvent(char *buf, void *ptrForJava, struct xio_session *session,
 			struct xio_msg *msg)
 {
-	struct event_struct* event = (struct event_struct*)buf;
+	struct queued_event_t* event = (struct queued_event_t*)buf;
 
 	event->type = htonl(EVENT_MSG_SEND_COMPLETE);
 	event->ptr = htobe64(intptr_t(ptrForJava));
-	this->size = sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+	this->size = sizeof((queued_event_t *)0)->type + sizeof((queued_event_t *)0)->ptr;
 	return this->size;
 }
 
 int Events::writeOnMsgErrorEventServer(char *buf, void *ptrForJavaMsg, void* ptrForJavaSession, enum xio_status error)
 {
-	struct event_struct* event = (struct event_struct*) buf;
+	struct queued_event_t* event = (struct queued_event_t*) buf;
 
 	event->type = htonl(EVENT_MSG_ERROR_SERVER);
 	event->ptr = htobe64(intptr_t(ptrForJavaMsg));
 	event->event_specific.msg_error_server.error_reason = htonl(error);
 	event->event_specific.msg_error_server.ptr_session = htobe64(intptr_t(ptrForJavaSession));
-	this->size = sizeof(struct event_msg_error_server) + sizeof((event_struct *) 0)->type + sizeof((event_struct *) 0)->ptr;
+	this->size = sizeof(struct event_msg_error_server) + sizeof((queued_event_t *) 0)->type + sizeof((queued_event_t *) 0)->ptr;
 	return this->size;
 }
 
 
 int Events::writeOnMsgErrorEventClient(char *buf, void *ptrForJavaMsg, enum xio_status error)
 {
-	struct event_struct* event = (struct event_struct*)buf;
+	struct queued_event_t* event = (struct queued_event_t*)buf;
 	event->type = htonl(EVENT_MSG_ERROR_CLIENT);
 	event->ptr = htobe64(intptr_t(ptrForJavaMsg));
 	event->event_specific.msg_error_client.error_reason = htonl(error);
-	this->size = sizeof(struct event_msg_error_client) + sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+	this->size = sizeof(struct event_msg_error_client) + sizeof((queued_event_t *)0)->type + sizeof((queued_event_t *)0)->ptr;
 	return this->size;
  }
 
 
 int Events::writeOnRequestReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_in_size, const int32_t msg_out_size, void *ptrForJavaSession)
 {
-	struct event_struct* event = (struct event_struct*)buf;
+	struct queued_event_t* event = (struct queued_event_t*)buf;
 	event->type = htonl(EVENT_REQUEST_RECEIVED);
 	event->ptr = htobe64(intptr_t(ptrForJavaMsg));
 	event->event_specific.req_received.msg_in_size = htonl(msg_in_size);
 	event->event_specific.req_received.msg_out_size = htonl(msg_out_size);
 	event->event_specific.req_received.ptr_session = htobe64(intptr_t(ptrForJavaSession));
-	this->size = sizeof(struct event_req_received) +  sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+	this->size = sizeof(struct event_req_received) +  sizeof((queued_event_t *)0)->type + sizeof((queued_event_t *)0)->ptr;
 	return this->size;
 }
 
 int Events::writeOnResponseReceivedEvent(char *buf, void *ptrForJavaMsg, const int32_t msg_in_size)
 {
-	struct event_struct* event = (struct event_struct*)buf;
+	struct queued_event_t* event = (struct queued_event_t*)buf;
 	event->type = htonl(EVENT_REPLY_RECEIVED);
 	event->ptr = htobe64(intptr_t(ptrForJavaMsg));
 	event->event_specific.res_received.msg_size = htonl(msg_in_size);
-	this->size = sizeof(struct event_res_received) +  sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+	this->size = sizeof(struct event_res_received) +  sizeof((queued_event_t *)0)->type + sizeof((queued_event_t *)0)->ptr;
 	return this->size;
 }
 
@@ -174,12 +174,12 @@ int Events::writeOnResponseReceivedEvent(char *buf, void *ptrForJavaMsg, const i
 #endif
 int Events::writeOnFdReadyEvent(char *buf, int fd, int epoll_event)
 {
-	struct event_struct* event = (struct event_struct*)buf;
+	struct queued_event_t* event = (struct queued_event_t*)buf;
 	event->type = htonl(EVENT_FD_READY);
 	event->ptr = 0; //  The java object receiving this event will be the EQH which handles this event_queue
 	event->event_specific.fd_ready.fd = htonl(fd);
 	event->event_specific.fd_ready.epoll_event = htonl(epoll_event);
-	this->size = sizeof(struct event_fd_ready) + sizeof((event_struct *)0)->type + sizeof((event_struct *)0)->ptr;
+	this->size = sizeof(struct event_fd_ready) + sizeof((queued_event_t *)0)->type + sizeof((queued_event_t *)0)->ptr;
 	return this->size;
 }
 #if _BullseyeCoverage

@@ -71,7 +71,7 @@ struct __attribute__ ((packed)) event_fd_ready {
 	int32_t 	epoll_event;
 };
 
-struct  event_struct {
+struct  __attribute__ ((packed)) queued_event_t {
 	int32_t type;
 	int64_t ptr;//this will indicate on which session the event arrived
 	union {
@@ -85,7 +85,7 @@ struct  event_struct {
 		struct event_res_received res_received;
 		struct event_fd_ready fd_ready;
 	} event_specific;
-} __attribute__ ((packed));
+};
 
 
 

@@ -29,10 +29,14 @@ Context::Context(size_t events_queue_size) : events_queue(events_queue_size)
 {
 	CONTEXT_LOG_DBG("CTOR start");
 
+	staging_scheduled_event_buffer = new char[(sizeof(scheduled_event_t) + EVENTQUEUE_HEADROOM_BUFFER)];
+	staging_scheduled_event_in_use = false;
+
 	this->ctx = xio_context_create(NULL, 0, -1);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (ctx == NULL) {
-		CONTEXT_LOG_ERR("ERROR, xio_context_create failed");
+		CONTEXT_LOG_ERR("ERROR on xio_context_create()");
+		delete staging_scheduled_event_buffer;
 		throw std::bad_alloc();
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
@@ -41,17 +45,15 @@ Context::Context(size_t events_queue_size) : events_queue(events_queue_size)
 
 	CONTEXT_LOG_DBG("CTOR done");
 	return;
-
-cleanupEventQueue:
-	this->scheduled_events_queue.clear();
-
-cleanupCtx:
-	xio_context_destroy(ctx);
 }
 
 Context::~Context()
 {
-	this->scheduled_events_queue.clear();
+	while (scheduled_events_count() > 0) {
+		delete this->scheduled_events_queue.front().queued_event;
+		this->scheduled_events_queue.pop_front();
+	}
+	delete staging_scheduled_event_buffer;
 
 	xio_context_destroy(ctx);
 
@@ -95,31 +97,66 @@ void Context::add_msg_pool(MsgPool* msg_pool)
 	this->msg_pools.add_msg_pool(msg_pool);
 }
 
+char* Context::get_buffer_raw()
+{
+	return events_queue.get_buffer();
+}
+
+char* Context::get_buffer(bool force_scheduled /*=false*/)
+{
+	char* buf = NULL;
+	if (force_scheduled != true)
+		buf = events_queue.get_buffer_offset();
+	if (buf == NULL) {
+		staging_scheduled_event_in_use = true;
+		return staging_scheduled_event_buffer;
+	}
+	return buf;
+}
+
 void Context::done_event_creating(int size_written)
 {
-	this->events_queue.increase_offset(size_written);
+	if (staging_scheduled_event_in_use == true) {
+		staging_scheduled_event_in_use = false;
 
-	// need to stop the event queue only if this is the first callback
-	if (get_events_count() == 1) {
-		LOG_TRACE("inside a callback - stopping the event queue");
-		this->break_event_loop(1); // always 'self thread = true' since JXIO break from within callback
+		scheduled_event_t scheduled_event;
+		scheduled_event.queued_event = new char[size_written];
+		scheduled_event.size = size_written;
+		memcpy(scheduled_event.queued_event, staging_scheduled_event_buffer, size_written);
+		scheduled_events_add(scheduled_event);
 	}
+	else {
+		this->events_queue.increase_offset(size_written);
+
+		// need to stop the event queue only if this is the first callback
+		if (get_events_count() == 1) {
+			CONTEXT_LOG_TRACE("inside a callback - stopping the event queue");
+			this->break_event_loop(1); // always 'self thread = true' since JXIO break from within callback
+		}
+	}
+}
+
+void Context::scheduled_events_add(scheduled_event_t& scheduled_event)
+{
+	CONTEXT_LOG_TRACE("adding scheduled event (queue size = %d)", scheduled_events_count());
+	this->scheduled_events_queue.push_back(scheduled_event);
+	this->break_event_loop(false);
 }
 
 int Context::scheduled_events_process()
 {
 	CONTEXT_LOG_TRACE("going to process %d scheduled events from queue", scheduled_events_count());
-	while (scheduled_events_count() > 0) {
+	char* events_queue_buf = NULL;
+	while (scheduled_events_count() > 0 && ((events_queue_buf = events_queue.get_buffer_offset()) != NULL)) {
+
+		scheduled_event_t scheduled_event = this->scheduled_events_queue.front();
+
 		// Write internal events to event queue
-		this->scheduled_events_queue.front()->writeEventAndDelete();
+		memcpy(events_queue_buf, scheduled_event.queued_event, scheduled_event.size);
+		this->events_queue.increase_offset(scheduled_event.size);
+
+		delete scheduled_event.queued_event;
 		this->scheduled_events_queue.pop_front();
 	}
 	return get_events_count();
-}
-
-void Context::scheduled_events_add(ServerPortal* sp)
-{
-	CONTEXT_LOG_TRACE("adding %p to scheduled event queue. there are already %d scheduled events", sp, scheduled_events_count());
-	this->scheduled_events_queue.push_back(sp);
-	this->break_event_loop(false);
 }

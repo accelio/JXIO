@@ -22,11 +22,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define EVENTQUEUE_HEADROOM_BUFFER (1024)
+
 class EventQueue {
 public:
 	EventQueue(size_t size);
 	~EventQueue();
-	char* get_buffer();
+	char* get_buffer() { return buffer; };
+	char* get_buffer_offset();
 	void reset();
 	void increase_offset(int increase);
 	inline int get_offset() { return offset; }
@@ -34,7 +37,7 @@ public:
 
 private:
 	const size_t size;
-	char* buf;
+	char* buffer;
 	int offset;
 	int count;
 };
