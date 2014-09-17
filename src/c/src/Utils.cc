@@ -140,7 +140,7 @@ bool forward_session(ServerSession* jxio_session, const char * url)
 	int retVal = xio_accept(xio_session, &url, 1, NULL, 0);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (retVal) {
-		LOG_DBG("ERROR, accepting session=%p. error '%s' (%d)", xio_session, xio_strerror(xio_errno()), xio_errno());
+		LOG_ERR("ERROR forwarding session=%p. error '%s' (%d)", xio_session, xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
@@ -155,7 +155,7 @@ bool accept_session(ServerSession* jxio_session)
 	int retVal = xio_accept(xio_session, NULL, 0, NULL, 0);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (retVal) {
-		LOG_DBG("ERROR, accepting session=%p. error '%s' (%d)", xio_session, xio_strerror(xio_errno()), xio_errno());
+		LOG_ERR("ERROR accepting session=%p. error '%s' (%d)", xio_session, xio_strerror(xio_errno()), xio_errno());
 		return false;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END

@@ -226,6 +226,8 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	public void accept(ServerSession serverSession) {
 		serverSession.setEventQueueHandlers(this.eqh, this.eqh);
 		long ptrSesServer = Bridge.acceptSession(serverSession.getId(), this.getId());
+		if (ptrSesServer == 0)
+			LOG.error("accept failed");
 		serverSession.setPtrServerSession(ptrSesServer);
 		this.setSession(serverSession);
 	}
@@ -254,6 +256,8 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 
 		serverSession.setEventQueueHandlers(this.eqh, portal.eqh);
 		long ptrSesServer = Bridge.forwardSession(uriForForward.toString(), serverSession.getId(), portal.getId());
+		if (ptrSesServer == 0)
+			LOG.error("forward failed");
 		serverSession.setPtrServerSession(ptrSesServer);
 		portal.setSession(serverSession);
 	}

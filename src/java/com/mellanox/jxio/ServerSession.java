@@ -161,7 +161,11 @@ public class ServerSession extends EventQueueHandler.Eventable {
 			LOG.debug(this.toLogString() + "Trying to send message while session is closing");
 			throw new JxioSessionClosedException("sendResponse");
 		}
-		int ret = Bridge.serverSendResponse(msg.getId(), msg.getOut().position(), ptrSesServer);
+		if (this.ptrSesServer == 0){
+			LOG.warn(this.toLogString() + "Trying to send message on non established session");
+			throw new JxioGeneralException(EventReason.JXIO_GENERAL_ERROR, "sendResponse");
+		}
+		int ret = Bridge.serverSendResponse(msg.getId(), msg.getOut().position(), this.ptrSesServer);
 		if (ret > 0) {
 			if (ret != EventReason.SESSION_DISCONNECTED.getIndex()) {
 				LOG.debug(this.toLogString() + "there was an error sending the message because of reason " + ret);
