@@ -349,7 +349,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSessio
 	close_xio_connection(jxio_session);
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_portal)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_portal)
 {
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 	ServerSession* jxio_session = (ServerSession*)ptr_session;
@@ -360,15 +360,12 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSes
 
 	bool ret_val = forward_session(jxio_session, url);
 	env->ReleaseStringUTFChars(jurl, url);
-	if (ret_val) {
+	if (ret_val)
 		portal->sessions++;
-		return (jlong)(intptr_t) jxio_session;
-	} else {
-		return 0;
-	}
+	return ret_val;
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSessionNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_portal)
+extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSessionNative(JNIEnv *env, jclass cls, jlong ptr_session, jlong ptr_portal)
 {
 	ServerSession* jxio_session = (ServerSession*)ptr_session;
 	struct xio_session *xio_session = jxio_session->get_xio_session();
@@ -377,12 +374,9 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_acceptSess
 	LOG_DBG("accepting xio session=%p to portal=%p", xio_session, portal);
 
 	bool ret_val = accept_session(jxio_session);
-	if (ret_val) {
+	if (ret_val)
 		portal->sessions++;
-		return (jlong)(intptr_t) jxio_session;
-	} else {
-		return 0;
-	}
+	return ret_val;
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_rejectSessionNative(JNIEnv *env, jclass cls, jlong ptr_session, jint reason, jstring jdata, jint length)
