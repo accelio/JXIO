@@ -50,7 +50,6 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	private final String      nameForLog;
 	private EventQueueHandler eqhMsg;
 	private EventQueueHandler eqhSession;
-	private long              ptrSesServer;
 	private ServerPortal      creator;
 	private int               msgsInUse;
 	private boolean 		  receivedClosed = false;
@@ -135,7 +134,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 			LOG.error(this.toLogString() + "closing ServerSession with empty id");
 			return false;
 		}
-		boolean ret = Bridge.closeServerSession(ptrSesServer);
+		boolean ret = Bridge.closeServerSession(getId());
 		setIsClosing(ret);
 		if (ret){
 			if (LOG.isDebugEnabled())
@@ -163,11 +162,11 @@ public class ServerSession extends EventQueueHandler.Eventable {
 			LOG.debug(this.toLogString() + "Trying to send message " + msg + "while session is closing");
 			throw new JxioSessionClosedException("sendResponse");
 		}
-		if (this.ptrSesServer == 0){
+		if (this.getId() == 0){
 			LOG.warn(this.toLogString() + "Trying to send message on non established session");
 			throw new JxioGeneralException(EventReason.JXIO_GENERAL_ERROR, "sendResponse");
 		}
-		int ret = Bridge.serverSendResponse(msg.getId(), msg.getOut().position(), this.ptrSesServer);
+		int ret = Bridge.serverSendResponse(msg.getId(), msg.getOut().position(), this.getId());
 		if (ret > 0) {
 			if (ret != EventReason.SESSION_DISCONNECTED.getIndex()) {
 				LOG.debug(this.toLogString() + "there was an error sending the message because of reason " + ret);
@@ -218,7 +217,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		if ((this.msgsInUse == 0) && this.getReceivedClosed()) {
 			if (LOG.isDebugEnabled()) 
 				LOG.debug(this.toLogString() + "all msgs were discarded. Can delete SessionServer");
-			Bridge.deleteSessionServer(this.ptrSesServer);
+			Bridge.deleteSessionServer(this.getId());
 		}
 		return true;
 	}
@@ -263,7 +262,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 							if (this.msgsInUse == 0) {
 								if (LOG.isDebugEnabled())
 									LOG.debug(this.toLogString() + "there are no msgs in use, can delete SessionServer");
-								Bridge.deleteSessionServer(this.ptrSesServer);
+								Bridge.deleteSessionServer(this.getId());
 							} else {
 								if (LOG.isDebugEnabled())
 									LOG.debug(this.toLogString() + "there are still " + this.msgsInUse + " msgs in use. Can not delete SessionServer");
@@ -350,11 +349,6 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		if (eqhSession != eqhMsg) {
 			eqhMsg.removeEventable(this);
 		}
-	}
-
-	void setPtrServerSession(long ptrSesServer) {
-		this.ptrSesServer = ptrSesServer;
-
 	}
 
 	boolean canClose() {

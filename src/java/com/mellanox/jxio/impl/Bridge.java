@@ -125,18 +125,16 @@ public class Bridge {
 		return ret;
 	}
 
-	private static native long forwardSessionNative(String url, long ptrSes, long ptrPortal);
+	private static native boolean forwardSessionNative(String url, long ptrSes, long ptrPortal);
 
-	public static long forwardSession(final String url, final long ptrSes, final long ptrPortal) {
-		long ptr = forwardSessionNative(url, ptrSes, ptrPortal);
-		return ptr;
+	public static boolean forwardSession(final String url, final long ptrSes, final long ptrPortal) {
+		return forwardSessionNative(url, ptrSes, ptrPortal);
 	}
 
-	private static native long acceptSessionNative(long ptrSes, long ptrPortal);
+	private static native boolean acceptSessionNative(long ptrSes, long ptrPortal);
 
-	public static long acceptSession(final long ptrSes, final long ptrPortal) {
-		long ptr = acceptSessionNative(ptrSes, ptrPortal);
-		return ptr;
+	public static boolean acceptSession(final long ptrSes, final long ptrPortal) {
+		return acceptSessionNative(ptrSes, ptrPortal);
 	}
 
 	private static native long rejectSessionNative(long ptrSes, int reason, String data, int length);
