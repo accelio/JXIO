@@ -135,13 +135,15 @@ public class ServerSession extends EventQueueHandler.Eventable {
 			LOG.error(this.toLogString() + "closing ServerSession with empty id");
 			return false;
 		}
-		setIsClosing(true);
-		Bridge.closeServerSession(ptrSesServer);
+		boolean ret = Bridge.closeServerSession(ptrSesServer);
+		setIsClosing(ret);
+		if (ret){
+			if (LOG.isDebugEnabled())
+				LOG.debug(this.toLogString() + "close() Done successfully");
+		}else
+			LOG.warn(this.toLogString() + "close server session failed");
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug(this.toLogString() + "close() Done");
-		}
-		return true;
+		return ret;
 	}
 
 	/**
@@ -158,7 +160,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 	 */
 	public void sendResponse(Msg msg) throws JxioGeneralException, JxioSessionClosedException {
 		if (this.getIsClosing()) {
-			LOG.debug(this.toLogString() + "Trying to send message while session is closing");
+			LOG.debug(this.toLogString() + "Trying to send message " + msg + "while session is closing");
 			throw new JxioSessionClosedException("sendResponse");
 		}
 		if (this.ptrSesServer == 0){
