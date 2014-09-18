@@ -191,7 +191,7 @@ int Client::send_msg(Msg *msg, const int out_size, const int in_size, const bool
 {
 	if (this->is_closing) {
 		CLIENT_LOG_DBG("attempting to send a message while client session is closing");
-		return XIO_E_SESSION_DISCONECTED;
+		return XIO_E_SESSION_DISCONNECTED;
 	}
 	CLIENT_LOG_TRACE("sending msg=%p, out_size=%d, in_size=%d", msg, out_size, in_size);
 

@@ -441,7 +441,7 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_serverSendR
 	Msg * msg = (Msg*) ptr_msg;
 	if (ses->get_is_closing()) {
 		LOG_DBG("trying to send message while session %p is closing", ses->get_xio_session());
-		return XIO_E_SESSION_DISCONECTED;
+		return XIO_E_SESSION_DISCONNECTED;
 	}
 	int ret = msg->send_response(size);
 	return -ret; //ret value of send_response is negative error (while '-0' == '0')
