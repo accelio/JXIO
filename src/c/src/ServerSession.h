@@ -53,7 +53,7 @@ public:
 	ServerPortal * get_portal_msg_event();
 	int msgs_in_flight;
 	bool mark_for_closing;
-	bool can_close();
+	void check_can_close();
 private:
 	struct xio_session* session;
 	struct xio_connection* first_conn;

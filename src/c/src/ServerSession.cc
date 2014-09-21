@@ -104,7 +104,7 @@ void ServerSession::set_portal(ServerPortal * portal, Context * ctx)
 
 }
 
-bool ServerSession::can_close()
+void ServerSession::check_can_close()
 {
 	this->msgs_in_flight--;
 	if (!this->msgs_in_flight && this->mark_for_closing){
