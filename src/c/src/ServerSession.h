@@ -51,6 +51,9 @@ public:
 	void set_xio_connection(struct xio_connection* con);
 	ServerPortal * get_portal_session_event(struct xio_connection* con);
 	ServerPortal * get_portal_msg_event();
+	int msgs_in_flight;
+	bool mark_for_closing;
+	bool can_close();
 private:
 	struct xio_session* session;
 	struct xio_connection* first_conn;

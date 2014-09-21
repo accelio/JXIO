@@ -48,11 +48,12 @@ int on_new_session_callback(struct xio_session *xio_session, struct xio_new_sess
 int on_msg_send_complete_callback(struct xio_session *xio_session, struct xio_msg *msg, void *cb_prv_data)
 {
 	LOG_TRACE("got on_msg_send_complete_callback for msg=%p", msg->user_context);
+	ServerSession *jxio_session = (ServerSession*) cb_prv_data;
 
 	//must release the message
 	Msg *msg_from_pool = (Msg*) msg->user_context;
 	msg_from_pool->release_to_pool();
-
+	jxio_session->can_close();
 	LOG_TRACE("finished on_msg_send_complete_callback for msg=%p", msg->user_context);
 	return 0;
 }
@@ -101,17 +102,21 @@ int on_msg_callback_server(struct xio_session *xio_session, struct xio_msg *msg,
 int on_msg_error_callback_server(struct xio_session *xio_session, enum xio_status error, struct xio_msg *msg, void *cb_prv_data)
 {
 	LOG_DBG("got on_msg_error_callback for msg=%p. error status is %d", msg->user_context, error);
+	ServerSession *jxio_session = (ServerSession*) cb_prv_data;
+
 	if (error == XIO_E_MSG_DISCARDED) {
 		//since user discarded this msg, he does not need this notification
 		Msg* msg_from_pool = (Msg*)msg->user_context;
 		msg_from_pool->release_to_pool();
+		jxio_session->can_close();
 		return 0;
 	}
 
-	ServerSession *jxio_session = (ServerSession*) cb_prv_data;
 	ServerPortal *portal = jxio_session->get_portal_msg_event();
 
 	Context *ctx = portal->get_ctx_class();
+	if (error == XIO_E_MSG_FLUSHED)
+		jxio_session->can_close();
 
 	char* buf = ctx->get_buffer();
 	//this is server side - send of the response failed
