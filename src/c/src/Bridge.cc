@@ -455,7 +455,6 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_discard
 		LOG_DBG("Got error from releasing xio_msg: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		status = false;
 	}
-	msg->release_to_pool();
 	return status;
 }
 

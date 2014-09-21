@@ -103,6 +103,8 @@ int on_msg_error_callback_server(struct xio_session *xio_session, enum xio_statu
 	LOG_DBG("got on_msg_error_callback for msg=%p. error status is %d", msg->user_context, error);
 	if (error == XIO_E_MSG_DISCARDED) {
 		//since user discarded this msg, he does not need this notification
+		Msg* msg_from_pool = (Msg*)msg->user_context;
+		msg_from_pool->release_to_pool();
 		return 0;
 	}
 
