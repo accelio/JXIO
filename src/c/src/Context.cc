@@ -53,7 +53,7 @@ Context::~Context()
 		delete this->scheduled_events_queue.front().queued_event;
 		this->scheduled_events_queue.pop_front();
 	}
-	delete staging_scheduled_event_buffer;
+	delete[] staging_scheduled_event_buffer;
 
 	xio_context_destroy(ctx);
 
