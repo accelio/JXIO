@@ -222,11 +222,10 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_createCtxNa
 		jbuf = env->NewDirectByteBuffer(ctx->get_buffer(), eventQueueSize);
 	} catch (std::exception e) {
 		LOG_ERR("failure on new Context()");
-		return;
 	}
-	jlong ptr = (jlong)(intptr_t)ctx;
-	env->SetLongField(dataToC, fidPtr, ptr);
+	env->SetLongField(dataToC, fidPtr, (jlong)(intptr_t)ctx);
 	env->SetObjectField(dataToC, fidBuf, jbuf);
+	return;
 }
 
 extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeCtxNative(JNIEnv *env, jclass cls, jlong ptrCtx)
