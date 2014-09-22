@@ -137,14 +137,15 @@ bool forward_session(ServerSession* jxio_session, const char * url)
 {
 	struct xio_session *xio_session = jxio_session->get_xio_session();
 
+	jxio_session->set_forward(true);
 	int retVal = xio_accept(xio_session, &url, 1, NULL, 0);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (retVal) {
 		LOG_ERR("ERROR forwarding session=%p. error '%s' (%d)", xio_session, xio_strerror(xio_errno()), xio_errno());
+		jxio_session->set_forward(false);
 		return false;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
-	jxio_session->set_forward(true);
 	return true;
 }
 
