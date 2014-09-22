@@ -248,9 +248,11 @@ public class ClientSession extends EventQueueHandler.Eventable {
 
 						case SESSION_REJECT:
 							eqh.removeEventable(this);
+							Bridge.deleteClient(this.getId());
+							this.setIsClosing(true);
+							break;
 
 						case SESSION_CLOSED:
-							Bridge.deleteClient(this.getId());
 							this.setIsClosing(true);
 							break;
 
@@ -258,6 +260,7 @@ public class ClientSession extends EventQueueHandler.Eventable {
 						case SESSION_TEARDOWN:
 							// now we are officially done with this session and it can be deleted from the EQH
 							eqh.removeEventable(this);
+							Bridge.deleteClient(this.getId());
 							return false;
 
 						default:
