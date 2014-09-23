@@ -42,7 +42,6 @@ public:
 	void writeEventAndDelete(bool force_scheduled = false);
 	void scheduleWriteEventAndDelete();
 	struct xio_server* server;
-	bool error_creating;
 	bool is_closing;
 	int sessions; //indicates how many sessions are listening on this server
 	uint16_t port; //indicates the actual port on which the server listens

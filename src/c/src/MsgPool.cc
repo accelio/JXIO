@@ -30,7 +30,6 @@
 MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 {
 	Msg* msg = NULL;
-	error_creating = false;
 	this->in_size = in_size;
 	this->out_size = out_size;
 	this->msg_num = msg_num;
@@ -44,16 +43,12 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 		MSGPOOL_LOG_WARN("there was an error while allocating & registering memory via huge pages");
 		MSGPOOL_LOG_WARN("You should work with Mellanox OFED 2.0 or newer");
 		MSGPOOL_LOG_WARN("attempting to allocate&registering memory. THIS COULD HURT PERFORMANCE!!!!!");
-		this->buf = (char*) malloc(this->buf_size);
-		if (this->buf == NULL) {
-			MSGPOOL_LOG_ERR("allocating memory of size %ld failed. aborting", this->buf_size);
-			goto mark_error;
-		}
+		this->buf = new char[this->buf_size];
 		this->xio_mr = xio_reg_mr(this->buf, this->buf_size);
 		if (this->xio_mr == NULL) {
-			free(this->buf);
-			MSGPOOL_LOG_WARN("registering memory failed. aborting");
-			goto mark_error;
+			delete[] this->buf;
+			MSGPOOL_LOG_ERR("registering memory failed with xio_reg_mr(buf=%p, buf_size=%d)", this->buf, this->buf_size);
+			throw std::bad_alloc();
 		}
 	}
 	else {
@@ -62,74 +57,40 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 
-	msg_ptrs = (Msg**) malloc(sizeof(Msg*) * msg_num);
-	BULLSEYE_EXCLUDE_BLOCK_START
-	if (msg_ptrs == NULL) {
-		goto cleanup_buffer;
-	}
-	BULLSEYE_EXCLUDE_BLOCK_END
+	msg_ptrs = new Msg*[msg_num];
 
 	for (int i = 0; i < msg_num; i++) {
 		msg = new Msg((char*) buf + i * (in_size + out_size), xio_mr, in_size, out_size, this);
-		BULLSEYE_EXCLUDE_BLOCK_START
-		if (msg == NULL) {
-			goto cleanup_list;
-		}
-		BULLSEYE_EXCLUDE_BLOCK_END
 		add_msg_to_pool(msg);
 		msg_ptrs[i] = msg;
 	}
+
 	MSGPOOL_LOG_DBG("CTOR done. allocated msg pool: num_msgs=%d, in_size=%d, out_size=%d", msg_num, in_size, out_size);
 	return;
-
-cleanup_list:
-	while ((msg = get_msg_from_pool()) != NULL) {
-		delete msg;
-	}
-cleanup_array:
-	free(msg_ptrs);
-cleanup_buffer:
-	if (this->x_buf) { //memory was allocated using xio_alloc
-		if (xio_free(&this->x_buf)) {
-			MSGPOOL_LOG_ERR("Error xio_free failed");
-		}
-	}
-	else { //memory was allocated using malloc and xio_reg_mr
-		if (xio_dereg_mr(&this->xio_mr)) {
-			MSGPOOL_LOG_ERR("Error in xio_dereg_mr: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
-		}
-		free(this->buf);
-	}
-mark_error:
-	error_creating = true;
 }
 
 MsgPool::~MsgPool()
 {
-	if (error_creating) {
-		return;
-	}
-
 	Msg* msg = NULL;
 	while ((msg = get_msg_from_pool()) != NULL) {
 		delete msg;
 	}
 
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (this->x_buf) { //memory was allocated using xio_alloc
-		BULLSEYE_EXCLUDE_BLOCK_START
 		if (xio_free(&this->x_buf)) {
 			MSGPOOL_LOG_DBG("Error xio_free failed: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		}
-		BULLSEYE_EXCLUDE_BLOCK_END
 	}
 	else { //memory was allocated using malloc and xio_reg_mr
 		if (xio_dereg_mr(&this->xio_mr)) {
 			MSGPOOL_LOG_DBG("Error in xio_dereg_mr: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 		}
-		free(this->buf);
+		delete[] this->buf;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 
-	free(msg_ptrs);
+	delete[] msg_ptrs;
 	MSGPOOL_LOG_DBG("DTOR done");
 }
 

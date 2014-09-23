@@ -258,20 +258,16 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_breakEventL
 extern "C" JNIEXPORT jlong JNICALL Java_com_mellanox_jxio_impl_Bridge_startSessionClientNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptrCtx)
 {
 	const char *url = env->GetStringUTFChars(jurl, NULL);
-	Client* ses = new Client(url, ptrCtx);
-	env->ReleaseStringUTFChars(jurl, url);
-
+	Client* client = NULL;
 	BULLSEYE_EXCLUDE_BLOCK_START
-	if (ses == NULL) {
-		LOG_ERR("memory allocation failed");
-		return 0;
+	try {
+		client = new Client(url, ptrCtx);
+	} catch (std::exception e) {
+		LOG_ERR("failure on new Client(ctx=%p, url=%s)", ptrCtx, url);
 	}
-	if (ses->error_creating) {
-		delete (ses);
-		return 0;
-	}
+	env->ReleaseStringUTFChars(jurl, url);
 	BULLSEYE_EXCLUDE_BLOCK_END
-	return (jlong)(intptr_t)ses;
+	return (jlong)(intptr_t)client;
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
@@ -304,24 +300,18 @@ extern "C" JNIEXPORT jlongArray JNICALL Java_com_mellanox_jxio_impl_Bridge_start
 
 	const char *url = env->GetStringUTFChars(jurl, NULL);
 
-	ServerPortal *server = new ServerPortal(url, ptrCtx);
-	env->ReleaseStringUTFChars(jurl, url);
-
+	ServerPortal *server = NULL;
 	BULLSEYE_EXCLUDE_BLOCK_START
-	if (server == NULL) {
-		LOG_ERR("memory allocation failed");
+	try {
+		server = new ServerPortal(url, ptrCtx);
+	} catch (std::exception e) {
+		LOG_ERR("failure on new ServerPortal(ctx=%p, url=%s)", ptrCtx, url);
+		env->ReleaseStringUTFChars(jurl, url);
 		return NULL;
 	}
-	if (server->error_creating) {
-		temp[0] = 0;
-		temp[1] = 0;
-		delete(server);
-	} else {
-		temp[0] = (jlong)(intptr_t) server;
-		temp[1] = (jlong)server->port;
-	}
-	BULLSEYE_EXCLUDE_BLOCK_END
-
+	env->ReleaseStringUTFChars(jurl, url);
+	temp[0] = (jlong)(intptr_t)server;
+	temp[1] = (jlong)server->port;
 	env->SetLongArrayRegion(dataToJava,0, 2, temp);
 	return dataToJava;
 }
@@ -411,22 +401,19 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_rejectS
 extern "C" JNIEXPORT jobject JNICALL Java_com_mellanox_jxio_impl_Bridge_createMsgPoolNative(JNIEnv *env, jclass cls, jint msg_num, jint in_size, jint out_size, jlongArray ptr)
 {
 	jlong temp[msg_num+1];
-	MsgPool* pool = new MsgPool(msg_num, in_size, out_size);
+	MsgPool* pool = NULL;
 	BULLSEYE_EXCLUDE_BLOCK_START
-	if (pool == NULL) {
-		LOG_ERR("memory allocation failed");
-		return NULL;
-	}
-	if (pool->error_creating) {
-		LOG_ERR("there was an error creating MsgPool");
-		delete (pool);
+	try {
+		pool = new MsgPool(msg_num, in_size, out_size);
+	} catch (std::exception e) {
+		LOG_ERR("failure on new MsgPool(msg_num+%d, in_size=%d, out_size=%d)", msg_num, in_size, out_size);
 		return NULL;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 	jobject jbuf = env->NewDirectByteBuffer(pool->buf, pool->buf_size);
 
 	//TODO: go over the actual data structure and not msg_ptrs
-	temp [0] = (jlong)(intptr_t) pool;//the first element in array represents ptr to MsgPool
+	temp [0] = (jlong)(intptr_t) pool; //the first element in array represents ptr to MsgPool
 	for (int i=1; i<=msg_num; i++) {
 		temp[i] = (jlong)(intptr_t) pool->msg_ptrs[i-1];
 	}

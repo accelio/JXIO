@@ -30,7 +30,6 @@ public:
 	struct xio_session* session;
 	struct xio_connection* con;
 
-	bool error_creating;
 	bool is_closing;
 	int ref_counter;
 	bool flag_to_delete;

@@ -29,7 +29,6 @@ ServerPortal::ServerPortal(const char *url, long ptrCtx)
 {
 	SRVPORTAL_LOG_DBG("CTOR start");
 
-	error_creating = false;
 	flag_to_delete = false;
 
 	struct xio_session_ops server_ops;
@@ -48,11 +47,10 @@ ServerPortal::ServerPortal(const char *url, long ptrCtx)
 	this->sessions = 0;
 
 	this->server = xio_bind(ctxClass->get_xio_context(), &server_ops, url, &this->port, 0, this);
-
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (this->server == NULL) {
 		SRVPORTAL_LOG_DBG("ERROR in binding server");
-		error_creating = true;
+		throw std::bad_alloc();
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 	SRVPORTAL_LOG_DBG("CTOR done (on port=%d)", this->port);
@@ -60,10 +58,6 @@ ServerPortal::ServerPortal(const char *url, long ptrCtx)
 
 ServerPortal::~ServerPortal()
 {
-	if (error_creating) {
-		return;
-	}
-
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (xio_unbind(this->server)) {
 		SRVPORTAL_LOG_ERR("ERROR in xio_unbind: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());

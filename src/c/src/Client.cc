@@ -32,10 +32,10 @@ Client::Client(const char* url, long ptrCtx)
 
 	struct xio_session_ops ses_ops;
 	struct xio_session_attr attr;
-	this->error_creating = false;
 	this->is_closing = false;
 	this->ref_counter = 2;
 	this->flag_to_delete = false;
+	this->con = NULL;
 
 	struct xio_msg *req;
 
@@ -62,9 +62,7 @@ Client::Client(const char* url, long ptrCtx)
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (session == NULL) {
 		CLIENT_LOG_ERR("Error in creating session for Context=%p '%s' (%d)", ctxClass, xio_strerror(xio_errno()), xio_errno());
-		error_creating = true;
-		this->con = NULL;
-		return;
+		throw std::bad_alloc();
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 
@@ -73,16 +71,12 @@ Client::Client(const char* url, long ptrCtx)
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (con == NULL) {
 		CLIENT_LOG_ERR("Error in creating connection for Context=%p, session=%p '%s' (%d)", ctxClass, this->session, xio_strerror(xio_errno()), xio_errno());
-		goto cleanupSes;
+		xio_session_destroy(this->session);
+		throw std::bad_alloc();
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 
 	CLIENT_LOG_DBG("CTOR done");
-	return;
-
-cleanupSes:
-	xio_session_destroy(this->session);
-	error_creating = true;
 	return;
 }
 
@@ -90,6 +84,7 @@ Client::~Client()
 {
 	CLIENT_LOG_DBG("DTOR done");
 }
+
 void Client::deleteObject()
 {
 	delete this;

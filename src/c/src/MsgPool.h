@@ -38,7 +38,6 @@ public:
 	int get_in_size()  { return in_size; }
 	int get_out_size() { return out_size; }
 
-	bool            error_creating;
 	long            buf_size;
 	char*           buf;
 	Msg**           msg_ptrs;
