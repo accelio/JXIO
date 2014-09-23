@@ -58,18 +58,16 @@ void logs_from_xio_callback(const char *file, unsigned line, const char *func, u
 	if (n < 0) {
 		return; /*error*/
 	}
-	BULLSEYE_EXCLUDE_BLOCK_END
 	if (n < SIZE) {
 		va_list ap;
 		va_start(ap, log_fmt);
 		int m = vsnprintf(_str_ + n, SIZE - n, log_fmt, ap);
 		va_end(ap);
-		BULLSEYE_EXCLUDE_BLOCK_START
 		if (m < 0) {
 			return; /*error*/
 		}
-		BULLSEYE_EXCLUDE_BLOCK_END
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 	_str_[SIZE - 1] = '\0';
 	Bridge_invoke_logToJava_callback(severity, _str_);
 }
@@ -89,10 +87,16 @@ void logs_from_xio_callback_register()
 	xio_set_opt(NULL, XIO_OPTLEVEL_ACCELIO, XIO_OPTNAME_LOG_FN, optval, optlen);
 }
 
+#if _BullseyeCoverage
+    #pragma BullseyeCoverage off
+#endif
 void logs_from_xio_callback_unregister()
 {
 	xio_set_opt(NULL, XIO_OPTLEVEL_ACCELIO, XIO_OPTNAME_LOG_FN, NULL, 0);
 }
+#if _BullseyeCoverage
+    #pragma BullseyeCoverage on
+#endif
 
 void logs_from_xio_set_threshold(log_severity_t threshold)
 {

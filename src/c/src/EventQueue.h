@@ -32,7 +32,6 @@ public:
 	char* get_buffer_offset();
 	void reset();
 	void increase_offset(int increase);
-	inline int get_offset() { return offset; }
 	inline int get_count() { return count; }
 
 private:

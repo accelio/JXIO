@@ -62,7 +62,6 @@ int on_msg_error_callback_client(struct xio_session *session, enum xio_status er
 int on_session_established_callback(struct xio_session *session,
 		struct xio_new_session_rsp *rsp, void *cb_prv_data)
 {
-
 	LOG_DBG("got on_session_established_callback");
 	Client *client = (Client*)cb_prv_data;
 	Context *ctx = client->get_ctx_class();
@@ -77,7 +76,6 @@ int on_session_established_callback(struct xio_session *session,
 int on_session_event_callback_client(struct xio_session *session,
 		struct xio_session_event_data *event_data, void *cb_prv_data)
 {
-
 	LOG_DBG("got on_session_event_callback. event=%d, cb_prv_data=%p, session=%p, conn=%p",
 			event_data->event, cb_prv_data, session, event_data->conn);
 	Client *client = (Client*)cb_prv_data;
@@ -94,4 +92,3 @@ int on_session_event_callback_client(struct xio_session *session,
 	}
 	return 0;
 }
-

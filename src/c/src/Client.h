@@ -42,7 +42,6 @@ public:
 
 	Context* ctxForSessionEvent(struct xio_session_event_data * event,
 				struct xio_session *session);
-	bool isClient() {return true;}
 	void deleteObject();
 	Context* get_ctx_class() {return ctx_class;}
 private:

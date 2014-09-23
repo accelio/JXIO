@@ -14,6 +14,7 @@
  ** governing permissions and  limitations under the License.
  **
  */
+#include "bullseye.h"
 #include "CallbackFunctionsServer.h"
 
 //
@@ -34,9 +35,11 @@ int on_new_session_callback(struct xio_session *xio_session, struct xio_new_sess
 	 */
 	struct xio_session_attr ses_attr;
 	ses_attr.user_context = jxio_session;
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (xio_modify_session(xio_session, &ses_attr, XIO_SESSION_ATTR_USER_CTX)) {
 		LOG_ERR("xio_modify_session for session=%p failed", xio_session);
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 	LOG_DBG("xio_modify_session for session=%p to %p", xio_session, jxio_session);
 
 	char* buf = ctx->get_buffer();
@@ -130,10 +133,12 @@ int on_session_event_callback_server(struct xio_session *xio_session, struct xio
 
 	LOG_DBG("got on_session_event_callback. event=%d, reason=%d, cb_prv_data=%p, session=%p, conn=%p",
 			event_data->event, event_data->reason, cb_prv_data, xio_session, event_data->conn);
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (cb_prv_data == NULL) {
 		LOG_ERR("cb_prv_data is NULL making jxio_session of type ServerSession NULL");
 		return 1;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 	ServerSession *jxio_session = (ServerSession*) cb_prv_data;
 	ServerPortal *portal = jxio_session->get_portal_session_event(event_data->conn);
 

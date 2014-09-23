@@ -33,9 +33,6 @@
 #include <map>
 #include "ServerSession.h"
 
-class Context;
-struct xio_session;
-
 #define LOG_FATAL(log_fmt, log_args...)	LOG_BY_FILE(lsFATAL, log_fmt, ##log_args)
 #define LOG_ERR(log_fmt, log_args...)	LOG_BY_FILE(lsERROR, log_fmt, ##log_args)
 #define LOG_WARN(log_fmt, log_args...)	LOG_BY_FILE(lsWARN, log_fmt, ##log_args)
