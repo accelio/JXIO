@@ -35,7 +35,7 @@ Context::Context(size_t events_queue_size) : events_queue(events_queue_size)
 	this->ctx = xio_context_create(NULL, 0, -1);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (ctx == NULL) {
-		CONTEXT_LOG_ERR("ERROR on xio_context_create()");
+		CONTEXT_LOG_ERR("ERROR on xio_context_create() (errno=%d '%s')", xio_errno(), xio_strerror(xio_errno()));
 		delete[] staging_scheduled_event_buffer;
 		throw std::bad_alloc();
 	}

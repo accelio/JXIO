@@ -46,8 +46,8 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 		this->buf = new char[this->buf_size];
 		this->xio_mr = xio_reg_mr(this->buf, this->buf_size);
 		if (this->xio_mr == NULL) {
+			MSGPOOL_LOG_ERR("registering memory failed with xio_reg_mr(buf=%p, buf_size=%d) (errno=%d '%s')", this->buf, this->buf_size, xio_errno(), xio_strerror(xio_errno()));
 			delete[] this->buf;
-			MSGPOOL_LOG_ERR("registering memory failed with xio_reg_mr(buf=%p, buf_size=%d)", this->buf, this->buf_size);
 			throw std::bad_alloc();
 		}
 	}

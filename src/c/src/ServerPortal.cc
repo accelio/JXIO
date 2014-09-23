@@ -49,7 +49,7 @@ ServerPortal::ServerPortal(const char *url, long ptrCtx)
 	this->server = xio_bind(ctxClass->get_xio_context(), &server_ops, url, &this->port, 0, this);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (this->server == NULL) {
-		SRVPORTAL_LOG_DBG("ERROR in binding server");
+		SRVPORTAL_LOG_DBG("ERROR in binding server (errno=%d '%s')", xio_errno(), xio_strerror(xio_errno()));
 		throw std::bad_alloc();
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
@@ -60,7 +60,7 @@ ServerPortal::~ServerPortal()
 {
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (xio_unbind(this->server)) {
-		SRVPORTAL_LOG_ERR("ERROR in xio_unbind: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
+		SRVPORTAL_LOG_ERR("ERROR in xio_unbind server (errno=%d '%s')", xio_errno(), xio_strerror(xio_errno()));
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 	SRVPORTAL_LOG_DBG("DTOR done");
