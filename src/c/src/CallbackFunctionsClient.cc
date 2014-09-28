@@ -44,10 +44,6 @@ int on_msg_error_callback_client(struct xio_session *session, enum xio_status er
 		struct xio_msg *msg, void *cb_prv_data)
 {
 	LOG_DBG("got on_msg_error_callback for msg=%p. error status is %d", msg->user_context, error);
-	if (error == XIO_E_MSG_DISCARDED) {
-		//since user discarded this msg, he does not need this notification
-		return 0;
-	}
 	Client *client = (Client*)cb_prv_data;
 	Context *ctx = client->get_ctx_class();
 
