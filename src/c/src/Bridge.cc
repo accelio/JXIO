@@ -279,11 +279,8 @@ extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSe
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_deleteClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
 {
 	Client *ses = (Client*)ptrSes;
-	ses->ref_counter--;
-	if (ses->ref_counter == 0) {
-		LOG_DBG("deleting client");
-		delete (ses);
-	}
+	LOG_DBG("deleting client");
+	delete (ses);
 	return true;
 }
 

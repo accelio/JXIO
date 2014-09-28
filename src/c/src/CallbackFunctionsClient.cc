@@ -86,9 +86,6 @@ int on_session_event_callback_client(struct xio_session *session,
 		char* buf = ctx->get_buffer();
 		int sizeWritten = ctx->events.writeOnSessionErrorEvent(buf, client, event_data);
 		ctx->done_event_creating(sizeWritten);
-		if (client->flag_to_delete) {
-			client->deleteObject();
-		}
 	}
 	return 0;
 }

@@ -31,8 +31,6 @@ public:
 	struct xio_connection* con;
 
 	bool is_closing;
-	int ref_counter;
-	bool flag_to_delete;
 	//to move some to private?
 	Client(const char* url, long ptrCtx);
 	~Client();
@@ -41,7 +39,6 @@ public:
 
 	Context* ctxForSessionEvent(struct xio_session_event_data * event,
 				struct xio_session *session);
-	void deleteObject();
 	Context* get_ctx_class() {return ctx_class;}
 private:
 	Context *ctx_class;

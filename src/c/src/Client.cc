@@ -33,8 +33,6 @@ Client::Client(const char* url, long ptrCtx)
 	struct xio_session_ops ses_ops;
 	struct xio_session_attr attr;
 	this->is_closing = false;
-	this->ref_counter = 2;
-	this->flag_to_delete = false;
 	this->con = NULL;
 
 	struct xio_msg *req;
@@ -83,11 +81,6 @@ Client::Client(const char* url, long ptrCtx)
 Client::~Client()
 {
 	CLIENT_LOG_DBG("DTOR done");
-}
-
-void Client::deleteObject()
-{
-	delete this;
 }
 
 bool Client::close_connection()
@@ -155,9 +148,6 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 			CLIENT_LOG_ERR("Error xio_session_close failure: '%s' (%d) ", xio_strerror(xio_errno()), xio_errno());
 		}
 		BULLSEYE_EXCLUDE_BLOCK_END
-		this->ref_counter--;
-		if (this->ref_counter == 0)
-			this->flag_to_delete = true;
 		/* Session teardown will pass to Java as internal event (user will not
 		 * get a callback. This is required so ClientSession will be removed from
 		 * EQH.eventables only when no more Accelio events will arrive (prevents Thread closure
