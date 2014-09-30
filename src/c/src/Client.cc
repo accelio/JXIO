@@ -52,7 +52,7 @@ Client::Client(const char* url, long ptrCtx)
 
 	struct xio_session_params params;
 	memset(&params, 0, sizeof(params));
-	params.type = XIO_SESSION_REQ;
+	params.type = XIO_SESSION_CLIENT;
 	params.ses_ops = &ses_ops;
 	params.user_context = this;
 	params.uri = (char*)url;
