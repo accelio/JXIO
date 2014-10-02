@@ -56,8 +56,6 @@ public:
 	void scheduled_events_add(scheduled_event_t& scheduled_event);
 	int scheduled_events_process();
 
-	int add_event_loop_fd(int fd, int events, void *priv_data);
-	int del_event_loop_fd(int fd);
 	static void on_event_loop_handler(int fd, int events, void *priv_data);
 
 	Events events;

@@ -17,10 +17,9 @@
 #ifndef Bridge__H___
 #define Bridge__H___
 
-class MsgPool;
 class Context;
 
 void Bridge_invoke_logToJava_callback(const int severity, const char* log_message);
-void Bridge_invoke_requestForBoundMsgPool_callback (Context* ctx, int inSize, int outSize);
+void Bridge_invoke_requestForBoundMsgPool_callback(Context* ctx, int inSize, int outSize);
 
 #endif

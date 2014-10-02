@@ -484,21 +484,3 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_deleteSessi
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 }
-
-#if _BullseyeCoverage
-    #pragma BullseyeCoverage off
-#endif
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_addEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd, jint events, jlong priv_data)
-{
-	Context *ctx = (Context *)ptrCtx;
-	return ctx->add_event_loop_fd(fd, events, (void*)priv_data);
-}
-
-extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_delEventLoopFdNative(JNIEnv *env, jclass cls, jlong ptrCtx, jint fd)
-{
-	Context *ctx = (Context *)ptrCtx;
-	return ctx->del_event_loop_fd(fd);
-}
-#if _BullseyeCoverage
-    #pragma BullseyeCoverage on
-#endif

@@ -16,7 +16,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.EventQueueHandler;
-import com.mellanox.jxio.MsgPool;
 
 public class Bridge {
 
@@ -72,25 +71,10 @@ public class Bridge {
 		breakEventLoopNative(ptrCtx);
 	}
 
-	private static native int addEventLoopFdNative(long ptrCtx, long fd, int events, long priv_data);
-
-	public static int addEventLoopFd(final long ptrCtx, long fd, int events, long priv_data) {
-		int ret = addEventLoopFdNative(ptrCtx, fd, events, priv_data);
-		return ret;
-	}
-
-	private static native int delEventLoopFdNative(long ptrCtx, long fd);
-
-	public static int delEventLoopFd(final long ptrCtx, long fd) {
-		int ret = delEventLoopFdNative(ptrCtx, fd);
-		return ret;
-	}
-
 	private static native long startSessionClientNative(String url, long ptrCtx);
 
 	public static long startSessionClient(final String url, final long ptrCtx) {
-		long p = startSessionClientNative(url, ptrCtx);
-		return p;
+		return startSessionClientNative(url, ptrCtx);
 	}
 
 	private static native void closeSessionClientNative(long ptrSes);
@@ -108,8 +92,7 @@ public class Bridge {
 	private static native long[] startServerPortalNative(String url, long ptrCtx);
 
 	public static long[] startServerPortal(final String url, final long ptrCtx) {
-		long ptr[] = startServerPortalNative(url, ptrCtx);
-		return ptr;
+		return startServerPortalNative(url, ptrCtx);
 	}
 
 	private static native void stopServerPortalNative(long ptr);
@@ -121,8 +104,7 @@ public class Bridge {
 	private static native boolean closeSessionServerNative(long ptrSesServer);
 
 	public static boolean closeServerSession(final long ptrSesServer) {
-		boolean ret = closeSessionServerNative(ptrSesServer);
-		return ret;
+		return closeSessionServerNative(ptrSesServer);
 	}
 
 	private static native boolean forwardSessionNative(String url, long ptrSes, long ptrPortal);
@@ -140,15 +122,13 @@ public class Bridge {
 	private static native long rejectSessionNative(long ptrSes, int reason, String data, int length);
 
 	public static long rejectSession(final long ptrSes, final int reason, final String data, final int length) {
-		long ptr = rejectSessionNative(ptrSes, reason, data, length);
-		return ptr;
+		return rejectSessionNative(ptrSes, reason, data, length);
 	}
 
 	private static native ByteBuffer createMsgPoolNative(int count, int inSize, int outSize, long[] ptrMsg);
 
 	public static ByteBuffer createMsgPool(final int count, final int inSize, final int outSize, long[] ptrMsg) {
-		ByteBuffer b = createMsgPoolNative(count, inSize, outSize, ptrMsg);
-		return b;
+		return createMsgPoolNative(count, inSize, outSize, ptrMsg);
 	}
 
 	private static native void deleteMsgPoolNative(long ptrMsgPool);
@@ -160,22 +140,19 @@ public class Bridge {
 	private static native int clientSendReqNative(long ptrSession, long ptrMsg, int out_size, int in_size, boolean is_mirror);
 
 	public static int clientSendReq(final long ptrSession, final long ptrMsg, final int out_size, final int in_size, final boolean is_mirror) {
-		int ret = clientSendReqNative(ptrSession, ptrMsg, out_size, in_size, is_mirror);
-		return ret;
+		return clientSendReqNative(ptrSession, ptrMsg, out_size, in_size, is_mirror);
 	}
 
 	private static native int serverSendResponseNative(long ptrMsg, int size, long ptrSesServer);
 
 	public static int serverSendResponse(final long ptrMsg, final int size, final long ptrSesServer) {
-		int ret = serverSendResponseNative(ptrMsg, size, ptrSesServer);
-		return ret;
+		return serverSendResponseNative(ptrMsg, size, ptrSesServer);
 	}
 
 	private static native boolean discardRequestNative(long ptrMsg);
 
 	public static boolean discardRequest(final long ptrMsg) {
-		boolean ret = discardRequestNative(ptrMsg);
-		return ret;
+		return discardRequestNative(ptrMsg);
 	}
 
 	private static native void releaseMsgServerSideNative(long ptrMsg);
@@ -187,8 +164,7 @@ public class Bridge {
 	private static native boolean bindMsgPoolNative(long ptrMsgPool, long ptrEQH);
 
 	public static boolean bindMsgPool(final long ptrMsgPool, final long ptrEQH) {
-		boolean ret = bindMsgPoolNative(ptrMsgPool, ptrEQH);
-		return ret;
+		return bindMsgPoolNative(ptrMsgPool, ptrEQH);
 	}
 
 	private static native void deleteSessionServerNative(long ptrSessionServer);
@@ -218,6 +194,7 @@ public class Bridge {
 			case 5:
 				LogFromNative.debug(log_message);
 				break;
+
 			// case 4: combined with 'default'
 
 			case 3:
