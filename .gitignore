@@ -23,14 +23,18 @@ aclocal.m4
 autom4te.cache/
 config.h
 config.h.in
+config.guess
 config.log
+config.sub
 config.status
 config/
 configure
+ltmain.sh
 libtool
 depcomp
 install-sh
 missing
+m4/
 
 # Project/Eclipse
 .cproject
@@ -44,6 +48,6 @@ missing
 
 # JX specific
 /bin
-manifest.txt
 /docs
+manifest.txt
 version
