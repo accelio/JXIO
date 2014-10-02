@@ -33,7 +33,7 @@ echo "Build Accelio... libxio C code"
 cd $TOP_DIR
 git submodule update --init
 cd src/accelio/ && make distclean -si > /dev/null 2>&1;
-./autogen.sh && ./configure --silent --disable-raio-build --enable-silent-rules && make -s && cp -f src/usr/.libs/libxio.so $BIN_FOLDER
+./autogen.sh && ./configure --silent --disable-raio-build --enable-silent-rules && make -s && cp -f src/usr/.libs/libxio.so $BIN_FOLDER  && strip -s $BIN_FOLDER/libxio.so
 if [[ $? != 0 ]] ; then
     echo "FAILURE! stopped JXIO build"
     exit 1
@@ -47,7 +47,7 @@ if [[ -n "$CODE_COVERAGE_ON" ]];then
 	cov01 --on
 	cov01 --status
 fi
-cd src/c/ && ./autogen.sh && ./configure --silent && make clean -s && make -s && cp -f src/libjxio.so $BIN_FOLDER
+cd src/c/ && ./autogen.sh && ./configure --silent && make clean -s && make -s && cp -f src/.libs/libjxio.so $BIN_FOLDER && strip -s $BIN_FOLDER/libjxio.so
 if [[ $? != 0 ]] ; then
     echo "FAILURE! stopped JXIO build"
     exit 1
