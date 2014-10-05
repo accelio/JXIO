@@ -13,9 +13,18 @@ SRC_JAVA_FILES="$SRC_JAVA_FOLDER/com/mellanox/jxio/*.java $SRC_JAVA_FOLDER/com/m
 NATIVE_LIBS="libjxio.so libxio.so"
 
 export PATH=$BULLSEYE_DIR:$PATH
- #turning off bullseye for case it was left on (only if cov01 is found on this machine)
+# Turning off bullseye for case it was left on (only if cov01 is found on this machine)
 BULLSEYE_CMD=cov01
 command -v $BULLSEYE_CMD >/dev/null 2>&1 && $BULLSEYE_CMD --off
+
+# Activate Coverity
+cd $TOP_DIR
+if [[ -n "$CODE_COVERAGE_ON" ]];then
+	echo "Build with CODE COVERAGE ON"
+	sudo rm -rf $COVFILE
+	CODE_COV_ENABLE="$BULLSEYE_CMD --on && $BULLSEYE_CMD --status"
+	CODE_COV_DISABLE="$BULLSEYE_CMD --off"
+fi
 
 # Clean
 rm -fr $BIN_FOLDER
@@ -33,28 +42,28 @@ echo "Build Accelio... libxio C code"
 cd $TOP_DIR
 git submodule update --init
 cd src/accelio/ && make distclean -si > /dev/null 2>&1;
-./autogen.sh && ./configure --silent --disable-raio-build --enable-silent-rules && make -s && cp -f src/usr/.libs/libxio.so $BIN_FOLDER  && strip -s $BIN_FOLDER/libxio.so
+./autogen.sh && ./configure --silent --disable-raio-build --enable-silent-rules
+$CODE_COV_ENABLE
+make -s
 if [[ $? != 0 ]] ; then
     echo "FAILURE! stopped JXIO build"
     exit 1
 fi
+cp -f src/usr/.libs/libxio.so $BIN_FOLDER  && strip -s $BIN_FOLDER/libxio.so
+$CODE_COV_DISABLE
 
 ## Build JX
 echo "Build JXIO C code"
 cd $TOP_DIR
-if [[ -n "$CODE_COVERAGE_ON" ]];then
-	sudo rm -rf $COVFILE
-	cov01 --on
-	cov01 --status
-fi
-cd src/c/ && ./autogen.sh && ./configure --silent && make clean -s && make -s && cp -f src/.libs/libjxio.so $BIN_FOLDER && strip -s $BIN_FOLDER/libjxio.so
+cd src/c/ && ./autogen.sh && ./configure --silent && make clean -s
+$CODE_COV_ENABLE
+make -s
 if [[ $? != 0 ]] ; then
     echo "FAILURE! stopped JXIO build"
     exit 1
 fi
-if [[ -n "$CODE_COVERAGE_ON" ]];then
-	cov01 --off
-fi
+cp -f src/.libs/libjxio.so $BIN_FOLDER && strip -s $BIN_FOLDER/libjxio.so
+$CODE_COV_DISABLE
 
 echo "Build JXIO Java code"
 cd $TOP_DIR
@@ -77,4 +86,3 @@ if [[ $? != 0 ]] ; then
     echo "FAILURE! stopped JXIO build"
     exit 1
 fi
-
