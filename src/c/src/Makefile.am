@@ -24,6 +24,6 @@ cov:
 	PATH=/.autodirect/app/Coverity/cov-analysis-linux64-7.0.1/bin:$$PATH && rm -rf $(PWD)/cov-build && make clean && cov-build --dir $(PWD)/cov-build make all && cov-analyze --dir $(PWD)/cov-build && cov-format-errors --dir $(PWD)/cov-build --html-output $(PWD)/cov-build/c/output/errors/
 
 clean:
-	rm -rf *.o
+	rm -rf *.o *.lo *.la
 
 ###############################################################################
