@@ -112,17 +112,6 @@ int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, void *serverSess
 	return this->size;
 }
 
-int Events::writeOnMsgSendCompleteEvent(char *buf, void *ptrForJava, struct xio_session *session,
-			struct xio_msg *msg)
-{
-	struct queued_event_t* event = (struct queued_event_t*)buf;
-
-	event->type = htonl(EVENT_MSG_SEND_COMPLETE);
-	event->ptr = htobe64(intptr_t(ptrForJava));
-	this->size = sizeof((queued_event_t *)0)->type + sizeof((queued_event_t *)0)->ptr;
-	return this->size;
-}
-
 int Events::writeOnMsgErrorEventServer(char *buf, void *ptrForJavaMsg, void* ptrForJavaSession, enum xio_status error)
 {
 	struct queued_event_t* event = (struct queued_event_t*) buf;

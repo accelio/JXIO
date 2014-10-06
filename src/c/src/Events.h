@@ -100,8 +100,6 @@ public:
 			struct xio_new_session_rsp *rsp);
 	int writeOnNewSessionEvent(char *buf, void *ptrForJava, void *serverSession,
 			struct xio_new_session_req *req);
-	int writeOnMsgSendCompleteEvent(char *buf, void *ptrForJava, struct xio_session *session,
-			struct xio_msg *msg);
 	int writeOnMsgErrorEventServer(char *buf, void *ptrForJavaMsg, void *ptrForJavaSession,
 			enum xio_status error);
 	int writeOnMsgErrorEventClient(char *buf, void *ptrForJava, enum xio_status error);
