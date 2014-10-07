@@ -147,7 +147,6 @@ public class JxioConnection {
 		public OSConnection(URI uri, int msgIn, int msgOut, int msgCount) throws ConnectException {
 			super(uri, msgIn, msgOut, msgCount);
 			name = "OSConnection[" + cs.toString() + "]";
-			LOG.info(this.toString() + " created");
 		}
 
 		public ByteBuffer getNextBuffer() throws IOException {

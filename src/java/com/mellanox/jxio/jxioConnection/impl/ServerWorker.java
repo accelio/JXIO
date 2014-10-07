@@ -109,6 +109,11 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 		}
 		eqh.stop();
 		eqh.close();
+		for (MsgPool mp : msgPools) {
+			mp.deleteMsgPool();
+		}
+		msgPools.clear();
+		//LOG.info(this.toString() +" done");
 	}
 
 	private String getStreamType() {

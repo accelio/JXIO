@@ -115,7 +115,7 @@ public abstract class SimpleConnection {
 				LOG.debug(this.toString() + " Error sending message: " + e.toString());
 				msgPool.releaseMsg(msg);
 			} catch (JxioQueueOverflowException e) {
-				LOG.debug(this.toString() + " Error sending message: " + e.toString());
+				LOG.error(this.toString() + " Error sending message: " + e.toString());
 				msgPool.releaseMsg(msg);
 			} catch (JxioGeneralException e) {
 				LOG.error(this.toString() + " Error sending message: " + e.toString());
