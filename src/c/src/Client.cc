@@ -165,10 +165,12 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 		close_connection();
 		return NULL;
 
+	BULLSEYE_EXCLUDE_BLOCK_START
 	case XIO_SESSION_ERROR_EVENT:
 	default:
 		CLIENT_LOG_WARN("UNHANDLED event: got event '%s' (%d)",  xio_session_event_str(event->event), event->event);
 		return this->get_ctx_class();
+	BULLSEYE_EXCLUDE_BLOCK_END
 	}
 }
 
@@ -189,14 +191,9 @@ int Client::send_msg(Msg *msg, const int out_size, const int in_size, const bool
 	msg->set_xio_msg_out_size(xio_msg, out_size);
 	msg->set_xio_msg_in_size(xio_msg, in_size);
 	int ret_val = xio_send_request(this->con, xio_msg);
-	BULLSEYE_EXCLUDE_BLOCK_START
 	if (ret_val) {
 		CLIENT_LOG_TRACE("Error in sending xio_msg: '%s' (%d) (ret_val=%d)", xio_strerror(xio_errno()), xio_errno(), ret_val);
-	}
-	BULLSEYE_EXCLUDE_BLOCK_END
-	if (ret_val){
 		return xio_errno();
-	} else {
-		return -ret_val;  //ret value of send_request is negative error (while '-0' == '0')
 	}
+	return 0;
 }

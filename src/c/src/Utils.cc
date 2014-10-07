@@ -23,10 +23,10 @@
 log_severity_t g_log_threshold = DEFAULT_LOG_THRESHOLD;
 log_severity_t g_xio_log_level_to_jxio_severity[XIO_LOG_LEVEL_LAST];
 
-void log_set_threshold(log_severity_t _threshold)
+void log_set_threshold(log_severity_t threshold)
 {
 	BULLSEYE_EXCLUDE_BLOCK_START
-	g_log_threshold = (lsNONE <= _threshold && _threshold <= lsTRACE) ? _threshold : DEFAULT_LOG_THRESHOLD;
+	g_log_threshold = (lsNONE <= threshold && threshold <= lsTRACE) ? threshold : DEFAULT_LOG_THRESHOLD;
 	BULLSEYE_EXCLUDE_BLOCK_END
 }
 

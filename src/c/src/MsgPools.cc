@@ -59,11 +59,12 @@ bool MsgPools::add_msg_pool(MsgPool* pool)
 
 Msg* MsgPools::get_msg_from_pool(int in_size, int out_size)
 {
-	while (this->first_time == true){
+	while (this->first_time == true) {
 		LOG_DBG("no MsgPools binded in msgPools=%p, invoking callback", this);
 		Bridge_invoke_requestForBoundMsgPool_callback(this->ctx, in_size, out_size);
 
 	}
+	BULLSEYE_EXCLUDE_BLOCK_START
 	//currently all msgPools have the same message sizes
 	if (this->in_size < in_size) {
 		char fatalErrorStr[256];
@@ -71,6 +72,7 @@ Msg* MsgPools::get_msg_from_pool(int in_size, int out_size)
 		LOG_FATAL("%s", fatalErrorStr);
 		throw std::overflow_error(fatalErrorStr);
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 	while (true) {
 		list_pools::iterator it = msg_pool_list.begin();
 		while (it != msg_pool_list.end()) {

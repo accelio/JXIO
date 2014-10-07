@@ -117,10 +117,12 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 		ses->set_xio_connection(event->conn);
 		struct xio_connection_attr conn_attr;
 		conn_attr.user_context = ses;
+		BULLSEYE_EXCLUDE_BLOCK_START
 		if (xio_modify_connection(event->conn, &conn_attr,XIO_CONNECTION_ATTR_USER_CTX)) {
-			LOG_ERR("xio_modify_connection for session=%p failed\n",session);
+			LOG_ERR("xio_modify_connection for session=%p failed",session);
 		}
-		LOG_DBG("xio_modify_connection for session=%p to %p\n",session, ses);
+		BULLSEYE_EXCLUDE_BLOCK_END
+		LOG_DBG("xio_modify_connection for session=%p to %p",session, ses);
 
 		return NULL;
 
@@ -160,9 +162,11 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_ERROR_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
 		return NULL;
 
+	BULLSEYE_EXCLUDE_BLOCK_START
 	default:
 		SRVPORTAL_LOG_WARN("UNHANDLED event in session %p: got event '%s' (%d)", session, xio_session_event_str(event->event), event->event);
 		ses->set_is_closing(true);
 		return ses->get_ctx();
+	BULLSEYE_EXCLUDE_BLOCK_END
 	}
 }

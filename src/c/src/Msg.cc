@@ -120,7 +120,7 @@ void Msg::set_xio_msg_fields_for_assign(struct xio_msg *msg)
 void Msg::set_xio_msg_req(struct xio_msg *msg)
 {
 	this->xio_msg.request = msg;
-//	log (lsDEBUG, "inside set_req_xio_msg msg is %p req is %p\n",this->xio_msg,  this->xio_msg->request);
+	// MSG_LOG_DBG("inside set_req_xio_msg msg is %p req is %p",this->xio_msg, this->xio_msg->request);
 }
 
 void Msg::set_xio_msg_out_size(struct xio_msg *xio_msg, const int out_size)
@@ -180,7 +180,7 @@ void Msg::dump(struct xio_msg *xio_msg)
 		MSG_LOG_TRACE("response:%p, serial number:%ld", xio_msg->request, ((xio_msg->request) ? xio_msg->request->sn : -1));
 
 	MSG_LOG_TRACE("in header: length:%d, address:%p", xio_msg->in.header.iov_len, xio_msg->in.header.iov_base);
-	MSG_LOG_TRACE("in data size:%d \n", xio_msg->in.data_iov.nents);
+	MSG_LOG_TRACE("in data size:%d", xio_msg->in.data_iov.nents);
 	for (int i = 0; i < xio_msg->in.data_iov.nents; i++)
 		MSG_LOG_TRACE("in data[%d]: length:%d, address:%p, mr:%p", i, xio_msg->in.data_iov.sglist[i].iov_len, xio_msg->in.data_iov.sglist[i].iov_base, xio_msg->in.data_iov.sglist[i].mr);
 
