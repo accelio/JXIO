@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,9 +64,13 @@ public class StreamClient extends Thread {
 	public void read() throws IOException {
 		LOG.info(this.toString() + " going to read " + bytes);
 		InputStream input = connection.getInputStream();
-		long sent = 0;
-		while (sent < bytes) {
-			sent += input.read(temp);
+		long read = 0;
+		int n = 0;
+		while ((n = input.read(temp)) != -1) {
+			read += n;
+		}
+		if (read != bytes) {
+			LOG.error("Number of bytes read " + read + " is different from number of bytes requested " + bytes);
 		}
 		input.close();
 	}
@@ -76,9 +79,11 @@ public class StreamClient extends Thread {
 		LOG.info(this.toString() + " going to write " + bytes);
 		OutputStream output = connection.getOutputStream();
 		long sent = 0;
+		int n = 0;
 		while (sent < bytes) {
-			output.write(temp);
-			sent += temp.length;
+			n = (int) Math.min(bytes - sent, temp.length);
+			output.write(temp, 0, n);
+			sent += n;
 		}
 		output.close();
 	}
