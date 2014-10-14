@@ -77,6 +77,7 @@ public abstract class SimpleConnection {
 	}
 
 	public void disconnect() {
+		if (close) return;
 		close = true;
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.toString() + " jxioConnection disconnect, msgPool.count()" + msgPool.count()

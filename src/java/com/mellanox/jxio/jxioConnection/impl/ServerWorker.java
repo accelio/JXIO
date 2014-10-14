@@ -101,7 +101,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 			} else {
 				streamWorker.callUserCallback(uri);
 				close();
-				sessionClosed();
+				//sessionClosed();
 			}
 			if (notifyDisconnect) {
 				stop = true;
