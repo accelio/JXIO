@@ -60,7 +60,6 @@ if [[ $? != 0 ]] || [[ $status != 0 ]]; then
     exit 1
 fi
 cp -f src/.libs/libjxio.so $BIN_FOLDER && strip -s $BIN_FOLDER/libjxio.so
-$CODE_COV_DISABLE
 
 echo "Build JXIO Java code"
 cd $TOP_DIR
