@@ -336,10 +336,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_closeSessio
 		LOG_DBG("trying to close session while already closing");
 		return;
 	}
-	if (jxio_session->msgs_in_flight > 0)
-		jxio_session->mark_for_closing = true;
-	else
-		close_xio_connection(jxio_session);
+	close_xio_connection(jxio_session);
 }
 
 extern "C" JNIEXPORT jboolean JNICALL Java_com_mellanox_jxio_impl_Bridge_forwardSessionNative(JNIEnv *env, jclass cls, jstring jurl, jlong ptr_session, jlong ptr_portal)
@@ -434,8 +431,6 @@ extern "C" JNIEXPORT jint JNICALL Java_com_mellanox_jxio_impl_Bridge_serverSendR
 		return XIO_E_SESSION_DISCONNECTED;
 	}
 	int ret = msg->send_response(size);
-	if (!ret)
-		ses->msgs_in_flight++;
 	return -ret; //ret value of send_response is negative error (while '-0' == '0')
 }
 

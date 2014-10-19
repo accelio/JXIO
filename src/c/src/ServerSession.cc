@@ -34,8 +34,6 @@ ServerSession::ServerSession(xio_session * session, ServerPortal* portal, Contex
 	this->second_conn = NULL;
 	this->reject_mode = false;
 	this->forwardee = NULL;
-	this->msgs_in_flight = 0;
-	this->mark_for_closing = false;
 }
 
 ServerSession::~ServerSession() {}
@@ -105,11 +103,3 @@ void ServerSession::set_portal(ServerPortal * portal, Context * ctx)
 
 }
 
-void ServerSession::check_can_close()
-{
-	this->msgs_in_flight--;
-	if (!this->msgs_in_flight && this->mark_for_closing){
-		LOG_DBG("no more msgs in flight! closing server session %p", this);
-		close_xio_connection(this);
-        }
-}
