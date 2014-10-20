@@ -6,12 +6,16 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.mellanox.jxio.jxioConnection.JxioConnection;
 import com.mellanox.jxio.jxioConnection.JxioConnectionServer;
+import com.mellanox.jxio.jxioConnection.impl.JxioResourceManager;
 
 public class StreamClient extends Thread {
 
@@ -33,31 +37,31 @@ public class StreamClient extends Thread {
 	}
 
 	public void run() {
-		for (int i=0; i<repeats; i++) {
-    		try {
-    			long time = System.nanoTime();
-    			connection = new JxioConnection(uri);
-    			if (type.compareTo("input") == 0)
-    				read();
-    			else if (type.compareTo("output") == 0)
-    				write();
-    			else
-    				throw new UnsupportedOperationException("stream type " + type + " is not supported");
-    			calcBW(time);
-    			connection.disconnect();
-    		} catch (ConnectException e1) {
-    			e1.printStackTrace();
-    			System.exit(1);
-    		} catch (IOException e) {
-    			e.printStackTrace();
-    			System.exit(1);
-    		}
-    		try {
-	            Thread.currentThread().sleep(100);
-            } catch (InterruptedException e) {
-	            e.printStackTrace();
-	            System.exit(1);
-            }
+		for (int i = 0; i < repeats; i++) {
+			try {
+				long time = System.nanoTime();
+				connection = new JxioConnection(uri);
+				if (type.compareTo("input") == 0)
+					read();
+				else if (type.compareTo("output") == 0)
+					write();
+				else
+					throw new UnsupportedOperationException("stream type " + type + " is not supported");
+				calcBW(time);
+				connection.disconnect();
+			} catch (ConnectException e1) {
+				e1.printStackTrace();
+				System.exit(1);
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
+			try {
+				Thread.currentThread().sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
 		}
 	}
 
@@ -104,24 +108,29 @@ public class StreamClient extends Thread {
 		String uriString;
 		URI uri;
 		try {
+			ExecutorService es = Executors.newFixedThreadPool(Integer.parseInt(args[3]) + Integer.parseInt(args[4]));
 			// input
 			for (int i = 0; i < Integer.parseInt(args[3]); i++) {
 				uriString = String.format("rdma://%s:%s/data?size=%s", args[0], args[1], args[2]);
 				uri = new URI(uriString);
-				StreamClient client = new StreamClient(uri, "input", i, Integer.parseInt(args[5]));
-				client.start();
+				es.submit(new StreamClient(uri, "input", i, Integer.parseInt(args[5])));
 			}
 			// output
 			for (int i = 0; i < Integer.parseInt(args[4]); i++) {
 				uriString = String.format("rdma://%s:%s/data?size=%s", args[0], args[1], args[2]);
 				uri = new URI(uriString);
-				StreamClient client = new StreamClient(uri, "output", i, Integer.parseInt(args[5]));
-				client.start();
+				es.submit(new StreamClient(uri, "output", i, Integer.parseInt(args[5])));
 			}
+			es.shutdown();
+			es.awaitTermination(5, TimeUnit.MINUTES);
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		JxioResourceManager.cleanCache();
 	}
 
 	public String toString() {
