@@ -12,19 +12,8 @@ SRC_JAVA_FOLDER=$TOP_DIR/src/java
 SRC_JAVA_FILES="$SRC_JAVA_FOLDER/com/mellanox/jxio/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/exceptions/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/impl/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/jxioConnection/*.java $SRC_JAVA_FOLDER/com/mellanox/jxio/jxioConnection/impl/*.java $SRC_JAVA_FOLDER/org/apache/lucene/facet/taxonomy/LRUHashMap.java"
 NATIVE_LIBS="libjxio.so libxio.so"
 
-export PATH=$BULLSEYE_DIR:$PATH
 # Turning off bullseye for case it was left on (only if cov01 is found on this machine)
-BULLSEYE_CMD=cov01
-command -v $BULLSEYE_CMD >/dev/null 2>&1 && $BULLSEYE_CMD --off
-
-# Activate Coverity
-cd $TOP_DIR
-if [[ -n "$CODE_COVERAGE_ON" ]];then
-	echo "Build with CODE COVERAGE ON"
-	sudo rm -rf $COVFILE
-	CODE_COV_ENABLE="$BULLSEYE_CMD --on && $BULLSEYE_CMD --status"
-	CODE_COV_DISABLE="$BULLSEYE_CMD --off"
-fi
+command -v cov01 >/dev/null 2>&1 && cov01 --off
 
 # Clean
 rm -fr $BIN_FOLDER
@@ -49,18 +38,26 @@ if [[ $? != 0 ]] ; then
 fi
 
 ## Build JXIO
+# Build JXIO C code
 echo "Build JXIO C code"
 cd $TOP_DIR
 cd src/c/ && ./autogen.sh && ./configure --silent && make clean -s
 status=$?
-$CODE_COV_ENABLE
+# Handle C Code Coverage
+if [[ -n "$CODE_COVERAGE_ON" ]];then
+        # Activate Code Coverage
+        sudo rm -rf $COVFILE
+        cov01 --on
+        cov01 --status
+        echo -e "\n[$0] Code Coverage Activated!\n"
+fi
 make -s
 if [[ $? != 0 ]] || [[ $status != 0 ]]; then
     echo "FAILURE! stopped JXIO build"
     exit 1
 fi
 cp -f src/.libs/libjxio.so $BIN_FOLDER && strip -s $BIN_FOLDER/libjxio.so
-
+# Build JXIO JAVA code
 echo "Build JXIO Java code"
 cd $TOP_DIR
 javac -cp $LIB_FOLDER/commons-logging.jar -d $BIN_FOLDER $SRC_JAVA_FILES
@@ -68,17 +65,19 @@ if [[ $? != 0 ]] ; then
     echo "FAILURE! stopped JXIO build"
     exit 1
 fi
-
+# Create JXIO Java docs
 echo "Creating JXIO Java docs"
 javadoc -quiet -classpath $LIB_FOLDER/commons-logging.jar -d $TOP_DIR/docs -sourcepath src/java/ com.mellanox.jxio
 if [[ $? != 0 ]] ; then
     echo "FAILURE! stopped JXIO build"
     exit 1
 fi
-
+# Create JXIO Jar
 echo "Creating JXIO jar..."
 cd $BIN_FOLDER && jar -cfm $TARGET ../manifest.txt com org $NATIVE_LIBS
 if [[ $? != 0 ]] ; then
     echo "FAILURE! stopped JXIO build"
     exit 1
 fi
+
+echo -e "\nJXIO Build completed SUCCESSFULY!\n"
