@@ -50,6 +50,7 @@ public:
 	void set_xio_connection(struct xio_connection* con);
 	ServerPortal * get_portal_session_event(struct xio_connection* con);
 	ServerPortal * get_portal_msg_event();
+	Context *get_ctx_forwarder() {return ctx_forwarder;}
 private:
 	struct xio_session* session;
 	struct xio_connection* first_conn;
@@ -57,6 +58,7 @@ private:
 	ServerPortal *forwarder; //or accepter in case of accept
 	ServerPortal *forwardee; //will be null in case of accept
 	Context* ctx;
+	Context* ctx_forwarder;
 	bool is_closing;
 	bool forward_mode;
 	bool reject_mode;

@@ -41,6 +41,7 @@ public:
 	//this method writes that the portal was closed to the event queue and deletes this
 	void writeEventAndDelete(bool force_scheduled = false);
 	void scheduleWriteEventAndDelete();
+	void writeEventForwardCompleted(ServerSession* ses);
 	struct xio_server* server;
 	bool is_closing;
 	int sessions; //indicates how many sessions are listening on this server

@@ -249,7 +249,13 @@ public class ServerSession extends EventQueueHandler.Eventable {
 					}
 					EventNameImpl eventName = EventNameImpl.getEventByIndex(errorType);
 					switch (eventName) {
-						// Internal event
+						// Internal events
+						case FORWARD_COMPLETED:
+							if (LOG.isDebugEnabled())
+								LOG.debug(this.toLogString() + "got forward completed");
+							eqhSession.removeEventable(this);
+							return false;
+						
 						case CONNECTION_CLOSED:
 						case CONNECTION_DISCONNECTED:
 							this.setIsClosing(true);
@@ -280,7 +286,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 						//internal event
 						case SESSION_TEARDOWN:
 							// now we are officially done with this session and it can  be deleted from the EQH
-							removeFromEQHs(); 
+							eqhMsg.removeEventable(this); 
 							// need to delete this Session from the set in ServerPortal
 							this.creator.removeSession(this);
 							return false;
@@ -342,13 +348,6 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		}
 		LOG.error(this.toLogString() + "Received an un-handled event " + ev.getEventType());
 		return false;
-	}
-
-	private void removeFromEQHs() {
-		eqhSession.removeEventable(this);
-		if (eqhSession != eqhMsg) {
-			eqhMsg.removeEventable(this);
-		}
 	}
 
 	boolean canClose() {

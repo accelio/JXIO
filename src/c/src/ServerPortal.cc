@@ -90,6 +90,17 @@ void ServerPortal::scheduleWriteEventAndDelete()
 	writeEventAndDelete(true);
 }
 
+void ServerPortal::writeEventForwardCompleted(ServerSession* ses)
+{
+	Context *ctx = ses->get_ctx_forwarder();
+	char* buf = ctx->get_buffer(false);
+	struct xio_session_event_data event_data;
+	event_data.event = static_cast<xio_session_event>(10); // FORWARD_COMPLETED
+	event_data.reason = static_cast<xio_status>(XIO_E_SUCCESS);
+	int sizeWritten = ctx->events.writeOnSessionErrorEvent(buf, ses, &event_data);
+	ctx->done_event_creating(sizeWritten);
+}
+
 Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event, ServerSession* ses)
 {
 	Context* ctx = NULL;
@@ -105,8 +116,15 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
-		if (ses->is_reject() || ses->ignore_disconnect(event->conn)) {
-			//there was a forward and this is the initial connection or the session was rejected
+		if (ses->is_reject()){
+			xio_connection_destroy(event->conn);
+			return NULL;
+		}
+		//there was a forward and this is the initial connection
+		if (ses->ignore_disconnect(event->conn)) {
+			SRVPORTAL_LOG_DBG("got final event for leading connection in case of forward for server session %p", ses);
+			//this is java internal event
+			writeEventForwardCompleted(ses);
 			xio_connection_destroy(event->conn);
 			return NULL;
 		}

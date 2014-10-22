@@ -65,10 +65,13 @@ public enum EventNameImpl {
 	CONNECTION_DISCONNECTED(6, 6),
 	CONNECTION_REFUSED(7, 7),
 
+	/** Internal event indicating that forward was completed for the forwarder
+	 */
+	FORWARD_COMPLETED(10, 10),
 	/**
 	 * Unknown event
 	 */
-	UNKNOWN_EVENT(10, -1);
+	UNKNOWN_EVENT(11, -1);
 
 	private int                                  xioIndex;
 	private int                                  publishedIndex;

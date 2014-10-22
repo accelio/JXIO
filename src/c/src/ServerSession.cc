@@ -28,6 +28,7 @@ ServerSession::ServerSession(xio_session * session, ServerPortal* portal, Contex
 	this->session = session;
 	this->forwarder = portal;
 	this->ctx = ctx;
+	this->ctx_forwarder = ctx;
 	this->delete_after_teardown = false;
 	this->forward_mode = false;
 	this->first_conn = NULL;
