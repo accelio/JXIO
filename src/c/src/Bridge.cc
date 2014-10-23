@@ -21,7 +21,6 @@
 #include <map>
 #include <jni.h>
 
-#include <infiniband/verbs.h>
 #include <libxio.h>
 
 #include "bullseye.h"
@@ -119,11 +118,6 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 		return JNI_ERR;
 	}
 
-	// prepare IB resources to support fork-ing (prevent COW for the RDMA registered memroy)
-	if (ibv_fork_init()) {
-		bridge_print_error("failed in ibv_fork_init()");
-	}
-
 	// setup log collection from AccelIO into JXIO's logging
 	logs_from_xio_set_threshold(g_log_threshold);
 	logs_from_xio_callback_register();
@@ -134,16 +128,33 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 		bridge_print_error("failed to disable AccelIO's HugeTbl memory allocation scheme");
 	}
 
-	// disable Accelio's internal mem pool
-	// JXIO requiers Java user application to allocate our memory pool
 	opt = 0;
-	if (xio_set_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_ENABLE_MEM_POOL, &opt, sizeof(opt))) {
-		bridge_print_error("failed to disable AccelIO's internal memory pool buffers");
-	}
+	int optlen = sizeof(opt);
+	// check for RDMA support and if true, do some AccelIO option tuning
+	if (!xio_get_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_RDMA_NUM_DEVICES, &opt, &optlen) && (optlen <= 4) && (opt > 0)) {
+		LOG_DBG("Found %d RDMA devices", opt);
 
-	opt = 512;
-	if (xio_set_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_TRANS_BUF_THRESHOLD, &opt, sizeof(opt))) {
-		bridge_print_error("failed to change Accelio's RDMA_BUF_THRESHOLD");
+		// prepare IB resources to support fork-ing (prevent COW for the RDMA registered memroy)
+		opt = 1;
+		if (xio_set_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_ENABLE_FORK_INIT, &opt, sizeof(opt))) {
+			bridge_print_error("failed to enable AccelIO's fork init option");
+		}
+
+		// disable Accelio's internal mem pool
+		// JXIO requiers Java user application to allocate our memory pool
+		opt = 0;
+		if (xio_set_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_ENABLE_MEM_POOL, &opt, sizeof(opt))) {
+			bridge_print_error("failed to disable AccelIO's internal memory pool buffers");
+		}
+
+		// force AccelIO to work in RDMA mode for all data traffic based on JXIO's buffer pool
+		opt = 512;
+		if (xio_set_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_TRANS_BUF_THRESHOLD, &opt, sizeof(opt))) {
+			bridge_print_error("failed to change Accelio's RDMA_BUF_THRESHOLD");
+		}
+	}
+	else {
+		LOG_DBG("No RDMA devices available");
 	}
 
 	BULLSEYE_EXCLUDE_BLOCK_END
