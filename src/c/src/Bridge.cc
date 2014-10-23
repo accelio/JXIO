@@ -242,6 +242,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_mellanox_jxio_impl_Bridge_createCtxNa
 		LOG_ERR("failure on new Context()");
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
+	// coverity[noescape] - suppress 'ctx' false positive RESOURCE_LEAK error
 	env->SetLongField(dataToC, fidPtr, (jlong)(intptr_t)ctx);
 	env->SetObjectField(dataToC, fidBuf, jbuf);
 	return;
