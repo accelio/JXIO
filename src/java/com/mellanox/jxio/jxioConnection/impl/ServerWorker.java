@@ -40,8 +40,8 @@ import com.mellanox.jxio.jxioConnection.JxioConnectionServer.Callbacks;
 
 public class ServerWorker extends Thread implements BufferSupplier, Worker {
 
-	private final static Log                     LOG            = LogFactory.getLog(ServerWorker.class
-	                                                                    .getCanonicalName());
+	private final static Log                     LOG              = LogFactory.getLog(ServerWorker.class
+	                                                                      .getCanonicalName());
 	private final ServerPortal                   sp;
 	private final EventQueueHandler              eqh;
 	public final int                             portalIndex;
@@ -49,16 +49,16 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 	private final JxioConnectionServer.Callbacks appCallbacks;
 	private final String                         name;
 	private ArrayList<MsgPool>                   msgPools;
-	private boolean                              sessionClosed  = false;
-	private boolean                              waitingToClose = false;
-	private Msg                                  msg            = null;
-	private int                                  count          = 0;
-	private ServerSession                        session        = null;
-	private boolean                              stop           = false;
-	private URI                                  uri            = null;
-	private boolean                              firstMsg       = true;
+	private boolean                              sessionClosed    = false;
+	private boolean                              waitingToClose   = false;
+	private Msg                                  msg              = null;
+	private int                                  count            = 0;
+	private ServerSession                        session          = null;
+	private boolean                              stop             = false;
+	private URI                                  uri              = null;
+	private boolean                              firstMsg         = true;
 	private StreamWorker                         streamWorker;
-	private boolean                              notifyDisconnect    = false;
+	private boolean                              notifyDisconnect = false;
 
 	/**
 	 * CTOR of a server worker, each worker is connected to only 1 client at a time
@@ -101,11 +101,10 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 			} else {
 				streamWorker.callUserCallback(uri);
 				close();
-				//sessionClosed();
 			}
 			if (notifyDisconnect) {
 				stop = true;
-			}	
+			}
 		}
 		eqh.stop();
 		eqh.close();
@@ -113,7 +112,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 			mp.deleteMsgPool();
 		}
 		msgPools.clear();
-		//LOG.info(this.toString() +" done");
+		LOG.info(this.toString() +" worker done");
 	}
 
 	private String getStreamType() {
@@ -224,14 +223,14 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 	 * Close the session and wait until all msgs are returned to the msgpoll
 	 */
 	private synchronized void close() {
-		if (waitingToClose || session == null)
-			return;
-		sendMsg(); // free last msg if needed
-		LOG.info(this.toString() + " closing session processed " + count + " msgs");
-		waitingToClose = true;
-		session.close();
-		while (!sessionClosed) {
-			eqh.runEventLoop(-1, -1);
+		if (!waitingToClose && session != null) {
+			sendMsg(); // free last msg if needed
+			LOG.info(this.toString() + " closing session processed " + count + " msgs");
+			waitingToClose = true;
+			session.close();
+			while (!sessionClosed) {
+				eqh.runEventLoop(-1, -1);
+			}
 		}
 		sessionClosed();
 	}

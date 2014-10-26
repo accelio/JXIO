@@ -63,6 +63,7 @@ public class JxioConnectionServer extends Thread implements WorkerProvider {
 	public void run() {
 		work();
 		listen_eqh.close();
+		LOG.info("server done");
 		JxioResourceManager.cleanCache();
 	}
 
