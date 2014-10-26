@@ -80,4 +80,4 @@ if [[ $? != 0 ]] ; then
     exit 1
 fi
 
-echo -e "\nJXIO Build completed SUCCESSFULY!\n"
+echo -e "\nJXIO Build completed SUCCESSFULLY!\n"
