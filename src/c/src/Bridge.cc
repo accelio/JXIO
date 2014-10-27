@@ -149,7 +149,12 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 
 		// force AccelIO to work in RDMA mode for all data traffic based on JXIO's buffer pool
 		opt = 512;
-		if (xio_set_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_TRANS_BUF_THRESHOLD, &opt, sizeof(opt))) {
+		if (xio_set_opt(NULL, XIO_OPTLEVEL_ACCELIO, XIO_OPTNAME_MAX_INLINE_DATA, &opt, sizeof(opt))) {
+			bridge_print_error("failed to change Accelio's RDMA_BUF_THRESHOLD");
+		}
+
+		opt = 0;
+		if (xio_set_opt(NULL, XIO_OPTLEVEL_ACCELIO, XIO_OPTNAME_MAX_INLINE_HEADER, &opt, sizeof(opt))) {
 			bridge_print_error("failed to change Accelio's RDMA_BUF_THRESHOLD");
 		}
 	}
