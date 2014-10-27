@@ -35,7 +35,7 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 	this->msg_num = msg_num;
 	this->msg_ptrs = NULL;
 	this->xio_mr = NULL;
-	this->buf_size = msg_num * (in_size + out_size);
+	this->buf_size = (long)msg_num * (in_size + out_size);
 
 	this->x_buf = xio_alloc(buf_size);
 	BULLSEYE_EXCLUDE_BLOCK_START

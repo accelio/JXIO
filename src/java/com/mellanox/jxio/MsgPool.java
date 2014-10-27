@@ -78,7 +78,8 @@ public class MsgPool {
 		long refToCObjects[] = new long[this.capacity + 1]; // the first element represents the id of MsgPool
 		buffer = Bridge.createMsgPool(this.capacity, inSize, outSize, refToCObjects);
 		if (buffer == null) {
-			LOG.fatal("there was an error creating the MsgPool");
+			LOG.fatal("there was an error creating the MsgPool. Capacity=" + this.capacity + 
+					", inSize=" + inSize + ", outSize=" + outSize);
 			refToCObject = 0;
 			return;
 			// TODO: throw exception
