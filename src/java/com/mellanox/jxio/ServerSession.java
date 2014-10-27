@@ -253,7 +253,8 @@ public class ServerSession extends EventQueueHandler.Eventable {
 						case FORWARD_COMPLETED:
 							if (LOG.isDebugEnabled())
 								LOG.debug(this.toLogString() + "got forward completed");
-							eqhSession.removeEventable(this);
+							if (eqhSession != eqhMsg)
+								eqhSession.removeEventable(this);
 							return false;
 						
 						case CONNECTION_CLOSED:
