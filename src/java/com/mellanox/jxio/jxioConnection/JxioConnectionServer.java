@@ -21,8 +21,6 @@ import com.mellanox.jxio.WorkerCache.WorkerProvider;
 import com.mellanox.jxio.jxioConnection.impl.*;
 
 public class JxioConnectionServer extends Thread implements WorkerProvider {
-	public static final int                            msgPoolBuffSize = 64 * 1024;
-	public static final int                            msgPoolnumMsgs  = 164;
 	private static final Log                           LOG             = LogFactory.getLog(JxioConnectionServer.class
 	                                                                           .getCanonicalName());
 	private final String                               name;

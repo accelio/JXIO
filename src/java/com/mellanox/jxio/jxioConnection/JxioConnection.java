@@ -13,16 +13,15 @@ import org.apache.commons.logging.LogFactory;
 import com.mellanox.jxio.WorkerCache;
 
 import com.mellanox.jxio.Msg;
-import com.mellanox.jxio.jxioConnection.JxioConnectionServer;
 import com.mellanox.jxio.jxioConnection.impl.BufferSupplier;
 import com.mellanox.jxio.jxioConnection.impl.MultiBufOutputStream;
 import com.mellanox.jxio.jxioConnection.impl.MultiBuffInputStream;
 import com.mellanox.jxio.jxioConnection.impl.SimpleConnection;
 
 public class JxioConnection {
-	private int              isMsgPoolCount = 100;
-	private int              osMsgPoolCount = 100;
 	private static final Log LOG            = LogFactory.getLog(JxioConnection.class.getCanonicalName());
+	private int              isMsgPoolCount = Constants.CLIENT_INPUT_BUF_COUNT;
+	private int              osMsgPoolCount = Constants.CLIENT_INPUT_BUF_COUNT;
 	private InputStream      input          = null;
 	private OutputStream     output         = null;
 	private final String     name;
@@ -58,7 +57,7 @@ public class JxioConnection {
 
 	public InputStream getInputStream() throws ConnectException {
 		if (input == null) {
-			isCon = new ISConnection(appendStreamType("input"), JxioConnectionServer.msgPoolBuffSize, 0, isMsgPoolCount);
+			isCon = new ISConnection(appendStreamType("input"), Constants.MSGPOOL_BUF_SIZE, 0, isMsgPoolCount);
 			input = new MultiBuffInputStream(isCon);
 		}
 		return input;
@@ -66,8 +65,7 @@ public class JxioConnection {
 
 	public OutputStream getOutputStream() throws ConnectException {
 		if (output == null) {
-			osCon = new OSConnection(appendStreamType("output"), 0, JxioConnectionServer.msgPoolBuffSize,
-			        osMsgPoolCount);
+			osCon = new OSConnection(appendStreamType("output"), 0, Constants.MSGPOOL_BUF_SIZE, isMsgPoolCount);
 			output = new MultiBufOutputStream(osCon);
 		}
 		return output;
@@ -192,14 +190,14 @@ public class JxioConnection {
 		if (input != null) {
 			throw new UnsupportedOperationException("Memory can be set only before creating InputStream");
 		}
-		isMsgPoolCount = (int) Math.ceil((double) mem / JxioConnectionServer.msgPoolBuffSize);
+		isMsgPoolCount = (int) Math.ceil((double) mem / Constants.MSGPOOL_BUF_SIZE);
 	}
 
 	public void setSendSize(long mem) throws UnsupportedOperationException {
 		if (output != null) {
 			throw new UnsupportedOperationException("Memory can be set only before creating OutputStream");
 		}
-		osMsgPoolCount = (int) Math.ceil((double) mem / JxioConnectionServer.msgPoolBuffSize);
+		osMsgPoolCount = (int) Math.ceil((double) mem / Constants.MSGPOOL_BUF_SIZE);
 	}
 
 	public int getRcvSize() {
