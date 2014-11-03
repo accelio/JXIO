@@ -1,6 +1,6 @@
 package com.mellanox.jxio.jxioConnection;
 
-public class JxioConnectionConstants {
+public class Constants {
 	public static final int MSGPOOL_BUF_SIZE        = 64 * 1024;
 	public static final int CLIENT_INPUT_BUF_COUNT  = 100;
 	public static final int CLIENT_OUTPUT_BUF_COUNT = 100;

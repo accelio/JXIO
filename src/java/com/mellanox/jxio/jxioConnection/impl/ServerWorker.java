@@ -35,7 +35,7 @@ import com.mellanox.jxio.ServerSession;
 import com.mellanox.jxio.WorkerCache.Worker;
 import com.mellanox.jxio.exceptions.JxioGeneralException;
 import com.mellanox.jxio.exceptions.JxioSessionClosedException;
-import com.mellanox.jxio.jxioConnection.JxioConnectionConstants;
+import com.mellanox.jxio.jxioConnection.Constants;
 import com.mellanox.jxio.jxioConnection.JxioConnectionServer;
 import com.mellanox.jxio.jxioConnection.JxioConnectionServer.Callbacks;
 
@@ -76,11 +76,11 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 	public ServerWorker(int index, URI uri, JxioConnectionServer.Callbacks appCallbacks) {
 		portalIndex = index;
 		name = "[ServerWorker " + portalIndex + " ]";
-		eqh = new EventQueueHandler(new EqhCallbacks(JxioConnectionConstants.SERVER_INC_BUF_COUNT,
-				JxioConnectionConstants.MSGPOOL_BUF_SIZE, JxioConnectionConstants.MSGPOOL_BUF_SIZE));
+		eqh = new EventQueueHandler(new EqhCallbacks(Constants.SERVER_INC_BUF_COUNT,
+		        Constants.MSGPOOL_BUF_SIZE, Constants.MSGPOOL_BUF_SIZE));
 		this.msgPools = new ArrayList<MsgPool>();
-		MsgPool pool = new MsgPool(JxioConnectionConstants.SERVER_BUF_COUNT, JxioConnectionConstants.MSGPOOL_BUF_SIZE,
-				JxioConnectionConstants.MSGPOOL_BUF_SIZE);
+		MsgPool pool = new MsgPool(Constants.SERVER_BUF_COUNT, Constants.MSGPOOL_BUF_SIZE,
+				Constants.MSGPOOL_BUF_SIZE);
 		msgPools.add(pool);
 		eqh.bindMsgPool(pool);
 		sp = new ServerPortal(eqh, uri);
