@@ -41,9 +41,9 @@ int on_msg_callback_client(struct xio_session *session, struct xio_msg *msg,
 }
 
 int on_msg_error_callback_client(struct xio_session *session, enum xio_status error,
-		struct xio_msg *msg, void *cb_prv_data)
+		enum xio_msg_direction direction, struct xio_msg *msg, void *cb_prv_data)
 {
-	LOG_DBG("got on_msg_error_callback for msg=%p. error status is %d", msg->user_context, error);
+	LOG_DBG("got on_msg_error_callback for msg=%p, direction=%d. error status is %d", msg->user_context, direction, error);
 	Client *client = (Client*)cb_prv_data;
 	Context *ctx = client->get_ctx_class();
 

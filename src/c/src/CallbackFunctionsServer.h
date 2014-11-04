@@ -58,6 +58,7 @@ int on_msg_callback_server(struct xio_session *session,
  */
 int on_msg_error_callback_server(struct xio_session *session,
             enum xio_status error,
+            enum xio_msg_direction direction,
             struct xio_msg  *msg,
             void *cb_prv_data);
 
