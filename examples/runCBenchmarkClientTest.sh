@@ -7,7 +7,7 @@ export LD_LIBRARY_PATH=../accelio/src/usr/.libs/
 #$3 num sessions 
 
 #The below test measures connection establishment performance
-taskset -c 1 com/mellanox/jxio/tests/benchmarks/xio_client_stat $SERVER_IP $SERVER_PORT $NUM_SESSIONS
+taskset -c 1 org/accelio/jxio/tests/benchmarks/xio_client_stat $SERVER_IP $SERVER_PORT $NUM_SESSIONS
 
 #The below test measures DataPath perfromance TPS & BW
 

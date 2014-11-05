@@ -1,5 +1,5 @@
-Name: com/mellanox/jxio
-Package: com.mellanox.jxio
+Name: org/accelio/jxio
+Package: org.accelio.jxio
 Implementation-Title: JXIO (Java interface to AccelIO)
 Implementation-Version: 0000
 Implementation-Vendor: Mellanox Technologies

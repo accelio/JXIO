@@ -12,7 +12,7 @@ if [ ! -e ${JAVA_HOME} ]; then
 fi
 # Compile
 echo -e "\nCompiling JAVA files...."
-javac -cp "../bin/jxio.jar:../src/lib/commons-logging.jar:." com/mellanox/jxio/tests/benchmarks/jxioConnection/*.java
+javac -cp "../bin/jxio.jar:../src/lib/commons-logging.jar:." org/accelio/jxio/tests/benchmarks/jxioConnection/*.java
 if [[ $? != 0 ]] ; then
     exit 1
 fi
@@ -29,12 +29,12 @@ for process in $process_list_to_kill; do
 done
 sleep 2
 if [ $1 == "s" ]; then
-	java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "$COBERTURA_JAR_PATH:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." $java_coverage_props com.mellanox.jxio.tests.benchmarks.jxioConnection.StreamServer $2 $3 $4 | tee server.txt &
+	java -Dlog4j.configuration=org/accelio/jxio/tests/log4j.properties.jxiotest -cp "$COBERTURA_JAR_PATH:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." $java_coverage_props org.accelio.jxio.tests.benchmarks.jxioConnection.StreamServer $2 $3 $4 | tee server.txt &
 	sleep 15
 	process_list_to_kill=`ps -ef | grep java | grep "jxio" | tr -s ' ' | cut -d " " -f 2`
 	for process in $process_list_to_kill; do
                 kill $process
 	done
 elif  [ $1 == "c" ]; then
-	java -Dlog4j.configuration=com/mellanox/jxio/tests/log4j.properties.jxiotest -cp "$COBERTURA_JAR_PATH:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." $java_coverage_props com.mellanox.jxio.tests.benchmarks.jxioConnection.StreamClient $2 $3 $5 $6 $7 $8 | tee client.txt
+	java -Dlog4j.configuration=org/accelio/jxio/tests/log4j.properties.jxiotest -cp "$COBERTURA_JAR_PATH:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." $java_coverage_props org.accelio.jxio.tests.benchmarks.jxioConnection.StreamClient $2 $3 $5 $6 $7 $8 | tee client.txt
 fi

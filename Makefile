@@ -8,7 +8,7 @@ TARGET=jxio.jar
 BIN_FOLDER=$(TOP_DIR)/bin
 LIB_FOLDER=$(TOP_DIR)/src/lib
 SRC_JAVA_FOLDER=$(TOP_DIR)/src/java
-SRC_JAVA_FILES=$(SRC_JAVA_FOLDER)/com/mellanox/jxio/*.java $(SRC_JAVA_FOLDER)/com/mellanox/jxio/exceptions/*.java $(SRC_JAVA_FOLDER)/com/mellanox/jxio/impl/*.java $(SRC_JAVA_FOLDER)/com/mellanox/jxio/jxioConnection/*.java $(SRC_JAVA_FOLDER)/com/mellanox/jxio/jxioConnection/impl/*.java $(SRC_JAVA_FOLDER)/org/apache/lucene/facet/taxonomy/LRUHashMap.java
+SRC_JAVA_FILES=$(SRC_JAVA_FOLDER)/org/accelio/jxio/*.java $(SRC_JAVA_FOLDER)/org/accelio/jxio/exceptions/*.java $(SRC_JAVA_FOLDER)/org/accelio/jxio/impl/*.java $(SRC_JAVA_FOLDER)/org/accelio/jxio/jxioConnection/*.java $(SRC_JAVA_FOLDER)/org/accelio/jxio/jxioConnection/impl/*.java $(SRC_JAVA_FOLDER)/org/apache/lucene/facet/taxonomy/LRUHashMap.java
 
 NATIVE_LIBS=libjxio.so libxio.so
  
@@ -23,7 +23,7 @@ $(TARGET):$(SRC_JAVA_FILES)
 	cp src/c/src/.libs/libjxio.so $(BIN_FOLDER)
 	strip -s $(BIN_FOLDER)/libjxio.so
 	javac -cp $(LIB_FOLDER)/commons-logging.jar -d $(BIN_FOLDER) $(SRC_JAVA_FILES)
-	(cd $(BIN_FOLDER); jar -cfm $(TARGET) ../manifest.txt com org $(NATIVE_LIBS))
+	(cd $(BIN_FOLDER); jar -cfm $(TARGET) ../manifest.txt org $(NATIVE_LIBS))
 
 clean:
 	(cd src/c; make clean -s)

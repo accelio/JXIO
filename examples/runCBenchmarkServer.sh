@@ -4,7 +4,7 @@ export LD_LIBRARY_PATH=../accelio/src/usr/.libs/
 
 #Run the server below for connection establishment perfromance 
 
-taskset -c 1 com/mellanox/jxio/tests/benchmarks/xio_server $SERVER_IP $SERVER_PORT
+taskset -c 1 org/accelio/jxio/tests/benchmarks/xio_server $SERVER_IP $SERVER_PORT
 
 #Run the server below for DataPathTest performance (TPS &BW)
 

@@ -37,7 +37,7 @@ PORT=$3
 
 # Compile
 echo -e "\nCompiling JAVA files...."
-javac -cp "../bin/jxio.jar:../src/lib/commons-logging.jar" com/mellanox/jxio/helloworld/*.java
+javac -cp "../bin/jxio.jar:../src/lib/commons-logging.jar" org/accelio/jxio/helloworld/*.java
 if [[ $? != 0 ]] ; then
     exit 1
 fi
@@ -46,10 +46,10 @@ fi
 export LD_LIBRARY_PATH=$DIR
 if ([ $SIDE == server ]); then
 APPLICATION_NAME="Server"
-APPLICATION="com.mellanox.jxio.helloworld.HelloServer"
+APPLICATION="org.accelio.jxio.helloworld.HelloServer"
 elif ([ $SIDE == client ]); then
 APPLICATION_NAME="Client"
-APPLICATION="com.mellanox.jxio.helloworld.HelloClient"
+APPLICATION="org.accelio.jxio.helloworld.HelloClient"
 else
 echo -e "$0 ERROR: Missig first parameter. Should be a 'server' or 'client'.\n"
 exit 1
@@ -63,4 +63,4 @@ fi
 
 # Run the tests
 echo -e "\nRunning ${APPLICATION_NAME} side test..."
-java -Dlog4j.configuration=com/mellanox/jxio/log4j.properties.jxio -cp "$COBERTURA_JAR_PATH:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." $java_coverage_props $APPLICATION $IP $PORT
+java -Dlog4j.configuration=org/accelio/jxio/log4j.properties.jxio -cp "$COBERTURA_JAR_PATH:../bin/jxio.jar:../src/lib/commons-logging.jar:../src/lib/log4j-1.2.15.jar:." $java_coverage_props $APPLICATION $IP $PORT
