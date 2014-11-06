@@ -23,7 +23,6 @@ import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.accelio.jxio.Msg;
 import org.accelio.jxio.MsgPool;
 import org.accelio.jxio.ServerPortal;
@@ -34,6 +33,7 @@ import org.accelio.jxio.EventQueueHandler;
 import org.accelio.jxio.WorkerCache.Worker;
 import org.accelio.jxio.exceptions.JxioGeneralException;
 import org.accelio.jxio.exceptions.JxioSessionClosedException;
+import org.accelio.jxio.jxioConnection.Constants;
 import org.accelio.jxio.jxioConnection.JxioConnectionServer;
 import org.accelio.jxio.jxioConnection.JxioConnectionServer.Callbacks;
 import org.accelio.jxio.jxioConnection.impl.BufferSupplier;
@@ -77,11 +77,11 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 	public ServerWorker(int index, URI uri, JxioConnectionServer.Callbacks appCallbacks) {
 		portalIndex = index;
 		name = "[ServerWorker " + portalIndex + " ]";
-		eqh = new EventQueueHandler(new EqhCallbacks(JxioConnectionServer.msgPoolnumMsgs,
-		        JxioConnectionServer.msgPoolBuffSize, JxioConnectionServer.msgPoolBuffSize));
+		eqh = new EventQueueHandler(new EqhCallbacks(Constants.SERVER_INC_BUF_COUNT, Constants.MSGPOOL_BUF_SIZE,
+		        Constants.MSGPOOL_BUF_SIZE));
 		this.msgPools = new ArrayList<MsgPool>();
-		MsgPool pool = new MsgPool(JxioConnectionServer.msgPoolnumMsgs, JxioConnectionServer.msgPoolBuffSize,
-		        JxioConnectionServer.msgPoolBuffSize);
+		MsgPool pool = new MsgPool(Constants.SERVER_INITIAL_BUF_COUNT, Constants.MSGPOOL_BUF_SIZE,
+		        Constants.MSGPOOL_BUF_SIZE);
 		msgPools.add(pool);
 		eqh.bindMsgPool(pool);
 		sp = new ServerPortal(eqh, uri);
@@ -114,7 +114,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 			mp.deleteMsgPool();
 		}
 		msgPools.clear();
-		LOG.info(this.toString() +" worker done");
+		LOG.info(this.toString() + " worker done");
 	}
 
 	private String getStreamType() {

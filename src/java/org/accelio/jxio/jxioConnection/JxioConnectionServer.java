@@ -39,17 +39,15 @@ import org.accelio.jxio.jxioConnection.impl.JxioResourceManager;
 import org.accelio.jxio.jxioConnection.impl.ServerWorker;
 
 public class JxioConnectionServer extends Thread implements WorkerProvider {
-	public static final int                            msgPoolBuffSize = 64 * 1024;
-	public static final int                            msgPoolnumMsgs  = 164;
-	private static final Log                           LOG             = LogFactory.getLog(JxioConnectionServer.class
-	                                                                           .getCanonicalName());
+	private static final Log                           LOG       = LogFactory.getLog(JxioConnectionServer.class
+	                                                                     .getCanonicalName());
 	private final String                               name;
 	private final EventQueueHandler                    listen_eqh;
 	private final ServerPortal                         listener;
 	private final JxioConnectionServer.Callbacks       appCallbacks;
 	private int                                        numOfWorkers;
-	private boolean                                    close           = false;
-	private static ConcurrentLinkedQueue<ServerWorker> SPWorkers       = new ConcurrentLinkedQueue<ServerWorker>();
+	private boolean                                    close     = false;
+	private static ConcurrentLinkedQueue<ServerWorker> SPWorkers = new ConcurrentLinkedQueue<ServerWorker>();
 
 	/**
 	 * Ctor that receives from user number of messages to use in the jxio msgpool
@@ -145,8 +143,9 @@ public class JxioConnectionServer extends Thread implements WorkerProvider {
 	 * Disconnect the server and all worker threads, This can't be undone
 	 */
 	public void disconnect() {
-		if (close) return;
-		
+		if (close)
+			return;
+
 		close = true;
 		for (Iterator<ServerWorker> it = SPWorkers.iterator(); it.hasNext();) {
 			it.next().disconnect();
