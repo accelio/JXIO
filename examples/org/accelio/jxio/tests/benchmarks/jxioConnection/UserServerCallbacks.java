@@ -23,7 +23,7 @@ import java.net.URI;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.accelio.jxio.jxioConnection.Constants;
 import org.accelio.jxio.jxioConnection.JxioConnectionServer;
 
 public class UserServerCallbacks implements JxioConnectionServer.Callbacks {
@@ -31,7 +31,7 @@ public class UserServerCallbacks implements JxioConnectionServer.Callbacks {
 	private static final Log LOG = LogFactory.getLog(UserServerCallbacks.class.getCanonicalName());
 
 	public void newSessionOS(URI uri, OutputStream output) {
-		byte[] temp = new byte[JxioConnectionServer.msgPoolBuffSize];
+		byte[] temp = new byte[Constants.MSGPOOL_BUF_SIZE];
 		long bytes = getBytes(uri);
 		LOG.info(Thread.currentThread().toString() + " going to send " + bytes + " bytes");
 		long sent = 0;
@@ -52,7 +52,7 @@ public class UserServerCallbacks implements JxioConnectionServer.Callbacks {
 
 	@Override
 	public void newSessionIS(URI uri, InputStream input) {
-		byte[] temp = new byte[JxioConnectionServer.msgPoolBuffSize];
+		byte[] temp = new byte[Constants.MSGPOOL_BUF_SIZE];
 		long bytes = getBytes(uri);
 		LOG.info(Thread.currentThread().toString()+" going to read " + bytes + " bytes");
 		long read = 0;

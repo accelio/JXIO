@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.accelio.jxio.jxioConnection.Constants;
 import org.accelio.jxio.jxioConnection.JxioConnection;
 import org.accelio.jxio.jxioConnection.JxioConnectionServer;
 import org.accelio.jxio.jxioConnection.impl.JxioResourceManager;
@@ -38,7 +38,7 @@ public class StreamClient extends Thread {
 	private static final Log LOG  = LogFactory.getLog(StreamClient.class.getCanonicalName());
 	private final long       bytes;
 	private final URI        uri;
-	private final byte[]     temp = new byte[JxioConnectionServer.msgPoolBuffSize];
+	private final byte[]     temp = new byte[Constants.MSGPOOL_BUF_SIZE];
 	private final String     name;
 	private JxioConnection   connection;
 	private String           type;
