@@ -36,6 +36,15 @@ public class JxioResourceManager {
 	private static HashMap<String, LinkedList<MsgPool>>     msgPools = new HashMap<String, LinkedList<MsgPool>>();
 	private static ConcurrentLinkedQueue<EventQueueHandler> eqhs     = new ConcurrentLinkedQueue<EventQueueHandler>();
 
+	static {
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				cleanCache();
+			}
+		});
+	}
+
 	public static MsgPool getMsgPool(int size, int in, int out) {
 		MsgPool pool = null;
 		String key = getMsgPoolKey(size, in, out);
@@ -97,7 +106,7 @@ public class JxioResourceManager {
 		eqhs.add(eqh);
 	}
 
-	public static void cleanCache() {
+	private static void cleanCache() {
 		Iterator<Map.Entry<String, LinkedList<MsgPool>>> iterator = msgPools.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Map.Entry<String, LinkedList<MsgPool>> entry = iterator.next();

@@ -146,7 +146,6 @@ public class StreamClient extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		JxioResourceManager.cleanCache();
 	}
 
 	public String toString() {
