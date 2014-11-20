@@ -75,10 +75,10 @@ ServerPortal * ServerSession::get_portal_session_event(void * conn_user_context,
 	if (event == XIO_SESSION_NEW_CONNECTION_EVENT)
 		return (ServerPortal*) conn_user_context;
 
-	if (this->first_conn == con)
-		return this->forwarder;
-	else
+	if (this->second_conn == con)
 		return this->forwardee;
+	else
+		return this->forwarder;
 }
 
 ServerPortal * ServerSession::get_portal_msg_event()
