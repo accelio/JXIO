@@ -496,3 +496,10 @@ extern "C" JNIEXPORT void JNICALL Java_org_accelio_jxio_impl_Bridge_destroyConne
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 }
+
+extern "C" JNIEXPORT void JNICALL Java_org_accelio_jxio_impl_Bridge_deleteSessionServerNative(JNIEnv *env, jclass cls, jlong ptr_ses_server)
+{
+	ServerSession * ses = (ServerSession*) ptr_ses_server;
+	LOG_DBG("delete jxio session %p", ses);
+	delete ses;
+}

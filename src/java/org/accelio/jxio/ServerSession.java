@@ -296,6 +296,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 							eqhMsg.removeEventable(this); 
 							// need to delete this Session from the set in ServerPortal
 							this.creator.removeSession(this);
+							Bridge.deleteSessionServer(this.getId());
 							return false;
 						
 						default:

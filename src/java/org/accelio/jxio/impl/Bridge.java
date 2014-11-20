@@ -173,6 +173,12 @@ public class Bridge {
 	public static void destroyConnectionSessionServer(final long ptrSessionServer) {
 		destroyConnectionSessionServerNative(ptrSessionServer);
 	}
+	
+	private static native void deleteSessionServerNative(long ptrSessionServer);
+
+	public static void deleteSessionServer(final long ptrSessionServer) {
+		deleteSessionServerNative(ptrSessionServer);
+	}
 
 	// callback from C++
 	static public void requestForBoundMsgPool(long ptrEQH, int inSize, int outSize) {

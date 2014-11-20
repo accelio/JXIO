@@ -172,9 +172,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 			SRVPORTAL_LOG_DBG("there aren't any sessions on this server anymore. Can close");
 			flag_to_delete = true;
 		}
-		ctx = this->get_ctx_class();
-		delete (ses);
-		return ctx;
+		return this->get_ctx_class();
 
 	case XIO_SESSION_CONNECTION_ERROR_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_ERROR_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
