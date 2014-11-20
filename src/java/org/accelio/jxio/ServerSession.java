@@ -223,7 +223,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 		if ((this.msgsInUse == 0) && this.getReceivedClosed()) {
 			if (LOG.isDebugEnabled()) 
 				LOG.debug(this.toLogString() + "all msgs were discarded. Can delete SessionServer");
-			Bridge.deleteSessionServer(this.getId());
+			Bridge.destroyConnectionSessionServer(this.getId());
 		}
 		return true;
 	}
@@ -275,7 +275,7 @@ public class ServerSession extends EventQueueHandler.Eventable {
 							if (this.msgsInUse == 0) {
 								if (LOG.isDebugEnabled())
 									LOG.debug(this.toLogString() + "there are no msgs in use, can delete SessionServer");
-								Bridge.deleteSessionServer(this.getId());
+								Bridge.destroyConnectionSessionServer(this.getId());
 							} else {
 								if (LOG.isDebugEnabled())
 									LOG.debug(this.toLogString() + "there are still " + this.msgsInUse + " msgs in use. Can not delete SessionServer");

@@ -168,10 +168,10 @@ public class Bridge {
 		return bindMsgPoolNative(ptrMsgPool, ptrEQH);
 	}
 
-	private static native void deleteSessionServerNative(long ptrSessionServer);
+	private static native void destroyConnectionSessionServerNative(long ptrSessionServer);
 
-	public static void deleteSessionServer(final long ptrSessionServer) {
-		deleteSessionServerNative(ptrSessionServer);
+	public static void destroyConnectionSessionServer(final long ptrSessionServer) {
+		destroyConnectionSessionServerNative(ptrSessionServer);
 	}
 
 	// callback from C++

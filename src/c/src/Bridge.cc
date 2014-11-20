@@ -485,7 +485,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_org_accelio_jxio_impl_Bridge_bindMsgP
 	return true;
 }
 
-extern "C" JNIEXPORT void JNICALL Java_org_accelio_jxio_impl_Bridge_deleteSessionServerNative(JNIEnv *env, jclass cls, jlong ptr_ses_server)
+extern "C" JNIEXPORT void JNICALL Java_org_accelio_jxio_impl_Bridge_destroyConnectionSessionServerNative(JNIEnv *env, jclass cls, jlong ptr_ses_server)
 {
 	ServerSession * ses = (ServerSession*) ptr_ses_server;
 	xio_connection* con = ses->get_xio_connection();
