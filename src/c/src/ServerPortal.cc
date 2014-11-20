@@ -109,10 +109,10 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
 		//no need to delete session from map since we haven't received session_teardown yet
-		if (ses->is_reject() || ses->ignore_disconnect(event->conn)) 
+		if (ses->is_reject() || ses->ignore_disconnect(this))
 			return NULL;
 		ses->set_is_closing(true);
-		return ses->get_ctx();
+		return this->get_ctx_class();
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
@@ -121,18 +121,18 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 			return NULL;
 		}
 		//there was a forward and this is the initial connection
-		if (ses->ignore_disconnect(event->conn)) {
+		if (ses->ignore_disconnect(this)) {
 			SRVPORTAL_LOG_DBG("got final event for leading connection in case of forward for server session %p", ses);
 			//this is java internal event
 			writeEventForwardCompleted(ses);
 			xio_connection_destroy(event->conn);
 			return NULL;
 		}
-		return ses->get_ctx();
+		return this->get_ctx_class();
 
 	case XIO_SESSION_NEW_CONNECTION_EVENT:
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_NEW_CONNECTION_EVENT in session %p", session);
-		ses->set_xio_connection(event->conn);
+		ses->set_xio_connection(event->conn, this);
 		struct xio_connection_attr conn_attr;
 		conn_attr.user_context = ses;
 		BULLSEYE_EXCLUDE_BLOCK_START
@@ -147,7 +147,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 	case XIO_SESSION_CONNECTION_DISCONNECTED_EVENT: //event created "from underneath"
 		SRVPORTAL_LOG_DBG("got XIO_SESSION_CONNECTION_DISCONNECTED_EVENT in session %p. Reason=%s", session, xio_strerror(event->reason));
 		//no need to delete session from map since we haven't received session_teardown yet
-		if (!ses->ignore_disconnect(event->conn)) {
+		if (!ses->ignore_disconnect(this)) {
 			ses->set_is_closing(true);
 		}
 		return NULL;
@@ -172,7 +172,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 			SRVPORTAL_LOG_DBG("there aren't any sessions on this server anymore. Can close");
 			flag_to_delete = true;
 		}
-		ctx = ses->get_ctx();
+		ctx = this->get_ctx_class();
 		delete (ses);
 		return ctx;
 
@@ -184,7 +184,7 @@ Context* ServerPortal::ctxForSessionEvent(struct xio_session_event_data * event,
 	default:
 		SRVPORTAL_LOG_WARN("UNHANDLED event in session %p: got event '%s' (%d)", session, xio_session_event_str(event->event), event->event);
 		ses->set_is_closing(true);
-		return ses->get_ctx();
+		return this->get_ctx_class();
 	BULLSEYE_EXCLUDE_BLOCK_END
 	}
 }

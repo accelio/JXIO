@@ -27,7 +27,6 @@ ServerSession::ServerSession(xio_session * session, ServerPortal* portal, Contex
 	this->is_closing = false;
 	this->session = session;
 	this->forwarder = portal;
-	this->ctx = ctx;
 	this->ctx_forwarder = ctx;
 	this->delete_after_teardown = false;
 	this->forward_mode = false;
@@ -39,14 +38,13 @@ ServerSession::ServerSession(xio_session * session, ServerPortal* portal, Contex
 
 ServerSession::~ServerSession() {}
 
-bool ServerSession::ignore_disconnect(xio_connection* conn)
+bool ServerSession::ignore_disconnect(ServerPortal* portal)
 {
 	if (!forward_mode) {
 		return false; // in accept mode
 	}
 	// in forward mode
-
-	if (this->second_conn == conn)
+	if (this->forwardee == portal)
 		return false;
 	return true;
 }
@@ -58,30 +56,24 @@ struct xio_connection* ServerSession::get_xio_connection()
 	return this->first_conn;
 }
 
-void ServerSession::set_xio_connection(struct xio_connection* con)
+void ServerSession::set_xio_connection(struct xio_connection* con, ServerPortal* portal)
 {
-	if (this->first_conn == NULL)
+	if (this->forwarder == portal)
 		this->first_conn = con;
 	else
 		this->second_conn = con;
 }
 
-
-ServerPortal * ServerSession::get_portal_session_event(struct xio_connection* con)
+ServerPortal * ServerSession::get_portal_session_event(void * conn_user_context, struct xio_connection* con, enum xio_session_event event)
 {
-	if (con == NULL) {
-		//the event is Session teardown
+	if (event == XIO_SESSION_TEARDOWN_EVENT) {
 		if (this->forwardee)
 			return this->forwardee;
 		else
 			return this->forwarder;
 	}
-	if (this->first_conn == NULL)
-		//this is the first event: new connection
-		return this->forwarder;
-	if (forward_mode && !this->second_conn)
-		//this is new connection after forward
-		return this->forwardee;
+	if (event == XIO_SESSION_NEW_CONNECTION_EVENT)
+		return (ServerPortal*) conn_user_context;
 
 	if (this->first_conn == con)
 		return this->forwarder;
@@ -97,10 +89,4 @@ ServerPortal * ServerSession::get_portal_msg_event()
 }
 
 
-void ServerSession::set_portal(ServerPortal * portal, Context * ctx)
-{
-	this->forwardee = portal;
-	this->ctx = ctx;
-
-}
 

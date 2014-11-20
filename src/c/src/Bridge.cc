@@ -362,7 +362,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_org_accelio_jxio_impl_Bridge_forwardS
 	ServerSession* jxio_session = (ServerSession*)ptr_session;
 	struct xio_session *xio_session = jxio_session->get_xio_session();
 	ServerPortal * portal = (ServerPortal *) ptr_portal;
-	jxio_session->set_portal(portal, portal->get_ctx_class());
+	jxio_session->set_portal(portal);
 	LOG_DBG("forwarding xio session=%p to portal=%p, whose url=%s", xio_session, portal, url);
 
 	bool ret_val = forward_session(jxio_session, url);

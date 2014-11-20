@@ -135,8 +135,7 @@ int on_session_event_callback_server(struct xio_session *xio_session, struct xio
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 	ServerSession *jxio_session = (ServerSession*) cb_prv_data;
-	ServerPortal *portal = jxio_session->get_portal_session_event(event_data->conn);
-
+	ServerPortal *portal  = jxio_session->get_portal_session_event(event_data->conn_user_context, event_data->conn, event_data->event);
 	Context *ctx = portal->ctxForSessionEvent(event_data, jxio_session);
 	if (ctx) {
 		char* buf = ctx->get_buffer();

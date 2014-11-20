@@ -33,31 +33,31 @@ public:
 	ServerSession(xio_session * session, ServerPortal* portal, Context * ctx);
 	~ServerSession();
 
-	Context* get_ctx() {return ctx;}
-	void set_portal(ServerPortal *, Context *);
+	//inline functions
+	void set_portal(ServerPortal *p) {this->forwardee = p;}
 	struct xio_session* get_xio_session() {return session;}
 	bool get_is_closing() {return is_closing;}
 	void set_is_closing(bool b) {is_closing = b;}
-	//when user chooses to forward the session, connection_disconnected event is received
-	bool ignore_disconnect(xio_connection* connection);
 	void set_forward(bool forward) {forward_mode = forward;}
 	void set_reject() {reject_mode = true;}
 	bool is_reject() {return reject_mode;}
+	Context *get_ctx_forwarder() {return ctx_forwarder;}
+
+	//when user chooses to forward the session, connection_disconnected event is received
+	bool ignore_disconnect(ServerPortal* portal);
 	//when user chooses to reject the session, the event is not passed to Java, therefore after
 	//session teardown the ServerSession needs to be deleted
 	bool delete_after_teardown;
 	struct xio_connection* get_xio_connection();
-	void set_xio_connection(struct xio_connection* con);
-	ServerPortal * get_portal_session_event(struct xio_connection* con);
+	void set_xio_connection(struct xio_connection* con, ServerPortal* portal);
+	ServerPortal * get_portal_session_event(void * conn_user_context, struct xio_connection* con, enum xio_session_event event);
 	ServerPortal * get_portal_msg_event();
-	Context *get_ctx_forwarder() {return ctx_forwarder;}
 private:
 	struct xio_session* session;
 	struct xio_connection* first_conn;
 	struct xio_connection* second_conn;
 	ServerPortal *forwarder; //or accepter in case of accept
 	ServerPortal *forwardee; //will be null in case of accept
-	Context* ctx;
 	Context* ctx_forwarder;
 	bool is_closing;
 	bool forward_mode;
