@@ -110,7 +110,7 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 		if (event->reason == XIO_E_SESSION_REJECTED)
 			this->rejected = true;
 		this->is_closing = true;
-		return NULL;
+		return this->get_ctx_class();
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT. Reason=%s (%d)", xio_strerror(event->reason), event->reason);
