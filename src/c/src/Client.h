@@ -42,7 +42,6 @@ public:
 	Context* get_ctx_class() {return ctx_class;}
 private:
 	Context *ctx_class;
-	bool rejected;
 };
 
 #endif // ! Client__H___

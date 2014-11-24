@@ -39,7 +39,6 @@ Client::Client(const char* url, long ptrCtx)
 
 	Context *ctxClass = (Context *) ptrCtx;
 	this->ctx_class = ctxClass;
-	this->rejected = false;
 
 	//defining structs to send to xio library
 	ses_ops.on_session_event = on_session_event_callback_client;
@@ -107,16 +106,12 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 	switch (event->event) {
 	case XIO_SESSION_CONNECTION_CLOSED_EVENT: //event created because user on this side called "close"
 		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_CLOSED_EVENT. Reason=%s (%d)", xio_strerror(event->reason), event->reason);
-		if (event->reason == XIO_E_SESSION_REJECTED)
-			this->rejected = true;
 		this->is_closing = true;
 		return this->get_ctx_class();
 
 	case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
 		CLIENT_LOG_DBG("got XIO_SESSION_CONNECTION_TEARDOWN_EVENT. Reason=%s (%d)", xio_strerror(event->reason), event->reason);
 		xio_connection_destroy(event->conn);
-		if (this->rejected)
-			return NULL;
 		return this->get_ctx_class();
 
 	case XIO_SESSION_NEW_CONNECTION_EVENT:
@@ -153,11 +148,6 @@ Context* Client::ctxForSessionEvent(struct xio_session_event_data * event, struc
 		 * EQH.eventables only when no more Accelio events will arrive (prevents Thread closure
 		 * before all accelio events were received).
 		 */
-		return this->get_ctx_class();
-
-	case XIO_SESSION_REJECT_EVENT:
-		CLIENT_LOG_DBG("got XIO_SESSION_REJECT_EVENT. Reason=%s (%d). Must delete session", xio_strerror(event->reason), event->reason);
-		this->is_closing = true;
 		return this->get_ctx_class();
 
 	case XIO_SESSION_CONNECTION_ERROR_EVENT:
