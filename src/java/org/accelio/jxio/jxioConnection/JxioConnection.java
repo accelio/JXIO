@@ -26,7 +26,7 @@ import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.accelio.jxio.EventQueueHandler;
 import org.accelio.jxio.Msg;
 import org.accelio.jxio.jxioConnection.impl.BufferSupplier;
 import org.accelio.jxio.jxioConnection.impl.MultiBufOutputStream;
@@ -119,7 +119,7 @@ public class JxioConnection {
 			}
 			sendMsg();
 			do {
-				eqh.runEventLoop(1, -1);
+				eqh.runEventLoop(1, EventQueueHandler.INFINITE_DURATION);
 				if (close) {
 					releaseResources();
 					throw new IOException("Session was closed, no buffer avaliable");
@@ -168,7 +168,7 @@ public class JxioConnection {
 				msg = msgPool.getMsg();
 			} else {
 				do {
-					eqh.runEventLoop(1, -1);
+					eqh.runEventLoop(1, EventQueueHandler.INFINITE_DURATION);
 					if (close) {
 						releaseResources();
 						throw new IOException("Session was closed, no buffer avaliable");

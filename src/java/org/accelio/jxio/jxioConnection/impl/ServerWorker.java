@@ -97,7 +97,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 	public void run() {
 		while (!stop) {
 			LOG.info(this.toString() + " waiting for a new connection");
-			eqh.runEventLoop(1, -1); // to get the forward going
+			eqh.runEventLoop(1, EventQueueHandler.INFINITE_DURATION); // to get the forward going
 			if (notifyDisconnect) {
 				close();
 			} else {
@@ -178,7 +178,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 		if (!firstMsg || msg == null) {
 			sendMsg();
 			do {
-				eqh.runEventLoop(1, -1);
+				eqh.runEventLoop(1, EventQueueHandler.INFINITE_DURATION);
 				if (notifyDisconnect) {
 					close();
 				}
@@ -231,7 +231,7 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 			waitingToClose = true;
 			session.close();
 			while (!sessionClosed) {
-				eqh.runEventLoop(-1, -1);
+				eqh.runEventLoop(EventQueueHandler.INFINITE_EVENTS, EventQueueHandler.INFINITE_DURATION);
 			}
 		}
 		sessionClosed();

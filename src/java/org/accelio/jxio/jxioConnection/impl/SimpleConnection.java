@@ -50,7 +50,7 @@ public abstract class SimpleConnection {
 		msgPool = JxioResourceManager.getMsgPool(msgCount, msgIn, msgOut);
 		long startTime = System.nanoTime();
 		cs = new ClientSession(eqh, uri, new ClientCallbacks());
-		eqh.runEventLoop(1, -1); // session established event
+		eqh.runEventLoop(1, EventQueueHandler.INFINITE_DURATION); // session established event
 		if (!established) {
 			throw new ConnectException(this.toString() + " could not connect to " + uri.getHost() + " on port "
 			        + uri.getPort() + ", got " + connectErrorType);
@@ -103,14 +103,14 @@ public abstract class SimpleConnection {
 		}
 		handleLastMsg();
 		while (msgPool.count() < msgPool.capacity()) {
-			eqh.runEventLoop(msgPool.capacity() - msgPool.count(), -1);
+			eqh.runEventLoop(msgPool.capacity() - msgPool.count(), EventQueueHandler.INFINITE_DURATION);
 		}
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.toString() + "disconnecting,got all msgs back, closing session");
 		}
 		closeStream();
 		cs.close();
-		eqh.runEventLoop(-1, -1);
+		eqh.runEventLoop(EventQueueHandler.INFINITE_EVENTS, EventQueueHandler.INFINITE_DURATION);
 		releaseResources();
 	}
 

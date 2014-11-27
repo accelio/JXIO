@@ -54,7 +54,7 @@ public class StatTest implements Runnable {
 			print("NUM_ITER = " + i);
 			clArr[i] = new StatClientSession(eqh, url, num_sessions);
 
-			eqh.runEventLoop(-1, -1);
+			eqh.runEventLoop(EventQueueHandler.INFINITE_EVENTS, EventQueueHandler.INFINITE_DURATION);
 		}
 
 		long endTime = System.nanoTime();

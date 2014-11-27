@@ -44,6 +44,8 @@ import org.accelio.jxio.impl.EventSessionEstablished;
  */
 public class EventQueueHandler implements Runnable {
 
+	public static final int INFINITE_EVENTS = -1;
+	public static final int INFINITE_DURATION = -1;
 	private static final Log       LOG                   = LogFactory
 	                                                             .getLog(EventQueueHandler.class.getCanonicalName());
 	private final long             refToCObject;
@@ -109,7 +111,7 @@ public class EventQueueHandler implements Runnable {
      */
 	public void run() {
 		while (!this.stopLoop && !didExceptionOccur()) {
-			runEventLoop(-1 /* Infinite events */, -1 /* Infinite duration */);
+			runEventLoop(INFINITE_EVENTS, INFINITE_DURATION);
 		}
 		if (didExceptionOccur()) {
 			// exception occurred
@@ -151,8 +153,8 @@ public class EventQueueHandler implements Runnable {
 		}
 		this.inRunLoop = true;
 
-		boolean is_forever = (timeOutMicroSec == -1) ? true : false;
-		boolean is_infinite_events = (maxEvents == -1) ? true : false;
+		boolean is_forever = (timeOutMicroSec == INFINITE_DURATION) ? true : false;
+		boolean is_infinite_events = (maxEvents == INFINITE_EVENTS) ? true : false;
 
 		this.elapsedTime.resetStartTime();
 		int eventsHandledByUser = 0;
@@ -246,7 +248,7 @@ public class EventQueueHandler implements Runnable {
 				waitForEvent++;
 			}
 			while (waitForEvent > 0) {
-				handleQueueEvents(-1);
+				handleQueueEvents(INFINITE_DURATION);
 				waitForEvent--;
 			}
 		}
