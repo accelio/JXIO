@@ -84,11 +84,11 @@ int Context::run_event_loop(long timeout_micro_sec)
 	return get_events_count();
 }
 
-void Context::break_event_loop(int is_self_thread)
+void Context::break_event_loop()
 {
-	CONTEXT_LOG_TRACE("before break event loop (is_self_thread=%d)", is_self_thread);
-	xio_context_stop_loop(this->ctx, is_self_thread);
-	CONTEXT_LOG_TRACE("after break event loop (is_self_thread=%d)", is_self_thread);
+	CONTEXT_LOG_TRACE("before break event loop");
+	xio_context_stop_loop(this->ctx);
+	CONTEXT_LOG_TRACE("after break event loop");
 }
 
 void Context::add_msg_pool(MsgPool* msg_pool)
@@ -131,7 +131,7 @@ void Context::done_event_creating(int size_written)
 		// need to stop the event queue only if this is the first callback
 		if (get_events_count() == 1) {
 			CONTEXT_LOG_TRACE("inside a callback - stopping the event queue");
-			this->break_event_loop(1); // always 'self thread = true' since JXIO break from within callback
+			this->break_event_loop();
 		}
 	}
 }
@@ -140,7 +140,7 @@ void Context::scheduled_events_add(scheduled_event_t& scheduled_event)
 {
 	CONTEXT_LOG_TRACE("adding scheduled event (queue size = %d)", scheduled_events_count());
 	this->scheduled_events_queue.push_back(scheduled_event);
-	this->break_event_loop(false);
+	this->break_event_loop();
 }
 
 int Context::scheduled_events_process()

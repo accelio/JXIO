@@ -42,7 +42,7 @@ public:
 	inline xio_context* get_xio_context() { return ctx; };
 
 	int run_event_loop(long timeout_micro_sec);
-	void break_event_loop(int is_self_thread);
+	void break_event_loop();
 
 	void add_msg_pool(MsgPool* msg_pool);
 
