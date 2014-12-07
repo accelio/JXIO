@@ -63,8 +63,13 @@ Client::Client(const char* url, long ptrCtx)
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 
+	struct xio_connection_params cparams;
+	cparams.session = session;
+	cparams.ctx = ctxClass->get_xio_context();
+	cparams.conn_user_context = this;
+
 	/* connect the session  */
-	this->con = xio_connect(session, ctxClass->get_xio_context(), 0, NULL, this);
+	this->con = xio_connect(&cparams);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (con == NULL) {
 		CLIENT_LOG_ERR("Error in creating connection for Context=%p, session=%p (errno=%d '%s')", ctxClass, this->session, xio_errno(), xio_strerror(xio_errno()));
