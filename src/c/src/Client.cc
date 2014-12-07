@@ -64,6 +64,7 @@ Client::Client(const char* url, long ptrCtx)
 	BULLSEYE_EXCLUDE_BLOCK_END
 
 	struct xio_connection_params cparams;
+	memset(&cparams, 0, sizeof(cparams));
 	cparams.session = session;
 	cparams.ctx = ctxClass->get_xio_context();
 	cparams.conn_user_context = this;
