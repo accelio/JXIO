@@ -40,12 +40,12 @@ public class ServerPortalWorker extends Thread implements Comparable<ServerPorta
 	private final static Log LOG = LogFactory.getLog(ServerPortalWorker.class.getCanonicalName());
 
 	// cTor
-	public ServerPortalWorker(int index, int inMsg_size, int outMsg_size, URI uri, int num_of_buffers) {
+	public ServerPortalWorker(int index, int inMsg_size, int outMsg_size, URI uri, int num_of_buffers, ServerPortal.Callbacks c) {
 		portal_index = index;
 		eqh = new EventQueueHandler(new ServerEQHCallbacks());
 		pool = new MsgPool(num_of_buffers, inMsg_size, outMsg_size);
 		eqh.bindMsgPool(pool);
-		sp = new ServerPortal(eqh, uri);
+		sp = new ServerPortal(eqh, uri, c);
 		num_of_sessions = new AtomicInteger(0);
 	}
 

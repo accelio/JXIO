@@ -30,6 +30,7 @@ import org.accelio.jxio.ServerSession;
 import org.accelio.jxio.EventName;
 import org.accelio.jxio.EventReason;
 import org.accelio.jxio.EventQueueHandler;
+import org.accelio.jxio.ServerSession.SessionKey;
 import org.accelio.jxio.WorkerCache.Worker;
 import org.accelio.jxio.exceptions.JxioGeneralException;
 import org.accelio.jxio.exceptions.JxioSessionClosedException;
@@ -84,9 +85,9 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 		        Constants.MSGPOOL_BUF_SIZE);
 		msgPools.add(pool);
 		eqh.bindMsgPool(pool);
-		sp = new ServerPortal(eqh, uri);
 		callbacks = new SessionServerCallbacks();
 		this.appCallbacks = appCallbacks;
+		sp = new ServerPortal(eqh, uri, new PortalServerCallbacks());
 		LOG.info(this.toString() + " is up and waiting for requests");
 	}
 
@@ -294,7 +295,16 @@ public class ServerWorker extends Thread implements BufferSupplier, Worker {
 			outer.msgPools.add(mp);
 			return mp;
 		}
+	}
+	
+	private final class PortalServerCallbacks implements ServerPortal.Callbacks {
 
+		public void onSessionEvent(EventName event, EventReason reason) {
+			LOG.info(ServerWorker.this.toString() + " GOT EVENT " + event.toString() + "because of "
+			        + reason.toString());
+		}
+
+		public void onSessionNew(SessionKey sesKey, String srcIP, Worker workerHint) {}
 	}
 
 	@Override

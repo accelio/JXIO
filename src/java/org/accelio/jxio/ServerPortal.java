@@ -96,14 +96,14 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	}
 
 	/**
-	 * This constructor is for the ServerPortal listener that doesn't use worker cache. It listens on a well known port and redirects
-	 * the request for a new session to ServerPortal worker
+	 * This constructor is for the ServerPortal that doesn't use worker cache. ServerPortal can be either a listener(listens
+	 * on a well known port and redirects the request for a new session to ServerPortal worker) or a worker.
 	 * 
 	 * @param eqh
 	 *            - EventQueueHAndler on which the events
 	 *            (onSessionNew, onSessionEvent etc) of this portal will arrive
 	 * @param uri
-	 *            - on which the ServerPortal will listen. Should contain a well known port
+	 *            - on which the ServerPortal will listen. Can contain a well known port
 	 * @param callbacks
 	 *            - implementation of Interface ServerPortal.Callbacks
 	 */
@@ -112,14 +112,14 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 	}
 
 	/**
-	 * This constructor is for the ServerPortal listener that uses worker cache. It listens on a well known port and redirects
-	 * the request for a new session to ServerPortal worker
+	 * This constructor is for the ServerPortal that uses worker cache. ServerPortal can be either a listener(listens
+	 * on a well known port and redirects the request for a new session to ServerPortal worker) or a worker.
 	 * 
 	 * @param eqh
 	 *            - EventQueueHAndler on which the events
 	 *            (onSessionNew, onSessionEvent etc) of this portal will arrive
 	 * @param uri
-	 *            - on which the ServerPortal will listen. Should contain a well known port
+	 *            - on which the ServerPortal will listen. Can contain a well known port
 	 * @param callbacks
 	 *            - implementation of Interface ServerPortal.Callbacks
 	 * @param workerProvider
@@ -160,18 +160,6 @@ public class ServerPortal extends EventQueueHandler.Eventable {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.toLogString() + "SP CTOR done");
 		}
-	}
-
-	/**
-	 * This constructor is for the ServerPortal worker. A new session is redirected here by ServerPortal listener
-	 * 
-	 * @param eqh
-	 *            - EventQueueHandler on which events of the session will arrive
-	 * @param uri
-	 *            - Should be uri for listener from ServerPortal listener; listener.getUriForServer()
-	 */
-	public ServerPortal(EventQueueHandler eqh, URI uri) {
-		this(eqh, uri, null, null);
 	}
 
 	/**
