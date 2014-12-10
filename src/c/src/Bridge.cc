@@ -205,7 +205,7 @@ void Bridge_invoke_logToJava_callback(const int severity, const char* log_messag
 	JNIEnv *env;
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (cached_jvm->GetEnv((void **) &env, JNI_VERSION_1_4)) {
-		fprintf(stderr, "-->> Error getting JNIEnv when trying to log message: '%s'\n", log_message);
+		fprintf(stderr, "-->> Warning: unable to get JNIEnv when trying to log message: '%s'\n", log_message);
 		return;
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
