@@ -160,7 +160,7 @@ public class EventQueueHandler implements Runnable {
 		int eventsHandledByUser = 0;
 
 		long remainingTimeOutMicroSec = timeOutMicroSec;
-		while (!this.breakLoop && ((is_infinite_events) || (maxEvents > eventsHandledByUser))
+		while (!this.breakLoop && !this.didExceptionOccur() && ((is_infinite_events) || (maxEvents > eventsHandledByUser))
 		        && ((is_forever) || (!this.elapsedTime.isTimeOutMicro(timeOutMicroSec)))) {
 
 			if (is_forever == false) {
