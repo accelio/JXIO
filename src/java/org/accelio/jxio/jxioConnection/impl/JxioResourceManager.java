@@ -21,20 +21,29 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.accelio.jxio.EventQueueHandler;
 import org.accelio.jxio.Msg;
 import org.accelio.jxio.MsgPool;
 
 public class JxioResourceManager {
 
-	private final static Log                                LOG      = LogFactory.getLog(JxioResourceManager.class
-	                                                                         .getCanonicalName());
-	private static HashMap<String, LinkedList<MsgPool>>     msgPools = new HashMap<String, LinkedList<MsgPool>>();
-	private static ConcurrentLinkedQueue<EventQueueHandler> eqhs     = new ConcurrentLinkedQueue<EventQueueHandler>();
+	private final static Log                            LOG      = LogFactory.getLog(JxioResourceManager.class
+	                                                                     .getCanonicalName());
+	private static HashMap<String, LinkedList<MsgPool>> msgPools = new HashMap<String, LinkedList<MsgPool>>();
+	private static ConcurrentLinkedQueue<DummyContext>  eqhs     = new ConcurrentLinkedQueue<DummyContext>();
+	private static ExecutorService                      executor = Executors.newCachedThreadPool(new ThreadFactory() {
+		                                                             public Thread newThread(Runnable r) {
+			                                                             Thread t = new Thread(r);
+			                                                             t.setDaemon(true);
+			                                                             return t;
+		                                                             }
+	                                                             });
 
 	static {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -95,15 +104,20 @@ public class JxioResourceManager {
 	}
 
 	public static EventQueueHandler getEqh() {
-		EventQueueHandler eqh = eqhs.poll();
-		if (eqh == null) {
+		EventQueueHandler eqh;
+		DummyContext ctxThread = eqhs.poll();
+		if (ctxThread == null) {
 			eqh = new EventQueueHandler(null);
+		} else {
+			eqh = ctxThread.getEqh();
 		}
 		return eqh;
 	}
 
 	public static void returnEqh(EventQueueHandler eqh) {
-		eqhs.add(eqh);
+		DummyContext dummy = new DummyContext(eqh);
+		executor.execute(dummy);
+		eqhs.add(dummy);
 	}
 
 	private static void cleanCache() {
@@ -115,10 +129,40 @@ public class JxioResourceManager {
 				mp.deleteMsgPool();
 			}
 		}
-		for (EventQueueHandler eqh : eqhs) {
-			eqh.close();
+		for (DummyContext eqh : eqhs) {
+			getEqh().close();
 		}
 		msgPools.clear();
 		eqhs.clear();
+	}
+
+	/**
+	 * Thread to keep accelio context alive
+	 */
+	private static final class DummyContext implements Runnable {
+		private EventQueueHandler eqh;
+
+		public DummyContext(EventQueueHandler ctx) {
+			eqh = ctx;
+		}
+
+		public void run() {
+			eqh.runEventLoop(EventQueueHandler.INFINITE_EVENTS, EventQueueHandler.INFINITE_DURATION);
+			synchronized (eqh) {
+				eqh.notify();
+			}
+		}
+
+		public EventQueueHandler getEqh() {
+			synchronized (eqh) {
+				eqh.breakEventLoop();
+				try {
+					eqh.wait();
+				} catch (InterruptedException e) {
+					LOG.error("eqh cache was interrupted while in wait");
+				}
+			}
+			return eqh;
+		}
 	}
 }
