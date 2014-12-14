@@ -12,9 +12,6 @@ SRC_JAVA_FOLDER=$TOP_DIR/src/java
 SRC_JAVA_FILES="$SRC_JAVA_FOLDER/org/accelio/jxio/*.java $SRC_JAVA_FOLDER/org/accelio/jxio/exceptions/*.java $SRC_JAVA_FOLDER/org/accelio/jxio/impl/*.java $SRC_JAVA_FOLDER/org/accelio/jxio/jxioConnection/*.java $SRC_JAVA_FOLDER/org/accelio/jxio/jxioConnection/impl/*.java $SRC_JAVA_FOLDER/org/apache/lucene/facet/taxonomy/LRUHashMap.java"
 NATIVE_LIBS="libjxio.so libxio.so"
 
-# Turning off bullseye for case it was left on (only if cov01 is found on this machine)
-command -v cov01 >/dev/null 2>&1 && cov01 --off
-
 # Clean
 rm -fr $BIN_FOLDER
 mkdir -p $BIN_FOLDER
@@ -43,14 +40,6 @@ echo "Build JXIO C code"
 cd $TOP_DIR
 cd src/c/ && ./autogen.sh && ./configure --silent && make clean -s
 status=$?
-# Handle C Code Coverage
-if [[ -n "$CODE_COVERAGE_ON" ]];then
-        # Activate Code Coverage
-        sudo rm -rf $COVFILE
-        cov01 --on
-        cov01 --status
-        echo -e "\n[$0] Code Coverage Activated!\n"
-fi
 make -s
 if [[ $? != 0 ]] || [[ $status != 0 ]]; then
     echo "FAILURE! stopped JXIO build"
