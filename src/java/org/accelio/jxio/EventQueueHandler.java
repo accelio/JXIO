@@ -618,4 +618,8 @@ public class EventQueueHandler implements Runnable {
 	public boolean didExceptionOccur() {
 		return (this.caughtException != null);
 	}
+
+	public boolean getInRunEventLoop() {
+		return inRunLoop;
+	}
 }

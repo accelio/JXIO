@@ -79,9 +79,15 @@ public abstract class SimpleConnection {
 			if (event == EventName.SESSION_CLOSED || event == EventName.SESSION_ERROR
 			        || event == EventName.SESSION_REJECT) { // normal exit
 				connectErrorType = event;
+				boolean needToClean = !eqh.getInRunEventLoop();
+				if (close) {
+					needToClean = false;
+				}
 				close = true;
 				eqh.breakEventLoop();
-				releaseResources();
+				if (needToClean) {
+					releaseResources();
+				}
 			}
 		}
 

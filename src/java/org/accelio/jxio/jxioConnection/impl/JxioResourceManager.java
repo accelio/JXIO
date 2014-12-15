@@ -129,8 +129,8 @@ public class JxioResourceManager {
 				mp.deleteMsgPool();
 			}
 		}
-		for (DummyContext eqh : eqhs) {
-			getEqh().close();
+		for (DummyContext ctx : eqhs) {
+			ctx.getEqh().close();
 		}
 		msgPools.clear();
 		eqhs.clear();
@@ -149,7 +149,7 @@ public class JxioResourceManager {
 		public void run() {
 			eqh.runEventLoop(EventQueueHandler.INFINITE_EVENTS, EventQueueHandler.INFINITE_DURATION);
 			synchronized (eqh) {
-				eqh.notify();
+				eqh.notifyAll();
 			}
 		}
 
