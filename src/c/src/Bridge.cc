@@ -134,12 +134,13 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 	if (!xio_get_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_RDMA_NUM_DEVICES, &opt, &optlen) && (optlen <= 4) && (opt > 0)) {
 		LOG_DBG("Found %d RDMA devices", opt);
 
+#ifdef ACCELIO_IB_FORK_SUPPORT // Disbale ibv_fork_init()
 		// prepare IB resources to support fork-ing (prevent COW for the RDMA registered memroy)
 		opt = 1;
 		if (xio_set_opt(NULL, XIO_OPTLEVEL_RDMA, XIO_OPTNAME_ENABLE_FORK_INIT, &opt, sizeof(opt))) {
 			bridge_print_error("failed to enable AccelIO's fork init option");
 		}
-
+#endif
 		// disable Accelio's internal mem pool
 		// JXIO requiers Java user application to allocate our memory pool
 		opt = 0;
