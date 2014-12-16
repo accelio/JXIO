@@ -11,6 +11,11 @@ LIB_FOLDER=$TOP_DIR/src/lib
 SRC_JAVA_FOLDER=$TOP_DIR/src/java
 SRC_JAVA_FILES="$SRC_JAVA_FOLDER/org/accelio/jxio/*.java $SRC_JAVA_FOLDER/org/accelio/jxio/exceptions/*.java $SRC_JAVA_FOLDER/org/accelio/jxio/impl/*.java $SRC_JAVA_FOLDER/org/accelio/jxio/jxioConnection/*.java $SRC_JAVA_FOLDER/org/accelio/jxio/jxioConnection/impl/*.java $SRC_JAVA_FOLDER/org/apache/lucene/facet/taxonomy/LRUHashMap.java"
 NATIVE_LIBS="libjxio.so libxio.so"
+if [ -z "$DONT_STRIP" ]; then
+	STRIP_COMMAND="strip -s"
+else
+	STRIP_COMMAND="touch" #do not strip libraries from symbols
+fi
 
 # Clean
 rm -fr $BIN_FOLDER
@@ -28,7 +33,7 @@ echo "Build Accelio... libxio C code"
 cd $TOP_DIR
 git submodule update --init
 cd src/accelio/ && make distclean -si > /dev/null 2>&1;
-./autogen.sh && ./configure --silent --disable-raio-build --enable-silent-rules && make -s && cp -f src/usr/.libs/libxio.so $BIN_FOLDER  && strip -s $BIN_FOLDER/libxio.so
+./autogen.sh && ./configure --silent --disable-raio-build --enable-silent-rules && make -s && cp -f src/usr/.libs/libxio.so $BIN_FOLDER  && $STRIP_COMMAND $BIN_FOLDER/libxio.so
 if [[ $? != 0 ]] ; then
     echo "FAILURE! stopped JXIO build"
     exit 1
@@ -45,7 +50,7 @@ if [[ $? != 0 ]] || [[ $status != 0 ]]; then
     echo "FAILURE! stopped JXIO build"
     exit 1
 fi
-cp -f src/.libs/libjxio.so $BIN_FOLDER && strip -s $BIN_FOLDER/libjxio.so
+cp -f src/.libs/libjxio.so $BIN_FOLDER && $STRIP_COMMAND $BIN_FOLDER/libjxio.so
 # Build JXIO JAVA code
 echo "Build JXIO Java code"
 cd $TOP_DIR
