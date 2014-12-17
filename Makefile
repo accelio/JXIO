@@ -11,6 +11,12 @@ SRC_JAVA_FOLDER=$(TOP_DIR)/src/java
 SRC_JAVA_FILES=$(SRC_JAVA_FOLDER)/org/accelio/jxio/*.java $(SRC_JAVA_FOLDER)/org/accelio/jxio/exceptions/*.java $(SRC_JAVA_FOLDER)/org/accelio/jxio/impl/*.java $(SRC_JAVA_FOLDER)/org/accelio/jxio/jxioConnection/*.java $(SRC_JAVA_FOLDER)/org/accelio/jxio/jxioConnection/impl/*.java $(SRC_JAVA_FOLDER)/org/apache/lucene/facet/taxonomy/LRUHashMap.java
 
 NATIVE_LIBS=libjxio.so libxio.so
+
+STRIP_COMMAND=touch #do not strip libraries from symbols
+
+ifndef DONT_STRIP 
+	STRIP_COMMAND=strip -s
+endif
  
 all: $(TARGET)
 
@@ -18,10 +24,10 @@ $(TARGET):$(SRC_JAVA_FILES)
 	rm -rf $(BIN_FOLDER)/*; mkdir -p $(BIN_FOLDER)
 	(cd src/accelio/; make -s)
 	cp src/accelio/src/usr/.libs/libxio.so $(BIN_FOLDER)
-	strip -s $(BIN_FOLDER)/libxio.so
+	$(STRIP_COMMAND) $(BIN_FOLDER)/libxio.so
 	(cd src/c; make -s)
 	cp src/c/src/.libs/libjxio.so $(BIN_FOLDER)
-	strip -s $(BIN_FOLDER)/libjxio.so
+	$(STRIP_COMMAND) $(BIN_FOLDER)/libjxio.so
 	javac -cp $(LIB_FOLDER)/commons-logging.jar -d $(BIN_FOLDER) $(SRC_JAVA_FILES)
 	(cd $(BIN_FOLDER); jar -cfm $(TARGET) ../manifest.txt org $(NATIVE_LIBS))
 
