@@ -28,14 +28,10 @@
 #define MSG_LOG_TRACE(log_fmt, log_args...)  LOG_BY_MODULE(lsTRACE, log_fmt, ##log_args)
 
 
-Msg::Msg(char* buf, struct xio_mr* xio_mr, int in_buf_size, int out_buf_size, MsgPool* pool)
+Msg::Msg(char* buf, struct xio_mr* xio_mr, int in_buf_size, int out_buf_size, MsgPool* pool) :
+	in_buf_size(in_buf_size), out_buf_size(out_buf_size), xio_mr(xio_mr),
+	pool(pool), buf(buf), buf_out(buf + in_buf_size)
 {
-	this->buf = buf;
-	this->xio_mr = xio_mr;
-	this->in_buf_size = in_buf_size;
-	this->out_buf_size = out_buf_size;
-	this->pool = pool;
-	this->buf_out = this->buf + in_buf_size;
 	memset(&this->xio_msg, 0, sizeof(this->xio_msg));
 	memset(&this->xio_msg_mirror, 0, sizeof(this->xio_msg_mirror));
 	this->set_xio_msg_client_fields();
@@ -56,12 +52,12 @@ void Msg::set_xio_msg_client_fields()
 	this->xio_msg.out.header.iov_len = 0;
 	this->xio_msg.in.sgl_type           = XIO_SGL_TYPE_IOV;
 	this->xio_msg.in.data_iov.max_nents = XIO_IOVLEN;
-	if (this->out_buf_size == 0) {
+	if (get_out_size() == 0) {
 		this->xio_msg.out.data_iov.nents = 0;
 	} else {
 		this->xio_msg.out.data_iov.nents = 1;
 		this->xio_msg.out.data_iov.sglist[0].iov_base = this->buf_out;
-		this->xio_msg.out.data_iov.sglist[0].iov_len = this->out_buf_size;
+		this->xio_msg.out.data_iov.sglist[0].iov_len = get_out_size();
 		this->xio_msg.out.data_iov.sglist[0].mr = this->xio_mr;
 	}
 
@@ -69,13 +65,13 @@ void Msg::set_xio_msg_client_fields()
 	this->xio_msg.in.header.iov_len = 0;
 	this->xio_msg.out.sgl_type           = XIO_SGL_TYPE_IOV;
 	this->xio_msg.out.data_iov.max_nents = XIO_IOVLEN;
-	if (this->in_buf_size == 0) {
+	if (get_in_size() == 0) {
 		this->xio_msg.in.data_iov.nents = 0;
 	} else {
 		xio_iovec_ex *sglist = vmsg_sglist(&this->xio_msg.in);
 		this->xio_msg.in.data_iov.nents = 1;
 		sglist[0].iov_base = this->buf;
-		sglist[0].iov_len = this->in_buf_size;
+		sglist[0].iov_len = get_in_size();
 		sglist[0].mr = this->xio_mr;
 	}
 }
@@ -94,14 +90,14 @@ void Msg::set_xio_msg_server_fields()
 
 	this->xio_msg.out.data_iov.nents = 1;
 	sglist[0].iov_base = this->buf_out;
-	sglist[0].iov_len = this->out_buf_size;
+	sglist[0].iov_len = get_out_size();
 	sglist[0].mr = this->xio_mr;
 
 	sglist = vmsg_sglist(&this->xio_msg.in);
 	this->xio_msg.in.header.iov_base = NULL;
 	this->xio_msg.in.data_iov.nents = 1;
 	sglist[0].iov_base = this->buf;
-	sglist[0].iov_len = this->in_buf_size;
+	sglist[0].iov_len = get_in_size();
 	sglist[0].mr = this->xio_mr;
 }
 
@@ -110,7 +106,7 @@ void Msg::set_xio_msg_fields_for_assign(struct xio_msg *msg)
 	xio_iovec_ex *sglist = vmsg_sglist(&msg->in); 
 
 	sglist[0].iov_base = this->buf;
-	sglist[0].iov_len = this->in_buf_size;
+	sglist[0].iov_len = get_in_size();
 	sglist[0].mr = this->xio_mr;
 	msg->user_context = this;
 	this->set_xio_msg_req(msg);
