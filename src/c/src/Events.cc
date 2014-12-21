@@ -18,6 +18,7 @@
 #include <string.h>
 #include <map>
 
+#include "bullseye.h"
 #include "Events.h"
 
 
@@ -85,6 +86,7 @@ int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, void *serverSess
 
 	struct sockaddr *ipStruct = (struct sockaddr *)&req->src_addr;
 
+	BULLSEYE_EXCLUDE_BLOCK_START
 	if (ipStruct->sa_family == AF_INET) {
 		static char addr[INET_ADDRSTRLEN];
 		struct sockaddr_in *v4 = (struct sockaddr_in *) ipStruct;
@@ -101,6 +103,7 @@ int Events::writeOnNewSessionEvent(char *buf, void *ptrForJava, void *serverSess
 		LOG_ERR("can not get src ip");
 		return 0;
 	}
+	BULLSEYE_EXCLUDE_BLOCK_END
 
 	int32_t ip_len = htonl(len);
 	memcpy(buf + this->size, &ip_len, sizeof(int32_t));
