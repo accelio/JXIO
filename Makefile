@@ -2,6 +2,7 @@
 # Configuring Running Directory
 TOP_DIR=.
 
+GIT_VERSION=`git describe --long --tags --always --dirty`
 
 # Configuring Parameters
 TARGET=jxio.jar
@@ -29,6 +30,8 @@ $(TARGET):$(SRC_JAVA_FILES)
 	cp src/c/src/.libs/libjxio.so $(BIN_FOLDER)
 	$(STRIP_COMMAND) $(BIN_FOLDER)/libjxio.so
 	javac -cp $(LIB_FOLDER)/commons-logging.jar -d $(BIN_FOLDER) $(SRC_JAVA_FILES)
+	(echo $(GIT_VERSION) > version)
+	(cp manifest.template manifest.txt; sed -i "s/Implementation-Version: .*/Implementation-Version: $(GIT_VERSION)/" manifest.txt)
 	(cd $(BIN_FOLDER); jar -cfm $(TARGET) ../manifest.txt org $(NATIVE_LIBS))
 
 clean:
