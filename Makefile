@@ -32,6 +32,7 @@ $(TARGET):$(SRC_JAVA_FILES)
 	javac -cp $(LIB_FOLDER)/commons-logging.jar -d $(BIN_FOLDER) $(SRC_JAVA_FILES)
 	(echo $(GIT_VERSION) > version)
 	(cp manifest.template manifest.txt; sed -i "s/Implementation-Version: .*/Implementation-Version: $(GIT_VERSION)/" manifest.txt)
+	(echo "Implementation-Version-AccelIO: `cd src/accelio; git describe --long --tags --always --dirty; cd ../..`" >> manifest.txt)
 	(cd $(BIN_FOLDER); jar -cfm $(TARGET) ../manifest.txt org $(NATIVE_LIBS))
 
 clean:

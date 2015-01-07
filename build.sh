@@ -21,12 +21,17 @@ fi
 rm -fr $BIN_FOLDER
 mkdir -p $BIN_FOLDER
 
-## Prepare VERSION file
+## Prepare VERSION files
 GIT_VERSION=`git describe --long --tags --always --dirty`
-echo "git version is: $GIT_VERSION"
+GIT_VERSION_XIO=`cd src/accelio; git describe --long --tags --always --dirty`
+echo "JXIO git version is: $GIT_VERSION"
+echo "AccelIO git version is: $GIT_VERSION_XIO"
 echo "$GIT_VERSION" > version
+
+# Prepare jar MANIFEST file
 cp manifest.template manifest.txt
 sed -i "s/Implementation-Version: .*/Implementation-Version: $GIT_VERSION/" manifest.txt
+echo "Implementation-Version-AccelIO: $GIT_VERSION_XIO" >> manifest.txt
 
 ## Build Accelio
 echo "Build Accelio... libxio C code"
