@@ -2,7 +2,7 @@ JDK = $(JAVA_HOME)
 topdir=../../
 
 # additional include paths necessary to compile the C library
-AM_CPPFLAGS = -fPIC -DPIC -DGIT_VERSION=\"`git describe --long --always`\" -Werror \
+AM_CPPFLAGS = -fPIC -DPIC -DGIT_VERSION=\"`git describe --long --tags --always --dirty`\" -Werror \
 		-I$(JDK)/include -I$(JDK)/include/linux \
 		-I$(topdir)/accelio/include
 

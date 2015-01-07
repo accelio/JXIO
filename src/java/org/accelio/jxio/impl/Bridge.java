@@ -23,13 +23,27 @@ public class Bridge {
 	private static final Log                              LogFromNative  = LogFactory.getLog("LogFromNative");
 	private static final Log                              LOGBridge      = LogFactory.getLog(Bridge.class
 	                                                                             .getCanonicalName());
+	private static final String 	                      version_jxio;
+	private static final String 	                      version_xio;
 
 	private static ConcurrentMap<Long, EventQueueHandler> mapIdEQHObject = new ConcurrentHashMap<Long, EventQueueHandler>();
 
 	static {
 		LoadLibrary.loadLibrary("libxio.so"); // Accelio library
 		LoadLibrary.loadLibrary("libjxio.so"); // JXIO native library
+		version_jxio = getVersionNative();
+		version_xio = getVersionAccelIONative();
 		setNativeLogLevel(getLogLevel());
+	}
+
+	private static native String getVersionNative();
+	public static String getVersion() {
+		return version_jxio;
+	}
+
+	private static native String getVersionAccelIONative();
+	public static String getVersionAccelIO() {
+		return version_xio;
 	}
 
 	private static int getLogLevel() {

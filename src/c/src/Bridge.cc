@@ -54,6 +54,17 @@ extern "C" void bridge_print_error(const char* logmsg)
     #pragma BullseyeCoverage on
 #endif
 
+static const char jxio_git_describe_str[] = GIT_VERSION;
+const char* get_version()
+{
+	return jxio_git_describe_str;
+}
+
+const char* get_version_xio()
+{
+	return "?"; //xio_version();
+}
+
 // JNI inner functions implementations
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 {
@@ -165,7 +176,7 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 
 	BULLSEYE_EXCLUDE_BLOCK_END
 
-	LOG_DBG("Version: %s", GIT_VERSION);
+	LOG_DBG("Version: %s", get_version());
 	LOG_DBG("JXIO/c/Bridge & AccelIO ready, java callback methods were found and cached");
 
 	return JNI_VERSION_1_4;  //direct buffer requires java 1.4
@@ -227,6 +238,16 @@ void Bridge_invoke_requestForBoundMsgPool_callback(Context* ctx, int inSize, int
 	BULLSEYE_EXCLUDE_BLOCK_END
 	long ptrEQH = (jlong) (intptr_t) ctx;
 	env->CallStaticLongMethod(jclassBridge, jmethodID_requestForBoundMsgPool, ptrEQH, inSize, outSize);
+}
+
+extern "C" JNIEXPORT jstring JNICALL Java_org_accelio_jxio_impl_Bridge_getVersionNative(JNIEnv *env, jclass cls)
+{
+	return env->NewStringUTF(get_version());
+}
+
+extern "C" JNIEXPORT jstring JNICALL Java_org_accelio_jxio_impl_Bridge_getVersionAccelIONative(JNIEnv *env, jclass cls)
+{
+	return env->NewStringUTF(get_version_xio());
 }
 
 extern "C" JNIEXPORT void JNICALL Java_org_accelio_jxio_impl_Bridge_setLogLevelNative(JNIEnv *env, jclass cls, jint logLevel)
