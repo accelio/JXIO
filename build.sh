@@ -17,21 +17,9 @@ else
 	STRIP_COMMAND="touch" #do not strip libraries from symbols
 fi
 
-# Clean
+## Clean
 rm -fr $BIN_FOLDER
 mkdir -p $BIN_FOLDER
-
-## Prepare VERSION files
-GIT_VERSION=`git describe --long --tags --always --dirty`
-GIT_VERSION_XIO=`cd src/accelio; git describe --long --tags --always --dirty`
-echo "JXIO git version is: $GIT_VERSION"
-echo "AccelIO git version is: $GIT_VERSION_XIO"
-echo "$GIT_VERSION" > version
-
-# Prepare jar MANIFEST file
-cp manifest.template manifest.txt
-sed -i "s/Implementation-Version: .*/Implementation-Version: $GIT_VERSION/" manifest.txt
-echo "Implementation-Version-AccelIO: $GIT_VERSION_XIO" >> manifest.txt
 
 ## Build Accelio
 echo "Build Accelio... libxio C code"
@@ -45,7 +33,7 @@ if [[ $? != 0 ]] ; then
 fi
 
 ## Build JXIO
-# Build JXIO C code
+## Build JXIO C code
 echo "Build JXIO C code"
 cd $TOP_DIR
 cd src/c/ && ./autogen.sh && ./configure --silent && make clean -s
@@ -56,7 +44,7 @@ if [[ $? != 0 ]] || [[ $status != 0 ]]; then
     exit 1
 fi
 cp -f src/.libs/libjxio.so $BIN_FOLDER && $STRIP_COMMAND $BIN_FOLDER/libjxio.so
-# Build JXIO JAVA code
+## Build JXIO JAVA code
 echo "Build JXIO Java code"
 cd $TOP_DIR
 javac -cp $LIB_FOLDER/commons-logging.jar -d $BIN_FOLDER $SRC_JAVA_FILES
@@ -64,19 +52,35 @@ if [[ $? != 0 ]] ; then
     echo "FAILURE! stopped JXIO build"
     exit 1
 fi
-# Create JXIO Java docs
+## Create JXIO Java docs
 echo "Creating JXIO Java docs"
 javadoc -quiet -classpath $LIB_FOLDER/commons-logging.jar -d $TOP_DIR/docs -sourcepath src/java/ org.accelio.jxio
 if [[ $? != 0 ]] ; then
     echo "FAILURE! stopped JXIO build"
     exit 1
 fi
-# Create JXIO Jar
+
+## Prepare VERSION files
+cd $TOP_DIR
+GIT_VERSION=`git describe --long --tags --always --dirty`
+GIT_VERSION_XIO=`cd src/accelio; git describe --long --tags --always --dirty`
+echo "JXIO git version: $GIT_VERSION" > version
+echo "AccelIO git version: $GIT_VERSION_XIO" >> version
+
+## Prepare jar MANIFEST file
+cp manifest.template manifest.txt
+sed -i "s/Implementation-Version: .*/Implementation-Version: $GIT_VERSION/" manifest.txt
+echo "Implementation-Version-AccelIO: $GIT_VERSION_XIO" >> manifest.txt
+
+## Create JXIO Jar
 echo "Creating JXIO jar..."
 cd $BIN_FOLDER && jar -cfm $TARGET ../manifest.txt org $NATIVE_LIBS
 if [[ $? != 0 ]] ; then
     echo "FAILURE! stopped JXIO build"
     exit 1
 fi
+
+## Print Version details
+echo ""; cat $TOP_DIR/version
 
 echo -e "\nJXIO Build completed SUCCESSFULLY!\n"
