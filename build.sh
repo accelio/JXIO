@@ -5,6 +5,9 @@ TOP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $TOP_DIR
 echo -e "\nThe JXIO top directory is $TOP_DIR\n"
 
+GIT_VERSION=`git describe --long --tags --always --dirty`
+echo "JXIO git version: $GIT_VERSION"
+
 TARGET=jxio.jar
 BIN_FOLDER=$TOP_DIR/bin
 LIB_FOLDER=$TOP_DIR/src/lib
@@ -25,6 +28,8 @@ mkdir -p $BIN_FOLDER
 echo "Build Accelio... libxio C code"
 cd $TOP_DIR
 git submodule update --init
+GIT_VERSION_XIO=`cd src/accelio; git describe --long --tags --always --dirty`
+echo "AccelIO git version: $GIT_VERSION_XIO"
 cd src/accelio/ && make distclean -si > /dev/null 2>&1;
 ./autogen.sh && ./configure --silent --disable-raio-build --enable-silent-rules && make -s && cp -f src/usr/.libs/libxio.so $BIN_FOLDER  && $STRIP_COMMAND $BIN_FOLDER/libxio.so
 if [[ $? != 0 ]] ; then
@@ -60,14 +65,8 @@ if [[ $? != 0 ]] ; then
     exit 1
 fi
 
-## Prepare VERSION files
-cd $TOP_DIR
-GIT_VERSION=`git describe --long --tags --always --dirty`
-GIT_VERSION_XIO=`cd src/accelio; git describe --long --tags --always --dirty`
-echo "JXIO git version: $GIT_VERSION" > version
-echo "AccelIO git version: $GIT_VERSION_XIO" >> version
-
 ## Prepare jar MANIFEST file
+cd $TOP_DIR
 cp manifest.template manifest.txt
 sed -i "s/Implementation-Version: .*/Implementation-Version: $GIT_VERSION/" manifest.txt
 echo "Implementation-Version-AccelIO: $GIT_VERSION_XIO" >> manifest.txt
@@ -81,6 +80,9 @@ if [[ $? != 0 ]] ; then
 fi
 
 ## Print Version details
+cd $TOP_DIR
+echo "JXIO git version: $GIT_VERSION" > version
+echo "AccelIO git version: $GIT_VERSION_XIO" >> version
 echo ""; cat $TOP_DIR/version
 
 echo -e "\nJXIO Build completed SUCCESSFULLY!\n"
