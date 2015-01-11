@@ -62,7 +62,7 @@ const char* get_version()
 
 const char* get_version_xio()
 {
-	return "?"; //xio_version();
+	return xio_version();
 }
 
 // JNI inner functions implementations
