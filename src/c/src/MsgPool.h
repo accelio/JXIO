@@ -46,8 +46,7 @@ private:
 	int             msg_num;
 	int             in_size;
 	int             out_size;
-	struct xio_mr*  xio_mr;
-	struct xio_buf* x_buf;
+	struct xio_reg_mem reg_mem;
 	std::list<Msg*> msg_list;
 };
 

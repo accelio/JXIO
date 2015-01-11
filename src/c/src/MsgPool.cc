@@ -34,33 +34,21 @@ MsgPool::MsgPool(int msg_num, int in_size, int out_size)
 	this->out_size = out_size;
 	this->msg_num = msg_num;
 	this->msg_ptrs = NULL;
-	this->xio_mr = NULL;
 	this->buf_size = (long)msg_num * (in_size + out_size);
 
-	this->x_buf = xio_alloc(buf_size);
 	BULLSEYE_EXCLUDE_BLOCK_START
-	if (this->x_buf == NULL) {
-		MSGPOOL_LOG_WARN("there was an error while allocating & registering memory via huge pages");
-		MSGPOOL_LOG_WARN("You should work with Mellanox OFED 2.0 or newer");
-		MSGPOOL_LOG_WARN("attempting to allocate&registering memory. THIS COULD HURT PERFORMANCE!!!!!");
-		this->buf = new char[this->buf_size];
-		this->xio_mr = xio_reg_mr(this->buf, this->buf_size);
-		if (this->xio_mr == NULL) {
-			MSGPOOL_LOG_ERR("registering memory failed with xio_reg_mr(buf=%p, buf_size=%d) (errno=%d '%s')", this->buf, this->buf_size, xio_errno(), xio_strerror(xio_errno()));
-			delete[] this->buf;
-			throw std::bad_alloc();
-		}
+	if (xio_mem_alloc(buf_size, &this->reg_mem)){
+		MSGPOOL_LOG_ERR("allocating & registering memory failed with xio_mem_alloc(buf=%p, buf_size=%d) (errno=%d '%s')", this->reg_mem, this->buf_size, xio_errno(), xio_strerror(xio_errno()));
+		throw std::bad_alloc();
 	}
-	else {
-		this->buf = (char*) x_buf->addr;
-		this->xio_mr = x_buf->mr;
-	}
+	this->buf = (char*) this->reg_mem.addr;
+
 	BULLSEYE_EXCLUDE_BLOCK_END
 
 	msg_ptrs = new Msg*[msg_num];
 
 	for (int i = 0; i < msg_num; i++) {
-		msg = new Msg((char*) buf + i * (in_size + out_size), xio_mr, in_size, out_size, this);
+		msg = new Msg((char*) buf + i * (in_size + out_size), this->reg_mem.mr, in_size, out_size, this);
 		add_msg_to_pool(msg);
 		msg_ptrs[i] = msg;
 	}
@@ -77,16 +65,8 @@ MsgPool::~MsgPool()
 	}
 
 	BULLSEYE_EXCLUDE_BLOCK_START
-	if (this->x_buf) { //memory was allocated using xio_alloc
-		if (xio_free(&this->x_buf)) {
-			MSGPOOL_LOG_DBG("Error xio_free failed: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
-		}
-	}
-	else { //memory was allocated using malloc and xio_reg_mr
-		if (xio_dereg_mr(&this->xio_mr)) {
-			MSGPOOL_LOG_DBG("Error in xio_dereg_mr: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
-		}
-		delete[] this->buf;
+	if (xio_mem_free(&this->reg_mem)) {
+		MSGPOOL_LOG_DBG("Error xio_mem_free failed: '%s' (%d)", xio_strerror(xio_errno()), xio_errno());
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
 
