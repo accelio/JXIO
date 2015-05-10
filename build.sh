@@ -31,7 +31,7 @@ git submodule update --init
 GIT_VERSION_XIO=`cd src/accelio; git describe --long --tags --always --dirty`
 echo "AccelIO git version: $GIT_VERSION_XIO"
 cd src/accelio/ && make distclean -si > /dev/null 2>&1;
-./autogen.sh && ./configure --silent --disable-raio-build --enable-silent-rules && make -s && cp -f src/usr/.libs/libxio.so $BIN_FOLDER  && $STRIP_COMMAND $BIN_FOLDER/libxio.so
+./autogen.sh && ./configure --silent --disable-raio-build --enable-silent-rules --enable-performance && make -s && cp -f src/usr/.libs/libxio.so $BIN_FOLDER  && $STRIP_COMMAND $BIN_FOLDER/libxio.so
 if [[ $? != 0 ]] ; then
     echo "FAILURE! stopped JXIO build"
     exit 1
