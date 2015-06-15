@@ -111,6 +111,8 @@ public class MsgPool {
 
 	/**
 	 * Returns the number of Msgs this MsgPool was created with.
+         *
+         * @return capacity of this MsgPool
 	 */
 	public int capacity() {
 		return this.capacity;

@@ -120,7 +120,7 @@ public class Msg {
 	}
 
 	/**
-	 * This method sets IN & OUT ByteBuffer position to 0 and sets limit to 0
+	 * This method sets IN and OUT ByteBuffer position to 0 and sets limit to 0
 	 * 
 	 */
 	public void resetPositions() {

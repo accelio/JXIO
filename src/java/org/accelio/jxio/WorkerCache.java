@@ -38,7 +38,6 @@ public class WorkerCache {
 
 	/**
 	 * The worker provider is used by the cache to get a new worker when no free worker is found
-	 * @param wp
 	 */
 	public interface WorkerProvider {
 		/**
@@ -52,7 +51,8 @@ public class WorkerCache {
 	 */
 	public interface Worker {
 		/**
-		 * Indicate if the server worker is free and the cache can pass it as an hint
+		 * Indicate if the server worker is free and the cache can pass it as an hint.
+                 * @return true if this worker is free, false otherwise.
 		 */
 		public boolean isFree();
 	}
@@ -60,7 +60,7 @@ public class WorkerCache {
 	/**
 	 * The worker provider is used by the cache to get a new worker when there's no free
 	 *  worker from previous connections
-	 * @param wp
+	 * @param wp - provides new workers when no free workers are found. 
 	 */
 	public WorkerCache(WorkerProvider wp) {
 		this.wp = wp;
