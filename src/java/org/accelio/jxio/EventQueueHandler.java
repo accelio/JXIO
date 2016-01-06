@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -545,7 +546,7 @@ public class EventQueueHandler implements Runnable {
 		}
 		// the messages inside the pool must be added to hashmap, so that the appropraite msg can be tracked
 		// once a request arrives
-		List<Msg> msgArray = msgPool.getAllMsg();
+		ConcurrentLinkedQueue<Msg> msgArray = msgPool.getAllMsg();
 		for (Msg msg : msgArray) {
 			msgsPendingNewRequest.put(msg.getId(), msg);
 		}
