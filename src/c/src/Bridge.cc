@@ -69,6 +69,7 @@ const char* get_version_xio()
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 {
 	//printf("in JXIO/c/Bridge - JNI_OnLoad\n");
+	xio_init();
 
 	cached_jvm = jvm;
 	JNIEnv *env;
