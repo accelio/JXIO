@@ -39,7 +39,7 @@ public class SimpleServer {
 	private final ServerPortal      server;
 	private final EventQueueHandler eqh;
 	private ServerSession           session;
-	
+
 	public static long numberofRsps = 0;
 	public static long numberofReqs = 0;
 	public static long maxNumberofRsps = 600000;
@@ -86,7 +86,7 @@ public class SimpleServer {
 
 		SimpleServer server = new SimpleServer(uri);
 		server.run();
-		
+
 		LOG.info("Server is releasing JXIO resources and exiting");
 		server.releaseResources();
 	}
@@ -122,17 +122,17 @@ public class SimpleServer {
 
 		public void onRequest(Msg msg) {
 			++numberofReqs;
-			
+
 			if (numberofReqs % PRINT_COUNTER == 0){
-    			// Read message String
-    			byte ch;
-    			StringBuffer buffer = new StringBuffer();
-    			while (msg.getIn().hasRemaining() && ((ch = msg.getIn().get()) > -1)) {
-    	            buffer.append((char)ch);
-    	        }
-    			LOG.info("Got message request " + numberofReqs + " : '" + buffer.toString() + "'");
+				// Read message String
+				byte ch;
+				StringBuffer buffer = new StringBuffer();
+				while (msg.getIn().hasRemaining() && ((ch = msg.getIn().get()) > -1)) {
+					buffer.append((char)ch);
+				}
+				LOG.info("Got message request " + numberofReqs + " : '" + buffer.toString() + "'");
 			}
-			
+
 			// Write response
 			try {
 				msg.getOut().put("Simple response".getBytes("UTF-8"));

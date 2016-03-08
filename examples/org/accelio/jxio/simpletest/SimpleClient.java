@@ -39,7 +39,7 @@ public class SimpleClient {
 	private final EventQueueHandler eqh;
 	private ClientSession client;
 	public int exitStatus = 1;
-	
+
 	public static long numberofReqs = 0;
 	public static long numberofRsps = 0;
 	public static long maxNumberofReqs = 600000;
@@ -67,14 +67,17 @@ public class SimpleClient {
 		}
 
 		SimpleClient client = new SimpleClient();
+		// Connect
 		client.connect(uri);
+		// Wait for a single connection response
 		client.run();
+		// Send
 		for (numberofReqs = 1; numberofReqs <= maxNumberofReqs; ++numberofReqs){
 			LOG.trace("sending req " + numberofReqs);
 			client.send();
 			client.run();
 		}
-
+		// Finish
 		LOG.info("Closing the session...");
 		client.close();
 		LOG.info("Client is releasing JXIO resources and exiting");
@@ -91,7 +94,7 @@ public class SimpleClient {
 		LOG.info("Try to establish a new session to '" + uri + "'");
 		this.client = new ClientSession(eqh, uri, new MyClientCallbacks(this));
 	}
-	
+
 	public void send(){
 		Msg msg = this.mp.getMsg();
 		try {
@@ -108,14 +111,14 @@ public class SimpleClient {
 	}
 
 	public void run() {
-		// block for JXIO incoming event
+		// block for a single JXIO incoming event
 		eqh.runEventLoop(1, -1);
 	}
 
 	public void close(){
-		client.close();	
+		client.close();
 	}
-	
+
 	public void releaseResources() {
 		mp.deleteMsgPool();
 		eqh.close();
@@ -138,17 +141,17 @@ public class SimpleClient {
 
 		public void onResponse(Msg msg) {
 			++numberofRsps;
-			
+
 			if (numberofRsps % PRINT_COUNTER == 0){
-    			// Read reply message String
-    			byte ch;
-    			StringBuffer buffer = new StringBuffer();
-    			while (msg.getIn().hasRemaining() && ((ch = msg.getIn().get()) > -1)) {
-    				buffer.append((char) ch);
-    			}
-    			LOG.info("Got message response " + numberofRsps + ": '" + buffer.toString() + "'");
+				// Read reply message String
+				byte ch;
+				StringBuffer buffer = new StringBuffer();
+				while (msg.getIn().hasRemaining() && ((ch = msg.getIn().get()) > -1)) {
+					buffer.append((char) ch);
+				}
+				LOG.info("Got message response " + numberofRsps + ": '" + buffer.toString() + "'");
 			}
-			
+
 			msg.returnToParentPool();
 			exitStatus = 0; // Success, we got our message response back
 		}
