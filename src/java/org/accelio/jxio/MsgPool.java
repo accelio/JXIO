@@ -19,6 +19,7 @@ package org.accelio.jxio;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,14 +40,14 @@ import org.accelio.jxio.impl.Bridge;
  * Server: MsgPool p2 = new MsgPool(164, 64, 8192)
  */
 public class MsgPool {
-	private static final Log LOG          = LogFactory.getLog(MsgPool.class.getCanonicalName());
-	public static final int  MAX_CAPACITY = 100064;
-	private final int        capacity;
-	private final int        inSize;
-	private final int        outSize;
-	private final ByteBuffer buffer;
-	private final long       refToCObject;
-	List<Msg>                listMsg      = new ArrayList<Msg>();
+	private static final Log   LOG          = LogFactory.getLog(MsgPool.class.getCanonicalName());
+	public static final int    MAX_CAPACITY = 100064;
+	private final int          capacity;
+	private final int          inSize;
+	private final int          outSize;
+	private final ByteBuffer   buffer;
+	private final long         refToCObject;
+	ConcurrentLinkedQueue<Msg> listMsg      = new ConcurrentLinkedQueue<Msg>();
 	// this flag indicated if this pool is already bound to eqh
 	private boolean          already_bound;
 
@@ -138,7 +139,7 @@ public class MsgPool {
 			LOG.warn(this.toLogString() + "there are no more messages in pool");
 			return null;
 		}
-		Msg msg = listMsg.remove(0);
+		Msg msg = listMsg.poll();
 		msg.setMsgReturnable();
 		return msg;
 	}
@@ -189,7 +190,7 @@ public class MsgPool {
 		Bridge.deleteMsgPool(refToCObject);
 	}
 
-	List<Msg> getAllMsg() {
+	ConcurrentLinkedQueue<Msg> getAllMsg() {
 		return listMsg;
 	}
 

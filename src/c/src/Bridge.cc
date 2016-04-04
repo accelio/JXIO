@@ -69,6 +69,7 @@ const char* get_version_xio()
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 {
 	//printf("in JXIO/c/Bridge - JNI_OnLoad\n");
+	xio_init();
 
 	cached_jvm = jvm;
 	JNIEnv *env;
@@ -132,6 +133,7 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 	// setup log collection from AccelIO into JXIO's logging
 	logs_from_xio_set_threshold(g_log_threshold);
 	logs_from_xio_callback_register();
+	xio_init();
 
 	// disable Accelio's HugeTbl memory allocation scheme
 	int opt = 1;
@@ -188,6 +190,7 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *jvm, void* reserved)
 extern "C" JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *jvm, void* reserved)
 {
 	logs_from_xio_callback_unregister();
+	xio_shutdown();
 
 	// NOTE: We never reached this place
 	static bool alreadyCalled = false;
