@@ -58,29 +58,31 @@ Client::Client(const char* url, long ptrCtx)
 	this->session = xio_session_create(&params);
 	BULLSEYE_EXCLUDE_BLOCK_START
 	if (session == NULL) {
-		CLIENT_LOG_ERR("Error in creating session for Context=%p (errno=%d '%s')", ctxClass, xio_errno(), xio_strerror(xio_errno()));
+		CLIENT_LOG_ERR("Error in creating session for Context=%p (errno=%d '%s')", this->ctx_class, xio_errno(), xio_strerror(xio_errno()));
 		throw std::bad_alloc();
 	}
 	BULLSEYE_EXCLUDE_BLOCK_END
+	CLIENT_LOG_DBG("CTOR done");
+}
 
+bool Client::create_connection()
+{
 	struct xio_connection_params cparams;
 	memset(&cparams, 0, sizeof(cparams));
 	cparams.session = session;
-	cparams.ctx = ctxClass->get_xio_context();
+	cparams.ctx = this->ctx_class->get_xio_context();
 	cparams.conn_user_context = this;
 
-	/* connect the session  */
 	this->con = xio_connect(&cparams);
-	BULLSEYE_EXCLUDE_BLOCK_START
-	if (con == NULL) {
-		CLIENT_LOG_ERR("Error in creating connection for Context=%p, session=%p (errno=%d '%s')", ctxClass, this->session, xio_errno(), xio_strerror(xio_errno()));
+ 	BULLSEYE_EXCLUDE_BLOCK_START
+ 	if (con == NULL) {
+		CLIENT_LOG_ERR("Error in creating connection for Context=%p", this->ctx_class);
 		xio_session_destroy(this->session);
-		throw std::bad_alloc();
-	}
-	BULLSEYE_EXCLUDE_BLOCK_END
-
-	CLIENT_LOG_DBG("CTOR done");
-	return;
+		return false;
+ 	}
+ 	BULLSEYE_EXCLUDE_BLOCK_END
+	CLIENT_LOG_DBG("create connection done");
+	return true;
 }
 
 Client::~Client()

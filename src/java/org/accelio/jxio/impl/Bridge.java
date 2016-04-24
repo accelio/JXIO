@@ -92,6 +92,12 @@ public class Bridge {
 		return startSessionClientNative(url, ptrCtx);
 	}
 
+	private static native boolean connectSessionClientNative(long ptrSes);
+	
+	public static boolean connectSessionClient(final long ptrSes) {
+	  return connectSessionClientNative(ptrSes);
+	}
+	
 	private static native void closeSessionClientNative(long ptrSes);
 
 	public static void closeSessionClient(final long ptrSes) {
