@@ -312,6 +312,12 @@ extern "C" JNIEXPORT jlong JNICALL Java_org_accelio_jxio_impl_Bridge_startSessio
 	return (jlong)(intptr_t)client;
 }
 
+extern "C" JNIEXPORT jboolean JNICALL Java_org_accelio_jxio_impl_Bridge_connectSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
+{
+	Client *ses = (Client*)ptrSes;
+	return ses->create_connection();
+}
+
 extern "C" JNIEXPORT jboolean JNICALL Java_org_accelio_jxio_impl_Bridge_closeSessionClientNative(JNIEnv *env, jclass cls, jlong ptrSes)
 {
 	Client *ses = (Client*)ptrSes;

@@ -141,14 +141,19 @@ public class ClientSession extends EventQueueHandler.Eventable {
 		this.nameForLog = this.name + ": ";
 		if (id == 0) {
 			LOG.error(this.toLogString() + "there was an error creating session");
+			return;
 		}
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.toLogString() + "connecting to " + uriStr);
 		}
 		this.setId(id);
-
 		this.eqh.addEventable(this);
+
+		if(!Bridge.connectSessionClient(this.getId())) {
+		  LOG.error(this.toLogString() + "there was an error connecting session");
+		  return;
+		}
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(this.toLogString() + "CS CTOR done");

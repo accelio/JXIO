@@ -34,6 +34,7 @@ public:
 	//to move some to private?
 	Client(const char* url, long ptrCtx);
 	~Client();
+	bool create_connection();
 	bool close_connection();
 	int send_msg(Msg *msg, const int out_size, const int in_size, const bool is_mirror);
 
