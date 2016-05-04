@@ -140,15 +140,13 @@ public class ServerSession extends EventQueueHandler.Eventable {
 			LOG.error(this.toLogString() + "closing ServerSession with empty id");
 			return false;
 		}
-		boolean ret = Bridge.closeServerSession(getId());
-		setIsClosing(ret);
-		if (ret){
-			if (LOG.isDebugEnabled())
-				LOG.debug(this.toLogString() + "close() Done successfully");
-		}else
-			LOG.warn(this.toLogString() + "close server session failed");
+		Bridge.closeServerSession(getId());
+		setIsClosing(true);
+		
+		if (LOG.isDebugEnabled())
+			LOG.debug(this.toLogString() + "close() Done successfully");
 
-		return ret;
+		return true;
 	}
 
 	/**

@@ -116,10 +116,10 @@ public class Bridge {
 		stopServerPortalNative(ptrSrv);
 	}
 
-	private static native boolean closeSessionServerNative(long ptrSesServer);
+	private static native void closeSessionServerNative(long ptrSesServer);
 
-	public static boolean closeServerSession(final long ptrSesServer) {
-		return closeSessionServerNative(ptrSesServer);
+	public static void closeServerSession(final long ptrSesServer) {
+		closeSessionServerNative(ptrSesServer);
 	}
 
 	private static native boolean forwardSessionNative(String url, long ptrSes, long ptrPortal);
