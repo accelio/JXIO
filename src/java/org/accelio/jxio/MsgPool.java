@@ -107,7 +107,7 @@ public class MsgPool {
 	 * @return true if this MsgPool is empty
 	 */
 	public boolean isEmpty() {
-		return listMsg.size() == 0;
+		return listMsg.isEmpty();
 	}
 
 	/**
