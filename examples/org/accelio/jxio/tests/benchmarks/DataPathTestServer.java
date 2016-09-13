@@ -59,11 +59,9 @@ public class DataPathTestServer extends DataPathTest implements WorkerProvider {
 
 	public void run_test() {
 		System.out.println("Starting server portal workers");
-		for (int i = 0; i < num_of_threads; i++) {
-			for (ServerPortalWorker spw : SPWorkers) {
-				spw.start();
-			}
-			listen_eqh.run();
+		for (ServerPortalWorker spw : SPWorkers) {
+			spw.start();
+		listen_eqh.run();
 		}
 	}
 
