@@ -140,7 +140,9 @@ public class MsgPool {
 			return null;
 		}
 		Msg msg = listMsg.poll();
-		msg.setMsgReturnable();
+        if (msg != null) {
+            msg.setMsgReturnable();
+        }
 		return msg;
 	}
 
