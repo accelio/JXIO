@@ -1,0 +1,6 @@
+jxio:
+    build: .
+    volumes:
+        - ${PWD}:/code
+    working_dir: /code
+    command: /bin/bash build.sh
